@@ -2,7 +2,8 @@ core-user: root
 core-email: alex_investor@yahoo.com
 
 core-packages:
-  - vim-enhanced
+  - vim
+  - vim-rt
 
 core-states:
   - package
