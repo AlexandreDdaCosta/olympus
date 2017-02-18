@@ -5,5 +5,6 @@ core-packages:
   - vim-enhanced
 
 core-states:
-  - firewall
+  - package
   - staff
+  - firewall
