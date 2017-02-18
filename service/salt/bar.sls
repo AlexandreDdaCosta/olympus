@@ -1,4 +1,4 @@
-/tmp/testsalt2:
+/tmp/testsalt3:
   file.managed:
     - user: root
     - group: root
