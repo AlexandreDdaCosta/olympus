@@ -1,6 +1,5 @@
-packages:
+{% for package in pillar['core-packages'] %}
+{{ package }}
   pkg.installed:
-    - pkgs:
-      {% for package in pillar['core-packages'] %}
-      - {{ package }}
-      {% endfor %}
+    - version: {{ package['version'] }}
+{% endfor %}
