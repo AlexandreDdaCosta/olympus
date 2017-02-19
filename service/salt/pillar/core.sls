@@ -10,3 +10,5 @@ core-states:
   - package
   - staff
   - firewall
+
+debian_release: jessie
