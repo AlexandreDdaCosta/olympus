@@ -5,8 +5,7 @@ packages:
       {% if pillar['initialization'] %}
       - {{ package }}
       {% elif package['version'] %}
-      - {{ package }}:
-        - version: {{ package['version'] }}
+      - {{ package }}
       {% else %}
       - {{ package }}
       {% endif %}
