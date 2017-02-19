@@ -1,4 +1,4 @@
 {% for package in pillar['core-packages'] %}
-{{ package }}
+{{ package }}:
   pkg.installed
 {% endfor %}
