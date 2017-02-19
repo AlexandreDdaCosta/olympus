@@ -2,4 +2,7 @@ base:
   '*':
     - core
     - distribution
-    - services/web
+
+services:
+  '*':
+    - web
