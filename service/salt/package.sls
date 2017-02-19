@@ -1,6 +1,6 @@
 {% for packagename, package in pillar.get('core-packages', {}).items() %}
 {{ packagename }}:
-{% if pillar['initialization'] == True or pillar['pkg.latest'] == True %}
+{% if pillar['initialization'] or pillar['pkg.latest'] %}
   pkg.latest
 {% else %}
   pkg.installed:
