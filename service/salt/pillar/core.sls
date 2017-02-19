@@ -6,6 +6,7 @@ core-packages:
     version: 2:7.4.488-7+deb8u2
 
 core-states:
+  - repository
   - package
   - staff
   - firewall
