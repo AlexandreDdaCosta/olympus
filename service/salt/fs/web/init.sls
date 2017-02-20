@@ -9,9 +9,6 @@ include:
   pkg.installed:
     - version: {{ package['version'] }}
 {% endif %}
-{% if package['fromrepo'] is defined %}
-    - fromrepo: {{ package['fromrepo'] }}
-{% endif %}
     - require:
       - sls: repository
 {% endfor %}
