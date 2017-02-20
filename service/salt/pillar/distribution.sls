@@ -5,6 +5,6 @@ packages:
   curl:
     version: 7.38.0-4+deb8u5
   python-pip:
-    version: 7.38.0-4+deb8u5
+    version: 1.5.6-5
   vim:
     version: 2:7.4.488-7+deb8u2
