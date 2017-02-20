@@ -5,6 +5,6 @@ base:
     {% endfor %}
 {% if grains.get('services') %}
     {% for service in grains.get('services') %}
-    - {{ service }}
+    - services/{{ service }}
     {% endfor %}
 {% endif %}
