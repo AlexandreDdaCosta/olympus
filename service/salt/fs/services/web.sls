@@ -35,3 +35,10 @@ include:
       - sls: package
 {% endfor %}
 
+nginx:
+  service.running:
+    - watch:
+      - file: /etc/nginx/conf.d/default.conf
+  file.managed:
+    - name: /etc/nginx/conf.d/default.conf
+    - source: salt://services/web/files/default.conf
