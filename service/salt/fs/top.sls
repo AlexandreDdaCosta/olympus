@@ -4,7 +4,4 @@ base:
     - {{ state }}
     {% endfor %}
     {% if grains.get('server_type') %}
-    {% for service in pillar['supervisor'] %}
-    - services/{{ service }}
-    {% endfor %}
     {% endif %}
