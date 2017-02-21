@@ -3,13 +3,14 @@ include:
   - base: package
 
 {% for packagename, package in pillar.get('web-service-packages', {}).items() %}
-{{ packagename }}:
+{{ packagename }}-web:
 {% if pillar.pkg_latest is defined and pillar.pkg_latest or 'version' not in package %}
   pkg.latest:
 {% else %}
   pkg.installed:
     - version: {{ package['version'] }}
 {% endif %}
+    - name: {{ packagename }}
 {% if 'repo' in package %}
     - fromrepo: {{ package['repo'] }}
 {% endif %}
