@@ -10,6 +10,9 @@ include:
   pkg.installed:
     - version: {{ package['version'] }}
 {% endif %}
+{% if 'repo' in package %}
+    - fromrepo: {{ package['repo'] }}
+{% endif %}
     - require:
       - sls: repository
       - sls: package
@@ -25,9 +28,6 @@ include:
     - name: {{ packagename }} {{ package['version'] }}
 {% else %}
     - name: {{ packagename }}
-{% endif %}
-{% if 'repo' in package %}
-    - fromrepo: {{ package['repo'] }}
 {% endif %}
     - require:
       - sls: repository
