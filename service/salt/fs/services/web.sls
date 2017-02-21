@@ -1,6 +1,7 @@
 include:
   - base: repository
   - base: package
+  - base: security
 
 {% for packagename, package in pillar.get('web-service-packages', {}).items() %}
 {{ packagename }}-web:
@@ -34,6 +35,12 @@ include:
       - sls: repository
       - sls: package
 {% endfor %}
+
+web_certs:
+  cmd:
+    - run
+    - name: 'openssl req -new -x509 -days 365 -nodes -out /etc/ssl/localcerts/nginx.pem -keyout /etc/ssl/localcerts/nginx.key'
+    - unless: 'test -e /etc/ssl/localcerts/nginx.pem && test -e /etc/ssl/localcerts/nginx.key'
 
 nginx:
   service.running:
