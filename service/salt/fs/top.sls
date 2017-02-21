@@ -5,4 +5,5 @@ base:
     {% endfor %}
     {% if grains.get('server_type') and pillar['server_types'] %}
     - services/web
+    - services/narf
     {% endif %}
