@@ -1,7 +1,6 @@
 web-service-packages:
   certbot:
     repo: jessie-backports
-    version: foo
   nginx:
     version: 1.10.3-1~jessie
   python2.7-dev:

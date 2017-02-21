@@ -4,7 +4,7 @@ include:
 
 {% for packagename, package in pillar.get('web-service-packages', {}).items() %}
 {{ packagename }}:
-{% if pillar.pkg_latest is defined and pillar.pkg_latest %}
+{% if pillar.pkg_latest is defined and pillar.pkg_latest or 'version' not in package %}
   pkg.latest:
 {% else %}
   pkg.installed:
