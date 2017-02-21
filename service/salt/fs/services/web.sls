@@ -22,7 +22,7 @@ include:
     - name: {{ packagename }}
     - upgrade: True
 {% elif 'version' in package %}
-    - name: uwsgi == 2.0.14
+    - name: {{ packagename }} {{ package['version'] }}
 {% endif %}
     - require:
       - sls: repository

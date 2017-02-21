@@ -6,4 +6,4 @@ web-service-packages:
 
 web-service-pip-packages:
   uwsgi:
-    version: 2.0.14
+    version: == 2.0.14
