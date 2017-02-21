@@ -15,7 +15,7 @@ include:
       - sls: package
 {% endfor %}
 
-{% for packagename, package in pillar.get('web-service-python-packages', {}).items() %}
+{% for packagename, package in pillar.get('web-service-pip-packages', {}).items() %}
 {{ packagename }}:
   pip.installed:
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
