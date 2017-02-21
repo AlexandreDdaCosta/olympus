@@ -1,3 +1,3 @@
 supervisor:
-  - services:
+  services:
     - web
