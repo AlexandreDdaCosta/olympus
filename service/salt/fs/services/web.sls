@@ -39,7 +39,7 @@ include:
 web_certs:
   cmd:
     - run
-    - name: 'openssl req -new -x509 -days 365 -nodes -out /etc/ssl/localcerts/nginx.pem -keyout /etc/ssl/localcerts/nginx.key'
+    - name: 'openssl req -nodes -newkey rsa:2048 -out /etc/ssl/localcerts/nginx.pem -keyout /etc/ssl/localcerts/nginx.key -subj "/C=US/ST=Lake Worth/L=Lake Worth/O=FeralCanids/OU=Olympus web services/CN=feralcanids.com"'
     - unless: 'test -e /etc/ssl/localcerts/nginx.pem && test -e /etc/ssl/localcerts/nginx.key'
 
 nginx:
