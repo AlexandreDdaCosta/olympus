@@ -15,3 +15,10 @@ nginx_src_repo:
     - file: /etc/apt/sources.list.d/nginx.list
     - humanname: Nginx source repository for {{ pillar['distribution'] }} {{ pillar['release'] }}
     - name: deb-src http://nginx.org/packages/debian/ {{ pillar['release'] }} nginx
+
+jessie_backports_repo:
+  pkgrepo.managed:
+    - dist: {{ pillar['release'] }}
+    - file: /etc/apt/sources.list.d/jessie-backports.list
+    - humanname: Added packages for Debian
+    - name: deb http://ftp.debian.org/debian jessie-backports main

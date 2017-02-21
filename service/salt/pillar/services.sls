@@ -1,5 +1,6 @@
 web-service-packages:
   certbot:
+    fromrepo: jessie-backports
     version: foo
   nginx:
     version: 1.10.3-1~jessie
