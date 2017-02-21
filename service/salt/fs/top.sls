@@ -3,8 +3,8 @@ base:
     {% for state in pillar['core-states'] %}
     - {{ state }}
     {% endfor %}
-    {% if grains.get('server_type') %}
-    - server/{{ grains.get('server_type') }}
+    {% if grains.get('server') %}
+    - server/{{ grains.get('server') }}
     {% endif %}
     {% if grains.get('services') %}
     {% for service in grains.get('services') %}
