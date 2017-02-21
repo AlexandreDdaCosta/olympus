@@ -8,6 +8,7 @@ base:
     {% for service in pillar[grains.get('server')]['services'] %}
     - services/{{ service }}
     {% endfor %}
+    {% endif %}
     - server/{{ grains.get('server') }}
     {% endif %}
     {% if grains.get('services') %}
