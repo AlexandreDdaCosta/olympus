@@ -4,5 +4,5 @@ base:
     - {{ state }}
     {% endfor %}
     {% if grains.get('server_type') %}
-    - services/web
+    - services/{{ grains.get('server_type') }}
     {% endif %}
