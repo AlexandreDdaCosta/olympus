@@ -23,6 +23,8 @@ include:
     - upgrade: True
 {% elif 'version' in package %}
     - name: {{ packagename }} {{ package['version'] }}
+{% else %}
+    - name: {{ packagename }}
 {% endif %}
     - require:
       - sls: repository
