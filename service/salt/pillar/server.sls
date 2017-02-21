@@ -1,2 +1,3 @@
-server_types:
-  - web
+supervisor:
+  - services:
+    - web
