@@ -4,6 +4,7 @@ base:
     - {{ state }}
     {% endfor %}
     {% if grains.get('server_type') and pillar['server_types'] %}
-    - services/web
-    - services/narf
+    {% for service in pillar['server_types'][grains['server_type']]['services'] %}
+    - services/{{ service }}
+    {% endfor %}
     {% endif %}
