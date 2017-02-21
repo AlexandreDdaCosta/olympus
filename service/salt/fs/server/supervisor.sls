@@ -1,7 +1,7 @@
 include:
   - base: services/web
 
-nginx_supervisor:
+nginx:
   service.running:
     - watch:
       - file: /etc/nginx/conf.d/default.conf
