@@ -1,4 +1,6 @@
 web-service-packages:
+  certbot:
+    version: foo
   nginx:
     version: 1.10.3-1~jessie
   python2.7-dev:
