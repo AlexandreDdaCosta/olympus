@@ -26,6 +26,9 @@ include:
 {% else %}
     - name: {{ packagename }}
 {% endif %}
+{% if 'repo' in package %}
+    - fromrepo: {{ package['repo'] }}
+{% endif %}
     - require:
       - sls: repository
       - sls: package
