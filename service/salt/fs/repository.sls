@@ -18,7 +18,7 @@ nginx_src_repo:
 
 jessie_backports_repo:
   pkgrepo.managed:
-    - dist: {{ pillar['release'] }}
+    - dist: jessie-backports
     - file: /etc/apt/sources.list.d/jessie-backports.list
     - humanname: Added packages for Debian
     - name: deb http://ftp.debian.org/debian jessie-backports main
