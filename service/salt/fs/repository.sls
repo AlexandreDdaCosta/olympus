@@ -22,3 +22,6 @@ jessie_backports_repo:
     - file: /etc/apt/sources.list.d/jessie-backports.list
     - humanname: Added packages for Debian
     - name: deb http://ftp.debian.org/debian jessie-backports main
+  cmd:
+    - run
+    - name: 'apt-get update'
