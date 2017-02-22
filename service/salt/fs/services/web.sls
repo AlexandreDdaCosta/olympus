@@ -40,7 +40,9 @@ web_certs:
   cmd:
     - run
     - name: 'openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -out /etc/ssl/localcerts/server.crt -keyout /etc/ssl/localcerts/server.key -subj "/C=US/ST=Lake Worth/L=Lake Worth/O=FeralCanids/OU=Olympus web services/CN=feralcanids.com"'
-    - unless: 'test -e /etc/ssl/localcerts/server.crt && test -e /etc/ssl/localcerts/server.key'
+{% if pillar.refresh_security is not defined or not pillar.refresh_security %}
+    - unless: 'test -f /etc/ssl/localcerts/server.crt && openssl verify /etc/ssl/localcerts/server.crt'
+{% endif %}
 
 nginx:
   service.running:
