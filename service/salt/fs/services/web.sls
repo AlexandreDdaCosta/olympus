@@ -67,7 +67,7 @@ uwsgi-user:
     - mode: 0755
     - user: root
 
-/etc/uwsgi.ini
+/etc/uwsgi.ini:
     file.managed:
     - group: root
     - makedirs: False
@@ -75,7 +75,7 @@ uwsgi-user:
     - source: salt://services/web/files/uwsgi.ini
     - user: root
 
-/var/run/uwsgi.pid
+/var/run/uwsgi.pid:
   file.managed:
     - group: uwsgi
     - mode: 0644
