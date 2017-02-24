@@ -2,6 +2,7 @@ distribution: debian
 release: jessie
 
 packages:
+  at:
   curl:
     version: 7.38.0-4+deb8u5
   ntp:
