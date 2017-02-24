@@ -1,5 +1,4 @@
 include:
-  - base: repository
   - base: package
   - base: security
 
@@ -16,7 +15,7 @@ include:
     - fromrepo: {{ package['repo'] }}
 {% endif %}
     - require:
-      - sls: repository
+      - sls: package
       - sls: package
 {% endfor %}
 
@@ -32,7 +31,6 @@ include:
     - name: {{ packagename }}
 {% endif %}
     - require:
-      - sls: repository
       - sls: package
 {% endfor %}
 

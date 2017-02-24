@@ -4,9 +4,11 @@ include:
 {% for packagename, package in pillar.get('packages', {}).items() %}
 {{ packagename }}:
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
-  pkg.latest
+  pkg.latest:
 {% else %}
   pkg.installed:
     - version: {{ package['version'] }}
 {% endif %}
+    - require:
+      - sls: repository
 {% endfor %}

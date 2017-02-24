@@ -5,5 +5,6 @@ core-states:
   - repository
   - package
   - security
-  - staff
   - firewall
+  - services
+  - staff
