@@ -3,6 +3,7 @@ release: jessie
 
 packages:
   at:
+    version: 3.1.16-1
   curl:
     version: 7.38.0-4+deb8u5
   ntp:
