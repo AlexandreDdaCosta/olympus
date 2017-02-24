@@ -50,6 +50,11 @@ nginx:
     - name: /etc/nginx/conf.d/default.conf
     - source: salt://services/web/files/default.conf
 
+uwsgi-group:
+  group.present:
+    - name: uwsgi
+    - system: True
+
 uwsgi-user:
   user.present:
     - createhome: True
