@@ -7,7 +7,9 @@ include:
   pkg.latest:
 {% else %}
   pkg.installed:
+    {% if 'version' in package %}
     - version: {{ package['version'] }}
+    {% endif %}
 {% endif %}
     - require:
       - sls: repository
