@@ -86,6 +86,34 @@ uwsgi-user:
     - mode: 0644
     - user: uwsgi
 
+/etc/rc0.d/K01uwsgi:
+  file.symlink:
+    - target: /etc/init.d/uwsgi
+
+/etc/rc1.d/K01uwsgi:
+  file.symlink:
+    - target: /etc/init.d/uwsgi
+
+/etc/rc2.d/S01uwsgi:
+  file.symlink:
+    - target: /etc/init.d/uwsgi
+
+/etc/rc3.d/S01uwsgi:
+  file.symlink:
+    - target: /etc/init.d/uwsgi
+
+/etc/rc4.d/S01uwsgi:
+  file.symlink:
+    - target: /etc/init.d/uwsgi
+
+/etc/rc5.d/S01uwsgi:
+  file.symlink:
+    - target: /etc/init.d/uwsgi
+
+/etc/rc6.d/K01uwsgi:
+  file.symlink:
+    - target: /etc/init.d/uwsgi
+
 /etc/init.d/uwsgi:
     file.managed:
     - group: root
