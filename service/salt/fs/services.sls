@@ -3,9 +3,11 @@ atd:
     - enable: True
     - watch:
         - pkg: at
-ntpdate:
+
+ntpdate-service:
   service.running:
     - enable: True
+    - name: ntpdate
       
 ntpd:
   service.running:
