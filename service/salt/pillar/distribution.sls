@@ -4,6 +4,8 @@ release: jessie
 packages:
   curl:
     version: 7.38.0-4+deb8u5
+  ntp:
+  ntpdate:
   python-pip:
     version: 1.5.6-5
   vim:
