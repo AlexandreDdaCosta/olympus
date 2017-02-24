@@ -7,7 +7,7 @@ include:
   pkg.latest:
 {% else %}
   pkg.installed:
-    {% if package is not None and 'version' in package %}
+    {% if package and 'version' in package %}
     - version: {{ package['version'] }}
     {% endif %}
 {% endif %}
