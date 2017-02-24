@@ -1,0 +1,74 @@
+#!/bin/sh
+#
+# /etc/init.d/uwsgi
+#
+### BEGIN INIT INFO
+# Provides:          uwsgi
+# Required-Start:    $local_fs $networking
+# Required-Stop:     $local_fs $networking
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Starts uwsgi
+# Description:       Starts and stops uwsgi
+### END INIT INFO
+
+daemon=/usr/local/bin/uwsgi
+inifile=/etc/uwsgi.ini
+lockfile=/var/run/uwsgi.pid
+prog=uwsgi
+vassaldir=/etc/uwsgi/vassals
+
+. /lib/lsb/init-functions
+
+start() {
+	FILES=`ls $vassaldir`
+	for initfile in $FILES
+	do
+		INITFILE=`echo $initfile | sed 's/\.ini$//'`
+		touch /var/run/uwsgi.$INITFILE.pid
+		chmod 0664 /var/run/uwsgi.$INITFILE.pid
+		chown uwsgi:uwsgi /var/run/uwsgi.$INITFILE.pid
+	done
+	[ -x $daemon ] || exit 5
+	[ -f $inifile ] || exit 6
+	# $daemon $inifile
+        start-stop-daemon -p $lockfile --start --exec $daemon --ini $inifile
+	retval=$?
+	echo
+	[ $retval -eq 0 ] && touch $lockfile
+	return $retval
+}
+
+stop() {
+        start-stop-daemon --signal QUIT -p $pid --stop $daemon --ini $inifile
+	# killproc -p $lockfile $prog
+	retval=$?
+	echo
+	[ $retval -eq 0 ] && rm -f $lockfile
+	return $retval
+}
+
+case "$1" in
+    condrestart|restart)
+        echo "Restarting uwsgi"
+	stop
+	start
+        ;;
+    start)
+	service $prog status >/dev/null 2>&1 && exit 0
+	echo "Starting uwsgi"
+	$1
+        ;;
+    status)
+	service $prog status
+        ;;
+    stop)
+	service $prog status >/dev/null 2>&1 || exit 0
+        echo "Stopping uwsgi"
+	$1
+        ;;
+    *)
+        echo "Usage: /etc/init.d/uwsgi {condrestart|restart|start|status|stop}"
+        exit 1
+    ;;
+esac
