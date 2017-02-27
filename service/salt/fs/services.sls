@@ -4,9 +4,10 @@ atd:
     - watch:
         - pkg: at
 
-ntp:
+ntp-service:
   service.running:
     - enable: True
+    - name: ntp
     - watch:
         - pkg: ntp
 
