@@ -2,6 +2,10 @@ distribution: debian
 node.js-repo: node_6.x
 release: jessie
 
+repo-packages:
+  apt-transport-https:
+    version: 1.0.9.8.4
+
 packages:
   at:
     version: 3.1.16-1

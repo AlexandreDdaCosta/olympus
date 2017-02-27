@@ -16,7 +16,6 @@ include:
 {% endif %}
     - require:
       - sls: package
-      - sls: package
 {% endfor %}
 
 web_certs:

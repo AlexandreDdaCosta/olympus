@@ -1,3 +1,14 @@
+{% for packagename, package in pillar.get('repo-packages', {}).items() %}
+{{ packagename }}-repo:
+{% if pillar.pkg_latest is defined and pillar.pkg_latest or 'version' not in package %}
+  pkg.latest:
+{% else %}
+  pkg.installed:
+    - version: {{ package['version'] }}
+{% endif %}
+    - name: {{ packagename }}
+{% endfor %}
+
 jessie_backports_repo:
   pkgrepo.managed:
     - dist: jessie-backports
