@@ -126,3 +126,5 @@ uwsgi-daemon:
     - name: uwsgi
     - watch:
       - file: /etc/init.d/uwsgi
+    - require:
+      - sls: services/web
