@@ -1,3 +1,3 @@
 supervisor:
   services:
-    - web
+    - python-web
