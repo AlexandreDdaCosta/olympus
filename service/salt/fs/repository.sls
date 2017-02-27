@@ -1,3 +1,13 @@
+jessie_backports_repo:
+  pkgrepo.managed:
+    - dist: jessie-backports
+    - file: /etc/apt/sources.list.d/jessie-backports.list
+    - humanname: Added packages for Debian
+    - name: deb http://ftp.debian.org/debian jessie-backports main
+  cmd:
+    - run
+    - name: 'apt-get update'
+
 nginx_repo:
   pkgrepo.managed:
     - dist: {{ pillar['release'] }}
@@ -16,12 +26,20 @@ nginx_src_repo:
     - humanname: Nginx source repository for {{ pillar['distribution'] }} {{ pillar['release'] }}
     - name: deb-src http://nginx.org/packages/debian/ {{ pillar['release'] }} nginx
 
-jessie_backports_repo:
+nodesource_repo:
   pkgrepo.managed:
-    - dist: jessie-backports
-    - file: /etc/apt/sources.list.d/jessie-backports.list
-    - humanname: Added packages for Debian
-    - name: deb http://ftp.debian.org/debian jessie-backports main
+    - dist: {{ pillar['release'] }}
+    - file: /etc/apt/sources.list.d/nodesource.list
+    - humanname: Nodesource node.js package repository for {{ pillar['distribution'] }} {{ pillar['release'] }}
+    - name: deb https://deb.nodesource.com/{{ pillar['node.js-repo'] }} {{ pillar['release'] }} main
   cmd:
     - run
-    - name: 'apt-get update'
+    - name: 'wget -qO - https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -'
+    - unless: 'apt-key list | grep -i nodesource' 
+
+nodesource_src_repo:
+  pkgrepo.managed:
+    - dist: {{ pillar['release'] }}
+    - file: /etc/apt/sources.list.d/nodesource.list
+    - humanname: Nodesource node.js source repository for {{ pillar['distribution'] }} {{ pillar['release'] }}
+    - name: deb-src https://deb.nodesource.com/{{ pillar['node.js-repo'] }} {{ pillar['release'] }} main

@@ -1,5 +1,6 @@
 interface:
   services:
+    - django
     - node.js-web
 
 supervisor:

@@ -1,6 +1,5 @@
 include:
   - base: package
-  - base: security
   - base: services/web
 
 {% for packagename, package in pillar.get('python-web-service-packages', {}).items() %}

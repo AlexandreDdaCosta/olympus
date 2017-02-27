@@ -1,4 +1,5 @@
 distribution: debian
+node.js-repo: node_6.x
 release: jessie
 
 packages:
