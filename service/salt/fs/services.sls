@@ -13,4 +13,4 @@ ntp-service:
 
 ntpd-timecheck:
   cmd.run:
-    - name: service ntpd stop; ntpdate pool.ntp.org; service ntpd start
+    - name: service ntp stop; /usr/sbin/ntpdate pool.ntp.org; service ntp start
