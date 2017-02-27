@@ -1,2 +1,2 @@
 include:
-  - base: services/web
+  - base: services/python-web
