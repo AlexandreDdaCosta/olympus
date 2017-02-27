@@ -4,7 +4,7 @@ atd:
     - watch:
         - pkg: at
 
-ntpd:
+ntp:
   service.running:
     - enable: True
     - watch:
