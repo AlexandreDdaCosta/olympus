@@ -13,8 +13,8 @@ nodejs-web-service-npm-packages:
   - express
   - express-generator
   - pg
-  pm2:
-    version: 2.4.2
+    pm2:
+      version: 2.4.2
   - supervisor
 
 python-web-service-packages:
