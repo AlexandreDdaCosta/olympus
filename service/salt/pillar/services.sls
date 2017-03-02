@@ -10,7 +10,7 @@ nodejs-web-service-packages:
     version: 6.10.0-1nodesource1~jessie1
 
 nodejs-web-service-npm-packages:
-  express:
+  - express
   express-generator:
   pg:
   pm2:
