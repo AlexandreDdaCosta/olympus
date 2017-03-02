@@ -11,15 +11,11 @@ nodejs-web-service-packages:
 
 nodejs-web-service-npm-packages:
   express:
-    noversion: True
   express-generator:
-    noversion: True
   pg:
-    noversion: True
   pm2:
     version: 2.4.2
   supervisor:
-    noversion: True
 
 python-web-service-packages:
   python2.7-dev:

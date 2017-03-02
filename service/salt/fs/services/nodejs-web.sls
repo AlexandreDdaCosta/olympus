@@ -27,10 +27,10 @@ include:
       - force_reinstall: True
 {% elif package != None and 'version' in package %}
 {{ packagename }}@{{ package['version'] }}:
-    npm.installed:
+    npm.installed
 {% else %}
 {{ packagename }}:
-    npm.installed:
+    npm.installed
 {% endif %}
 {% endfor %}
       - require:
