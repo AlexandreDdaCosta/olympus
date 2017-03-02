@@ -7,9 +7,11 @@ web-service-packages:
 
 nodejs-web-service-packages:
   nodejs:
+    version: 6.10.0-1nodesource1~jessie1
 
 nodejs-web-service-npm-packages:
   pm2:
+    version: 2.4.2
 
 python-web-service-packages:
   python2.7-dev:
