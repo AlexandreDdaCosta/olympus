@@ -6,10 +6,10 @@ web-service-packages:
     version: 1.10.3-1~jessie
 
 nodejs-web-service-packages:
-  - nodejs
+  nodejs:
 
 nodejs-web-service-npm-packages:
-  - pm2
+  pm2:
 
 python-web-service-packages:
   python2.7-dev:
