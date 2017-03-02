@@ -5,5 +5,5 @@ interface:
 
 supervisor:
   services:
-    - node.js-web
+    - nodejs-web
     - python-web
