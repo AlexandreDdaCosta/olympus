@@ -11,11 +11,11 @@ nodejs-web-service-packages:
 
 nodejs-web-service-npm-packages:
   - express
-  express-generator:
-  pg:
-  pm2:
+  - express-generator
+  - pg
+  - pm2:
     version: 2.4.2
-  supervisor:
+  - supervisor
 
 python-web-service-packages:
   python2.7-dev:
