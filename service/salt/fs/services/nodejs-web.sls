@@ -13,7 +13,7 @@ include:
     {% endif %}
 {% endif %}
     - name: {{ packagename }}
-{% if 'repo' in package %}
+{% if package != None and 'repo' in package %}
     - fromrepo: {{ package['repo'] }}
 {% endif %}
     - require:
@@ -25,7 +25,7 @@ include:
 {{ packagename }}:
     npm.installed:
       - force_reinstall: True
-{% elif package is defined and 'version' in package %}
+{% elif package != None and 'version' in package %}
 {{ packagename }}@{{ package['version'] }}:
     npm.installed:
 {% else %}

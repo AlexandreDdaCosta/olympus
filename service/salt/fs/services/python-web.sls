@@ -4,14 +4,14 @@ include:
 
 {% for packagename, package in pillar.get('python-web-service-packages', {}).items() %}
 {{ packagename }}-python-web:
-{% if pillar.pkg_latest is defined and pillar.pkg_latest or 'version' not in package %}
+{% if pillar.pkg_latest is defined and pillar.pkg_latest or package != None and 'version' not in package %}
   pkg.latest:
 {% else %}
   pkg.installed:
     - version: {{ package['version'] }}
 {% endif %}
     - name: {{ packagename }}
-{% if 'repo' in package %}
+{% if package != None and 'repo' in package %}
     - fromrepo: {{ package['repo'] }}
 {% endif %}
     - require:
@@ -24,7 +24,7 @@ include:
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
     - name: {{ packagename }}
     - upgrade: True
-{% elif 'version' in package %}
+{% elif package != None and 'version' in package %}
     - name: {{ packagename }} {{ package['version'] }}
 {% else %}
     - name: {{ packagename }}
