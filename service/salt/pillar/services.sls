@@ -30,5 +30,4 @@ python-web-service-pip-packages:
     version: == 2.0.14
 
 python-web-service-pip3-packages:
-  django:
   virtualenv:
