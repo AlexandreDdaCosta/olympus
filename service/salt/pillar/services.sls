@@ -10,12 +10,16 @@ nodejs-web-service-packages:
     version: 6.10.0-1nodesource1~jessie1
 
 nodejs-web-service-npm-packages:
-  - express
-  - express-generator
-  - pg
-  - pm2:
+  express:
+    noversion: True
+  express-generator:
+    noversion: True
+  pg:
+    noversion: True
+  pm2:
     version: 2.4.2
-  - supervisor
+  supervisor:
+    noversion: True
 
 python-web-service-packages:
   python2.7-dev:
