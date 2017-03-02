@@ -42,7 +42,7 @@ nodesource_repo:
     - dist: {{ pillar['release'] }}
     - file: /etc/apt/sources.list.d/nodesource.list
     - humanname: Nodesource node.js package repository for {{ pillar['distribution'] }} {{ pillar['release'] }}
-    - name: deb https://deb.nodesource.com/{{ pillar['node.js-repo'] }} {{ pillar['release'] }} main
+    - name: deb https://deb.nodesource.com/{{ pillar['nodejs-repo'] }} {{ pillar['release'] }} main
   cmd:
     - run
     - name: 'wget -qO - https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -'
@@ -53,4 +53,4 @@ nodesource_src_repo:
     - dist: {{ pillar['release'] }}
     - file: /etc/apt/sources.list.d/nodesource.list
     - humanname: Nodesource node.js source repository for {{ pillar['distribution'] }} {{ pillar['release'] }}
-    - name: deb-src https://deb.nodesource.com/{{ pillar['node.js-repo'] }} {{ pillar['release'] }} main
+    - name: deb-src https://deb.nodesource.com/{{ pillar['nodejs-repo'] }} {{ pillar['release'] }} main

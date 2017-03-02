@@ -5,10 +5,10 @@ web-service-packages:
   nginx:
     version: 1.10.3-1~jessie
 
-node.js-web-service-packages:
+nodejs-web-service-packages:
   nodejs:
 
-node.js-web-service-npm-packages:
+nodejs-web-service-npm-packages:
   pm2:
 
 python-web-service-packages:
