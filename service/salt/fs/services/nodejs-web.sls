@@ -25,7 +25,7 @@ include:
 {{ packagename }}:
     npm.installed:
       - force_reinstall: True
-{% elif 'version' in package %}
+{% elif package is defined and 'version' in package %}
 {{ packagename }}@{{ package['version'] }}:
     npm.installed:
 {% else %}
