@@ -1,8 +1,9 @@
 interface:
   services:
-    - django
-    - node.js-web
+    - python-web
+    - ui
 
 supervisor:
   services:
+    - node.js-web
     - python-web
