@@ -20,55 +20,35 @@ vassaldir=/etc/uwsgi/vassals
 
 . /lib/lsb/init-functions
 
-start() {
-	FILES=`ls $vassaldir`
-	for initfile in $FILES
-	do
-		INITFILE=`echo $initfile | sed 's/\.ini$//'`
-		touch /var/run/uwsgi.$INITFILE.pid
-		chmod 0664 /var/run/uwsgi.$INITFILE.pid
-		chown uwsgi:uwsgi /var/run/uwsgi.$INITFILE.pid
-	done
-	[ -x $daemon ] || exit 5
-	[ -f $inifile ] || exit 6
-	# $daemon $inifile
-        start-stop-daemon -p $lockfile --start --exec $daemon --ini $inifile
-	retval=$?
-	echo
-	[ $retval -eq 0 ] && touch $lockfile
-	return $retval
+do_start()
+{
+    FILES=`ls $vassaldir`
+    for initfile in $FILES
+    do
+        INITFILE=`echo $initfile | sed 's/\.ini$//'`
+        touch /var/run/uwsgi.$INITFILE.pid
+        chmod 0664 /var/run/uwsgi.$INITFILE.pid
+        chown uwsgi:uwsgi /var/run/uwsgi.$INITFILE.pid
+    done
+    [ -x $daemon ] || exit 5
+    [ -f $inifile ] || exit 6
+    start-stop-daemon --start --quiet --pidfile $lockfile --exec $daemon -- $inifile
 }
 
-stop() {
-        start-stop-daemon --signal QUIT -p $pid --stop $daemon --ini $inifile
-	# killproc -p $lockfile $prog
-	retval=$?
-	echo
-	[ $retval -eq 0 ] && rm -f $lockfile
-	return $retval
+do_stop()
+{
+    start-stop-daemon --signal QUIT -p $lockfile --stop $daemon
 }
 
 case "$1" in
-    condrestart|restart)
-        echo "Restarting uwsgi"
-	stop
-	start
-        ;;
     start)
-	service $prog status >/dev/null 2>&1 && exit 0
-	echo "Starting uwsgi"
-	$1
-        ;;
-    status)
-	service $prog status
+        do_start
         ;;
     stop)
-	service $prog status >/dev/null 2>&1 || exit 0
-        echo "Stopping uwsgi"
-	$1
+        do_stop
         ;;
     *)
-        echo "Usage: /etc/init.d/uwsgi {condrestart|restart|start|status|stop}"
+        echo "Usage: /etc/init.d/uwsgi {start|stop}"
         exit 1
     ;;
 esac

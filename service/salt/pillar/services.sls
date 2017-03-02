@@ -5,6 +5,12 @@ web-service-packages:
   nginx:
     version: 1.10.3-1~jessie
 
+node.js-web-service-packages:
+  nodejs:
+
+node.js-web-service-npm-packages:
+  pm2:
+
 python-web-service-packages:
   python2.7-dev:
     version: 2.7.9-2+deb8u1
