@@ -17,5 +17,6 @@ packages:
     version: 1:4.2.6.p5+dfsg-7+deb8u2
   python-pip:
     version: 1.5.6-5
+  python3-pip:
   vim:
     version: 2:7.4.488-7+deb8u2

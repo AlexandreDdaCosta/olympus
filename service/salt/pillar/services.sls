@@ -11,11 +11,15 @@ nodejs-web-service-packages:
 
 nodejs-web-service-npm-packages:
   express:
+    version: 4.15.0
   express-generator:
+    version: 4.14.1
   pg:
+    version: 6.1.2
   pm2:
     version: 2.4.2
   supervisor:
+    version: 0.12.0
 
 python-web-service-packages:
   python2.7-dev:
@@ -24,3 +28,7 @@ python-web-service-packages:
 python-web-service-pip-packages:
   uwsgi:
     version: == 2.0.14
+
+python-web-service-pip3-packages:
+  django:
+  virtualenv:
