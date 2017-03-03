@@ -1,6 +1,10 @@
 nodejs-web-service-packages:
   nodejs:
     version: 6.10.0-1nodesource1~jessie1
+  pgadmin3:
+    repo: {{ pillar['release'] }}-pgdg
+  postgresql-9.6:
+    repo: {{ pillar['release'] }}-pgdg
 
 nodejs-web-service-npm-packages:
   express:
