@@ -57,7 +57,7 @@ nodesource_src_repo:
 
 postgresql_repo:
   pkgrepo.managed:
-    - dist: {{ pillar['release'] }}
+    - dist: {{ pillar['release'] }}-pgdg
     - file: /etc/apt/sources.list.d/pgdg.list
     - humanname: PostgreSQL repository
     - name: deb http://apt.postgresql.org/pub/repos/apt/ {{ pillar['release'] }}-pgdg main
