@@ -60,7 +60,7 @@ postgresql_repo:
     - dist: {{ pillar['release'] }}
     - file: /etc/apt/sources.list.d/pgdg.list
     - humanname: PostgreSQL repository
-    - name: deb http://apt.postgresql.org/pub/repos/apt/dists/{{ pillar['release'] }}-pgdg main
+    - name: deb http://apt.postgresql.org/pub/repos/apt/dists/ {{ pillar['release'] }}-pgdg main
   cmd:
     - run
     - name: 'wget -qO - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -'
