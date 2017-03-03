@@ -1,2 +1,2 @@
-include:
-  - base: services/python-web
+foo:
+  postgres_database.present
