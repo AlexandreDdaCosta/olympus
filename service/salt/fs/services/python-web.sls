@@ -83,6 +83,7 @@ uwsgi-user:
   file.managed:
     - group: uwsgi
     - mode: 0644
+    - replace: False
     - user: uwsgi
 
 /etc/rc0.d/K01uwsgi:
@@ -133,6 +134,7 @@ uwsgi-user:
   file.managed:
     - group: uwsgi
     - mode: 0644
+    - replace: False
     - user: uwsgi
 
 uwsgi-daemon:
