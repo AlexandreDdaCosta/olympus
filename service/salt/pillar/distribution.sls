@@ -19,5 +19,6 @@ packages:
     version: 1.5.6-5
   python3-pip:
     version: 1.5.6-5
+  sudo:
   vim:
     version: 2:7.4.488-7+deb8u2

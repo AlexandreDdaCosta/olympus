@@ -3,8 +3,10 @@ nodejs-web-service-packages:
     version: 6.10.0-1nodesource1~jessie1
   pgadmin3:
     repo: jessie-pgdg
+    version: 1.22.2-1.pgdg80+1
   postgresql-9.6:
     repo: jessie-pgdg
+    version: 9.6.2-1.pgdg80+1
 
 nodejs-web-service-npm-packages:
   express:
@@ -14,9 +16,11 @@ nodejs-web-service-npm-packages:
   pg:
     version: 6.1.2
   pg-hstore:
+    version: 2.3.2
   pm2:
     version: 2.4.2
   sequelize:
+    version: 3.30.2
   supervisor:
     version: 0.12.0
 
@@ -40,4 +44,3 @@ web-service-packages:
     version: 0.9.3-1~bpo8+2
   nginx:
     version: 1.10.3-1~jessie
-
