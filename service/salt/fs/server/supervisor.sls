@@ -1,2 +1,3 @@
-foo:
-  postgres_database.present
+olympus.db:
+  postgres_database.present:
+    name: olympus

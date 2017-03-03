@@ -21,6 +21,7 @@ nodejs-web-service-npm-packages:
     version: 2.4.2
   sequelize:
     version: 3.30.2
+  sequelize-cli:
   supervisor:
     version: 0.12.0
 
