@@ -1,10 +1,3 @@
-web-service-packages:
-  certbot:
-    repo: jessie-backports
-    version: 0.9.3-1~bpo8+2
-  nginx:
-    version: 1.10.3-1~jessie
-
 nodejs-web-service-packages:
   nodejs:
     version: 6.10.0-1nodesource1~jessie1
@@ -16,8 +9,10 @@ nodejs-web-service-npm-packages:
     version: 4.14.1
   pg:
     version: 6.1.2
+  pg-hstore:
   pm2:
     version: 2.4.2
+  sequelize:
   supervisor:
     version: 0.12.0
 
@@ -34,3 +29,11 @@ python-web-service-pip3-packages:
     version: == 1.10.6
   virtualenv:
     version: == 15.1.0
+
+web-service-packages:
+  certbot:
+    repo: jessie-backports
+    version: 0.9.3-1~bpo8+2
+  nginx:
+    version: 1.10.3-1~jessie
+
