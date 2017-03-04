@@ -7,3 +7,4 @@ supervisor:
   services:
     - backend
     - frontend
+    - ui
