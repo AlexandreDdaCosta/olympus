@@ -2,7 +2,7 @@ include:
   - base: package
   - base: services/web
 
-{% for packagename, package in pillar.get('python-web-service-packages', {}).items() %}
+{% for packagename, package in pillar.get('frontend-packages', {}).items() %}
 {{ packagename }}-python-web:
 {% if pillar.pkg_latest is defined and pillar.pkg_latest or package != None and 'version' not in package %}
   pkg.latest:
@@ -18,7 +18,7 @@ include:
       - sls: package
 {% endfor %}
 
-{% for packagename, package in pillar.get('python-web-service-pip-packages', {}).items() %}
+{% for packagename, package in pillar.get('frontend-pip-packages', {}).items() %}
 {{ packagename }}:
   pip.installed:
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
@@ -33,7 +33,7 @@ include:
       - sls: package
 {% endfor %}
 
-{% for packagename, package in pillar.get('python-web-service-pip3-packages', {}).items() %}
+{% for packagename, package in pillar.get('frontend-pip3-packages', {}).items() %}
 {{ packagename }}:
   pip.installed:
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}

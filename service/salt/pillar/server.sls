@@ -1,9 +1,9 @@
 interface:
   services:
-    - python-web
+    - frontend
     - ui
 
 supervisor:
   services:
-    - nodejs-web
-    - python-web
+    - backend
+    - frontend

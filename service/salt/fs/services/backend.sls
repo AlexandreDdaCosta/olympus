@@ -2,7 +2,7 @@ include:
   - base: package
   - base: services/web
 
-{% for packagename, package in pillar.get('nodejs-web-service-packages', {}).items() %}
+{% for packagename, package in pillar.get('backend-packages', {}).items() %}
 {{ packagename }}-nodejs-web:
 {% if pillar.pkg_latest is defined and pillar.pkg_latest or package != None and 'version' not in package %}
   pkg.latest:
@@ -20,7 +20,7 @@ include:
       - sls: package
 {% endfor %}
 
-{% for packagename, package in pillar.get('nodejs-web-service-npm-packages', {}).items() %}
+{% for packagename, package in pillar.get('backend-npm-packages', {}).items() %}
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
 {{ packagename }}:
     npm.installed:

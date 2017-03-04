@@ -1,4 +1,4 @@
-nodejs-web-service-packages:
+backend-packages:
   nodejs:
     version: 6.10.0-1nodesource1~jessie1
   pgadmin3:
@@ -8,7 +8,7 @@ nodejs-web-service-packages:
     repo: jessie-pgdg
     version: 9.6.2-1.pgdg80+1
 
-nodejs-web-service-npm-packages:
+backend-npm-packages:
   express:
     version: 4.15.0
   express-generator:
@@ -26,21 +26,21 @@ nodejs-web-service-npm-packages:
   supervisor:
     version: 0.12.0
 
-python-web-service-packages:
+frontend-packages:
   python2.7-dev:
     version: 2.7.9-2+deb8u1
 
-python-web-service-pip-packages:
+frontend-pip-packages:
   uwsgi:
     version: == 2.0.14
 
-python-web-service-pip3-packages:
+frontend-pip3-packages:
   django:
     version: == 1.10.6
   virtualenv:
     version: == 15.1.0
 
-web-service-packages:
+web-packages:
   certbot:
     repo: jessie-backports
     version: 0.9.3-1~bpo8+2

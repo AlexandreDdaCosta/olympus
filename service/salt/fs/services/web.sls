@@ -2,7 +2,7 @@ include:
   - base: package
   - base: security
 
-{% for packagename, package in pillar.get('web-service-packages', {}).items() %}
+{% for packagename, package in pillar.get('web-packages', {}).items() %}
 {{ packagename }}-python-web:
 {% if pillar.pkg_latest is defined and pillar.pkg_latest or 'version' not in package %}
   pkg.latest:
