@@ -1,3 +1,5 @@
+{% set www_path='/srv/www' %}
+
 include:
   - base: package
   - base: services/web
@@ -162,4 +164,40 @@ django.ini:
     - makedirs: False
     - mode: 0644
     - source: salt://services/frontend/files/django.ini
+    - user: root
+
+{{ www_path }}:
+    file.directory:
+    - group: root
+    - makedirs: False
+    - mode: 0755
+    - user: root
+
+{{ www_path }}/django:
+  file.recurse:
+    - dir_mode: 0755
+    - file_mode: 0644
+    - group: root
+    - source: salt://service/django
+    - user: root
+
+{{ www_path }}/django/interface/media:
+    file.directory:
+    - group: root
+    - makedirs: False
+    - mode: 0755
+    - user: root
+
+{{ www_path }}/django/interface/media-admin:
+    file.directory:
+    - group: uwsgi
+    - makedirs: False
+    - mode: 0755
+    - user: uwsgi
+
+{{ www_path }}/django/interface/static:
+    file.directory:
+    - group: root
+    - makedirs: False
+    - mode: 0755
     - user: root
