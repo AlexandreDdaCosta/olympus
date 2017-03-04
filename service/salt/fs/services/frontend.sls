@@ -47,7 +47,6 @@ include:
     - bin_env: '/usr/bin/pip3'
     - require:
       - sls: package
-      - sls: services/frontend
 {% endfor %}
 
 uwsgi-group:
