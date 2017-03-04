@@ -145,3 +145,21 @@ uwsgi-daemon:
       - file: /etc/init.d/uwsgi
     - require:
       - sls: services/web
+
+django.conf:
+  file.managed:
+    - group: root
+    - name: /etc/nginx/conf.d/django.conf
+    - makedirs: False
+    - mode: 0644
+    - source: salt://services/frontend/files/django.conf
+    - user: root
+
+django.ini:
+  file.managed:
+    - group: root
+    - name: /etc/uwsgi/vassals/django.ini
+    - makedirs: False
+    - mode: 0644
+    - source: salt://services/frontend/files/django.ini
+    - user: root
