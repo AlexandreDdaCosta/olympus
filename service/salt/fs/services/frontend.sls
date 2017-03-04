@@ -207,5 +207,5 @@ frontend-uwsgi:
     - enable: True
     - name: uwsgi
     - watch:
-      - file: {{ www-path }}/django
+      - file: {{ www_path }}/django
       - file: /etc/nginx/conf.d/*
