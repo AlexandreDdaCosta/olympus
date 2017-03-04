@@ -3,7 +3,7 @@ include:
   - base: services/web
 
 {% for packagename, package in pillar.get('frontend-packages', {}).items() %}
-{{ packagename }}-python-web:
+{{ packagename }}-frontend:
 {% if pillar.pkg_latest is defined and pillar.pkg_latest or package != None and 'version' not in package %}
   pkg.latest:
 {% else %}
@@ -29,22 +29,6 @@ include:
 {% else %}
     - name: {{ packagename }}
 {% endif %}
-    - require:
-      - sls: package
-{% endfor %}
-
-{% for packagename, package in pillar.get('frontend-pip3-packages', {}).items() %}
-{{ packagename }}:
-  pip.installed:
-{% if pillar.pkg_latest is defined and pillar.pkg_latest %}
-    - name: {{ packagename }}
-    - upgrade: True
-{% elif package != None and 'version' in package %}
-    - name: {{ packagename }} {{ package['version'] }}
-{% else %}
-    - name: {{ packagename }}
-{% endif %}
-    - bin_env: '/usr/bin/pip3'
     - require:
       - sls: package
 {% endfor %}
@@ -76,7 +60,7 @@ uwsgi-user:
     - group: root
     - makedirs: False
     - mode: 0755
-    - source: salt://services/python-web/files/uwsgi.ini
+    - source: salt://services/frontend/files/uwsgi.ini
     - user: root
 
 /var/run/uwsgi.pid:
@@ -119,7 +103,7 @@ uwsgi-user:
     - group: root
     - makedirs: False
     - mode: 0755
-    - source: salt://services/python-web/files/init.uwsgi
+    - source: salt://services/frontend/files/init.uwsgi
     - user: root
 
 /etc/logrotate.d/uwsgi:
@@ -127,7 +111,7 @@ uwsgi-user:
     - group: root
     - makedirs: False
     - mode: 0755
-    - source: salt://services/python-web/files/logrotate.uwsgi
+    - source: salt://services/frontend/files/logrotate.uwsgi
     - user: root
 
 /var/log/uwsgi.log:

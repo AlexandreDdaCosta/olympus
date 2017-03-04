@@ -34,7 +34,7 @@ frontend-pip-packages:
   uwsgi:
     version: == 2.0.14
 
-frontend-pip3-packages:
+ui-pip3-packages:
   django:
     version: == 1.10.6
   virtualenv:
