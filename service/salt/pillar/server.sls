@@ -1,8 +1,8 @@
 interface:
   services:
-    - ui
+    - frontend
 
 supervisor:
   services:
     - backend
-    - ui
+    - frontend
