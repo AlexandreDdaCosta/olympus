@@ -201,3 +201,11 @@ django.ini:
     - makedirs: False
     - mode: 0755
     - user: root
+
+frontend-uwsgi:
+  service.running:
+    - enable: True
+    - name: uwsgi
+    - watch:
+      - file: {{ www-path }}/django
+      - file: /etc/nginx/conf.d/*
