@@ -43,7 +43,7 @@ do_stop()
 case "$1" in
     restart)
         do_stop
-        sleep 10
+        sleep 15
         do_start
         ;;
     start)
