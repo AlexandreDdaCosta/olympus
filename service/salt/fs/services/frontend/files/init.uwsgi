@@ -41,6 +41,11 @@ do_stop()
 }
 
 case "$1" in
+    restart)
+        do_stop
+        sleep 10
+        do_start
+        ;;
     start)
         do_start
         ;;
@@ -48,7 +53,7 @@ case "$1" in
         do_stop
         ;;
     *)
-        echo "Usage: /etc/init.d/uwsgi {start|stop}"
+        echo "Usage: /etc/init.d/uwsgi {restart|start|stop}"
         exit 1
     ;;
 esac
