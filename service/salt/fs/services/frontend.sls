@@ -139,28 +139,17 @@ uwsgi-user:
     - replace: False
     - user: uwsgi
 
-uwsgi-daemon:
-  service.running:
-    - enable: True
-    - name: uwsgi
-    - watch:
-      - file: /etc/init.d/uwsgi
-    - require:
-      - sls: services/web
-
-django.conf:
+/etc/nginx/conf.d/django.conf:
   file.managed:
     - group: root
-    - name: /etc/nginx/conf.d/django.conf
     - makedirs: False
     - mode: 0644
     - source: salt://services/frontend/files/django.conf
     - user: root
 
-django.ini:
+/etc/uwsgi/vassals/django.ini:
   file.managed:
     - group: root
-    - name: /etc/uwsgi/vassals/django.ini
     - makedirs: False
     - mode: 0644
     - source: salt://services/frontend/files/django.ini
@@ -208,4 +197,8 @@ frontend-uwsgi:
     - name: uwsgi
     - watch:
       - file: {{ www_path }}/django
+      - file: /etc/init.d/uwsgi
       - file: /etc/nginx/conf.d/*
+      - file: /etc/uwsgi/vassals/django.ini
+    - require:
+      - sls: services/web
