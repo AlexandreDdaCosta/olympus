@@ -21,6 +21,21 @@ vassaldir=/etc/uwsgi/vassals
 
 do_start()
 {
+    status="0"
+    wait=1
+    while [ $status -eq "0" ]
+    do
+        ps -p`cat $lockfile` 2>&1 > /dev/null
+        status=$?
+        if [ "$status" != "0" ]; then
+            break
+        fi
+        wait=$((wait+1))
+        if [[ $wait -eq 3 ]]; then
+            break
+        fi
+        sleep 1
+    done
     FILES=`ls $vassaldir`
     for initfile in $FILES
     do
@@ -35,51 +50,26 @@ do_start()
     chmod 0664 $lockfile
     chown uwsgi:uwsgi $lockfile
     start-stop-daemon --start --quiet --pidfile $lockfile --exec $daemon -- $inifile
-    retval="$?"
-    return "$retval"
 }
 
 do_stop()
 {
     start-stop-daemon --signal QUIT -p $lockfile --stop $daemon
-    retval="$?"
-    rm -f $lockfile
-    return "$retval"
 }
 
 case "$1" in
     restart)
-        log_daemon_msg "Restarting $prog" "$prog"
         do_stop
-        case "$?" in
-            0|1)
-                sleep 5
-                do_start
-                case "$?" in
-                    0) log_end_msg 0 ;;
-                    1) log_end_msg 1 ;;
-                    *) log_end_msg 1 ;;
-                esac
-                ;;
-            *) log_end_msg 1 ;;
-        esac
+        do_start
         ;;
     start)
         do_start
-        case "$?" in
-            0|1) log_end_msg 0 ;;
-            2) log_end_msg 1 ;;
-        esac
         ;;
     status)
         status_of_proc -p "$lockfile" "$daemon" "$prog" && exit 0 || exit $?
         ;;
     stop)
         do_stop
-        case "$?" in
-            0|1) log_end_msg 0 ;;
-            2) log_end_msg 1 ;;
-        esac
         ;;
     *)
         echo "Usage: /etc/init.d/uwsgi {restart|start|status|stop}"
