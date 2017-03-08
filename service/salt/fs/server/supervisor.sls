@@ -26,7 +26,7 @@ frontend_app_data_privs:
     - object_name: app_data
     - object_type: database
     - privileges:
-      - SELECT
+      - CONNECT
 
 frontend_user_data_privs:
   postgres_privileges.present:
@@ -34,4 +34,4 @@ frontend_user_data_privs:
     - object_name: user_data
     - object_type: database
     - privileges:
-      - SELECT
+      - CONNECT
