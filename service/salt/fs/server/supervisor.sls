@@ -27,6 +27,7 @@ frontend_app_data_privs:
     - object_type: database
     - privileges:
       - CONNECT
+    - maintenance_db: app_data
 
 frontend_user_data_privs:
   postgres_privileges.present:
