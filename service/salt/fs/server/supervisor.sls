@@ -27,7 +27,6 @@ frontend_app_data_privs:
     - object_type: database
     - privileges:
       - DELETE
-      - EXEC
       - INSERT
       - SELECT
 
@@ -38,6 +37,5 @@ frontend_user_data_privs:
     - object_type: database
     - privileges:
       - DELETE
-      - EXEC
       - INSERT
       - SELECT
