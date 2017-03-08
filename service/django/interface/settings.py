@@ -1,9 +1,7 @@
 import os
 
-SECRET_KEY = 'b=3o$gi)i=sx!$%3_31-%053i2ct7wwbk7swd1ey7vtj71h3=d'
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE_ID = 1
-DEBUG = True
 
 INSTALLED_APPS = [
     'django.contrib.admin',

@@ -1,0 +1,41 @@
+{% set trim_blocks=True -%}
+{# Template for django local settings.  Managed by the supervisor. -#}
+"""
+Django settings for the Olympus local environment
+"""
+
+# SECURITY WARNING: keep the secret key used in production secret!
+
+SECRET_KEY = '{{ pillar['random_key']['django_secret_key'] }}'
+ALLOWED_HOSTS = ['*']
+
+# SECURITY WARNING: don't run with debug turned on in production!
+
+{% if grains.get('stage') and grains['stage'] == 'develop' -%}
+DEBUG = True
+TEMPLATE_DEBUG = True
+THUMBNAIL_DEBUG = True
+{% else -%}
+DEBUG = False
+TEMPLATE_DEBUG = False
+THUMBNAIL_DEBUG = False
+{%- endif %}
+
+# Database
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'app_data',
+        'OPTIONS': { 'sslmode': 'require' }
+        'PASSWORD': '{{ pillar['random_key']['app_data_db_key'] }}'
+        'USER': 'uwsgi',
+    },
+    'users': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'user_data',
+        'OPTIONS': { 'sslmode': 'require' }
+        'PASSWORD': '{{ pillar['random_key']['user_data_db_key'] }}'
+        'USER': 'uwsgi',
+    }
+}
