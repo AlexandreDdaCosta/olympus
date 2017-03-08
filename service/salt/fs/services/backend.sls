@@ -36,7 +36,7 @@ include:
         - sls: package
 {% endfor %}
 
-/etc/postgresql/9.6/main/pg_hba.conf
+/etc/postgresql/9.6/main/pg_hba.conf:
   file.managed:
     - group: postgres
     - mode: 0640
