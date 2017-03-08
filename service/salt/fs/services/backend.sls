@@ -35,3 +35,28 @@ include:
       - require:
         - sls: package
 {% endfor %}
+
+/etc/postgresql/9.6/main/pg_hba.conf
+  file.managed:
+    - group: postgres
+    - mode: 0640
+    - source: salt://services/backend/files/pg_hba.conf
+    - user: postgres
+
+/usr/lib/tmpfiles.d/postgresql.conf:
+  file.managed:
+    - group: postgres
+    - mode: 0600
+    - source: salt://services/backend/files/postgresql.conf
+    - user: postgres
+
+postgresql:
+  service.running:
+    - enable: True
+    - watch:
+      - file: /etc/postgresql/9.6/main/pg_hba.conf
+      - file: /usr/lib/tmpfiles.d/postgresql.conf
+      - pkg: pgadmin3
+      - pkg: postgresql-9.6
+    - require:
+      - sls: services/web
