@@ -15,6 +15,8 @@ frontend_db_user:
     - encrypted: True
     - name: uwsgi
     - password: 'md5{MD5OF({{ pillar['random_key']['frontend_db_key'] }})}'
+
+frontend_db_user_pwd_reset:
   cmd.run:
     - name: sudo -u postgres psql -c "ALTER USER uwsgi ENCRYPTED PASSWORD '{{ pillar['random_key']['frontend_db_key'] }}';"
 
