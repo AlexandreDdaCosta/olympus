@@ -28,14 +28,14 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'app_data',
         'OPTIONS': { 'sslmode': 'require' }
-        'PASSWORD': '{{ pillar['random_key']['app_data_db_key'] }}'
+        'PASSWORD': '{{ pillar['random_key']['frontend_db_key'] }}'
         'USER': 'uwsgi',
     },
     'users': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'user_data',
         'OPTIONS': { 'sslmode': 'require' }
-        'PASSWORD': '{{ pillar['random_key']['user_data_db_key'] }}'
+        'PASSWORD': '{{ pillar['random_key']['frontend_db_key'] }}'
         'USER': 'uwsgi',
     }
 }
