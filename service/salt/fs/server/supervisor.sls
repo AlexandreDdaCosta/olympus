@@ -36,11 +36,10 @@ frontend_user_data_privs:
     - privileges:
       - CONNECT
 
-settings.local:
+/srv/www/django/interface/settings_local.py:
   file.managed:
     - dir_mode: 0755
     - group: uwsgi
-    - name: /srv/www/django/interface/settings_local.py
     - makedirs: False
     - mode: 0640
     - source: salt://services/frontend/settings_local.jinja

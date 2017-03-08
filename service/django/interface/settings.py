@@ -75,3 +75,6 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO',None)
 
 # Enable access to session cookies to Javascript
 SESSION_COOKIE_HTTPONLY = False
+
+# Local configurations
+from settings_local import *
