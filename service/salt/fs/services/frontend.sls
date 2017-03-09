@@ -6,7 +6,7 @@ include:
 
 {% for packagename, package in pillar.get('frontend-packages', {}).items() %}
 {{ packagename }}-frontend:
-{% if pillar.pkg_latest is defined and pillar.pkg_latest or package != None and 'version' not in package %}
+{% if pillar.pkg_latest is defined and pillar.pkg_latest or package != None and 'version' not in package or package == None %}
   pkg.latest:
 {% else %}
   pkg.installed:
