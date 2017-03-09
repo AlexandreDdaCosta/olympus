@@ -23,11 +23,12 @@ THUMBNAIL_DEBUG = False
 
 # Database
 
+{%- set database_ipv4='foobar.com' -%}
 {% for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
 {%- if 'server' in hostinfo and hostinfo['server'] == 'supervisor' -%}
 {%- for ipv4 in hostinfo['ipv4'] -%}
 {%- if ipv4 != '127.0.0.1' -%}
-{%- set database_hostname=ipv4 -%}
+{%- set database_ipv4=ipv4 -%}
 {%- endif -%}
 {%- endfor -%}
 {%- endif -%}
@@ -36,7 +37,7 @@ THUMBNAIL_DEBUG = False
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'HOST': '{{ database_hostname }}',
+        'HOST': '{{ database_ipv4 }}',
         'NAME': 'app_data',
         'OPTIONS': { 'sslmode': 'require' }
         'PASSWORD': '{{ pillar['random_key']['frontend_db_key'] }}'
