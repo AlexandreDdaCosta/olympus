@@ -23,19 +23,33 @@ THUMBNAIL_DEBUG = False
 
 # Database
 
+{% for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
+{%- if 'server' in hostinfo and hostinfo['server'] == 'supervisor' -%}
+{%- for ipv4 in hostinfo['ipv4'] -%}
+{%- if ipv4 != '127.0.0.1' -%}
+{%- set database_hostname=ipv4 -%}
+{%- endif -%}
+{%- endfor -%}
+{%- endif -%}
+{%- endfor -%}
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'HOST': '{{ database_hostname }}',
         'NAME': 'app_data',
         'OPTIONS': { 'sslmode': 'require' }
         'PASSWORD': '{{ pillar['random_key']['frontend_db_key'] }}'
-        'USER': 'uwsgi',
+        'PORT': '5432',
+        'USER': '{{ pillar['frontend-user'] }}',
     },
     'users': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'HOST': '{{ database_hostname }}',
         'NAME': 'user_data',
         'OPTIONS': { 'sslmode': 'require' }
         'PASSWORD': '{{ pillar['random_key']['frontend_db_key'] }}'
-        'USER': 'uwsgi',
+        'PORT': '5432',
+        'USER': '{{ pillar['frontend-user'] }}',
     }
 }

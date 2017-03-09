@@ -31,6 +31,7 @@ frontend-user: uwsgi
 frontend-packages:
   python2.7-dev:
     version: 2.7.9-2+deb8u1
+  python3-psycopg2:
 
 frontend-pip-packages:
   uwsgi:
