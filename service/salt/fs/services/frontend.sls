@@ -53,18 +53,18 @@ include:
 
 frontend-group:
   group.present:
-    - name: {{ pillar['frontend_user'] }}
+    - name: {{ pillar['frontend-user'] }}
     - system: True
 
 frontend-user:
   user.present:
     - createhome: True
-    - fullname: {{ pillar['frontend_user'] }}
-    - name: {{ pillar['frontend_user'] }}
+    - fullname: {{ pillar['frontend-user'] }}
+    - name: {{ pillar['frontend-user'] }}
     - shell: /bin/false
-    - home: /home/{{ pillar['frontend_user'] }}
+    - home: /home/{{ pillar['frontend-user'] }}
     - groups:
-      - {{ pillar['frontend_user'] }}
+      - {{ pillar['frontend-user'] }}
 
 /etc/uwsgi/vassals:
     file.directory:
@@ -83,10 +83,10 @@ frontend-user:
 
 /var/run/uwsgi.pid:
   file.managed:
-    - group: {{ pillar['frontend_user'] }}
+    - group: {{ pillar['frontend-user'] }}
     - mode: 0644
     - replace: False
-    - user: {{ pillar['frontend_user'] }}
+    - user: {{ pillar['frontend-user'] }}
 
 /etc/rc0.d/K01uwsgi:
   file.symlink:
@@ -134,10 +134,10 @@ frontend-user:
 
 /var/log/uwsgi.log:
   file.managed:
-    - group: {{ pillar['frontend_user'] }}
+    - group: {{ pillar['frontend-user'] }}
     - mode: 0644
     - replace: False
-    - user: {{ pillar['frontend_user'] }}
+    - user: {{ pillar['frontend-user'] }}
 
 /etc/nginx/conf.d/django.conf:
   file.managed:
@@ -179,10 +179,10 @@ frontend-user:
 
 {{ www_path }}/django/interface/media-admin:
     file.directory:
-    - group: {{ pillar['frontend_user'] }}
+    - group: {{ pillar['frontend-user'] }}
     - makedirs: False
     - mode: 0755
-    - user: {{ pillar['frontend_user'] }}
+    - user: {{ pillar['frontend-user'] }}
 
 {{ www_path }}/django/interface/static:
     file.directory:

@@ -6,31 +6,31 @@ frontend_app_data.db:
   postgres_database.present:
     - name: app_data
 
-frontend_user_data.db:
+frontend-user_data.db:
   postgres_database.present:
     - name: user_data
 
 frontend_db_user:
   postgres_user.present:
     - encrypted: True
-    - name: {{ pillar['frontend_user'] }}
+    - name: {{ pillar['frontend-user'] }}
     - password: 'md5{MD5OF({{ pillar['random_key']['frontend_db_key'] }})}'
 
 frontend_db_user_pwd_reset:
   cmd.run:
-    - name: sudo -u postgres psql -c "ALTER USER {{ pillar['frontend_user'] }} ENCRYPTED PASSWORD '{{ pillar['random_key']['frontend_db_key'] }}';"
+    - name: sudo -u postgres psql -c "ALTER USER {{ pillar['frontend-user'] }} ENCRYPTED PASSWORD '{{ pillar['random_key']['frontend_db_key'] }}';"
 
 frontend_app_data_privs:
   postgres_privileges.present:
-    - name: {{ pillar['frontend_user'] }}
+    - name: {{ pillar['frontend-user'] }}
     - object_name: app_data
     - object_type: database
     - privileges:
       - CONNECT
 
-frontend_user_data_privs:
+frontend-user_data_privs:
   postgres_privileges.present:
-    - name: {{ pillar['frontend_user'] }}
+    - name: {{ pillar['frontend-user'] }}
     - object_name: user_data
     - object_type: database
     - privileges:
@@ -39,11 +39,11 @@ frontend_user_data_privs:
 /srv/www/django/interface/settings_local.py:
   file.managed:
     - dir_mode: 0755
-    - group: {{ pillar['frontend_user'] }}
+    - group: {{ pillar['frontend-user'] }}
     - makedirs: False
     - mode: 0640
     - source: salt://services/frontend/settings_local.jinja
     - template: jinja
-    - user: {{ pillar['frontend_user'] }}
+    - user: {{ pillar['frontend-user'] }}
   require:
     - sls: frontend
