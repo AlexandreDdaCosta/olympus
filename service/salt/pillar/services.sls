@@ -26,6 +26,8 @@ backend-npm-packages:
   supervisor:
     version: 0.12.0
 
+frontend-user: uwsgi
+
 frontend-packages:
   python2.7-dev:
     version: 2.7.9-2+deb8u1
