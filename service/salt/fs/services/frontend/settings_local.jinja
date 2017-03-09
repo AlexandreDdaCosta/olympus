@@ -46,7 +46,7 @@ DATABASES = {
     },
     'users': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'HOST': '{{ database_hostname }}',
+        'HOST': '{{ database_ipv4 }}',
         'NAME': 'user_data',
         'OPTIONS': { 'sslmode': 'require' }
         'PASSWORD': '{{ pillar['random_key']['frontend_db_key'] }}'
