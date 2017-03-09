@@ -8,3 +8,7 @@ core-states:
   - firewall
   - services
   - staff
+
+mine_functions:
+  grains.get: []
+  test.ping: []
