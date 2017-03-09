@@ -10,5 +10,5 @@ core-states:
   - staff
 
 mine_functions:
-  grains.get: []
+  grains.items: []
   test.ping: []
