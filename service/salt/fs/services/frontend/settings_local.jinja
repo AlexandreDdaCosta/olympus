@@ -23,7 +23,6 @@ THUMBNAIL_DEBUG = False
 
 # Database
 
-{%- set database_ipv4='foobar.com' -%}
 {% for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
 {%- set database_ipv4=host -%}
 {%- if 'server' in hostinfo and hostinfo['server'] == 'supervisor' -%}

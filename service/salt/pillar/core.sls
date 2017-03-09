@@ -12,3 +12,5 @@ core-states:
 mine_functions:
   grains.items: []
   test.ping: []
+  network.interfaces: []
+  network.ip_addrs: []
