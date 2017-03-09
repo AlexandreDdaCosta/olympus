@@ -26,7 +26,7 @@ frontend_app_data_privs:
     - object_name: app_data
     - object_type: database
     - privileges:
-      - CONNECT
+      - ALL
 
 frontend-user_data_privs:
   postgres_privileges.present:
@@ -34,7 +34,7 @@ frontend-user_data_privs:
     - object_name: user_data
     - object_type: database
     - privileges:
-      - CONNECT
+      - ALL
 
 /srv/www/django/interface/settings_local.py:
   file.managed:
