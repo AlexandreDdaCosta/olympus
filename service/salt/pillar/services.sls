@@ -29,10 +29,9 @@ backend-npm-packages:
 frontend-user: uwsgi
 
 frontend-packages:
+  libpq-dev:
   python2.7-dev:
     version: 2.7.9-2+deb8u1
-  python3-psycopg2:
-    version: 2.5.4+dfsg-1
 
 frontend-pip-packages:
   uwsgi:
@@ -41,6 +40,7 @@ frontend-pip-packages:
 frontend-pip3-packages:
   django:
     version: == 1.10.6
+  psycopg2:
   virtualenv:
     version: == 15.1.0
 
