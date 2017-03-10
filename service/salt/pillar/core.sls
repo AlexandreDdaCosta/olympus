@@ -8,3 +8,9 @@ core-states:
   - firewall
   - services
   - staff
+
+mine_functions:
+  grains.item: []
+  test.ping: []
+  network.interfaces: []
+  network.ip_addrs: []
