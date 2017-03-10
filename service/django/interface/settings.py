@@ -77,4 +77,4 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO',None)
 SESSION_COOKIE_HTTPONLY = False
 
 # Local configurations
-from settings_local import *
+from interface.settings_local import *

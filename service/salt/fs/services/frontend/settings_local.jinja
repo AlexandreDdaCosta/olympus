@@ -25,7 +25,7 @@ THUMBNAIL_DEBUG = False
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
 {%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
 {%- if 'server' in hostinfo and hostinfo['server'] == 'supervisor' -%}
 {%- for ip in  hostinfo['ipv4'] -%}
@@ -42,7 +42,7 @@ DATABASES = {
         'USER': '{{ pillar['frontend-user'] }}',
     },
     'users': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
 {%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
 {%- if 'server' in hostinfo and hostinfo['server'] == 'supervisor' -%}
 {%- for ip in  hostinfo['ipv4'] -%}

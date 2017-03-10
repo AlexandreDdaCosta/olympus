@@ -36,15 +36,13 @@ frontend-packages:
   python3-dev:
     version: 3.4.2-2
 
-frontend-pip-packages:
-  uwsgi:
-    version: == 2.0.14
-
 frontend-pip3-packages:
   django:
     version: == 1.10.6
   psycopg2:
     version: == 2.7
+  uwsgi:
+    version: == 2.0.14
   virtualenv:
     version: == 15.1.0
 
