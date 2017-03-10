@@ -1,0 +1,69 @@
+{% set hostname=grains['id'] -%}
+{% set trim_blocks=True -%}
+{# Template for IP tables set-up for all services.  Managed by the local supervisor. -#}
+# IP tables generated for {{ hostname }} from local supervisor
+
+*filter
+
+# Global rules
+
+# Drop traffic not explicitly allowed
+:INPUT DROP
+:OUTPUT ACCEPT
+
+# Allow forwarding requests
+-A FORWARD -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+
+# Allow loopback traffic
+-A INPUT -i lo -j ACCEPT
+
+# Accept inbound traffic for already established connections
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+# Allow all outbound traffic
+-A OUTPUT -m state --state NEW,RELATED,ESTABLISHED -j ACCEPT
+
+# Allow ping
+-A INPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
+
+# Allow SSH
+-A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
+
+# Server- and environment-specific rules
+
+{%- if grains.get('server') and grains.get('server') == 'interface' -%}
+
+# World, http ports
+
+# UI
+-A INPUT -p tcp -m state --state NEW -m tcp --dport 80 -j ACCEPT
+-A INPUT -p tcp -m state --state NEW -m tcp --dport 443 -j ACCEPT
+
+{% endif -%}
+
+{%- if grains.get('server') and grains.get('server') == 'supervisor' -%}
+
+{%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() %}
+# ({{ host }})
+
+{%- if 'server' in hostinfo and hostinfo['server'] == 'interface' %}
+{%- for ip in  hostinfo['ipv4'] -%}
+{%- if ip != '127.0.0.1' %}
+# Backend
+# Postgresql
+-A INPUT -p tcp -m state --state NEW -m tcp --dport 443 -s {{ ip }} -j ACCEPT
+-A INPUT -p tcp -m state --state NEW -m tcp --dport 5432 -s {{ ip }} -j ACCEPT
+{%- endif -%}
+{%- endfor %}
+{%- endif -%}
+
+{%- endfor -%}
+{%- endif %}
+
+# Ban everything else
+
+-A INPUT -j REJECT --reject-with icmp-host-prohibited 
+-A FORWARD -j REJECT --reject-with icmp-host-prohibited 
+-A fail2ban-SSH -j RETURN 
+
+COMMIT
