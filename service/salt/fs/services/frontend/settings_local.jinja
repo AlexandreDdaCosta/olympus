@@ -25,9 +25,10 @@ THUMBNAIL_DEBUG = False
 
 {% for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
 {%- if 'server' in hostinfo and hostinfo['server'] == 'supervisor' -%}
+{%- set database_ipv4=host -%}
 {%- for ipv4 in hostinfo['ipv4'] -%}
 {%- if ipv4 != '127.0.0.1' -%}
-{%- set database_ipv4=ipv4 -%}
+# {%- set database_ipv4=ipv4 -%}
 {%- endif -%}
 {%- endfor -%}
 {%- endif -%}
