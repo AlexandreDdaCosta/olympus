@@ -32,6 +32,7 @@ frontend-packages:
   libpq-dev:
   python2.7-dev:
     version: 2.7.9-2+deb8u1
+  python3-dev:
 
 frontend-pip-packages:
   uwsgi:
