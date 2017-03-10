@@ -36,7 +36,6 @@ THUMBNAIL_DEBUG = False
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'HOST': '{{ database_ipv4 }}',
         'NAME': 'app_data',
         'OPTIONS': { 'sslmode': 'require' }
         'PASSWORD': '{{ pillar['random_key']['frontend_db_key'] }}'
@@ -45,7 +44,11 @@ DATABASES = {
     },
     'users': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'HOST': '{{ database_ipv4 }}',
+{%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
+{%- if hostinfo['server'] == 'supervisor' -%}
+        'HOST': '{{ host }}',
+{%- endif -%}
+{%- endfor -%}
         'NAME': 'user_data',
         'OPTIONS': { 'sslmode': 'require' }
         'PASSWORD': '{{ pillar['random_key']['frontend_db_key'] }}'
