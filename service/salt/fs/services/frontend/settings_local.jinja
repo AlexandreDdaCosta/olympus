@@ -36,8 +36,8 @@ DATABASES = {
 {%- endif -%}
 {%- endfor %}
         'NAME': 'app_data',
-        'OPTIONS': { 'sslmode': 'require' }
-        'PASSWORD': '{{ pillar['random_key']['frontend_db_key'] }}'
+        'OPTIONS': { 'sslmode': 'require' },
+        'PASSWORD': '{{ pillar['random_key']['frontend_db_key'] }}',
         'PORT': '5432',
         'USER': '{{ pillar['frontend-user'] }}',
     },
@@ -53,8 +53,8 @@ DATABASES = {
 {%- endif -%}
 {%- endfor %}
         'NAME': 'user_data',
-        'OPTIONS': { 'sslmode': 'require' }
-        'PASSWORD': '{{ pillar['random_key']['frontend_db_key'] }}'
+        'OPTIONS': { 'sslmode': 'require' },
+        'PASSWORD': '{{ pillar['random_key']['frontend_db_key'] }}',
         'PORT': '5432',
         'USER': '{{ pillar['frontend-user'] }}',
     }
