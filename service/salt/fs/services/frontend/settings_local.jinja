@@ -23,11 +23,12 @@ THUMBNAIL_DEBUG = False
 
 # Database
 
+{%- set db_ip=None -%}
 {%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
 {%- if 'server' in hostinfo and hostinfo['server'] == 'supervisor' -%}
-{%- for ip in  hostinfo['ipv4'] -%}
+{%- for ip in hostinfo['ipv4'] -%}
 {%- if ip != '127.0.0.1' -%}
-{%- set db_ip = ip -%}
+{%- set db_ip=ip -%}
 {%- endif -%}
 {%- endfor %}
 {%- endif -%}
