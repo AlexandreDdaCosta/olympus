@@ -23,20 +23,18 @@ THUMBNAIL_DEBUG = False
 
 # Database
 
-{%- set db_ip=None -%}
-{%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
-{%- if 'server' in hostinfo and hostinfo['server'] == 'supervisor' -%}
-{%- for ip in hostinfo['ipv4'] -%}
-{%- if ip != '127.0.0.1' -%}
-{%- set db_ip=ip -%}
-{%- endif -%}
-{%- endfor %}
-{%- endif -%}
-{%- endfor %}
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+{%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
+{%- if 'server' in hostinfo and hostinfo['server'] == 'supervisor' -%}
+{%- for ip in  hostinfo['ipv4'] -%}
+{%- if ip != '127.0.0.1' %}
+        'HOST': '{{ db_ip }}',
+{%- endif -%}
+{%- endfor %}
+{%- endif -%}
+{%- endfor %}
         'NAME': 'app_data',
         'OPTIONS': { 'sslmode': 'require' }
         'PASSWORD': '{{ pillar['random_key']['frontend_db_key'] }}'
