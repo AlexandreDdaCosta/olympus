@@ -23,15 +23,15 @@ THUMBNAIL_DEBUG = False
 
 # Database
 
-{% for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
+{%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
 {%- if 'server' in hostinfo and hostinfo['server'] == 'supervisor' -%}
-{%- for ipv4 in hostinfo['ipv4'] -%}
-{%- if ipv4 != '127.0.0.1' -%}
-{%- set database_ipv4=ipv4 -%}
+{%- for ip in  hostinfo['ipv4'] -%}
+{%- if ip != '127.0.0.1' -%}
+{%- set db_ip = ip -%}
 {%- endif -%}
-{%- endfor -%}
+{%- endfor %}
 {%- endif -%}
-{%- endfor -%}
+{%- endfor %}
 
 DATABASES = {
     'default': {
@@ -48,7 +48,7 @@ DATABASES = {
 {%- if 'server' in hostinfo and hostinfo['server'] == 'supervisor' -%}
 {%- for ip in  hostinfo['ipv4'] -%}
 {%- if ip != '127.0.0.1' %}
-        'HOST': '{{ ip }}',
+        'HOST': '{{ db_ip }}',
 {%- endif -%}
 {%- endfor %}
 {%- endif -%}
