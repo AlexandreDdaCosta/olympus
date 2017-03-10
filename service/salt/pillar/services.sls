@@ -31,8 +31,6 @@ frontend-user: uwsgi
 frontend-packages:
   libpq-dev:
     version: 9.6.2-1.pgdg80+1
-  python2.7-dev:
-    version: 2.7.9-2+deb8u1
   python3-dev:
     version: 3.4.2-2
 

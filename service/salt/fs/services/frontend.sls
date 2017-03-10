@@ -20,21 +20,6 @@ include:
       - sls: package
 {% endfor %}
 
-{% for packagename, package in pillar.get('frontend-pip-packages', {}).items() %}
-{{ packagename }}:
-  pip.installed:
-{% if pillar.pkg_latest is defined and pillar.pkg_latest %}
-    - name: {{ packagename }}
-    - upgrade: True
-{% elif package != None and 'version' in package %}
-    - name: {{ packagename }} {{ package['version'] }}
-{% else %}
-    - name: {{ packagename }}
-{% endif %}
-    - require:
-      - sls: package
-{% endfor %}
-
 {% for packagename, package in pillar.get('frontend-pip3-packages', {}).items() %}
 {{ packagename }}:
   pip.installed:
