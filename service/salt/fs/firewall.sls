@@ -1,5 +1,12 @@
-/tmp/testsalt8:
+{% set path='/etc/iptables.up.rules' %}
+
+firewall:
   file.managed:
-    - user: root
     - group: root
-    - mode: 644
+    - mode: 755
+    - name: {{ path }}
+    - source: salt://firewall/iptables.up.rules.jinja
+    - template: jinja
+    - user: root
+  cmd.run:
+    - name: iptables-restore < {{ path }}
