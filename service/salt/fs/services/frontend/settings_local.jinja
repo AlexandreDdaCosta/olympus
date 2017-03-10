@@ -46,7 +46,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
 {%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
 {%- if 'server' in hostinfo and hostinfo['server'] == 'supervisor' %}
-        'HOST': '{{ hostinfo['server'] }}',
+        'HOST': '{{ hostinfo['ipv4'] }}',
 {%- endif -%}
 {%- endfor %}
         'NAME': 'user_data',
