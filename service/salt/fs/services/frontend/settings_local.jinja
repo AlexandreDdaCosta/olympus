@@ -30,7 +30,7 @@ DATABASES = {
 {%- if 'server' in hostinfo and hostinfo['server'] == 'supervisor' -%}
 {%- for ip in  hostinfo['ipv4'] -%}
 {%- if ip != '127.0.0.1' %}
-        'HOST': '{{ db_ip }}',
+        'HOST': '{{ ip }}',
 {%- endif -%}
 {%- endfor %}
 {%- endif -%}
@@ -47,7 +47,7 @@ DATABASES = {
 {%- if 'server' in hostinfo and hostinfo['server'] == 'supervisor' -%}
 {%- for ip in  hostinfo['ipv4'] -%}
 {%- if ip != '127.0.0.1' %}
-        'HOST': '{{ db_ip }}',
+        'HOST': '{{ ip }}',
 {%- endif -%}
 {%- endfor %}
 {%- endif -%}
