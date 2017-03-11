@@ -5,3 +5,4 @@ base:
     - random_key
     - server
     - services
+    - users
