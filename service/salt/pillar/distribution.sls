@@ -18,9 +18,7 @@ packages:
   ntpdate:
     version: 1:4.2.6.p5+dfsg-7+deb8u2
   openssh_client:
-    version: 1:6.7p1-5+deb8u3
   openssh_server:
-    version: 1:6.7p1-5+deb8u3
   python-pip:
     version: 1.5.6-5
   python3-pip:
