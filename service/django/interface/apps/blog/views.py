@@ -5,4 +5,4 @@ class FrontPage(TemplateView):
 
     def get(self, errors=False, *args, **kwargs):
         context = {}
-        return render(self.request,'/frontpage.html',context)
+        return render(self.request,'frontpage.html',context)
