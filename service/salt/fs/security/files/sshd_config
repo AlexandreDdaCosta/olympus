@@ -71,7 +71,7 @@ PasswordAuthentication no
 ChallengeResponseAuthentication no
 
 # Kerberos options
-#KerberosAuthentication no
+KerberosAuthentication no
 #KerberosOrLocalPasswd yes
 #KerberosTicketCleanup yes
 #KerberosGetAFSToken no
@@ -103,11 +103,11 @@ AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
 AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
 AcceptEnv XMODIFIERS
 
-#AllowAgentForwarding yes
+AllowAgentForwarding yes
 #AllowTcpForwarding yes
 #GatewayPorts no
-#X11Forwarding no
-X11Forwarding yes
+X11Forwarding no
+#X11Forwarding yes
 #X11DisplayOffset 10
 #X11UseLocalhost yes
 #PrintMotd yes
