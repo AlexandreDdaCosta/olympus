@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="{{ LANGUAGE_CODE|default:"en-us" }}">
+<head>
+    <title>Laika's Den | {% block title %}{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    {% block styles %}
+    {% endblock %}
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+    </style>
+    <meta name="robots" content="NONE,NOARCHIVE" />
+</head>
+
+<body class="{% block bodyclass %}{% endblock %}">
+<div class="container" style="padding-top: 10px;">
+{% block navbar %}
+{% endblock %}
+ <div class="row">
+  <div class="col-sm-12">
+  {% block breadcrumbs %}
+  {% endblock %}
+  </div>
+ </div>
+ <div id="content" class="{% block coltype %}colM{% endblock %}">
+ {% block messages %}
+ {% if messages %}
+ {% for message in messages %}
+  <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+ {% endfor %}
+ {% endif %}
+ {% endblock messages %}
+ {% block object-tools %}{% endblock %}
+ {% block content %}{{ content }}{% endblock %}
+ </div>
+ {% block footer %}<footer id="footer"></footer>{% endblock %}
+</div>
+</body>
+</html>
