@@ -12,7 +12,7 @@ include:
 
 devserver-stop:
   cmd.run:
-    - name: pgrep -f runserver; if [ $? -eq 0 ]; then pkill -f runserver; fi
+    - name: /usr/local/bin/killserver.sh
 
 develop-django.conf:
   file.managed:

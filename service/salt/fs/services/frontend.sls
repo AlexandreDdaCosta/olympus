@@ -176,9 +176,18 @@ frontend-user:
     - mode: 0755
     - user: root
 
+/usr/local/bin/killserver.sh:
+  file.managed:
+    - group: root
+    - mode: 0755
+    - source: salt://services/frontend/files/killserver.sh
+    - user: root
+    - require:
+      - sls: services/frontend
+
 frontend-devserver-stop:
   cmd.run:
-    - name: pgrep -f runserver; if [ $? -eq 0 ]; then pkill -f runserver; fi
+    - name: /usr/local/bin/killserver.sh
 
 nginx-frontend:
   service.running:
