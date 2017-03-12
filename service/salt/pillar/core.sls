@@ -7,7 +7,7 @@ core-states:
   - security
   - firewall
   - services
-  - staff
+  - users
 
 mine_functions:
   grains.item: []

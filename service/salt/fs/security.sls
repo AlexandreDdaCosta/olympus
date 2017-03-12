@@ -49,10 +49,6 @@ selinux.config:
     - source: salt://security/files/selinux/config
     - user: root
 
-selinux.disable:
-  cmd.run:
-    - name: echo 0 >/selinux/enforce
-
 90-nproc.conf:
   file.managed:
     - group: root
