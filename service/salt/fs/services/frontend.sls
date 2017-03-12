@@ -182,8 +182,6 @@ frontend-user:
     - mode: 0755
     - source: salt://services/frontend/files/killserver.sh
     - user: root
-    - require:
-      - sls: services/frontend
 
 frontend-devserver-stop:
   cmd.run:
