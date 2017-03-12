@@ -78,10 +78,10 @@ ChallengeResponseAuthentication no
 #KerberosUseKuserok yes
 
 # GSSAPI options
-#GSSAPIAuthentication no
-GSSAPIAuthentication yes
+GSSAPIAuthentication no
+#GSSAPIAuthentication yes
 #GSSAPICleanupCredentials yes
-GSSAPICleanupCredentials yes
+#GSSAPICleanupCredentials yes
 #GSSAPIStrictAcceptorCheck yes
 #GSSAPIKeyExchange no
 
@@ -94,8 +94,8 @@ GSSAPICleanupCredentials yes
 # If you just want the PAM account and session checks to run without
 # PAM authentication, then enable this but set PasswordAuthentication
 # and ChallengeResponseAuthentication to 'no'.
-#UsePAM no
-UsePAM yes
+UsePAM no
+#UsePAM yes
 
 # Accept locale-related environment variables
 AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
@@ -130,7 +130,7 @@ X11Forwarding yes
 #Banner none
 
 # override default of no subsystems
-Subsystem	sftp	/usr/libexec/openssh/sftp-server
+#Subsystem	sftp	/usr/libexec/openssh/sftp-server
 
 # Example of overriding settings on a per-user basis
 #Match User anoncvs
