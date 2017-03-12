@@ -12,6 +12,7 @@ include:
     - groups:
       - {{ username }}
       {% if user['is_staff'] -%}
+      - git
       - staff
       {%- endif %}
     - home: /home/{{ username }}
