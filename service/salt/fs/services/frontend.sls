@@ -176,6 +176,16 @@ frontend-user:
     - mode: 0755
     - user: root
 
+frontend-devserver-stop:
+  cmd.run:
+    - name: pgrep -f runserver; if [ $? -eq 0 ]; then pkill -f runserver; fi
+
+nginx-frontend:
+  service.running:
+    - name: nginx
+    - watch:
+      - file: /etc/nginx/conf.d/django.conf
+
 frontend-uwsgi:
   service.running:
     - enable: True

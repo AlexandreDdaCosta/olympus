@@ -5,4 +5,5 @@ base:
     - random_key
     - server
     - services
+    - stage
     - users
