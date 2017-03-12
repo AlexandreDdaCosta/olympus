@@ -1,7 +1,7 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from interface.apps.blog.views import FrontPage
 
-urlpatterns = patterns[
-    url(r'', FrontPage.as_view(),  name='blog_frontpage'),
+urlpatterns = [
+    url(r'', FrontPage.as_view(), name='blog_frontpage'),
 ]
