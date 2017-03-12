@@ -43,6 +43,7 @@ include:
     - name: /home/{{ username }}/.ssh/authorized_keys
     - user: {{ username }}
 
+{%- endif %}
 {{ username }}-vimrc:
 
   file.managed:
