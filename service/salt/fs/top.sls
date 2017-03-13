@@ -23,7 +23,8 @@ base:
     #{% elif grains.get('stage') %}
     {% if grains.get('stage') %}
     - stage/develop/services/frontend
+    {% endif %}
     #{% for service in pillar[grains.get('stage')]['services'] %}
     #- stage/{{ grains.get('stage') }}/services/{{ service }}
     #{% endfor %}
-    {% endif %}
+    #{% endif %}
