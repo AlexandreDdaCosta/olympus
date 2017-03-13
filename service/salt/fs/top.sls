@@ -16,12 +16,12 @@ base:
     - services/{{ service }}
     {% endfor %}
     {% endif %}
-    {% if pillar.stage is defined %}
+    #{% if pillar.stage is defined %}
     #{% for service in pillar[grains.get('stage')]['services'] %}
     #- stage/{{ grains.get('stage') }}/services/{{ service }}
     #{% endfor %}
-    {% elif grains.get('stage') %}
-    {% for service in pillar[grains.get('stage')]['services'] %}
-    - stage/{{ grains.get('stage') }}/services/{{ service }}
-    {% endfor %}
-    {% endif %}
+    #{% elif grains.get('stage') %}
+    #{% for service in pillar[grains.get('stage')]['services'] %}
+    #- stage/{{ grains.get('stage') }}/services/{{ service }}
+    #{% endfor %}
+    #{% endif %}
