@@ -21,6 +21,7 @@ base:
     #- stage/{{ grains.get('stage') }}/services/{{ service }}
     #{% endfor %}
     #{% elif grains.get('stage') %}
+    - stage
     {% if grains.get('stage') %}
     - stage/develop/services/frontend
     {% endif %}
