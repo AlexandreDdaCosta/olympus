@@ -1,5 +1,5 @@
 include:
-  - base: frontend
+  - base: services/frontend
 
 /usr/local/bin/startserver.py:
   file.managed:
