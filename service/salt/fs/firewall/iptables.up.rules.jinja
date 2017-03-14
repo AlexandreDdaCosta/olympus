@@ -48,7 +48,7 @@
 {%- if grains.get('server') and grains.get('server') == 'supervisor' -%}
 {%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() %}
 
-# show host {{ host }} [{{ hostinfo['server'] }}] [{{ hostinfop['ipv4'] }}]
+# show host {{ host }} [{{ hostinfo['server'] }}] [{{ hostinfo['ipv4'] }}]
 
 {% if 'server' in hostinfo and hostinfo['server'] == 'interface' or hostinfo['server'] == 'supervisor' %}
 # ({{ host }})
