@@ -187,6 +187,14 @@ frontend-devserver-stop:
   cmd.run:
     - name: /usr/local/bin/killserver.sh
 
+django-makemigrations:
+  cmd.shell:
+    - name: /usr/bin/python3 {{ www_path }}/django/manage.py makemigrations
+
+django-migrate:
+  cmd.shell:
+    - name: /usr/bin/python3 {{ www_path }}/django/manage.py migrate
+
 nginx-frontend:
   service.running:
     - name: nginx
