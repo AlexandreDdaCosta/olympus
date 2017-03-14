@@ -47,19 +47,14 @@
 
 {%- if grains.get('server') and grains.get('server') == 'supervisor' -%}
 {%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() %}
-
-# show host {{ host }} [{{ hostinfo['server'] }}] [{{ hostinfo['ipv4'] }}]
-
-{% if 'server' in hostinfo and hostinfo['server'] == 'interface' or hostinfo['server'] == 'supervisor' %}
+{%- if 'server' in hostinfo and hostinfo['server'] == 'interface' or hostinfo['server'] == 'supervisor' %}
 # ({{ host }})
 
 {%- for ip in  hostinfo['ipv4'] -%}
-{%- if ip != '127.0.0.1' %}
 # Backend
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 443 -s {{ ip }} -j ACCEPT
 # Postgresql
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 5432 -s {{ ip }} -j ACCEPT
-{%- endif -%}
 {%- endfor -%}
 {%- endif -%}
 
