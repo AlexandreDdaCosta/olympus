@@ -35,7 +35,6 @@
 
 # Server- and environment-specific rules
 
--A INPUT -p tcp -m state --state NEW -m tcp --dport 8000 -j ACCEPT
 {%- if grains.get('server') -%}
 {%- if grains.get('server') == 'interface' or grains.get('server') == 'supervisor' %}
 
