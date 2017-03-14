@@ -51,10 +51,12 @@
 # ({{ host }})
 
 {%- for ip in  hostinfo['ipv4'] %}
+{% if ip != '127.0.0.1' %}
 # Backend
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 443 -s {{ ip }} -j ACCEPT
 # Postgresql
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 5432 -s {{ ip }} -j ACCEPT
+{%- endif -%}
 {%- endfor -%}
 {%- endif -%}
 
