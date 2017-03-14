@@ -13,7 +13,6 @@ ALLOWED_HOSTS = ['*']
 
 {% if grains.get('stage') and grains['stage'] == 'develop' -%}
 DEBUG = True
-TEMPLATES['OPTIONS']['debug'] = True
 THUMBNAIL_DEBUG = True
 {%- endif %}
 
