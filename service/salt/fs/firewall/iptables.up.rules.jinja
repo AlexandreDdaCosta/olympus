@@ -48,8 +48,11 @@
 {%- if grains.get('server') and grains.get('server') == 'supervisor' -%}
 
 # got grains
+
 {%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
-# show host {{ host }}
+
+# show host {{ host }} {{ hostinfo['server'] }}
+
 {%- if 'server' in hostinfo and hostinfo['server'] == 'interface' %}
 # ({{ host }})
 
