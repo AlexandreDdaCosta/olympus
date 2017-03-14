@@ -21,3 +21,41 @@ TEMPLATE_DEBUG = False
 THUMBNAIL_DEBUG = False
 {%- endif %}
 
+# Database
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+{%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
+{%- if 'server' in hostinfo and hostinfo['server'] == 'supervisor' -%}
+{%- for ip in  hostinfo['ipv4'] -%}
+{%- if ip != '127.0.0.1' %}
+        'HOST': '{{ ip }}',
+{%- endif -%}
+{%- endfor %}
+{%- endif -%}
+{%- endfor %}
+        'NAME': 'app_data',
+        'OPTIONS': { 'sslmode': 'require' },
+        'PASSWORD': '{{ pillar['random_key']['frontend_db_key'] }}',
+        'PORT': '5432',
+        'USER': '{{ pillar['frontend-user'] }}',
+    },
+    'users': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+{%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
+{%- if 'server' in hostinfo and hostinfo['server'] == 'supervisor' -%}
+{%- for ip in  hostinfo['ipv4'] -%}
+{%- if ip != '127.0.0.1' %}
+        'HOST': '{{ ip }}',
+{%- endif -%}
+{%- endfor %}
+{%- endif -%}
+{%- endfor %}
+        'NAME': 'user_data',
+        'OPTIONS': { 'sslmode': 'require' },
+        'PASSWORD': '{{ pillar['random_key']['frontend_db_key'] }}',
+        'PORT': '5432',
+        'USER': '{{ pillar['frontend-user'] }}',
+    }
+}
