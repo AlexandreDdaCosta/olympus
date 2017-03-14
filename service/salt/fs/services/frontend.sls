@@ -188,11 +188,11 @@ frontend-devserver-stop:
     - name: /usr/local/bin/killserver.sh
 
 django-makemigrations:
-  cmd.shell:
+  cmd.run:
     - name: /usr/bin/python3 {{ www_path }}/django/manage.py makemigrations
 
 django-migrate:
-  cmd.shell:
+  cmd.run:
     - name: /usr/bin/python3 {{ www_path }}/django/manage.py migrate
 
 nginx-frontend:
