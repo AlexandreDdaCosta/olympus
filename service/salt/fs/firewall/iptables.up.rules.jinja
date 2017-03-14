@@ -45,15 +45,15 @@
 {%- endif -%}
 {%- endif -%}
 
-{%- if grains.get('server') and grains.get('server') == 'supervisor' -%}
+{%- if grains.get('server') and grains.get('server') == 'supervisor' %}
 
 # got grains
 
-{%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
+{% for host, hostinfo in salt['mine.get']('*', 'grains.items').items() %}
 
-# show host {{ host }} {{ hostinfo['server'] }}
+# show host {{ host }} [{{ hostinfo['server'] }}]
 
-{%- if 'server' in hostinfo and hostinfo['server'] == 'interface' %}
+{% if 'server' in hostinfo and hostinfo['server'] == 'interface' %}
 # ({{ host }})
 
 {%- for ip in  hostinfo['ipv4'] -%}
