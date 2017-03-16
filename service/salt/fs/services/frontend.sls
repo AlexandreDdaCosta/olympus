@@ -195,6 +195,58 @@ django-migrate:
   cmd.run:
     - name: /usr/bin/python3 {{ www_path }}/django/manage.py migrate
 
+{{ www_path }}/django/interface/sass/plugins:
+    file.directory:
+    - group: root
+    - makedirs: True
+    - mode: 0755
+    - user: root
+
+{{ www_path }}/django/interface/sass/public/css:
+    file.directory:
+    - group: root
+    - makedirs: True
+    - mode: 0755
+    - user: root
+
+{{ www_path }}/django/interface/sass/public/font:
+    file.directory:
+    - group: root
+    - makedirs: False
+    - mode: 0755
+    - user: root
+
+{{ www_path }}/django/interface/sass/public/js:
+    file.directory:
+    - group: root
+    - makedirs: False
+    - mode: 0755
+    - user: root
+
+{{ www_path }}/django/interface/static/sass:
+  file.symlink:
+    - target: {{ www_path}}/django/interface/sass/public
+
+unzip-bootstrap:
+  cmd:
+    - run
+    - name: 'unzip {{ www_path }}/django/sass/src/v4.0.0-alpha.6.zip -d {{ www_path }}/django/interface/sass/plugins'
+    - unless: '[ -d {{ www_path }}/django/interface/sass/plugins/bootstrap-4.0.0-alpha.6 ]'
+
+{{ www_path }}/django/interface/static/sass/plugins/bootstrap:
+  file.symlink:
+    - target: {{ www_path}}/django/interface/sass/plugins/bootstrap-4.0.0-alpha.6
+
+unzip-fontawesome:
+  cmd:
+    - run
+    - name: 'unzip {{ www_path }}/django/sass/src/font-awesome-4.7.0.zip -d {{ www_path }}/django/interface/sass/plugins'
+    - unless: '[ -d {{ www_path }}/django/interface/sass/plugins/font-awesome-4.7.0 ]'
+
+{{ www_path }}/django/interface/static/sass/plugins/font-awesome:
+  file.symlink:
+    - target: {{ www_path}}/django/interface/sass/plugins/font-awesome-4.7.0
+
 nginx-frontend:
   service.running:
     - name: nginx
