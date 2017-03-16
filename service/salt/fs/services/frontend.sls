@@ -230,7 +230,7 @@ django-migrate:
 unzip-bootstrap:
   cmd:
     - run
-    - name: 'unzip {{ www_path }}/django/sass/src/v4.0.0-alpha.6.zip -d {{ www_path }}/django/interface/sass/plugins'
+    - name: 'unzip {{ www_path }}/django/interface/sass/src/v4.0.0-alpha.6.zip -d {{ www_path }}/django/interface/sass/plugins'
     - unless: '[ -d {{ www_path }}/django/interface/sass/plugins/bootstrap-4.0.0-alpha.6 ]'
 
 {{ www_path }}/django/interface/sass/plugins/bootstrap:
@@ -240,7 +240,7 @@ unzip-bootstrap:
 unzip-fontawesome:
   cmd:
     - run
-    - name: 'unzip {{ www_path }}/django/sass/src/font-awesome-4.7.0.zip -d {{ www_path }}/django/interface/sass/plugins'
+    - name: 'unzip {{ www_path }}/django/interface/sass/src/font-awesome-4.7.0.zip -d {{ www_path }}/django/interface/sass/plugins'
     - unless: '[ -d {{ www_path }}/django/interface/sass/plugins/font-awesome-4.7.0 ]'
 
 {{ www_path }}/django/interface/sass/plugins/font-awesome:
