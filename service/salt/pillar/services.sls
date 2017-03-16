@@ -33,6 +33,8 @@ frontend-packages:
     version: 9.6.2-1.pgdg80+1
   python3-dev:
     version: 3.4.2-2
+  ruby-sass:
+    version: 3.4.6-2
 
 frontend-pip3-packages:
   django:
