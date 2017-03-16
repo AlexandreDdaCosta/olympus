@@ -247,6 +247,12 @@ unzip-fontawesome:
   file.symlink:
     - target: {{ www_path}}/django/interface/sass/plugins/font-awesome-4.7.0
 
+#lessc %{buildroot}/usr/local/share/django/control/less/styles.less -x > %{buildroot}/usr/local/share/django/control/less/public/css/styles.min.css
+#%{__cp} %{buildroot}/usr/local/share/django/control/less/public/css/styles.min.css %{buildroot}/usr/local/share/django/control/less/public/css/styles.min.css.RELEASE
+#%{__cp} %{buildroot}/usr/local/share/django/control/less/bootstrap/dist/fonts/* %{buildroot}/usr/local/share/django/control/less/public/font
+#%{__cp} %{buildroot}/usr/local/share/django/control/less/bootstrap/dist/js/bootstrap.min.js %{buildroot}/usr/local/share/django/control/less/public/js
+#%{__cp} %{buildroot}/usr/local/share/django/control/less/font-awesome/fonts/* %{buildroot}/usr/local/share/django/control/less/public/font
+
 nginx-frontend:
   service.running:
     - name: nginx
