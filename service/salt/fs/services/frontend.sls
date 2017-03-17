@@ -270,12 +270,12 @@ sass-css:
 
 {{ sass_path}}/public/js/bootstrap.min.js:
   file.managed:
-    - source: {{ sass_path }}/bootstrap/dist/js/bootstrap.min.js
+    - source: {{ sass_path }}/plugins/bootstrap/dist/js/bootstrap.min.js
 
 font-awesome-fonts:
   file.recurse:
     - name: {{ sass_path }}/public/font
-    - source: {{ sass_path }}/font-awesome/fonts
+    - source: {{ sass_path }}/plugins/font-awesome/fonts
 
 nginx-frontend:
   service.running:
