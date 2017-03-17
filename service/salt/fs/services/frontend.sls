@@ -277,6 +277,12 @@ font-awesome-fonts:
     - run
     - name: 'cp -p {{ sass_path }}/plugins/font-awesome/fonts/* {{ sass_path }}/public/font'
 
+jquery:
+  cmd:
+    - run
+    - name: 'curl https://code.jquery.com/jquery-3.2.0.min.js > {{ project_path }}/static/js/jquery-3.2.0.min.js'
+    - unless: '[ -f {{ project_path }}/static/js/jquery-3.2.0.min.js ]'
+
 nginx-frontend:
   service.running:
     - name: nginx
