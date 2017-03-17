@@ -174,14 +174,14 @@ frontend-user:
     - mode: 0755
     - user: root
 
-{{ www_path }}/django/interface/media-admin:
+{{ project_path }}/media-admin:
     file.directory:
     - group: {{ pillar['frontend-user'] }}
     - makedirs: False
     - mode: 0755
     - user: {{ pillar['frontend-user'] }}
 
-{{ www_path }}/django/interface/static:
+{{ project_path }}/static:
     file.directory:
     - group: root
     - makedirs: False
@@ -207,67 +207,75 @@ django-migrate:
   cmd.run:
     - name: /usr/bin/python3 {{ www_path }}/django/manage.py migrate
 
-{{ www_path }}/django/interface/sass/plugins:
+{{ sass_path }}/plugins:
     file.directory:
     - group: root
     - makedirs: True
     - mode: 0755
     - user: root
 
-{{ www_path }}/django/interface/sass/public/css:
+{{ sass_path }}/public/css:
     file.directory:
     - group: root
     - makedirs: True
     - mode: 0755
     - user: root
 
-{{ www_path }}/django/interface/sass/public/font:
+{{ sass_path }}/public/font:
     file.directory:
     - group: root
     - makedirs: False
     - mode: 0755
     - user: root
 
-{{ www_path }}/django/interface/sass/public/js:
+{{ sass_path }}/public/js:
     file.directory:
     - group: root
     - makedirs: False
     - mode: 0755
     - user: root
 
-{{ www_path }}/django/interface/static/sass:
+{{ project_path }}/static/sass:
   file.symlink:
-    - target: {{ www_path}}/django/interface/sass/public
+    - target: {{ sass_path}}/public
 
 unzip-bootstrap:
   cmd:
     - run
-    - name: 'unzip {{ www_path }}/django/interface/sass/src/v4.0.0-alpha.6.zip -d {{ www_path }}/django/interface/sass/plugins'
-    - unless: '[ -d {{ www_path }}/django/interface/sass/plugins/bootstrap-4.0.0-alpha.6 ]'
+    - name: 'unzip {{ sass_path }}/src/v4.0.0-alpha.6.zip -d {{ www_path }}/django/interface/sass/plugins'
+    - unless: '[ -d {{ sass_path }}/plugins/bootstrap-4.0.0-alpha.6 ]'
 
-{{ www_path }}/django/interface/sass/plugins/bootstrap:
+{{ sass_path }}/plugins/bootstrap:
   file.symlink:
-    - target: {{ www_path}}/django/interface/sass/plugins/bootstrap-4.0.0-alpha.6
+    - target: {{ sass_path}}/plugins/bootstrap-4.0.0-alpha.6
 
 unzip-fontawesome:
   cmd:
     - run
-    - name: 'unzip {{ www_path }}/django/interface/sass/src/font-awesome-4.7.0.zip -d {{ www_path }}/django/interface/sass/plugins'
-    - unless: '[ -d {{ www_path }}/django/interface/sass/plugins/font-awesome-4.7.0 ]'
+    - name: 'unzip {{ sass_path }}/src/font-awesome-4.7.0.zip -d {{ www_path }}/django/interface/sass/plugins'
+    - unless: '[ -d {{ sass_path }}/plugins/font-awesome-4.7.0 ]'
 
-{{ www_path }}/django/interface/sass/plugins/font-awesome:
+{{ sass_path }}/plugins/font-awesome:
   file.symlink:
-    - target: {{ www_path }}/django/interface/sass/plugins/font-awesome-4.7.0
+    - target: {{ sass_path }}/plugins/font-awesome-4.7.0
 
 sass-css:
   cmd:
     - run
-    - name: 'sass --style compressed {{ www_path }}/django/interface/sass/styles.scss > {{ www_path}}/django/interface/sass/public/css/styles.min.css'
+    - name: 'sass --style compressed {{ sass_path }}/styles.scss > {{ sass_path}}/public/css/styles.min.css'
 
-#%{__cp} %{buildroot}/usr/local/share/django/control/less/public/css/styles.min.css %{buildroot}/usr/local/share/django/control/less/public/css/styles.min.css.RELEASE
-#%{__cp} %{buildroot}/usr/local/share/django/control/less/bootstrap/dist/fonts/* %{buildroot}/usr/local/share/django/control/less/public/font
-#%{__cp} %{buildroot}/usr/local/share/django/control/less/bootstrap/dist/js/bootstrap.min.js %{buildroot}/usr/local/share/django/control/less/public/js
-#%{__cp} %{buildroot}/usr/local/share/django/control/less/font-awesome/fonts/* %{buildroot}/usr/local/share/django/control/less/public/font
+{{ sass_path}}/public/css/styles.min.css.RELEASE:
+  file.managed:
+    - source: {{ sass_path }}/public/css/styles.min.css
+
+{{ sass_path}}/public/js/bootstrap.min.js:
+  file.managed:
+    - source: {{ sass_path }}/bootstrap/dist/js/bootstrap.min.js
+
+font-awesome-fonts:
+  file.recurse:
+    - name: {{ sass_path }}/public/font
+    - source: {{ sass_path }}/font-awesome/fonts
 
 nginx-frontend:
   service.running:
