@@ -38,6 +38,16 @@ include:
       - sls: package
 {% endfor %}
 
+{% for packagename, package in pillar.get('frontend-gems', {}).items() %}
+{{ packagename }}:
+  gem.installed:
+{% if package != None and 'version' in package %}
+    - version: {{ package['version'] }}
+{% endif %}
+    - require:
+      - sls: package
+{% endfor %}
+
 frontend-group:
   group.present:
     - name: {{ pillar['frontend-user'] }}
@@ -157,7 +167,7 @@ frontend-user:
     - source: salt://service/django
     - user: root
 
-{{ www_path }}/django/interface/media:
+{{ project_path }}/media:
     file.directory:
     - group: root
     - makedirs: False

@@ -46,6 +46,10 @@ frontend-pip3-packages:
   virtualenv:
     version: == 15.1.0
 
+frontend-gems:
+  sass:
+    version: 3.4.23
+
 web-packages:
   certbot:
     repo: jessie-backports
