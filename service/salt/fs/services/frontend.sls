@@ -188,6 +188,13 @@ frontend-user:
     - mode: 0755
     - user: root
 
+{{ project_path }}/static/js:
+    file.directory:
+    - group: root
+    - makedirs: False
+    - mode: 0755
+    - user: root
+
 /usr/local/bin/killserver.sh:
   file.managed:
     - group: root
