@@ -273,9 +273,9 @@ sass-css:
     - source: {{ sass_path }}/plugins/bootstrap/dist/js/bootstrap.min.js
 
 font-awesome-fonts:
-  file.recurse:
-    - name: {{ sass_path }}/public/font
-    - source: {{ sass_path }}/plugins/font-awesome/fonts
+  cmd:
+    - run
+    - name: 'cp -p {{ sass_path }}/plugins/font-awesome/fonts/* {{ sass_path }}/public/font'
 
 nginx-frontend:
   service.running:
