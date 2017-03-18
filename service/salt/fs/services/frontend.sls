@@ -214,13 +214,6 @@ django-migrate:
   cmd.run:
     - name: /usr/bin/python3 {{ www_path }}/django/manage.py migrate
 
-{{ sass_path }}/plugins:
-    file.directory:
-    - group: root
-    - makedirs: True
-    - mode: 0755
-    - user: root
-
 {{ sass_path }}/public/css:
     file.directory:
     - group: root
@@ -249,22 +242,22 @@ django-migrate:
 unzip-bootstrap:
   cmd:
     - run
-    - name: 'unzip {{ sass_path }}/src/v4.0.0-alpha.6.zip -d {{ www_path }}/django/interface/sass/plugins'
-    - unless: '[ -d {{ sass_path }}/plugins/bootstrap-4.0.0-alpha.6 ]'
+    - name: 'unzip {{ sass_path }}/src/v4.0.0-alpha.6.zip -d {{ www_path }}/django/interface/sass'
+    - unless: '[ -d {{ sass_path }}/bootstrap-4.0.0-alpha.6 ]'
 
-{{ sass_path }}/plugins/bootstrap:
+{{ sass_path }}/bootstrap:
   file.symlink:
-    - target: {{ sass_path}}/plugins/bootstrap-4.0.0-alpha.6
+    - target: {{ sass_path}}/bootstrap-4.0.0-alpha.6
 
 unzip-fontawesome:
   cmd:
     - run
-    - name: 'unzip {{ sass_path }}/src/font-awesome-4.7.0.zip -d {{ www_path }}/django/interface/sass/plugins'
-    - unless: '[ -d {{ sass_path }}/plugins/font-awesome-4.7.0 ]'
+    - name: 'unzip {{ sass_path }}/src/font-awesome-4.7.0.zip -d {{ www_path }}/django/interface/sass'
+    - unless: '[ -d {{ sass_path }}/font-awesome-4.7.0 ]'
 
-{{ sass_path }}/plugins/font-awesome:
+{{ sass_path }}/font-awesome:
   file.symlink:
-    - target: {{ sass_path }}/plugins/font-awesome-4.7.0
+    - target: {{ sass_path }}/font-awesome-4.7.0
 
 sass-css:
   cmd:
@@ -277,12 +270,12 @@ sass-css:
 
 {{ sass_path}}/public/js/bootstrap.min.js:
   file.managed:
-    - source: {{ sass_path }}/plugins/bootstrap/dist/js/bootstrap.min.js
+    - source: {{ sass_path }}/bootstrap/dist/js/bootstrap.min.js
 
 font-awesome-fonts:
   cmd:
     - run
-    - name: 'cp -p {{ sass_path }}/plugins/font-awesome/fonts/* {{ sass_path }}/public/font'
+    - name: 'cp -p {{ sass_path }}/font-awesome/fonts/* {{ sass_path }}/public/font'
 
 jquery:
   cmd:
