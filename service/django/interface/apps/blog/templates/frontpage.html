@@ -1,11 +1,11 @@
-{% extends "base.html" %}
+{% extends "blog.html" %}
 {% load i18n %}
 
-{% block title %}{% trans 'Blog' %}{% endblock %}
+{% block title %}{% trans 'Scribblings' %}{% endblock %}
 
 {% block content %}
 <p>
-Scribblings
+Scribblings scribble
 </p>
 
 <div class="card">
@@ -15,10 +15,20 @@ Scribblings
   </div>
 </div>
 
-<div>
-<button type="button" class="btn btn-default btn-lg">
-  <span class="fa fa-bath" aria-hidden="true"></span> Star
-</button>
+<div class="container">
+  <div class="row">
+    <div class="col">
+      1 of 1
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      1 of 2
+    </div>
+    <div class="col">
+      2 of 2
+    </div>
+  </div>
 </div>
 
 {% endblock content %}
