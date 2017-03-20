@@ -62,3 +62,26 @@ postgresql:
       - pkg: postgresql-9.6
     - require:
       - sls: services/web
+
+/etc/nginx/conf.d/node.conf:
+  file.managed:
+    - group: root
+    - makedirs: False
+    - mode: 0644
+    - source: salt://services/frontend/files/node.conf
+    - user: root
+
+{{ pillar.www_path }}/node:
+  file.recurse:
+    - dir_mode: 0755
+    - file_mode: 0644
+    - group: root
+    - source: salt://service/node
+    - user: root
+
+nginx-backend:
+  service.running:
+    - name: nginx
+    - watch:
+      - file: /etc/nginx/conf.d/node.conf
+
