@@ -1,0 +1,6 @@
+{
+    "name": "restapi",
+    "main": "server.js",
+    "dependencies": {
+    }
+}

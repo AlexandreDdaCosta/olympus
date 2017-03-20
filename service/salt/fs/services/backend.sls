@@ -1,3 +1,6 @@
+{% set www_path='/srv/www' %}
+{% set api_path=www_path+'/node' %}
+
 include:
   - base: package
   - base: services/web

@@ -9,6 +9,7 @@ backend-packages:
     version: 9.6.2-1.pgdg80+1
 
 backend-npm-packages:
+  body-parser:
   express:
     version: 4.15.0
   express-generator:
