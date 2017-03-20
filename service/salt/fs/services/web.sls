@@ -1,3 +1,5 @@
+{% set www_path=pillar.www_path %}
+
 include:
   - base: package
   - base: security
@@ -25,6 +27,13 @@ web_certs:
 {% if pillar.refresh_security is not defined or not pillar.refresh_security %}
     - unless: 'test -f /etc/ssl/localcerts/server.crt && openssl verify /etc/ssl/localcerts/server.crt'
 {% endif %}
+
+{{ www_path }}:
+    file.directory:
+    - group: root
+    - makedirs: False
+    - mode: 0755
+    - user: root
 
 nginx:
   service.running:

@@ -1,3 +1,5 @@
+www_path: /srv/www
+
 backend-packages:
   nodejs:
     version: 6.10.0-1nodesource1~jessie1
@@ -10,6 +12,7 @@ backend-packages:
 
 backend-npm-packages:
   body-parser:
+    version: 1.17.1
   express:
     version: 4.15.0
   express-generator:

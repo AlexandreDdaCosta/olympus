@@ -1,4 +1,4 @@
-{% set www_path='/srv/www' %}
+{% set www_path=pillar.www_path %}
 {% set project_path=www_path+'/django/interface' %}
 {% set sass_path=project_path+'/sass' %}
 
@@ -150,13 +150,6 @@ frontend-user:
     - makedirs: False
     - mode: 0644
     - source: salt://services/frontend/files/django.ini
-    - user: root
-
-{{ www_path }}:
-    file.directory:
-    - group: root
-    - makedirs: False
-    - mode: 0755
     - user: root
 
 {{ www_path }}/django:
