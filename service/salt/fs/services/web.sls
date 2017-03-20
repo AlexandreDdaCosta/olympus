@@ -1,5 +1,3 @@
-{% set www_path=pillar.www_path %}
-
 include:
   - base: package
   - base: security
@@ -28,7 +26,7 @@ web_certs:
     - unless: 'test -f /etc/ssl/localcerts/server.crt && openssl verify /etc/ssl/localcerts/server.crt'
 {% endif %}
 
-{{ www_path }}:
+{{ pillar.www_path }}:
     file.directory:
     - group: root
     - makedirs: False
