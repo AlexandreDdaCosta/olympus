@@ -68,7 +68,7 @@ postgresql:
     - group: root
     - makedirs: False
     - mode: 0644
-    - source: salt://services/frontend/files/node.conf
+    - source: salt://services/backend/files/node.conf
     - user: root
 
 {{ pillar.www_path }}/node:
