@@ -288,7 +288,7 @@ frontend-uwsgi:
     - watch:
       - file: {{ pillar.www_path }}/django
       - file: /etc/init.d/uwsgi
-      - file: /etc/nginx/conf.d/*
+      - file: /etc/nginx/conf.d/django.conf
       - file: /etc/uwsgi/vassals/django.ini
     - require:
       - sls: services/web
