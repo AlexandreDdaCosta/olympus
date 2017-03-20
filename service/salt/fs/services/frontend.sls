@@ -1,5 +1,4 @@
-{% set www_path=pillar.www_path %}
-{% set project_path=www_path+'/django/interface' %}
+{% set project_path=pillar.www_path+'/django/interface' %}
 {% set sass_path=project_path+'/sass' %}
 
 include:
@@ -152,7 +151,7 @@ frontend-user:
     - source: salt://services/frontend/files/django.ini
     - user: root
 
-{{ www_path }}/django:
+{{ pillar.www_path }}/django:
   file.recurse:
     - dir_mode: 0755
     - file_mode: 0644
@@ -201,11 +200,11 @@ frontend-devserver-stop:
 
 django-makemigrations:
   cmd.run:
-    - name: /usr/bin/python3 {{ www_path }}/django/manage.py makemigrations
+    - name: /usr/bin/python3 {{ pillar.www_path }}/django/manage.py makemigrations
 
 django-migrate:
   cmd.run:
-    - name: /usr/bin/python3 {{ www_path }}/django/manage.py migrate
+    - name: /usr/bin/python3 {{ pillar.www_path }}/django/manage.py migrate
 
 {{ sass_path }}/public/css:
     file.directory:
@@ -235,7 +234,7 @@ django-migrate:
 unzip-bootstrap:
   cmd:
     - run
-    - name: 'unzip {{ sass_path }}/src/v4.0.0-alpha.6.zip -d {{ www_path }}/django/interface/sass'
+    - name: 'unzip {{ sass_path }}/src/v4.0.0-alpha.6.zip -d {{ pillar.www_path }}/django/interface/sass'
     - unless: '[ -d {{ sass_path }}/bootstrap-4.0.0-alpha.6 ]'
 
 {{ sass_path }}/bootstrap:
@@ -245,7 +244,7 @@ unzip-bootstrap:
 unzip-fontawesome:
   cmd:
     - run
-    - name: 'unzip {{ sass_path }}/src/font-awesome-4.7.0.zip -d {{ www_path }}/django/interface/sass'
+    - name: 'unzip {{ sass_path }}/src/font-awesome-4.7.0.zip -d {{ pillar.www_path }}/django/interface/sass'
     - unless: '[ -d {{ sass_path }}/font-awesome-4.7.0 ]'
 
 {{ sass_path }}/font-awesome:
@@ -287,7 +286,7 @@ frontend-uwsgi:
     - enable: True
     - name: uwsgi
     - watch:
-      - file: {{ www_path }}/django
+      - file: {{ pillar.www_path }}/django
       - file: /etc/init.d/uwsgi
       - file: /etc/nginx/conf.d/*
       - file: /etc/uwsgi/vassals/django.ini
