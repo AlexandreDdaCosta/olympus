@@ -47,6 +47,7 @@ do_start()
 do_stop()
 {
     start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $lockfile --chuid $nodeuser --exec $daemon $app
+    rm -f $lockfile
 }
 
 case "$1" in
