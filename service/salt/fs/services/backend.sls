@@ -151,3 +151,13 @@ nginx-backend:
     - watch:
       - file: /etc/nginx/conf.d/node.conf
 
+backend-node:
+  service.running:
+    - enable: True
+    - name: node
+    - watch:
+      - file: {{ pillar.www_path }}/node
+      - file: /etc/init.d/node
+      - file: /etc/nginx/conf.d/node.conf
+    - require:
+      - sls: services/web
