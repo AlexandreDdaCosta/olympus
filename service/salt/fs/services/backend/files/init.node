@@ -14,6 +14,7 @@
 app=/srv/www/node/restapi/server.js
 daemon=/usr/bin/node
 lockfile=/var/run/node.pid
+nodeuser=node:node
 prog=node
 
 . /lib/lsb/init-functions
@@ -40,7 +41,7 @@ do_start()
     chmod 0664 $lockfile
     chown node:node $lockfile
     export NODE_PATH=/usr/lib/nodejs:/usr/lib/node_modules:/usr/share/javascript
-    start-stop-daemon --start --quiet --pidfile $lockfile --exec $daemon $app
+    start-stop-daemon --start --quiet --pidfile $lockfile --chuid $nodeuser --background --exec $daemon $app
 }
 
 do_stop()
