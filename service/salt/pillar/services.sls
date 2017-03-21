@@ -1,5 +1,7 @@
 www_path: /srv/www
 
+backend-user: node
+
 backend-packages:
   nodejs:
     version: 6.10.0-1nodesource1~jessie1

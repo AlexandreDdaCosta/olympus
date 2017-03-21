@@ -77,13 +77,6 @@ frontend-user:
     - source: salt://services/frontend/files/uwsgi.ini
     - user: root
 
-/var/run/uwsgi.pid:
-  file.managed:
-    - group: {{ pillar['frontend-user'] }}
-    - mode: 0644
-    - replace: False
-    - user: {{ pillar['frontend-user'] }}
-
 /etc/rc0.d/K01uwsgi:
   file.symlink:
     - target: /etc/init.d/uwsgi

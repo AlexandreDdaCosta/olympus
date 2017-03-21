@@ -63,6 +63,21 @@ postgresql:
     - require:
       - sls: services/web
 
+backend-group:
+  group.present:
+    - name: {{ pillar['backend-user'] }}
+    - system: True
+
+backend-user:
+  user.present:
+    - createhome: True
+    - fullname: {{ pillar['backend-user'] }}
+    - name: {{ pillar['backend-user'] }}
+    - shell: /bin/false
+    - home: /home/{{ pillar['backend-user'] }}
+    - groups:
+      - {{ pillar['backend-user'] }}
+
 /etc/nginx/conf.d/node.conf:
   file.managed:
     - group: root
@@ -70,6 +85,57 @@ postgresql:
     - mode: 0644
     - source: salt://services/backend/files/node.conf
     - user: root
+
+/etc/rc0.d/K01node:
+  file.symlink:
+    - target: /etc/init.d/node
+
+/etc/rc1.d/K01node:
+  file.symlink:
+    - target: /etc/init.d/node
+
+/etc/rc2.d/S01node:
+  file.symlink:
+    - target: /etc/init.d/node
+
+/etc/rc3.d/S01node:
+  file.symlink:
+    - target: /etc/init.d/node
+
+/etc/rc4.d/S01node:
+  file.symlink:
+    - target: /etc/init.d/node
+
+/etc/rc5.d/S01node:
+  file.symlink:
+    - target: /etc/init.d/node
+
+/etc/rc6.d/K01node:
+  file.symlink:
+    - target: /etc/init.d/node
+
+/etc/init.d/node:
+    file.managed:
+    - group: root
+    - makedirs: False
+    - mode: 0755
+    - source: salt://services/backend/files/init.node
+    - user: root
+
+/etc/logrotate.d/node:
+    file.managed:
+    - group: root
+    - makedirs: False
+    - mode: 0755
+    - source: salt://services/backend/files/logrotate.node
+    - user: root
+
+/var/log/node.log:
+  file.managed:
+    - group: {{ pillar['backend-user'] }}
+    - mode: 0644
+    - replace: False
+    - user: {{ pillar['backend-user'] }}
 
 {{ pillar.www_path }}/node:
   file.recurse:
