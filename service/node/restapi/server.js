@@ -1,3 +1,11 @@
+var fs = require('fs');
+fs.writeFile("/var/run/node.pid", ${process.pid}, function(err) 
+{
+    if (err) 
+    {
+        return console.log(err);
+    }
+}); 
 var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
