@@ -12,8 +12,8 @@ fs.writeFile("/var/run/node.pid", process.pid, function(err)
 var app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-var port = 8889;
-const routes = require('./routes');
+var routes = require('./api/routes');
 app.use('/api', routes);
+var port = 8889;
 app.listen(port);
 console.log('node.js REST API listening on port ' + port);
