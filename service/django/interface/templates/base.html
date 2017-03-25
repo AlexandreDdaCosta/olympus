@@ -1,43 +1,53 @@
 {% load i18n %}
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="{{ LANGUAGE_CODE|default:"en-us" }}">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>{% trans 'Laika\'s Den' %} | {% block title %}{% endblock %}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    {% block styles %}
-    {% include "styles.html" %}
-    {% endblock %}
-    <style type="text/css">
-      body {
-        padding-top: 60px;
-        padding-bottom: 40px;
-      }
-    </style>
-    <meta name="robots" content="NONE,NOARCHIVE" />
+<title>{% trans 'Laika\'s Den' %} | {% block title %}{% endblock %}</title>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="NONE,NOARCHIVE" />
+{% block styles %}
+{% include "styles.html" %}
+{% endblock %}
+<style type="text/css">
+.navbody {
+  padding-top: 70px;
+  padding-bottom: 40px;
+}
+</style>
+
 </head>
 
-<body class="{% block bodyclass %}{% endblock %}">
-<div class="container" style="padding-top: 10px;">
+<body class="navbody">
+
 {% block navbar %}
+{% include "nav.html" %}
 {% endblock %}
- <div class="row">
-  <div class="col-sm-12">
-  {% block breadcrumbs %}
-  {% endblock %}
-  </div>
- </div>
- <div id="content" class="{% block coltype %}colM{% endblock %}">
- {% block messages %}
- {% if messages %}
- {% for message in messages %}
-  <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
- {% endfor %}
- {% endif %}
- {% endblock messages %}
- {% block object-tools %}{% endblock %}
- {% block content %}{{ content }}{% endblock %}
- </div>
- {% block footer %}<footer id="footer"></footer>{% endblock %}
+
+<div class="container">
+
+{% block breadcrumbs %}
+{% endblock %}
+
+<div id="content">
+
+{% block messages %}
+{% if messages %}
+{% for message in messages %}
+<div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">
+{{ message }}
+</div>
+{% endfor %}
+{% endif %}
+{% endblock messages %}
+
+{% block object-tools %}{% endblock %}
+
+{% block content %}{{ content }}{% endblock %}
+</div>
+
+{% block footer %}{% endblock %}
 </div>
 </body>
 </html>

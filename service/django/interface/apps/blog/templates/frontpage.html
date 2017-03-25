@@ -4,31 +4,41 @@
 {% block title %}{% trans 'Scribblings' %}{% endblock %}
 
 {% block content %}
-<p>
-Scribblings scribble
-</p>
 
-<div class="card">
-  <div class="card-block">
-    <h4 class="card-title">Scribblings</h4>
-    <p class="card-text">Minimalist dog blog</p>
+<div class="row">
+  <div class="card">
+    <div class="card-block">Scribblings</div>
   </div>
 </div>
 
-<div class="container">
-  <div class="row">
-    <div class="col">
-      1 of 1
+<div class="row">
+  <div class="col-sm-8">
+    <div class="container">
+      <div class="row">
+        <div class="card">
+          <div class="card-block">Selector</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="card">
+          <div class="card-block">Feature</div>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="row">
-    <div class="col">
-      1 of 2
-    </div>
-    <div class="col">
-      2 of 2
+  <div class="col-sm-4">
+    <div class="card">
+      <div class="card-block">Sidebar</div>
     </div>
   </div>
 </div>
-
 {% endblock content %}
+
+{% block footer %}
+<div class="row">
+  <div class="card">
+    <div class="card-block">Footer</div>
+  </div>
+</div>
+
+{% endblock footer %}
