@@ -1,21 +1,15 @@
 {% load i18n %}
-<style type="text/css">
-.flexcontainerright {
-  display: -webkit-flex;
-  display: flex;
-  -webkit-flex-direction: row;
-  flex-direction: row;
-  -webkit-justify-content: flex-end;
-  justify-content: flex-end;
-}
- .navbar-page-nav-button {
-  margin-right: 0px;
-  padding: 9px;
-}
-</style>
-
-<nav class="navbar navbar-toggleable-md navbar-light fixed-top bg-faded">
+<nav class="navbar navbar-toggleable-sm navbar-light fixed-top bg-faded">
+  <div class="container container-nav">
   <div class="btn-group flexcontainerright">
+  <div class="left-nav-icon">
+  <span>
+  <a href="{% url 'welcome_home' %}">
+  <span class="fa fa-home fa-2x">
+  </span>
+  </a>
+  </span>
+  </div>
   <button class="navbar-toggler navbar-page-nav-button" type="button" title="{% trans "Top of page" %}" onclick="$('html,body').scrollTop(0);">
   <span class="fa fa-chevron-up"></span>
   </button>
@@ -27,16 +21,28 @@
   </button>
   </div>
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <ul class="navbar-nav mr-auto">
-      <li class="nav-item active">
-        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+    <ul class="navbar-nav">
+      <li class="nav-item nav-item-leftend nav-float-icon">
+        <a class="nav-link-home" href="{% url 'welcome_home' %}">
+        <span class="fa fa-home fa-2x"></span>
+        </a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#">Link</a>
+      <li class="nav-item nav-item-middle">
+        <a class="nav-link" href="{% url 'blog_frontpage' %}">
+        <span class="fa fa-pencil-square-o fa-2x"></span>
+        </a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link disabled" href="#">Disabled</a>
+      <li class="nav-item nav-item-middle">
+        <a class="nav-link" href="/bigdata">
+        <span class="fa fa-database fa-2x"></span>
+        </a>
+      </li>
+      <li class="nav-item nav-item-rightend">
+        <a class="nav-link" href="/imageviewer">
+        <span class="fa fa-file-image-o fa-2x"></span>
+        </a>
       </li>
     </ul>
+  </div>
   </div>
 </nav>

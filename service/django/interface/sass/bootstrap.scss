@@ -1,1 +1,77 @@
-// vacant
+// General layout
+
+// Body
+
+body {
+  padding-top: 70px;
+  padding-bottom: 40px;
+}
+
+// Columns
+
+.col-wide {
+  padding: 0px;
+}
+
+// Navigation
+
+.navbar {
+  padding: .1em;
+}
+.flexcontainerright {
+  display: -webkit-flex;
+  display: flex;
+  display: -ms-flexbox;
+  -webkit-flex-direction: row;
+  -webkit-justify-content: flex-end;
+  -ms-flex-direction: row;
+  -ms-flex-align: flex-end;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding: 0px;
+}
+.navbar-page-nav-button {
+  margin: 0px;
+  padding: 9px;
+}
+.nav-float-icon {
+  display: none;
+}
+.nav-link-home {
+  display: block;
+  padding: 0.5em 1em;
+}
+.left-nav-icon {
+  -webkit-align-self: flex-start;
+  align-self: flex-start;
+  margin-right: auto;
+  justify-content: flex-start;
+  width: 100%;
+  margin-top: .25em;
+}
+@media (max-width: 575px) {
+  .container-nav {
+    width: 575px;
+    max-width: 100%;
+  }
+}
+@media (min-width: 768px) {
+  .left-nav-icon {
+    display: none;
+  }
+  .nav-float-icon {
+    display: inline;
+  }
+}
+.nav-item-middle {
+  margin-left: 1em;
+  margin-right: 1em;
+}
+.nav-item-leftend {
+  margin-left: 0em;
+  margin-right: 1em;
+}
+.nav-item-rightend {
+  margin-left: 1em;
+  margin-right: 0em;
+}

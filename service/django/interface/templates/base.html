@@ -5,33 +5,18 @@
 <title>{% trans 'Laika\'s Den' %} | {% block title %}{% endblock %}</title>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="NONE,NOARCHIVE" />
 {% block styles %}
 {% include "styles.html" %}
 {% endblock %}
-<style type="text/css">
-.navbody {
-  padding-top: 70px;
-  padding-bottom: 40px;
-}
-</style>
-
 </head>
-
-<body class="navbody">
-
+<body>
 {% block navbar %}
 {% include "nav.html" %}
 {% endblock %}
-
-<div class="container">
-
 {% block breadcrumbs %}
 {% endblock %}
-
-<div id="content">
-
 {% block messages %}
 {% if messages %}
 {% for message in messages %}
@@ -41,13 +26,8 @@
 {% endfor %}
 {% endif %}
 {% endblock messages %}
-
 {% block object-tools %}{% endblock %}
-
 {% block content %}{{ content }}{% endblock %}
-</div>
-
 {% block footer %}{% endblock %}
-</div>
 </body>
 </html>
