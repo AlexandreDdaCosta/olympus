@@ -275,7 +275,7 @@ jquery:
 tether-get:
   cmd:
     - run
-    - name: 'curl http://github.com/HubSpot/tether/archive/v1.3.3.zip > {{ project_path }}/static/js/v1.3.3.zip'
+    - name: 'wget http://github.com/HubSpot/tether/archive/v1.3.3.zip -O {{ project_path }}/static/js/v1.3.3.zip'
     - unless: '[ -f {{ project_path }}/static/js/v1.3.3.zip ]'
 
 tether:
