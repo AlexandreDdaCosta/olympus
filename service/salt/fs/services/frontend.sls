@@ -297,6 +297,11 @@ sass-css:
     - run
     - name: 'sass --style compressed {{ sass_path }}/styles.scss > {{ sass_path}}/public/css/styles.min.css'
 
+sass-css-full:
+  cmd:
+    - run
+    - name: 'sass {{ sass_path }}/styles.scss > {{ sass_path}}/public/css/styles.css'
+
 {{ sass_path}}/public/css/styles.min.css.RELEASE:
   file.managed:
     - source: {{ sass_path }}/public/css/styles.min.css
