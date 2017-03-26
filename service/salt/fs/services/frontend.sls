@@ -268,6 +268,26 @@ jquery:
     - name: 'curl https://code.jquery.com/jquery-3.2.0.min.js > {{ project_path }}/static/js/jquery-3.2.0.min.js'
     - unless: '[ -f {{ project_path }}/static/js/jquery-3.2.0.min.js ]'
 
+{{ project_path }}/static/js/jquery.min.js:
+  file.symlink:
+    - target: {{ project_path }}/static/js/jquery-3.2.0.min.js
+
+tether-get:
+  cmd:
+    - run
+    - name: 'curl http://github.com/HubSpot/tether/archive/v1.3.3.zip > {{ project_path }}/static/js/v1.3.3.zip'
+    - unless: '[ -f {{ project_path }}/static/js/v1.3.3.zip ]'
+
+tether:
+  cmd:
+    - run
+    - name: 'unzip {{ project_path }}/static/js/v1.3.3.zip'
+    - unless: '[ -f {{ project_path }}/static/js/tether-1.3.3 ]'
+
+{{ project_path }}/static/js/tether:
+  file.symlink:
+    - target: {{ project_path }}/static/js/tether-1.3.3
+
 nginx-frontend:
   service.running:
     - name: nginx
