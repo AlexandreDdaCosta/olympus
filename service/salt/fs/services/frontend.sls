@@ -220,21 +220,64 @@ django-migrate:
     - mode: 0755
     - user: root
 
+{{ sass_path }}/src:
+    file.directory:
+    - group: root
+    - makedirs: False
+    - mode: 0755
+    - user: root
+
 {{ project_path }}/static/sass:
   file.symlink:
     - target: {{ sass_path}}/public
 
-unzip-bootstrap:
+tether-get:
   cmd:
     - run
-    - name: 'unzip {{ sass_path }}/src/v4.0.0-alpha.6.zip -d {{ pillar.www_path }}/django/interface/sass'
+    - name: 'wget http://github.com/HubSpot/tether/archive/v1.3.3.zip -O {{ sass_path }}/src/v1.3.3.zip'
+    - unless: '[ -f {{ sass_path }}/src/v1.3.3.zip ]'
+
+tether:
+  cmd:
+    - run
+    - name: 'unzip {{ sass_path }}/src/v1.3.3.zip -d {{ sass_path }}'
+    - unless: '[ -d {{ sass_path }}/tether-1.3.3 ]'
+
+{{ sass_path }}/tether:
+  file.symlink:
+    - target: {{ sass_path}}/tether-1.3.3
+
+{{ sass_path}}/public/js/tether.min.js:
+  file.managed:
+    - source: {{ sass_path }}/tether/dist/js/tether.min.js
+
+bootstrap-get:
+  cmd:
+    - run
+    - name: 'wget https://github.com/twbs/bootstrap/archive/v4.0.0-alpha.6.zip -O {{ sass_path }}/src/v4.0.0-alpha.6.zip'
+    - unless: '[ -d {{ sass_path }}/src/v4.0.0-alpha.6.zip ]'
+
+bootstrap:
+  cmd:
+    - run
+    - name: 'unzip {{ sass_path }}/src/v4.0.0-alpha.6.zip -d {{ sass_path }}'
     - unless: '[ -d {{ sass_path }}/bootstrap-4.0.0-alpha.6 ]'
 
 {{ sass_path }}/bootstrap:
   file.symlink:
     - target: {{ sass_path}}/bootstrap-4.0.0-alpha.6
 
-unzip-fontawesome:
+{{ sass_path}}/public/js/bootstrap.min.js:
+  file.managed:
+    - source: {{ sass_path }}/bootstrap/dist/js/bootstrap.min.js
+
+fontawesome-get:
+  cmd:
+    - run
+    - name: 'wget http://fontawesome.io/assets/font-awesome-4.7.0.zip -O {{ sass_path }}/src/font-awesome-4.7.0.zip'
+    - unless: '[ -d {{ sass_path }}/src/font-awesome-4.7.0.zip ]'
+
+fontawesome:
   cmd:
     - run
     - name: 'unzip {{ sass_path }}/src/font-awesome-4.7.0.zip -d {{ pillar.www_path }}/django/interface/sass'
@@ -243,6 +286,11 @@ unzip-fontawesome:
 {{ sass_path }}/font-awesome:
   file.symlink:
     - target: {{ sass_path }}/font-awesome-4.7.0
+
+font-awesome-fonts:
+  cmd:
+    - run
+    - name: 'cp -p {{ sass_path }}/font-awesome/fonts/* {{ sass_path }}/public/font'
 
 sass-css:
   cmd:
@@ -253,15 +301,6 @@ sass-css:
   file.managed:
     - source: {{ sass_path }}/public/css/styles.min.css
 
-{{ sass_path}}/public/js/bootstrap.min.js:
-  file.managed:
-    - source: {{ sass_path }}/bootstrap/dist/js/bootstrap.min.js
-
-font-awesome-fonts:
-  cmd:
-    - run
-    - name: 'cp -p {{ sass_path }}/font-awesome/fonts/* {{ sass_path }}/public/font'
-
 jquery:
   cmd:
     - run
@@ -271,21 +310,6 @@ jquery:
 {{ project_path }}/static/js/jquery.min.js:
   file.symlink:
     - target: {{ project_path }}/static/js/jquery-3.2.0.min.js
-
-tether-get:
-  cmd:
-    - run
-    - name: 'wget http://github.com/HubSpot/tether/archive/v1.3.3.zip -O {{ project_path }}/static/js/v1.3.3.zip'
-    - unless: '[ -f {{ project_path }}/static/js/v1.3.3.zip ]'
-
-tether:
-  cmd:
-    - run
-    - name: 'cd {{ project_path }}/static/js;unzip -o v1.3.3.zip'
-
-{{ project_path }}/static/js/tether:
-  file.symlink:
-    - target: {{ project_path }}/static/js/tether-1.3.3
 
 nginx-frontend:
   service.running:
