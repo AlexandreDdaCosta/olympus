@@ -281,8 +281,7 @@ tether-get:
 tether:
   cmd:
     - run
-    - name: 'unzip {{ project_path }}/static/js/v1.3.3.zip'
-    - unless: '[ -f {{ project_path }}/static/js/tether-1.3.3 ]'
+    - name: 'cd {{ project_path }}/static/js;unzip -o v1.3.3.zip'
 
 {{ project_path }}/static/js/tether:
   file.symlink:
