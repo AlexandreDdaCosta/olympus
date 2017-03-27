@@ -1,12 +1,7 @@
-// General layout
+// Variables
 
-// Body
-
-body {
-  font-size: 1.2rem;
-  padding-top: 5em;
-  padding-bottom: 2em;
-}
+$navbar-light-color: rgba(16,16,16,1);
+$navbar-light-hover-color: rgba(128,128,128,1);
 
 // Columns
 
@@ -16,8 +11,14 @@ body {
 
 // Navigation
 
+.fixed-top {
+  top: 1em;
+}
 .navbar {
   padding: .1em;
+}
+.navbar-light {
+  background-color: rgba(220,220,220,1)
 }
 .nav-link {
   display: block;
@@ -25,13 +26,21 @@ body {
   text-decoration: None;
 }
 .nav-text {
+  color: rgba(16,16,16,1);
   font-family: 'Alegreya Sans SC';
   font-size: 1.5rem;
   text-align: center; 
   vertical-align: middle;
 }
+.nav-text:hover {
+  color: rgba(128,128,128,1);
+}
 .fa-nav-icon {
+  color: rgba(16,16,16,1);
   padding-right: .25em
+}
+.fa-nav-icon:hover {
+  color: rgba(128,128,128,1);
 }
 .flexcontainerright {
   display: -webkit-flex;
@@ -105,9 +114,4 @@ body {
   .lg-hide {
     display: none;
   }
-}
-
-// Blog
-
-.blog-body {
 }

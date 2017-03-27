@@ -1,1 +1,37 @@
-// vacant
+// Body
+
+body {
+  font-size: 1.3rem;
+  padding-top: 5.5em;
+  padding-bottom: 2.5em;
+}
+
+// Top/bottom scrollers
+
+#top-scroll {
+  top: 0;
+  position: fixed;
+  background-color: rgba(240,240,240,1);
+  height: 1em;
+  width: 100%;
+  z-index: 1;
+}
+#bottom-scroll {
+  bottom: 0;
+  position: fixed;
+  background-color: rgba(240,240,240,1);
+  height: 1em;
+  width: 100%;
+  z-index: 1;
+}
+a.scroll-tab {
+  display: block;
+  font-family: 'Alegreya Sans SC';
+  font-size: 70%;
+  color: rgba(16,16,16,1);
+  height: 100%;
+  width: 100%;
+  text-align: center; 
+  text-decoration: none;
+  letter-spacing: .5em;
+}

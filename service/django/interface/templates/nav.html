@@ -1,20 +1,5 @@
 {% load i18n %}
-<style>
-.fixed-top {
-  top: .5em;
-}
-#Intro {
-  top: 0;
-  position: fixed;
-  background-color: blue;
-  height: .5em;
-  width: 100%;
-  z-index: 1;
-}
-</style>
-<div id="Intro">
-</div>
-<nav class="navbar navbar-toggleable-sm navbar-light fixed-top bg-faded">
+<nav class="navbar navbar-toggleable-sm navbar-light fixed-top">
   <div class="container container-nav">
   <div class="btn-group flexcontainerright">
   <div class="left-nav-icon">
@@ -25,15 +10,9 @@
   </a>
   </span>
   </div>
-  <button class="navbar-toggler navbar-page-nav-button" type="button" title="{% trans "Top of page" %}" onclick="$('html,body').scrollTop(0);">
-  <span class="fa fa-chevron-up"></span>
-  </button>
-  <button class="navbar-toggler navbar-page-nav-button" type="button" title="{% trans "Bottom of page" %}" onclick="window.scrollTo(0,document.body.scrollHeight);">
-  <span class="fa fa-chevron-down"></span>
-  </button>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-  <span class="navbar-toggler-icon"></span>
-  </button>
+  <a class="navbar-toggler" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+  <div class="navbar-toggler-icon"></div>
+  </a>
   </div>
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="navbar-nav">

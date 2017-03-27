@@ -12,6 +12,12 @@
 {% endblock %}
 </head>
 <body class="{% block body-class %}{% endblock %}">
+<div id="top-scroll">
+<a href="#" class="scroll-tab" onclick="$('html,body').scrollTop(0);">
+Laika's Den
+<span class="fa fa-paw" style="padding-left: 1em"></span>
+</a>
+</div>
 {% block navbar %}
 {% include "nav.html" %}
 {% endblock %}
@@ -29,5 +35,10 @@
 {% block object-tools %}{% endblock %}
 {% block content %}{{ content }}{% endblock %}
 {% block footer %}{% endblock %}
+<div id="bottom-scroll">
+<a href="##" class="scroll-tab" onclick="window.scrollTo(0,document.body.scrollHeight);">
+<span class="fa fa-paw flip"></span>
+</a>
+</div>
 </body>
 </html>
