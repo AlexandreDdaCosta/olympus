@@ -1,11 +1,26 @@
 {% load i18n %}
+<style>
+.fixed-top {
+  top: .5em;
+}
+#Intro {
+  top: 0;
+  position: fixed;
+  background-color: blue;
+  height: .5em;
+  width: 100%;
+  z-index: 1;
+}
+</style>
+<div id="Intro">
+</div>
 <nav class="navbar navbar-toggleable-sm navbar-light fixed-top bg-faded">
   <div class="container container-nav">
   <div class="btn-group flexcontainerright">
   <div class="left-nav-icon">
   <span>
   <a href="{% url 'welcome_home' %}">
-  <span class="fa fa-home fa-2x">
+  <span class="left-nav-icon-link fa fa-home fa-2x" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Home' %}">
   </span>
   </a>
   </span>
@@ -22,24 +37,33 @@
   </div>
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="navbar-nav">
-      <li class="nav-item nav-item-leftend nav-float-icon" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Home' %}">
-        <a class="nav-link-home" href="{% url 'welcome_home' %}">
-        <span class="fa fa-home fa-2x"></span>
+      <li class="nav-item nav-item-leftend nav-float-icon">
+        <a class="nav-link" href="{% url 'welcome_home' %}">
+        <span class="fa fa-home fa-2x fa-nav-icon" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Home' %}"></span>
         </a>
       </li>
-      <li class="nav-item nav-item-middle" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Blog' %}">
+      <li class="nav-item nav-item-middle">
         <a class="nav-link" href="{% url 'blog_frontpage' %}">
-        <span class="fa fa-pencil-square-o fa-2x"></span>
+        <span class="lg-hide">
+        <span class="fa fa-pencil fa-2x fa-nav-icon" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Blog' %}"></span>
+        </span>
+        <span class="md-hide nav-text">{% trans 'Blog' %}</span>
         </a>
       </li>
-      <li class="nav-item nav-item-middle" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Big data' %}">
+      <li class="nav-item nav-item-middle">
         <a class="nav-link" href="/bigdata">
-        <span class="fa fa-database fa-2x"></span>
+        <span class="lg-hide">
+        <span class="fa fa-database fa-2x fa-nav-icon" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Big data' %}"></span>
+        </span>
+        <span class="md-hide nav-text">{% trans 'Big data' %}</span>
         </a>
       </li>
-      <li class="nav-item nav-item-rightend" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Pics' %}">
+      <li class="nav-item nav-item-rightend">
         <a class="nav-link" href="/imageviewer">
-        <span class="fa fa-file-image-o fa-2x"></span>
+        <span class="lg-hide">
+        <span class="fa fa-camera fa-2x fa-nav-icon" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Photography' %}"></span>
+        </span>
+        <span class="md-hide nav-text">{% trans 'Photography' %}</span>
         </a>
       </li>
     </ul>

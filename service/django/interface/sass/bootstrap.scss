@@ -3,8 +3,9 @@
 // Body
 
 body {
-  padding-top: 70px;
-  padding-bottom: 40px;
+  font-size: 1.2rem;
+  padding-top: 5em;
+  padding-bottom: 2em;
 }
 
 // Columns
@@ -17,6 +18,20 @@ body {
 
 .navbar {
   padding: .1em;
+}
+.nav-link {
+  display: block;
+  padding: 0.5em 1em;
+  text-decoration: None;
+}
+.nav-text {
+  font-family: 'Alegreya Sans SC';
+  font-size: 1.5rem;
+  text-align: center; 
+  vertical-align: middle;
+}
+.fa-nav-icon {
+  padding-right: .25em
 }
 .flexcontainerright {
   display: -webkit-flex;
@@ -37,31 +52,20 @@ body {
 .nav-float-icon {
   display: none;
 }
-.nav-link-home {
-  display: block;
-  padding: 0.5em 1em;
-}
 .left-nav-icon {
   -webkit-align-self: flex-start;
   align-self: flex-start;
   margin-right: auto;
   justify-content: flex-start;
   width: 100%;
+  margin-left: .25em;
   margin-top: .25em;
 }
-@media (max-width: 575px) {
-  .container-nav {
-    width: 575px;
-    max-width: 100%;
-  }
+.left-nav-icon-link {
+  color: $navbar-light-color;
 }
-@media (min-width: 768px) {
-  .left-nav-icon {
-    display: none;
-  }
-  .nav-float-icon {
-    display: inline;
-  }
+.left-nav-icon-link:hover, .left-nav-icon-link:focus {
+  color: $navbar-light-hover-color;
 }
 .nav-item-middle {
   margin-left: 1em;
@@ -74,4 +78,36 @@ body {
 .nav-item-rightend {
   margin-left: 1em;
   margin-right: 0em;
+}
+@media (max-width: 575px) {
+  .container-nav {
+    width: 575px;
+    max-width: 100%;
+  }
+}
+@media (max-width: 767px) {
+  .md-hide {
+    display: inline;
+  }
+}
+@media (min-width: 768px) {
+  .left-nav-icon, .md-hide {
+    display: none;
+  }
+  .nav-float-icon {
+    display: inline;
+  }
+}
+@media (min-width: 992px) {
+  .md-hide {
+    display: inline;
+  }
+  .lg-hide {
+    display: none;
+  }
+}
+
+// Blog
+
+.blog-body {
 }
