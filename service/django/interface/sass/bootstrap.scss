@@ -14,6 +14,11 @@ $navbar-light-hover-color: rgba(128,128,128,1);
 .fixed-top {
   top: 1em;
 }
+@media (min-width: 992px) {
+  .fixed-top {
+    top: 0em;
+  }
+}
 .navbar {
   padding: .1em;
 }
@@ -53,6 +58,15 @@ $navbar-light-hover-color: rgba(128,128,128,1);
   flex-direction: row;
   justify-content: flex-end;
   padding: 0px;
+  align-items: center;
+  white-space: nowrap;
+}
+div.nav-logo {
+  font-family: 'Pangolin';
+  font-weight: 500;
+  @media (max-width: 991px) {
+    display: none;
+  }
 }
 .navbar-page-nav-button {
   margin: 0px;
@@ -76,6 +90,7 @@ $navbar-light-hover-color: rgba(128,128,128,1);
 .left-nav-icon-link:hover, .left-nav-icon-link:focus {
   color: $navbar-light-hover-color;
 }
+
 .nav-item-middle {
   margin-left: 1em;
   margin-right: 1em;

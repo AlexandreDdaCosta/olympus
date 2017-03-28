@@ -4,8 +4,8 @@
   <div class="btn-group flexcontainerright">
   <div class="left-nav-icon">
   <span>
-  <a href="{% url 'welcome_home' %}">
-  <span class="left-nav-icon-link fa fa-home fa-2x" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Home' %}">
+  <a href="{% url 'welcome_home' %}" class="left-nav-icon-link">
+  <span class="fa fa-home fa-2x" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Home' %}">
   </span>
   </a>
   </span>
@@ -46,6 +46,10 @@
         </a>
       </li>
     </ul>
+  </div>
+  <div class="flexcontainerright nav-logo">
+  <img src="/static/image/rocket-512.png" class="img-fluid" alt="Responsive image" style="height: 3em;">
+  Laika's Den
   </div>
   </div>
 </nav>

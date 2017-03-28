@@ -24,6 +24,12 @@ body {
   width: 100%;
   z-index: 1;
 }
+@media (min-width: 992px) {
+  #bottom-scroll, #top-scroll {
+    display: none;
+  }
+}
+
 a.scroll-tab {
   display: block;
   font-family: 'Alegreya Sans SC';
