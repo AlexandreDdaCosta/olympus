@@ -159,6 +159,13 @@ frontend-user:
     - mode: 0755
     - user: root
 
+{{ project_path }}/media/blog:
+    file.directory:
+    - group: root
+    - makedirs: False
+    - mode: 0755
+    - user: root
+
 {{ project_path }}/media-admin:
     file.directory:
     - group: {{ pillar['frontend-user'] }}
