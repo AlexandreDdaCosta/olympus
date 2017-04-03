@@ -1,58 +1,60 @@
+from django.contrib.auth.models import User
 from django.db import models
+from django.utils.translation import ugettext as _
 
 class Illustration(models.Model):
-	caption = models.CharField(max_length=255)
-	label = models.CharField(max_length=100)
-	url = models.URLField(max_length=255)
+    caption = models.CharField(max_length=255)
+    label = models.CharField(max_length=100)
+    url = models.URLField(max_length=255)
 
-	def __unicode__(self):
-		return '%s' % (self.url)
+    def __unicode__(self):
+        return '%s' % (self.url)
 
 class Topic(models.Model):
-	description = models.CharField(max_length=255)
+    description = models.CharField(max_length=255)
     illustration = models.ForeignKey(Illustration)
-	name = models.CharField(db_index=True,max_length=255,unique=True)
+    name = models.CharField(db_index=True,max_length=255,unique=True)
 
-	def __unicode__(self):
-		return '%s' % (self.name)
+    def __unicode__(self):
+        return '%s' % (self.name)
 
 class Article(models.Model):
     author = models.ForeignKey(User)
-	body = models.TextField(null=True)
-	create_date = models.DateTimeField(_('Created'), auto_now_add=True)
+    body = models.TextField(null=True)
+    create_date = models.DateTimeField(_('Created'), auto_now_add=True)
     featured = models.BooleanField(blank=True,default=False)
     featured_illustration = models.ForeignKey(Illustration,null=True)
-	illustrations = models.ManyToManyField(Illustration,related_name='article_illustrations',null=True)
+    illustrations = models.ManyToManyField(Illustration,related_name='article_illustrations',null=True)
     published = models.BooleanField(blank=True,default=False)
-	summary = models.TextField(null=True)
-	title = models.CharField(db_index=True,max_length=255)
+    summary = models.TextField(null=True)
+    title = models.CharField(db_index=True,max_length=255)
     topic = models.ForeignKey(Topic)
 
-	def __unicode__(self):
-		return '%s' % (self.title)
+    def __unicode__(self):
+        return '%s' % (self.title)
 	
 class Article_Revision(models.Model):
-	archive_date = models.DateTimeField(_('Archived'),auto_now_add=True)
+    archive_date = models.DateTimeField(_('Archived'),auto_now_add=True)
     article = models.ForeignKey(Article)
-	body = models.TextField(null=True)
-	summary = models.TextField(null=True)
-	title = models.CharField(db_index=True,max_length=255)
+    body = models.TextField(null=True)
+    summary = models.TextField(null=True)
+    title = models.CharField(db_index=True,max_length=255)
     topic = models.ForeignKey(Topic,null=True)
 
-	def __unicode__(self):
-		return '%s' % (self.title)
+    def __unicode__(self):
+        return '%s' % (self.title)
 
 class Keyword(models.Model):
     hashtag = models.BooleanField(blank=True,default=False)
-	name = models.CharField(db_index=True,max_length=255)
+    name = models.CharField(db_index=True,max_length=255)
 
-	def __unicode__(self):
-		return '%s' % (self.name)
+    def __unicode__(self):
+        return '%s' % (self.name)
 
 class Keyword_Article(models.Model):
     article = models.ForeignKey(Article)
     keyword = models.ForeignKey(Keyword)
-	occurrences = models.PositiveIntegerField()
+    occurrences = models.PositiveIntegerField()
 
-	def __unicode__(self):
-		return '%s' % (self.id)
+    def __unicode__(self):
+        return '%s' % (self.id)
