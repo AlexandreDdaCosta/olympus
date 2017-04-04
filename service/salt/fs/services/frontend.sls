@@ -327,9 +327,9 @@ jquery:
 {% if user['is_staff'] %}
 {{ username }}-django_admin:
 {% if 'email_address' in user %}
-{% set django-admin-email=user['email_address'] %}
+{% set django_admin_email=user['email_address'] %}
 {% else %}
-{% set django-admin-email=pillar.core_email' %}
+{% set django_admin_email=pillar.core_email' %}
 {% endif %}
   cmd.run:
     - name: sudo /usr/bin/python3 {{ pillar.www_path }}/django/manage.py verifyuser --username {{ username }} --email {{ django-admin-email }} --password {{ salt['cmd.shell'](random_string_generator) }} --admin --superuser
