@@ -1,5 +1,6 @@
 {% set project_path=pillar.www_path+'/django/interface' %}
 {% set sass_path=project_path+'/sass' %}
+{%- set random_password_generator='echo "import random; import string; print \'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100))" | /usr/bin/python' -%}
 
 include:
   - base: package
@@ -332,7 +333,7 @@ jquery:
 {% set django_admin_email=pillar.core_email %}
 {% endif %}
   cmd.run:
-    - name: sudo /usr/bin/python3 {{ pillar.www_path }}/django/manage.py verifyuser --username {{ username }} --email {{ django_admin_email }} --password {{ salt['cmd.shell'](random_string_generator) }} --admin --superuser
+    - name: sudo /usr/bin/python3 {{ pillar.www_path }}/django/manage.py verifyuser --username {{ username }} --email {{ django_admin_email }} --password {{ salt['cmd.shell'](random_password_generator) }} --admin --superuser
 {% endif %}
 {% endfor %}
 
