@@ -200,11 +200,11 @@ frontend-devserver-stop:
 
 django-makemigrations:
   cmd.run:
-    - name: /usr/bin/python3 {{ pillar.www_path }}/django/manage.py makemigrations
+    - name: yes | /usr/bin/python3 {{ pillar.www_path }}/django/manage.py makemigrations
 
 django-migrate:
   cmd.run:
-    - name: /usr/bin/python3 {{ pillar.www_path }}/django/manage.py migrate
+    - name: yes | /usr/bin/python3 {{ pillar.www_path }}/django/manage.py migrate
 
 {{ sass_path }}/public/css:
     file.directory:
