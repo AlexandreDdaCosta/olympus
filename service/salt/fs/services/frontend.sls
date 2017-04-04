@@ -262,7 +262,7 @@ bootstrap-get:
   cmd:
     - run
     - name: 'wget https://github.com/twbs/bootstrap/archive/v4.0.0-alpha.6.zip -O {{ sass_path }}/src/v4.0.0-alpha.6.zip'
-    - unless: '[ -d {{ sass_path }}/src/v4.0.0-alpha.6.zip ]'
+    - unless: '[ -f {{ sass_path }}/src/v4.0.0-alpha.6.zip ]'
 
 bootstrap:
   cmd:
@@ -282,7 +282,7 @@ fontawesome-get:
   cmd:
     - run
     - name: 'wget http://fontawesome.io/assets/font-awesome-4.7.0.zip -O {{ sass_path }}/src/font-awesome-4.7.0.zip'
-    - unless: '[ -d {{ sass_path }}/src/font-awesome-4.7.0.zip ]'
+    - unless: '[ -f {{ sass_path }}/src/font-awesome-4.7.0.zip ]'
 
 fontawesome:
   cmd:
@@ -322,6 +322,19 @@ jquery:
 {{ project_path }}/static/js/jquery.min.js:
   file.symlink:
     - target: {{ project_path }}/static/js/jquery-3.2.0.min.js
+
+{% for username, user in pillar.get('users', {}).items() %}
+{% if user['is_staff'] %}
+{{ username }}-django_admin:
+{% if 'email_address' in user %}
+{% set django-admin-email=user['email_address'] %}
+{% else %}
+{% set django-admin-email=pillar.core_email' %}
+{% endif %}
+  cmd.run:
+    - name: sudo /usr/bin/python3 {{ pillar.www_path }}/django/manage.py verifyuser --username {{ username }} --email {{ django-admin-email }} --password {{ salt['cmd.shell'](random_string_generator) }} --admin --superuser
+{% endif %}
+{% endfor %}
 
 nginx-frontend:
   service.running:

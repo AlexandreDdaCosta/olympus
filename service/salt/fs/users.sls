@@ -1,6 +1,3 @@
-include:
-  - base: security
-
 {% for username, user in pillar.get('users', {}).items() %}
 {{ username }}:
 
