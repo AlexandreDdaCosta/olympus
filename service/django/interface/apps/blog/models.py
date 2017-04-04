@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext as _
 
-class Illustration(models.Model):
+class Graphic(models.Model):
     caption = models.CharField(max_length=255)
     label = models.CharField(max_length=100)
     url = models.URLField(max_length=255)
@@ -12,7 +12,7 @@ class Illustration(models.Model):
 
 class Topic(models.Model):
     description = models.CharField(max_length=255)
-    illustration = models.ForeignKey(Illustration)
+    graphic = models.ForeignKey(Graphic)
     name = models.CharField(db_index=True,max_length=255,unique=True)
 
     def __unicode__(self):
@@ -23,8 +23,8 @@ class Article(models.Model):
     body = models.TextField(null=True)
     create_date = models.DateTimeField(_('Created'), auto_now_add=True)
     featured = models.BooleanField(blank=True,default=False)
-    featured_illustration = models.ForeignKey(Illustration,null=True)
-    illustrations = models.ManyToManyField(Illustration,related_name='article_illustrations',null=True)
+    featured_graphic = models.ForeignKey(Graphic,null=True)
+    graphics = models.ManyToManyField(Graphic,related_name='article_graphics')
     published = models.BooleanField(blank=True,default=False)
     summary = models.TextField(null=True)
     title = models.CharField(db_index=True,max_length=255)
