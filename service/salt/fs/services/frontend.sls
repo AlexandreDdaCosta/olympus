@@ -332,7 +332,7 @@ jquery:
 {% set django_admin_email=pillar.core_email' %}
 {% endif %}
   cmd.run:
-    - name: sudo /usr/bin/python3 {{ pillar.www_path }}/django/manage.py verifyuser --username {{ username }} --email {{ django-admin-email }} --password {{ salt['cmd.shell'](random_string_generator) }} --admin --superuser
+    - name: sudo /usr/bin/python3 {{ pillar.www_path }}/django/manage.py verifyuser --username {{ username }} --email {{ django_admin_email }} --password {{ salt['cmd.shell'](random_string_generator) }} --admin --superuser
 {% endif %}
 {% endfor %}
 
