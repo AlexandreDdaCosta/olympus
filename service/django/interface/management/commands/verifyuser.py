@@ -27,7 +27,7 @@ class Command(BaseCommand):
             '--email',
             action='store',
             dest='email',
-            help='Set as user's email address',
+            help='Setting for user email address',
         )
         parser.add_argument(
             '--groups',
