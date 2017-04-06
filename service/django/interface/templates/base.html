@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n -%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,6 +10,8 @@
 {% block styles %}
 {% include "styles.html" %}
 {% endblock %}
+{% block localstyles %}{% endblock %}
+{% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}
 </head>
 <body class="{% block body-class %}{% endblock %}">
 <div id="top-scroll">
@@ -18,16 +20,25 @@ Laika's Den
 <span class="fa fa-paw" style="padding-left: 1em"></span>
 </a>
 </div>
-{% block navbar %}
-{% include "nav.html" %}
-{% endblock %}
-{% block breadcrumbs %}
-{% endblock %}
+{% block navbar %}{% include "nav.html" %}{% endblock %}
+{% block breadcrumbs %}{% endblock %}
 {% block messages %}
 {% if messages %}
 {% for message in messages %}
-<div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">
-{{ message }}
+<div class="row">
+  <div class="col-lg-12 col-md-12 col-sm-12">
+  {% if message.tags == 'error'%}
+    <div class="alert alert-danger">
+  {% elif message.tags == 'warning'%}
+    <div class="alert alert-warning">
+  {% else %}
+    <div class="alert alert-info">
+  {% endif %}
+    <ul class="list-unstyled">
+    <li>{{ message }}</li>
+    </ul>
+    </div>
+  </div>
 </div>
 {% endfor %}
 {% endif %}

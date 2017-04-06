@@ -1,0 +1,60 @@
+{% extends "admin/base.html" %}
+{% load admin_static i18n %}
+
+{% block localstyles %}
+<style type="text/css">
+/* Summary sections */
+.summary {
+  padding-bottom: 30px;
+  padding-top: 20px
+}
+.summary-footer {
+  padding-bottom: 0px;
+}
+.summary h2 {
+  color: black;
+}
+.summary-black {
+  background-color: #000000;
+  text-align: center;
+}
+.summary-blue {
+  background-color: #1C4263;
+  text-align: center;
+}
+.summary-blue h2 {
+  color: #ffffff;
+}
+.summary-grey {
+  background-color: #e6e6e6;
+  text-align: center;
+}
+
+/* Padding adjustments */
+.full-width {
+  width: 100%
+}
+.login-padding {
+  padding-bottom: 40px
+}
+.no-padding {
+  padding-left: 0px;
+  padding-right: 0px
+}
+
+/* colors */
+.white-font {
+  color: #ffffff;
+}
+h2, h3, h4 {
+  color: #001f3d;
+}
+
+.btn-action {padding: .2em .2em;padding-top: .2em;padding-bottom: .2em;margin: .2em;font-size:1.3em;border-radius:.4em;width:4.5em}
+.hr-label {border-bottom: 0px}
+@media screen and (min-width: 992px) {
+  .hr-label {border-bottom: 1px solid #e5e5e5}
+}
+
+</style>
+{% endblock localstyles %}
