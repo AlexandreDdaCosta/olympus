@@ -14,7 +14,7 @@ class Graphic(models.Model):
 class Topic(models.Model):
     description = models.CharField(max_length=255)
     graphic = models.ForeignKey(Graphic)
-    name = models.CharField(db_index=True,max_length=30,unique=True)
+    name = models.CharField(db_index=True,max_length=30,unique=True,default="/")
 
     def __unicode__(self):
         return '%s' % (self.name)
