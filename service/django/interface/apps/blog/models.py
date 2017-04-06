@@ -5,7 +5,8 @@ from django.utils.translation import ugettext as _
 class Graphic(models.Model):
     caption = models.CharField(max_length=255)
     label = models.CharField(max_length=100)
-    url = models.URLField(max_length=255)
+    name = models.CharField(max_length=255)
+    url_source = models.URLField(max_length=255)
 
     def __unicode__(self):
         return '%s' % (self.url)
@@ -13,7 +14,7 @@ class Graphic(models.Model):
 class Topic(models.Model):
     description = models.CharField(max_length=255)
     graphic = models.ForeignKey(Graphic)
-    name = models.CharField(db_index=True,max_length=255,unique=True)
+    name = models.CharField(db_index=True,max_length=30,unique=True)
 
     def __unicode__(self):
         return '%s' % (self.name)
