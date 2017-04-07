@@ -2,7 +2,7 @@
 
 body {
   font-size: 1.3rem;
-  padding-top: 5.5em;
+  padding-top: .5em;
   padding-bottom: 2.5em;
 }
 
@@ -24,7 +24,13 @@ body {
   width: 100%;
   z-index: 1;
 }
+.fixed-top {
+  top: 1em;
+}
 @media (min-width: 992px) {
+  .fixed-top {
+    top: 0em;
+  }
   #bottom-scroll, #top-scroll {
     display: none;
   }

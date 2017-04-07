@@ -23,6 +23,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 MEDIA_ROOT = '/srv/www/django/interface/media'
 MEDIA_ROOT_ADMIN = '/srv/www/django/interface/media-admin'
 MEDIA_URL = '/media/'

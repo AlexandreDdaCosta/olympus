@@ -1,4 +1,6 @@
 {% extends "base.html" %}
-{% load admin_static i18n %}
+{% load i18n %}
 
 {% block title %}{% trans 'Administration' %}{% endblock %}
+{% block navbar %}{% include "nav.html" %}{% endblock %}
+{% block body-class %}nav_body{% endblock %}

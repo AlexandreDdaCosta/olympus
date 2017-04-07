@@ -7,10 +7,8 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="NONE,NOARCHIVE" />
-{% block styles %}
 {% include "styles.html" %}
-{% endblock %}
-{% block localstyles %}{% endblock %}
+{% block styles %}{% endblock %}
 {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}
 </head>
 <body class="{% block body-class %}{% endblock %}">
@@ -20,7 +18,7 @@ Laika's Den
 <span class="fa fa-paw" style="padding-left: 1em"></span>
 </a>
 </div>
-{% block navbar %}{% include "nav.html" %}{% endblock %}
+{% block navbar %}{% endblock %}
 {% block breadcrumbs %}{% endblock %}
 {% block messages %}
 {% if messages %}

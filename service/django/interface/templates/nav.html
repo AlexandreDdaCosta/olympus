@@ -32,7 +32,7 @@
       <li class="nav-item nav-item-middle">
         <a class="nav-link" href="/coding">
         <span class="lg-hide">
-        <span class="fa fa-database fa-2x fa-nav-icon" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Coding' %}"></span>
+        <span class="fa fa-codepen fa-2x fa-nav-icon" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Coding' %}"></span>
         </span>
         <span class="md-hide nav-text">{% trans 'Coding' %}</span>
         </a>
@@ -44,6 +44,33 @@
         </span>
         <span class="md-hide nav-text">{% trans 'Photography' %}</span>
         </a>
+      </li>
+      {% if user.is_staff %}
+      <li class="nav-item nav-item-rightend">
+        <a class="nav-link" href="/admin">
+        <span class="lg-hide">
+        <span class="fa fa-cog fa-2x fa-nav-icon" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Admin' %}"></span>
+        </span>
+        <span class="md-hide nav-text">{% trans 'Admin' %}</span>
+        </a>
+      </li>
+      {% endif %}
+      <li class="nav-item nav-item-rightend">
+        {% if user.is_authenticated %}
+        <a class="nav-link" href="/logout">
+        <span class="lg-hide">
+        <span class="fa fa-sign-out fa-2x fa-nav-icon" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Sign out' %}"></span>
+        </span>
+        <span class="md-hide nav-text">{% trans 'Sign out' %}</span>
+        </a>
+        {% else %}
+        <a class="nav-link" href="/login">
+        <span class="lg-hide">
+        <span class="fa fa-sign-in fa-2x fa-nav-icon" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Sign in' %}"></span>
+        </span>
+        <span class="md-hide nav-text">{% trans 'Sign in' %}</span>
+        </a>
+        {% endif %}
       </li>
     </ul>
   </div>

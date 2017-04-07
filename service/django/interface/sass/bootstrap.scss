@@ -28,13 +28,8 @@ $navbar-light-hover-color: rgba(128,128,128,1);
 
 // Navigation
 
-.fixed-top {
-  top: 1em;
-}
-@media (min-width: 992px) {
-  .fixed-top {
-    top: 0em;
-  }
+body.nav_body {
+  padding-top: 5.5em;
 }
 .navbar {
   padding: .1em;
@@ -50,7 +45,7 @@ $navbar-light-hover-color: rgba(128,128,128,1);
 .nav-text {
   color: rgba(16,16,16,1);
   font-family: 'Alegreya Sans SC';
-  font-size: 1.5em;
+  font-size: 1.0em;
   text-align: center; 
   vertical-align: middle;
 }
@@ -154,11 +149,11 @@ element {
   tile-color-caution: brown;
 }
 .tile {
-  background-color: #000000;
+  background-color: rgba(0, 0, 0, 1);
   border-radius: .5em;
   border-style: solid;
   border-width: 1px;
-  color: #ffffff;
+  color: rgba(255, 255, 255, 1);
   margin: 0em;
   margin-bottom: .5em;
   padding: 1em 1em;
@@ -166,32 +161,32 @@ element {
   padding-top: .5em;
 }
 .tile a {
-    color: #e6e6e6;
+  color: rgba(230, 230, 230, 1);
 }
 .tile a:hover,
 .tile a:focus {
-    color: #ffffff;
-    text-decoration: none;
+  color: rgba(255, 255, 255, 1);
+  text-decoration: none;
 }
 .tile-timestamp a:active {
-    color: #ffffff;
-    text-decoration: none;
+  color: rgba(255, 255, 255, 1);
+  text-decoration: none;
 }
 .tile.tile-caution {
-  background-color: #ffff00;
-  border-color: #ccc;
-  color: #000000;
+  background-color: rgba(255, 255, 0, 1);
+  border-color: rgba(204, 192, 0, 1);
+  color: rgba(0, 0, 0, 1);
 }
 .tile.tile-caution a {
-    color: #aaaaaa;
+  color: rgba(170, 170, 170, 1);
 }
 .tile.tile-caution a:hover,
 .tile.tile-caution a:focus {
-    color: #000000;
-    text-decoration: none;
+  color: rgba(0, 0, 0, 1);
+  text-decoration: none;
 }
 .tile.tile-caution hr {
-    border-color: #000000;
+  border-color: rgba(0, 0, 0, 1);
 }
 .tile.tile-dynamic {
   margin-bottom: 0em;
@@ -199,15 +194,15 @@ element {
   border-bottom-right-radius: 0em;
 }
 .tile.tile-error {
-  border-color: #ff9980;
-  background-color: #f56954;
+  border-color: rgba(255, 153, 128, 1);
+  background-color: rgba(245, 105, 84, 1);
 }
 .tile.tile-link {
-  background-color: #1C4263;
+  background-color: rgba(28, 66, 99, 1);
 }
 .tile.tile-ok {
-  border-color: #9bca9b;
-  background-color: #7AB87A;
+  border-color: rgba(155, 202, 155, 1);
+  background-color: rgba(122, 184, 122, 1)
 }
 .tile-counter {
   font-size: 2.5em;
@@ -221,10 +216,10 @@ element {
   padding-top: 1em;
 }
 .tile h1, .tile h2, .tile h3, .tile h4, .tile h5 {
-  color: #ffffff;
+  color: rgba(255, 255, 255, 1);
 }
 .tile-caution h1, .tile-caution h2, .tile-caution h3, .tile-caution h4, .tile-caution h5  {
-  color: #000000;
+  color: rgba(0, 0, 0, 1);
 }
 .tile .input-group {
   padding-bottom: 1em;
@@ -234,13 +229,13 @@ element {
   font-size: .75em;
 }
 .btn-tile-caution {
-  @include button-variant(#000000, #ffff00, #ccc);
+  @include button-variant(rgba(0, 0, 0, 1), rgba(255, 255, 0, 1), rgba(204, 192, 0, 1));
 }
 .btn-tile-error {
-  @include button-variant(#ffffff, #f56954, #ff9980);
+  @include button-variant(rgba(255, 255, 255, 1), rgba(245, 105, 84, 1), rgba(255, 153, 128, 1));
 }
 .btn-tile-ok {
-  @include button-variant(#ffffff, #7AB87A, #9bca9b);
+  @include button-variant(rgba(255, 255, 255, 1), rgba(122, 184, 122, 1), rgba(155, 202, 155, 1));
 }
 .btn-group-justified.tile-control {
   margin-bottom: 1em;
@@ -258,13 +253,13 @@ element {
   margin: .1em .1em .1em .1em;
 }
 .dropdown-menu.tile-dropdown {
-  background-color: #cccccc;
+  background-color: rgba(204, 204, 204, 1);
   padding-left: .2em;
 }
 .dropdown-menu.tile-dropdown>li>a {
-  color: #000000;
+  color: rgba(0, 0, 0, 1);
   text-decoration: none;
 }
 .dropdown-menu.tile-dropdown>li>a:hover {
-  color: #dddddd;
+  color: rgba(221, 221, 221, 1);
 }

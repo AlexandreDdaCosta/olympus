@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load i18n admin_static %}
+{% block title %}{% trans 'Sign in' %}{% endblock %}
+{% block navbar %}{% include "nav.html" %}{% endblock %}
+{% block content %}
+<div class="container container-fluid login-padding">
+  <div class="header">
+    <h3 class="text-muted"><a class="nav-text" href="/">Laika's Den</a></h3>
+  </div>
+  {% if form.errors or form.non_field_errors or form.this_is_the_login_form.errors %}
+  <div class="alert alert-danger">{% trans 'Access denied' %}.</div>
+  {% endif %}
+  {% for message in messages %}
+  {% endfor %}
+  <div>
+  <form class="form-signin form-horizontal" action="/login/" method="post" id="login-form">{% csrf_token %}
+    <h2 class="form-signin-heading">{% trans 'Please sign in' %}</h2>
+    <label for="id_username" class="sr-only">{% trans 'User name' %}</label>
+    <input type="text" name="username" id="id_username" class="form-control" placeholder="{% trans 'User name' %}" required>
+    <label for="id_password" class="sr-only">i{% trans 'Password' %}</label>
+    <input type="password" name="password" id="id_password" class="form-control" placeholder="{% trans 'Password' %}" required>
+    <button class="btn btn-lg btn-primary btn-block" type="submit">{% trans 'Sign in' %}</button>
+    <input type="hidden" name="next" value="{{ next }}" />
+  </form>
+  </div>
+</div>
+{% endblock %}
