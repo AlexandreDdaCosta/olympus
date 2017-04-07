@@ -1,268 +1,73 @@
 {% extends "admin/base.html" %}
-{% load i18n admin_static admin_tags strings tile %}
+{% load i18n admin_static tile %}
 
 {% block content %}
+<div class="container">
+
 <div class="row">
-<div class="col-md-6">
-<div class="panel panel-default" style="border-radius: 0em;padding: 1em 1em;border: 0em;box-shadow: 0 0 0px white;">
-  <h1>{% trans 'Controller' %}</h1>
-  <p><i>Main administrative menu</i></p>
-  <!-- <p>TOC</p> -->
-  {% for app in app_list|make_apps_menu %}
-  <br/>
-  <div>
-  <hr style="padding-bottom: 0em;margin-bottom: 0em;height:.2em;border:none;color:#001f3d;background-color:#001f3d;">
-  <table width="100%">
-  <tr>
-  <td>
-  <h2 style="margin-top: .2em;margin-bottom: .2em">{{ app.name }}</h2>
-  </td>
-  <td class="pull-right">
-  <a href=""><i class="fa fa-info-circle" style="font-size: 3em"></i></a>
-  </td>
-  </tr>
-  </table>
-  <br/>
-  </div>
-  {% if app.submenus %}
-  {% for submenu in app.submenus %}
-  <div>
-    <h3>{{ submenu.name }}</h3>
-    <hr style="margin: 0px;padding-bottom: 0em;margin-bottom: .5em;height:.15em;border:none;color:#7a7a7a;background-color:#7a7a7a;">
-    <!-- <p>{{ submenu.description }}</p> -->
-  </div>
-  {% for model in submenu.models %}
-  <div class="container container-fluid" style="margin: 0em; padding: 0em 0em">
-    <div class="col-md-2">
-    <a href="{{ model.admin_url }}"><h3 style="color: #428bca">{{ model.display_name }}</h3></a>
-    </div>
-    <div class="col-md-4" style="padding-left: 2em">
-    {% if model.description %}
-      <button type="submit" class="btn btn-default btn-action" onclick="">
-      <span class="fa fa-info-circle"></span>
-      <br/>{% trans 'Info' %}
-      </button>
-    {% endif %}
-    {% if model.perms.add %}
-      <button type="submit" class="btn btn-default btn-action" onclick="location.href='{{ model.add_url }}'">
-      <span class="glyphicon glyphicon-plus" style="color: #7AB87A"></span>
-      <br/>{% trans 'Add' %}
-      </button>
-    {% endif %}
-    {% if model.added_actions %}
-    {% for action in model.added_actions %}
-      <button type="submit" class="btn btn-default btn-action" onclick="location.href='{{ action.url }}'">
-      <span class="{{ action.icon }}" style="color: #428bca"></span>
-      <br/>{{ action.name }}
-      </button>
-    {% endfor %}
-    {% endif %}
-    </div>
-    <!-- <div class="container" style="padding-top: 5px;">{{ model.description }}</div> -->
-  </div>
-  {% endfor %}
-  {% endfor %}
-  <br/>
-  {% else %}
-  {% for model in app.models %}
-  <div class="container container-fluid" style="padding-bottom: 5px">
-    <div class="row">
-    <div class="col-md-1">
-    <a href="{{ model.admin_url }}"><h4 style="color: #428bca">{{ model.display_name }}</h4></a>
-    </div>
-    <div class="col-md-5" style="padding-left: 2em">
-    {% if model.description %}
-      <button type="submit" class="btn btn-default btn-action" onclick="">
-      <span class="fa fa-info-circle" style="color: #428bca"></span>
-      <br/>{% trans 'Info' %}
-      </button>
-    {% endif %}
-    {% if model.perms.add %}
-      <button type="submit" class="btn btn-default btn-action" onclick="location.href='{{ model.add_url }}'">
-      <span class="glyphicon glyphicon-plus" style="color: #7AB87A"></span>
-      <br/>{% trans 'Add' %}
-      </button>
-    {% endif %}
-    {% if model.added_actions %}
-    {% for action in model.added_actions %}
-      <button type="submit" class="btn btn-default btn-action" onclick="location.href='{{ action.url }}'">
-      <span class="{{ action.icon }}"></span>
-      <br/>{{ action.name }}
-      </button>
-    {% endfor %}
-    {% endif %}
-    </div>
+  <div class="col-12 col-wide">
+    <div class="card">
+      <div class="card-block">{% trans 'Administration' %}</div>
     </div>
   </div>
-  {% endfor %}
-  {% endif %}
-  {% endfor %}
-</div>
-</div>
-<div class="col-md-6">
-
- <div class="row">
- <div class="col-md-6 col-sm-6">
- {% job_tile %} 
- </div>
- <div class="col-md-6 col-sm-6">
- {% minion_tile %} 
- </div>
- </div>
-
- <div class="row" style="margin: .5em;padding-bottom: 2em;">
-   <h1 style="text-align: center"> <span class="fa fa-calendar-o"></span> Schedule</h1>
-   <hr style="height:.1em;color:#001f3d;background-color:#001f3d;">
-   <div class="calendar">
-   </div>
- </div>
- <link rel="stylesheet" href="/static/controlpanel/fullcalendar.css"/>
- <script type="text/javascript" src="/static/controlpanel/js/moment-with-langs.min.js"></script>
- <script type="text/javascript" src="/static/controlpanel/fullcalendar.js"></script>
- <script type="text/javascript">
-$(document).ready(function() {
-	var date = new Date();
-	var d = date.getDate();
-	var m = date.getMonth();
-	var y = date.getFullYear();
-	
-	$('div.calendar').fullCalendar({
-		header: {
-			left: 'prev,next today',
-			center: 'title',
-			right: 'month,agendaWeek,agendaDay'
-		},
-		editable: true
-	});
-});
- </script>
-
-  {% timeline_tile %}
-  {% ticker_tile %}
-  {% documentation_tile %}
-
- <div class="row">
- <div class="col-md-6 col-sm-6">
-  <div class="panel panel-default" style="border-radius: 0em;padding: 1em 1em;border: 0em;box-shadow: 0 0 0px white;">
-    <h2>Graph</h2>
-    <br/>
-  </div>
- </div>
- <div class="col-md-6 col-sm-6">
-  <div class="panel panel-default" style="border-radius: 0em;padding: 1em 1em;border: 0em;box-shadow: 0 0 0px white;">
-    <h2>Graph</h2>
-    <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
-  </div>
- </div>
- </div>
- </div>
-</div>
 </div>
 
- <div class="row" style="padding-top: 0em;padding-bottom: 0em; padding: 0em 0em">
- <div class="col-lg-12 col-md-12 col-sm-12">
- <div id="tagcloud">
- <div id="vis">
- </div>
- </div>
- </div>
- </div>
-
- <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js" charset="utf-8"></script>
- <script src="https://jardindesconnaissances.googlecode.com/svn-history/r82/trunk/public/js/d3.layout.cloud.js"></script>
- <script type="text/javascript">
-var tags = [{"key": "Cat", "value": 26}, {"key": "fish", "value": 19}, {"key": "things", "value": 18}, {"key": "look", "value": 16}, {"key": "two", "value": 15}, {"key": "like", "value": 14}, {"key": "hat", "value": 14}, {"key": "Oh", "value": 13}, {"key": "mother", "value": 12}, {"key": "One", "value": 12}, {"key": "Now", "value": 12}, {"key": "Thing", "value": 12}, {"key": "house", "value": 10}, {"key": "fun", "value": 9}, {"key": "know", "value": 9}, {"key": "good", "value": 9}, {"key": "saw", "value": 9}, {"key": "bump", "value": 8}, {"key": "hold", "value": 7}, {"key": "fear", "value": 6}, {"key": "game", "value": 6}, {"key": "play", "value": 6}, {"key": "Sally", "value": 6}, {"key": "wet", "value": 6}, {"key": "little", "value": 6}, {"key": "box", "value": 6}, {"key": "came", "value": 6}, {"key": "away", "value": 6}, {"key": "sit", "value": 5}, {"key": "ran", "value": 5}, {"key": "big", "value": 5}, {"key": "something", "value": 5}, {"key": "put", "value": 5}, {"key": "fast", "value": 5}, {"key": "go", "value": 5}, {"key": "ball", "value": 5}, {"key": "pot", "value": 5}, {"key": "show", "value": 4}, {"key": "cup", "value": 4}, {"key": "get", "value": 4}, {"key": "cake", "value": 4}];
-
-var fill = d3.scale.category20b();
-
-var w = $('#tagcloud').width();
-var h = 300;
-
-var max,
-        fontSize;
-
-var layout = d3.layout.cloud()
-        .timeInterval(Infinity)
-        .size([w, h])
-        .fontSize(function(d) {
-            return fontSize(+d.value);
-        })
-        .text(function(d) {
-            return d.key;
-        })
-        .on("end", draw);
-
-var svg = d3.select("#vis").append("svg")
-        .attr("width", w)
-        .attr("height", h);
-
-var vis = svg.append("g").attr("transform", "translate(" + [w >> 1, h >> 1] + ")");
-
-update();
-
-window.onresize = function(event) {
-    update();
-};
-
-function draw(data, bounds) {
-    var w = $('#tagcloud').width();
-    var h = 300;
-
-    svg.attr("width", w).attr("height", h);
-
-    scale = bounds ? Math.min(
-            w / Math.abs(bounds[1].x - w / 2),
-            w / Math.abs(bounds[0].x - w / 2),
-            h / Math.abs(bounds[1].y - h / 2),
-            h / Math.abs(bounds[0].y - h / 2)) / 2 : 1;
-
-    var text = vis.selectAll("text")
-            .data(data, function(d) {
-                return d.text.toLowerCase();
-            });
-    text.transition()
-            .duration(1000)
-            .attr("transform", function(d) {
-                return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
-            })
-            .style("font-size", function(d) {
-                return d.size + "px";
-            });
-    text.enter().append("text")
-            .attr("text-anchor", "middle")
-            .attr("transform", function(d) {
-                return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
-            })
-            .style("font-size", function(d) {
-                return d.size + "px";
-            })
-            .style("opacity", 1e-6)
-            .transition()
-            .duration(1000)
-            .style("opacity", 1);
-    text.style("font-family", function(d) {
-        return d.font;
-    })
-            .style("fill", function(d) {
-                return fill(d.text.toLowerCase());
-            })
-            .text(function(d) {
-                return d.text;
-            })
-    .on("click", function (d, i){
-          window.location.href = "http://www.foo.com";
-      });
-    vis.transition().attr("transform", "translate(" + [w >> 1, h >> 1] + ")scale(" + scale + ")");
-}
-
-function update() {
-    layout.font('impact').spiral('archimedean');
-    fontSize = d3.scale['sqrt']().range([10, 100]);
-    if (tags.length){
-        fontSize.domain([+tags[tags.length - 1].value || 1, +tags[0].value]);
-    }
-    layout.stop().words(tags).start();
-}
-
- </script>
+<div class="row">
+  <div class="col-md-12 col-lg-8 col-wide">
+    <div class="card">
+      <div class="card-block">
+      Main menu
+      {% if app_list %}
+      {% for app in app_list %}
+        <div class="app-{{ app.app_label }} module">
+        <table>
+        <caption>
+            <a href="{{ app.app_url }}" class="section" title="{% blocktrans with name=app.name %}Models in the {{ name }} application{% endblocktrans %}">{{ app.name }}</a>
+        </caption>
+        {% for model in app.models %}
+          <tr class="model-{{ model.object_name|lower }}">
+          {% if model.admin_url %}
+              <th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>
+          {% else %}
+              <th scope="row">{{ model.name }}</th>
+          {% endif %}
+          {% if model.add_url %}
+              <td><a href="{{ model.add_url }}" class="addlink">{% trans 'Add' %}</a></td>
+          {% else %}
+              <td>&nbsp;</td>
+          {% endif %}
+          {% if model.admin_url %}
+              <td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>
+          {% else %}
+              <td>&nbsp;</td>
+          {% endif %}
+          </tr>
+          {% endfor %}
+        </table>
+        </div>
+      {% endfor %}
+      {% else %}
+      <p>{% trans "You don't have permission to edit anything." %}</p>
+      {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4 col-wide">
+    <div class="container">
+      {% ticker_tile %}
+    </div>
+    <div class="container">
+      {% job_tile %}
+    </div>
+    <div class="container">
+      {% minion_tile %}
+    </div>
+    <div class="container">
+      <div>Calendar</div>
+    </div>
+    <div class="container">
+      <div>Feature</div>
+    </div>
+  </div>
+</div>
 {% endblock %}

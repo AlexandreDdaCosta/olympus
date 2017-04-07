@@ -1,0 +1,29 @@
+{% load admin_urls i18n %}
+
+{% block tile %}
+  <div class="tile {% if minions.status.down%}tile-error{% elif not minions.status or not minions.workers|length %}tile-caution{% else %}tile-ok{% endif %}">
+  <h1>Minions</h1>
+  {% if minions.status %}
+  <p>
+  <span class="tile-counter">{{ minions.status.up|length }}</span>&ensp; {% trans 'normal' %}<br/>
+  <span class="tile-counter">{{ minions.workers|length }}</span>&ensp; {% trans 'available workers' %}<br/>
+  <span class="tile-counter">{{ minions.status.down|length }}</span>&ensp; {% trans 'unresponsive' %}
+  </p>
+  {% if minions.status.down|length > 0 %}
+  <br/>
+  <p>
+  {% for minion in minions.status.down %}
+  <span><strong>{{ minion }}</strong></span><br/>
+  {% endfor %}
+  </p>
+  <br/>
+  {% endif %}
+  {% else %}
+  <p>
+  <br/>
+  {% trans 'No information available on local minions.' %}
+  </p>
+  {% endif %}
+  <p class="tile-timestamp"><i>{% if jobstatus %}<a href="{% url 'admin:control_jobstatus_change' jobstatus.id %}">{{ checkdate }}</a>{% else %}{{ checkdate }}{% endif %}</i></p>
+  </div>
+{% endblock %}

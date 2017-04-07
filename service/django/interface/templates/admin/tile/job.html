@@ -1,0 +1,54 @@
+{% load admin_urls i18n strings %}
+
+{% block tile %}
+<div class="tile tile-dynamic {% if jobs.status.failed %}tile-error{% elif jobs.status.stuck %}tile-caution{% else %}tile-ok{% endif %}">
+  <span class="tile-counter-header">{{ jobs.count }}</span><br/>
+  {% with '?last_jobstatus__create_date__gte='|concatenate:seven_days_ago|concatenate:'&last_jobstatus__create_date__lt='|concatenate:tomorrow as date_url %}
+  <a href="{% url 'admin:index'%}{{ date_url }}">{% trans '7-day job count' %}</a>
+  {% if jobs.status %}
+  <hr>
+  {% if jobs.status.complete %}
+  <span class="tile-counter">{{ jobs.status.complete }}</span>&ensp;
+  <a href="{% url 'admin:index'%}{{ date_url }}&category=complete">{% trans 'complete' %}</a>
+  <br/>
+  {% endif %}
+  {% if jobs.status.inprogress %}
+  <span class="tile-counter">{{ jobs.status.inprogress }}</span>&ensp;
+  <a href="{% url 'admin:index'%}{{ date_url }}&category=inprogress">{% trans 'in progress' %}</a>
+  <br/>
+  {% endif %}
+  {% if jobs.status.failed %}
+  <span class="tile-counter">{{ jobs.status.failed }}</span>&ensp;
+  <a href="{% url 'admin:index'%}{{ date_url }}&category=failed">{% trans 'failed' %}</a>
+  <br/>
+  {% endif %}
+  {% if jobs.status.stuck %}
+  <span class="tile-counter">{{ jobs.status.stuck }}</span>&ensp;
+  <a href="{% url 'admin:index'%}{{ date_url }}&category=stuck">{% trans 'stuck' %}</a>
+  <br/>
+  {% endif %}
+  {% else %}
+  <p>
+  <br/>
+  {% trans 'No information available on local jobs.' %}
+  </p>
+  {% endif %}
+  {% endwith %}
+  <p class="tile-timestamp"><i>{{ checkdate }}</i></p>
+</div>
+<div class="btn-group btn-group-justified tile-control" role="group">
+  <div class="btn-group" role="group">
+    <button type="button" class="btn {% if jobs.status.failed %}btn-tile-error{% elif jobs.status.stuck %}btn-tile-caution{% else %}btn-tile-ok{% endif %} tile-control-button tile-control-button-left">
+    <span class="fa fa-refresh"></span>
+    </button>
+  </div>
+  <div class="btn-group" role="group">
+    <button type="button" class="btn {% if jobs.status.failed %}btn-tile-error{% elif jobs.status.stuck %}btn-tile-caution{% else %}btn-tile-ok{% endif %} dropdown-toggle tile-control-button tile-control-button-right" data-toggle="dropdown">{% trans 'More' %}
+    <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+      <li><a href="#">Disable auto refresh</a></li>
+    </ul>
+  </div>
+</div>
+{% endblock %}

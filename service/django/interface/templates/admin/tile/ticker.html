@@ -1,0 +1,17 @@
+{% load i18n %}
+
+{% block tile %}
+  <div class="tile tile-link" style="padding-bottom: 1em">
+  <h1><span class="fa fa-bar-chart"></span> Ticker</h1><br/>
+  {% for event in events %}
+  {% trans event.type.name as eventtype %}
+  <p><strong>{{ eventtype }}</strong></p>
+  <p><i>{{ event.create_date }}</i></p>
+  {% endfor %}
+  <p>
+  Ticker chart
+  <br/><br/><br/><br/><br/><br/>
+  </p>
+  </div>
+
+{% endblock %}
