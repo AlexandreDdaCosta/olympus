@@ -2,7 +2,7 @@
 
 {% block tile %}
 <div class="tile tile-dynamic {% if jobs.status.failed %}tile-error{% elif jobs.status.stuck %}tile-caution{% else %}tile-ok{% endif %}">
-  <span class="tile-counter-header">{{ jobs.count }}</span><br/>
+  <span class="tile-counter-header">{% if jobs.count %}{{ jobs.count }}{% else %}0{% endif %}</span><br/>
   {% with '?last_jobstatus__create_date__gte='|concatenate:seven_days_ago|concatenate:'&last_jobstatus__create_date__lt='|concatenate:tomorrow as date_url %}
   <a href="{% url 'admin:index'%}{{ date_url }}">{% trans '7-day job count' %}</a>
   {% if jobs.status %}
@@ -46,7 +46,7 @@
     <button type="button" class="btn {% if jobs.status.failed %}btn-tile-error{% elif jobs.status.stuck %}btn-tile-caution{% else %}btn-tile-ok{% endif %} dropdown-toggle tile-control-button tile-control-button-right" data-toggle="dropdown">{% trans 'More' %}
     <span class="caret"></span>
     </button>
-    <ul class="dropdown-menu">
+    <ul class="dropdown-menu tile-dropdown">
       <li><a href="#">Disable auto refresh</a></li>
     </ul>
   </div>

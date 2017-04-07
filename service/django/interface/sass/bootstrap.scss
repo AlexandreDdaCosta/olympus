@@ -9,6 +9,23 @@ $navbar-light-hover-color: rgba(128,128,128,1);
   padding: 0px;
 }
 
+// Buttons
+
+.btn-group-justified {
+  display: flex;
+  width: 100%;
+  .btn,
+  .btn-group {
+    flex: 1;
+    .btn {
+      width: 100%;
+    }
+    .dropdown-menu {
+      left: auto;
+    }
+  }
+}
+
 // Navigation
 
 .fixed-top {
@@ -33,7 +50,7 @@ $navbar-light-hover-color: rgba(128,128,128,1);
 .nav-text {
   color: rgba(16,16,16,1);
   font-family: 'Alegreya Sans SC';
-  font-size: 1.5rem;
+  font-size: 1.5em;
   text-align: center; 
   vertical-align: middle;
 }
@@ -129,4 +146,125 @@ div.nav-logo {
   .lg-hide {
     display: none;
   }
+}
+
+// Tiles
+
+element {
+  tile-color-caution: brown;
+}
+.tile {
+  background-color: #000000;
+  border-radius: .5em;
+  border-style: solid;
+  border-width: 1px;
+  color: #ffffff;
+  margin: 0em;
+  margin-bottom: .5em;
+  padding: 1em 1em;
+  padding-bottom: 1em;
+  padding-top: .5em;
+}
+.tile a {
+    color: #e6e6e6;
+}
+.tile a:hover,
+.tile a:focus {
+    color: #ffffff;
+    text-decoration: none;
+}
+.tile-timestamp a:active {
+    color: #ffffff;
+    text-decoration: none;
+}
+.tile.tile-caution {
+  background-color: #ffff00;
+  border-color: #ccc;
+  color: #000000;
+}
+.tile.tile-caution a {
+    color: #aaaaaa;
+}
+.tile.tile-caution a:hover,
+.tile.tile-caution a:focus {
+    color: #000000;
+    text-decoration: none;
+}
+.tile.tile-caution hr {
+    border-color: #000000;
+}
+.tile.tile-dynamic {
+  margin-bottom: 0em;
+  border-bottom-left-radius: 0em;
+  border-bottom-right-radius: 0em;
+}
+.tile.tile-error {
+  border-color: #ff9980;
+  background-color: #f56954;
+}
+.tile.tile-link {
+  background-color: #1C4263;
+}
+.tile.tile-ok {
+  border-color: #9bca9b;
+  background-color: #7AB87A;
+}
+.tile-counter {
+  font-size: 2.5em;
+}
+.tile-counter-header {
+  font-size: 3.5em;
+}
+.tile-timestamp {
+  margin: 0em;
+  padding-bottom: .5em;
+  padding-top: 1em;
+}
+.tile h1, .tile h2, .tile h3, .tile h4, .tile h5 {
+  color: #ffffff;
+}
+.tile-caution h1, .tile-caution h2, .tile-caution h3, .tile-caution h4, .tile-caution h5  {
+  color: #000000;
+}
+.tile .input-group {
+  padding-bottom: 1em;
+  padding-top: 1em;
+}
+.tile p {
+  font-size: .75em;
+}
+.btn-tile-caution {
+  @include button-variant(#000000, #ffff00, #ccc);
+}
+.btn-tile-error {
+  @include button-variant(#ffffff, #f56954, #ff9980);
+}
+.btn-tile-ok {
+  @include button-variant(#ffffff, #7AB87A, #9bca9b);
+}
+.btn-group-justified.tile-control {
+  margin-bottom: 1em;
+}
+.btn.tile-control-button {
+  border-radius: .5em;
+}
+.btn.tile-control-button-left {
+  border-top-left-radius: 0em;
+}
+.btn.tile-control-button-right {
+  border-top-right-radius: 0em;
+}
+.row.tile-row {
+  margin: .1em .1em .1em .1em;
+}
+.dropdown-menu.tile-dropdown {
+  background-color: #cccccc;
+  padding-left: .2em;
+}
+.dropdown-menu.tile-dropdown>li>a {
+  color: #000000;
+  text-decoration: none;
+}
+.dropdown-menu.tile-dropdown>li>a:hover {
+  color: #dddddd;
 }
