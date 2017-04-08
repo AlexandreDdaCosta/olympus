@@ -1,3 +1,11 @@
+// Alerts
+
+.alert-danger {
+  background-color: rgba(255, 255, 255, 1);
+  border-color: rgba(235, 204, 204, 1);
+  color: rgba(169, 68, 66, 1);
+}
+
 // Columns
 
 .col-wide {
@@ -19,6 +27,30 @@
       left: auto;
     }
   }
+}
+
+// Cards
+
+.login-card {
+  padding: 1em;
+  background-color: rgba(255,255,255,0.8);
+}
+.login-card-title {
+  padding-bottom: 1em;
+  padding-top: .5em;
+}
+.login-card-button {
+  padding-top: 1.5em;
+}
+
+// Containers
+
+.login-container {
+  width: 100%;
+  padding: 2em;
+  padding-bottom: 4em;
+  border-color: #808080;
+  margin: auto;
 }
 
 // Navigation
@@ -82,12 +114,22 @@ div.nav-logo {
     display: none;
   }
 }
-div.nav-login-logo {
+img.nav-logo {
+  height: 3em;
+}
+span.nav-login-home {
+  float: left;
+}
+span.nav-login-logo {
   font-family: 'Pangolin';
   font-weight: 500;
+  float: right;
+  @media (max-width: 991px) {
+    display: none;
+  }
 }
 img.nav-login-logo {
-  height: 3em;
+  height: 2em;
 }
 .navbar-page-nav-button {
   margin: 0px;
@@ -208,6 +250,7 @@ element {
 }
 .tile.tile-link {
   background-color: rgba(28, 66, 99, 1);
+  padding-bottom: 1em
 }
 .tile.tile-ok {
   border-color: rgba(155, 202, 155, 1);

@@ -1,28 +1,15 @@
 {% load i18n %}
-<nav class="navbar navbar-toggleable-sm navbar-white fixed-top">
-  <div class="container container-nav">
-  <div class="btn-group flexcontainerright">
-  <div class="left-nav-icon">
-  <span>
+<nav class="navbar navbar-white fixed-top">
+  <div class="container">
+  <span class="nav-login-home">
   <a href="{% url 'welcome_home' %}" class="left-nav-icon-link">
   <span class="fa fa-home fa-2x" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Home' %}">
   </span>
   </a>
   </span>
-  </div>
-  </div>
-  <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <ul class="navbar-nav">
-      <li class="nav-item nav-item-leftend nav-float-icon">
-        <a class="nav-link" href="{% url 'welcome_home' %}">
-        <span class="fa fa-home fa-2x fa-nav-icon" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Home' %}"></span>
-        </a>
-      </li>
-    </ul>
-  </div>
-  <div class="flexcontainerright nav-login-logo">
-  <img class="nav-login-logo img-fluid" src="/static/image/rocket-dog-vector-logo.png" alt="{% trans 'Nav logo' %}">
+  <span class="nav-login-logo">
+  <img class="nav-login-logo img-fluid" src="/static/image/rocket-dog-vector-logo.png" alt="{% trans 'Laika\'s Den' %}">
   Laika's Den
-  </div>
+  </span>
   </div>
 </nav>
