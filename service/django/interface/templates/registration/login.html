@@ -1,27 +1,41 @@
 {% extends "base.html" %}
 {% load i18n admin_static %}
 {% block title %}{% trans 'Sign in' %}{% endblock %}
-{% block navbar %}{% include "nav.html" %}{% endblock %}
+{% block navbar %}{% include "nav_login.html" %}{% endblock %}
+{% block body-class %}login_body{% endblock %}
 {% block content %}
-<div class="container container-fluid login-padding">
-  <div class="header">
-    <h3 class="text-muted"><a class="nav-text" href="/">Laika's Den</a></h3>
-  </div>
+<div class="container" style="width: 100%;padding: 2em;padding-bottom: 4em;border-color: #808080">
+<div class="container container-fluid" style="margin: auto;">
   {% if form.errors or form.non_field_errors or form.this_is_the_login_form.errors %}
   <div class="alert alert-danger">{% trans 'Access denied' %}.</div>
   {% endif %}
-  {% for message in messages %}
-  {% endfor %}
-  <div>
+  <div class="row">
+  <div class="col-lg-3 col-md-2 col-sm-1">
+  </div>
+  <div class="col-lg-6 col-md-8 col-sm-10 col-wide">
+  <div class="card" style="padding: .5em;">
+  <div class="card-block">
   <form class="form-signin form-horizontal" action="/login/" method="post" id="login-form">{% csrf_token %}
-    <h2 class="form-signin-heading">{% trans 'Please sign in' %}</h2>
+    <h2 class="card-title" style="padding-bottom: 1em;padding-top: .5em;">{% trans 'Please sign in' %}</h2>
+    <p>
     <label for="id_username" class="sr-only">{% trans 'User name' %}</label>
-    <input type="text" name="username" id="id_username" class="form-control" placeholder="{% trans 'User name' %}" required>
+    <input type="text" name="username" id="id_username" class="form-control" placeholder="{% trans 'User name' %}" required autofocus>
+    </p>
+    <p>
     <label for="id_password" class="sr-only">i{% trans 'Password' %}</label>
     <input type="password" name="password" id="id_password" class="form-control" placeholder="{% trans 'Password' %}" required>
-    <button class="btn btn-lg btn-primary btn-block" type="submit">{% trans 'Sign in' %}</button>
+    </p>
+    <p style="padding-top: 1em;">
+    <button class="btn btn-lg btn-success btn-block" type="submit">{% trans 'Sign in' %}</button>
+    </p>
     <input type="hidden" name="next" value="{{ next }}" />
   </form>
   </div>
+  </div>
+  </div>
+  <div class="col-lg-3 col-md-2 col-sm-1">
+  </div>
+  </div>
+</div>
 </div>
 {% endblock %}
