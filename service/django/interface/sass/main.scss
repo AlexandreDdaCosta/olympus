@@ -3,7 +3,15 @@
 body {
   font-size: 1.3rem;
   padding-top: .5em;
-  padding-bottom: 2.5em;
+  @media (max-width: 991px) {
+  padding-bottom: 1em;
+  }
+}
+
+// Images
+
+.img-responsive.full-width {
+  width: 100%;
 }
 
 // Top/bottom scrollers
@@ -16,6 +24,9 @@ body {
   width: 100%;
   z-index: 1;
 }
+.top-scroll-icon {
+  padding-left: 1em
+}
 #bottom-scroll {
   bottom: 0;
   position: fixed;
@@ -23,6 +34,24 @@ body {
   height: 1em;
   width: 100%;
   z-index: 1;
+}
+#footer {
+  background-color: rgba(255,255,255,1);
+  padding-left: 1em;
+  padding-right: 1em;
+  border-top-style: solid;
+  border-width: 1px;
+  border-color: rgba(217, 217, 217, 1);
+}
+.left-footer-icon {
+  padding-right: .5em;
+}
+.right-footer {
+  float: right;
+}
+.right-footer-logo {
+  height: 20px; 
+  width: 20px;
 }
 .fixed-top {
   top: 1em;

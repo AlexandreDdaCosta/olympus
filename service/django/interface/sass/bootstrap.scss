@@ -45,11 +45,15 @@
 
 // Containers
 
+.no_padding {
+  padding-left: 0px;
+  padding-right: 0px
+}
 .login-container {
   width: 100%;
   padding: 2em;
-  padding-bottom: 4em;
-  border-color: #808080;
+  padding-bottom: 6em;
+  border-color: rgba(128, 128, 128, 1);
   margin: auto;
 }
 
@@ -108,7 +112,7 @@ body.login_body {
   white-space: nowrap;
 }
 div.nav-logo {
-  font-family: 'Pangolin';
+  font-family: 'Alegreya Sans SC';
   font-weight: 500;
   @media (max-width: 991px) {
     display: none;
@@ -121,7 +125,7 @@ span.nav-login-home {
   float: left;
 }
 span.nav-login-logo {
-  font-family: 'Pangolin';
+  font-family: 'Alegreya Sans SC';
   font-weight: 500;
   float: right;
   @media (max-width: 991px) {
