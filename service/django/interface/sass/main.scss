@@ -7,6 +7,16 @@ body {
   padding-bottom: 1em;
   }
 }
+body.nav_body {
+  padding-top: 3.3em;
+}
+body.login_body {
+  background-color: rgba(248,248,248,1);
+  padding-top: 3.5em;
+}
+.content-padding {
+  padding-top: 1em;
+}
 
 // Images
 
@@ -45,14 +55,14 @@ body {
   border-color: rgba(217, 217, 217, 1);
 }
 .left-footer-icon {
-  padding-right: .5em;
+  padding-right: 1em;
 }
 .right-footer {
   float: right;
 }
 .right-footer-logo {
-  height: 20px; 
-  width: 20px;
+  height: 30px; 
+  width: 30px;
 }
 .fixed-top {
   top: 1em;
