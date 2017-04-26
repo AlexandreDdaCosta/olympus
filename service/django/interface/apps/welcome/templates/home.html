@@ -1,16 +1,36 @@
 {% extends "welcome.html" %}
 {% load i18n %}
 {% block content %}
-<div>
-  <img src="/static/image/laikas_den_welcome-640.jpg" alt="laikas_den_welcome" srcset="/static/image/laikas_den_welcome-320.jpg 320w, /static/image/laikas_den_welcome-640.jpg 640w, /static/image/laikas_den_welcome-992.jpg 992w, /static/image/laikas_den_welcome-1280.jpg 1280w, /static/image/laikas_den_welcome-1920.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width">
+<style>
+.intro_image { 
+  position: relative;
+  text-align: center;
+  float: left;
+}
+.intro_text {
+  color: rgb(255, 255, 255);
+  font-family: "Lato", sans-serif;
+  font-size: 1.5em;
+  letter-spacing: 1.8em;
+  left: 0;
+  padding: 1em;
+  position: absolute;
+  top: .5em;
+  width: 100%;
+}
+.intro_text img {
+  height: 4em;
+}
+</style>
+<div class="intro_image">
+<img src="/static/image/laikas_den_welcome-640.jpg" alt="laikas_den_welcome" srcset="/static/image/laikas_den_welcome-320.jpg 320w, /static/image/laikas_den_welcome-640.jpg 640w, /static/image/laikas_den_welcome-992.jpg 992w, /static/image/laikas_den_welcome-1280.jpg 1280w, /static/image/laikas_den_welcome-1920.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width">
+<div class="intro_text">
+Laika's<img src="/static/image/rocket-dog-moon-vector-logo-white.png" alt="rocket-dog-moon-vector-logo-white"> Den
 </div>
-<div class="content-padding">
 </div>
 <div class="container">
 <p>
 Welcome screen under intensive construction!
 </p>
-</div>
-<div class="content-padding">
 </div>
 {% endblock content %}
