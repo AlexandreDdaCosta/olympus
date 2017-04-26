@@ -1,9 +1,25 @@
+// animations
+
+@keyframes welcome_home_intro_logo {
+  0% { opacity: 0.0; visibility: visible;}
+  100% { opacity: 1.0; visibility: visible;}
+}
+@keyframes welcome_home_intro_text {
+  from {color: rgb(0, 0, 0); visibility: hidden;}
+  to {color: rgb(255, 255, 255); visibility: visible;}
+}
+
+// styles
+
 .intro_image { 
   position: relative;
   text-align: center;
   float: left;
 }
 .intro_text {
+  animation-duration: 5s;
+  animation-fill-mode: forwards;
+  animation-name: welcome_home_intro_text;
   color: rgb(255, 255, 255);
   font-family: "Alegreya Sans SC", sans-serif;
   font-size: 1.8em;
@@ -16,6 +32,9 @@
   width: 100%;
 }
 .intro_text img {
+  animation-duration: 10s;
+  animation-fill-mode: forwards;
+  animation-name: welcome_home_intro_logo;
   height: 3em;
   padding-right: 1.8em;
 }
