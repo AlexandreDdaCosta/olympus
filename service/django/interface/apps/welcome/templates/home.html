@@ -2,7 +2,9 @@
 {% load i18n %}
 {% block content %}
 <div class="intro_image">
-<img id="lead-image-fade" src="/static/image/laikas_den_welcome-640.jpg" alt="laikas_den_welcome" srcset="/static/image/laikas_den_welcome-320.jpg 320w, /static/image/laikas_den_welcome-640.jpg 640w, /static/image/laikas_den_welcome-992.jpg 992w, /static/image/laikas_den_welcome-1280.jpg 1280w, /static/image/laikas_den_welcome-1920.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width">
+<img src="/static/image/laikas_den_welcome-1920-bw.jpg" class="img-responsive full-width background_mirror_image">
+<img src="/static/image/laikas_den_welcome-1920-bw.jpg" class="img-responsive full-width background_mirror_image_stable">
+<img id="lead-image-fade" src="/static/image/laikas_den_welcome-640.jpg" alt="laikas_den_welcome" srcset="/static/image/laikas_den_welcome-320.jpg 320w, /static/image/laikas_den_welcome-640.jpg 640w, /static/image/laikas_den_welcome-992.jpg 992w, /static/image/laikas_den_welcome-1280.jpg 1280w, /static/image/laikas_den_welcome-1920.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width foreground_image">
 <div class="intro_text">Laika's <img src="/static/image/rocket-dog-moon-vector-logo-white.png" alt="rocket-dog-moon-vector-logo-white"> Den</div>
 </div>
 <div class="container" style="height: 600px; overflow: auto;">
@@ -15,7 +17,7 @@ Welcome screen under intensive construction!
 {% block js %}
 <script type="text/javascript">
 var elem = document.getElementById("lead-image-fade");
-var range = 250;
+var range = 500;
 $(window).on('scroll', function () {
     var scrollTop = $(this).scrollTop();
     var offset = $(elem).offset().top;
