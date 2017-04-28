@@ -1,9 +1,75 @@
 {% extends "welcome.html" %}
 {% load i18n %}
 {% block content %}
+<style>
+section.module:last-child {
+  margin-bottom: 0;
+}
+section.module h2 {
+  margin-bottom: 40px;
+  font-family: "Roboto Slab", serif;
+  font-size: 30px;
+}
+section.module p {
+  margin-bottom: 40px;
+  font-size: 16px;
+  font-weight: 300;
+}
+section.module p:last-child {
+  margin-bottom: 0;
+}
+section.module.content {
+  padding: 40px 0;
+}
+section.module.parallax {
+  height: 600px;
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+section.module.parallax h1 {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 48px;
+  line-height: 600px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+section.module.parallax-1 {
+  background-image: url("/static/image/laikas_den_welcome-1920-bw.jpg");
+}
+section.module.parallax-2 {
+  background-image: url("/static/image/laikas_den_welcome-1920-bw.jpg");
+}
+section.module.parallax-3 {
+  background-image: url("/static/image/laikas_den_welcome-1920-bw.jpg");
+}
+
+@media all and (min-width: 600px) {
+  section.module h2 {
+    font-size: 42px;
+  }
+  section.module p {
+    font-size: 20px;
+  }
+  section.module.parallax h1 {
+    font-size: 96px;
+  }
+}
+@media all and (min-width: 960px) {
+  section.module.parallax h1 {
+    font-size: 160px;
+  }
+}
+</style>
 <div class="intro_image">
-<img src="/static/image/laikas_den_welcome-1920-bw.jpg" class="img-responsive full-width background_mirror_image">
-<img src="/static/image/laikas_den_welcome-1920-bw.jpg" class="img-responsive full-width background_mirror_image_stable">
+<img src="/static/image/laikas_den_welcome-640-bw.jpg" srcset="/static/image/laikas_den_welcome-320-bw.jpg 320w, /static/image/laikas_den_welcome-640-bw.jpg 640w, /static/image/laikas_den_welcome-992-bw.jpg 992w, /static/image/laikas_den_welcome-1280-bw.jpg 1280w, /static/image/laikas_den_welcome-1920-bw.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width background_mirror_image">
+<img src="/static/image/laikas_den_welcome-640-bw.jpg" srcset="/static/image/laikas_den_welcome-320-bw.jpg 320w, /static/image/laikas_den_welcome-640-bw.jpg 640w, /static/image/laikas_den_welcome-992-bw.jpg 992w, /static/image/laikas_den_welcome-1280-bw.jpg 1280w, /static/image/laikas_den_welcome-1920-bw.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width background_mirror_image_stable">
 <img id="lead-image-fade" src="/static/image/laikas_den_welcome-640.jpg" alt="laikas_den_welcome" srcset="/static/image/laikas_den_welcome-320.jpg 320w, /static/image/laikas_den_welcome-640.jpg 640w, /static/image/laikas_den_welcome-992.jpg 992w, /static/image/laikas_den_welcome-1280.jpg 1280w, /static/image/laikas_den_welcome-1920.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width foreground_image">
 <div class="intro_text">Laika's <img src="/static/image/rocket-dog-moon-vector-logo-white.png" alt="rocket-dog-moon-vector-logo-white"> Den</div>
 </div>
