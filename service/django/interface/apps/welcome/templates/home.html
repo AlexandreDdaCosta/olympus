@@ -1,70 +1,70 @@
 {% extends "welcome.html" %}
 {% load i18n %}
 {% block content %}
-<style>
-section.module:last-child {
-  margin-bottom: 0;
-}
-section.module h2 {
-  margin-bottom: 40px;
-  font-family: "Roboto Slab", serif;
-  font-size: 30px;
-}
-section.module p {
-  margin-bottom: 40px;
-  font-size: 16px;
-  font-weight: 300;
-}
-section.module p:last-child {
-  margin-bottom: 0;
-}
-section.module.content {
-  padding: 40px 0;
-}
-section.module.parallax {
-  height: 600px;
-  background-position: 50% 50%;
-  background-repeat: no-repeat;
+    <style type="text/css">
+.parallax [class*="bg__"] {
+  position: relative;
+  height: 50vh;
+  text-indent: -9999px;
+  //background-attachment: scroll;
   background-attachment: fixed;
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
+  background-position: top center;
   background-size: cover;
 }
-section.module.parallax h1 {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 48px;
-  line-height: 600px;
-  font-weight: 700;
-  text-align: center;
-  text-transform: uppercase;
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+.parallax [class*="bg__"]:nth-child(2n) {
+  box-shadow: inset 0 0 1em #111;
 }
-section.module.parallax-1 {
-  background-image: url("/static/image/laikas_den_welcome-1920-bw.jpg");
+.parallax .bg__foo, .parallax .bg__bazz {
+  height: 100vh;
 }
-section.module.parallax-2 {
-  background-image: url("/static/image/laikas_den_welcome-1920-bw.jpg");
+.parallax .bg__foo {
+  background-image: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/30354/parallax1.jpg);
 }
-section.module.parallax-3 {
-  background-image: url("/static/image/laikas_den_welcome-1920-bw.jpg");
+.parallax .bg__bar {
+  background-image: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/30354/parallax2.jpg);
+}
+.parallax .bg__baz {
+  background-image: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/30354/parallax3.jpg);
+}
+.parallax .bg__bazz {
+  background-image: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/30354/parallax1.jpg);
+}
+.parallax .bg__break {
+  box-shadow: inset 0 0 1em #111;
+  background-image: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/30354/parallax1.jpg);
+}
+.parallax .capture {
+  float: right;
+  width: 200px;
+  padding: 1em;
+  margin: -1.5em 1em 0 0;
+  text-indent: 0;
+  background: rgba(243, 243, 243, 0.75);
+  box-shadow: 0 1px 0.125em #333;
 }
 
-@media all and (min-width: 600px) {
-  section.module h2 {
-    font-size: 42px;
-  }
-  section.module p {
-    font-size: 20px;
-  }
-  section.module.parallax h1 {
-    font-size: 96px;
-  }
+article .container {
+  width: 600px;
+  margin: 0 auto;
 }
-@media all and (min-width: 960px) {
-  section.module.parallax h1 {
-    font-size: 160px;
-  }
+article .header {
+  position: relative;
+  margin: -5em 0 0 0;
+  padding: 1em;
+  text-align: left;
+  font-size: 2em;
+  color: #333;
+  background-color: rgba(255, 255, 255, 0.75);
+}
+article h1, article h2 {
+  margin: 0 0 0.333em;
+}
+article section {
+  padding: 3em;
+}
+article section.parallax {
+  margin: 0;
+  padding: 0;
 }
 </style>
 <div class="intro_image">
@@ -84,6 +84,39 @@ abcdefghijklmnopqrstuvwxyz<br/>
 !@#$%^&*()-_=+[]{};':",.<>/?
 </p>
 </div>
+<article>
+  <div class="parallax">
+    <div class="bg__foo">foo</div>
+    <div class="bg__bar">bar</div>
+    <div class="bg__baz">baz</div>
+    <div class="bg__bazz">bazz</div>
+  </div>
+  <div class="header">
+    <h1>Example for 'background-attachment : fixed'</h1>
+  </div>
+  <section>
+    <div class="container">
+      <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
+      <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
+      <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
+    </div>
+  </section>
+  <section class="parallax">
+    <div class="bg__break">
+      <div class="capture">Caption for this beautiful break image, Caption for this beautiful break image, Caption for this beautiful break image, Caption for this beautiful break image.</div>
+    </div>
+  </section>
+  <section>
+    <div class="container">
+      <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
+      <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
+      <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
+      <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
+      <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
+      <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
+    </div>
+  </section>
+</article>
 {% endblock content %}
 
 {% block js %}
