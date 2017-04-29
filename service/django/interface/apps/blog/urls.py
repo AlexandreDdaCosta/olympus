@@ -1,7 +1,7 @@
 from django.conf.urls import url
 
-from interface.apps.blog.views import FrontPage
+from interface.apps.blog.views import TheZodiacalLight
 
 urlpatterns = [
-    url(r'', FrontPage.as_view(), name='blog_frontpage'),
+    url(r'', TheZodiacalLight.as_view(), name='blog_TheZodiacalLight'),
 ]

@@ -9,5 +9,6 @@ urlpatterns = [
     url(r'^blog/', include('interface.apps.blog.urls')),
     url(r'^login/', auth_views.login),
     url(r'^logout/', auth_views.logout),
+    url(r'^photography/', include('interface.apps.photography.urls')),
     url(r'^welcome/', include('interface.apps.welcome.urls')),
 ]
