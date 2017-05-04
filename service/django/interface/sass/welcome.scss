@@ -1,48 +1,27 @@
-// animations
-
-@keyframes welcome_home_intro_mirror_image {
-  0% { opacity: 1.0; visibility: visible;}
-  100% { opacity: 0.0; visibility: visible;}
-}
-@keyframes welcome_home_intro_image {
-  0% { opacity: 0.0; visibility: visible;}
-  100% { opacity: 1.0; visibility: visible;}
-}
-@keyframes welcome_home_intro_text {
-  from {color: rgb(0, 0, 0); visibility: hidden;}
-  to {color: rgb(255, 255, 255); visibility: visible;}
-}
-
 // styles
 
-.intro_image { 
+#intro_image { 
   position: relative;
   text-align: center;
 }
-.background_mirror_image {
-  animation-duration: 4s;
-  animation-fill-mode: forwards;
-  animation-name: welcome_home_intro_mirror_image;
+#background_mirror_image {
   position: absolute;
   top: 0;
   left: 0;
   z-index: 3;
 }
-.background_mirror_image_stable {
+#background_mirror_image_stable {
   position: absolute;
   top: 0;
   left: 0;
   z-index: 1;
 }
-.foreground_image {
+#lead_image_fade {
   position: relative;
   z-index: 2;
 }
-.intro_text {
-  animation-duration: 4s;
-  animation-fill-mode: forwards;
-  animation-name: welcome_home_intro_text;
-  color: rgb(255, 255, 255);
+#intro_text {
+  color: rgb(0, 0, 0);
   font-family: "Alegreya Sans SC", sans-serif;
   font-size: 1.8em;
   letter-spacing: 1.8em;
@@ -52,56 +31,54 @@
   top: 1.5em;
   text-indent: 1.8em;
   width: 100%;
+  visibility: hidden;
   z-index: 4;
 }
-.intro_text img {
-  animation-duration: 8s;
-  animation-fill-mode: forwards;
-  animation-name: welcome_home_intro_image;
+#intro_text img {
   height: 3em;
   padding-right: 1.8em;
 }
 @media only screen and (min-width: 992px) and (max-width: 1279px) {
-  .intro_text { 
+  #intro_text { 
     font-size: 1.5em; 
     letter-spacing: 1.5em; 
     text-indent: 1.5em; 
     top: 1.2em;
   }
-  .intro_text img {
+  #intro_text img {
     margin: 1em;
   }
 }
 @media only screen and (min-width: 768px) and (max-width: 991px) {
-  .intro_text { 
+  #intro_text { 
     font-size: 1.3em; 
     letter-spacing: 1.3em; 
     text-indent: 1.3em; 
     top: 1.6em;
   }
-  .intro_text img {
+  #intro_text img {
     margin-left: .8em;
   }
 }
 @media only screen and (min-width: 640px) and (max-width: 767px) {
-  .intro_text { 
+  #intro_text { 
     font-size: 1.2em; 
     letter-spacing: 1.2em; 
     text-indent: 1.2em; 
     top: 1.8em;
   }
-  .intro_text img {
+  #intro_text img {
     margin-left: .5em;
   }
 }
 @media only screen and (max-width: 639px) {
-  .intro_text { 
+  #intro_text { 
     font-size: 1.6em; 
     letter-spacing: 1.0em; 
     text-indent: 1.0em; 
     top: 1.0em;
   }
-  .intro_text img {
+  #intro_text img {
     display: none;
   }
 }

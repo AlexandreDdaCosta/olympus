@@ -1,77 +1,11 @@
 {% extends "welcome.html" %}
 {% load i18n %}
 {% block content %}
-    <style type="text/css">
-.parallax [class*="bg__"] {
-  position: relative;
-  height: 50vh;
-  text-indent: -9999px;
-  //background-attachment: scroll;
-  background-attachment: fixed;
-  background-position: top center;
-  background-size: cover;
-}
-.parallax [class*="bg__"]:nth-child(2n) {
-  box-shadow: inset 0 0 1em #111;
-}
-.parallax .bg__foo, .parallax .bg__bazz {
-  height: 100vh;
-}
-.parallax .bg__foo {
-  background-image: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/30354/parallax1.jpg);
-}
-.parallax .bg__bar {
-  background-image: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/30354/parallax2.jpg);
-}
-.parallax .bg__baz {
-  background-image: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/30354/parallax3.jpg);
-}
-.parallax .bg__bazz {
-  background-image: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/30354/parallax1.jpg);
-}
-.parallax .bg__break {
-  box-shadow: inset 0 0 1em #111;
-  background-image: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/30354/parallax1.jpg);
-}
-.parallax .capture {
-  float: right;
-  width: 200px;
-  padding: 1em;
-  margin: -1.5em 1em 0 0;
-  text-indent: 0;
-  background: rgba(243, 243, 243, 0.75);
-  box-shadow: 0 1px 0.125em #333;
-}
-
-article .container {
-  width: 600px;
-  margin: 0 auto;
-}
-article .header {
-  position: relative;
-  margin: -5em 0 0 0;
-  padding: 1em;
-  text-align: left;
-  font-size: 2em;
-  color: #333;
-  background-color: rgba(255, 255, 255, 0.75);
-}
-article h1, article h2 {
-  margin: 0 0 0.333em;
-}
-article section {
-  padding: 3em;
-}
-article section.parallax {
-  margin: 0;
-  padding: 0;
-}
-</style>
-<div class="intro_image">
-<img src="/static/image/laikas_den_welcome-640-bw.jpg" srcset="/static/image/laikas_den_welcome-320-bw.jpg 320w, /static/image/laikas_den_welcome-640-bw.jpg 640w, /static/image/laikas_den_welcome-992-bw.jpg 992w, /static/image/laikas_den_welcome-1280-bw.jpg 1280w, /static/image/laikas_den_welcome-1920-bw.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width background_mirror_image">
-<img src="/static/image/laikas_den_welcome-640-bw.jpg" srcset="/static/image/laikas_den_welcome-320-bw.jpg 320w, /static/image/laikas_den_welcome-640-bw.jpg 640w, /static/image/laikas_den_welcome-992-bw.jpg 992w, /static/image/laikas_den_welcome-1280-bw.jpg 1280w, /static/image/laikas_den_welcome-1920-bw.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width background_mirror_image_stable">
-<img id="lead-image-fade" src="/static/image/laikas_den_welcome-640.jpg" alt="laikas_den_welcome" srcset="/static/image/laikas_den_welcome-320.jpg 320w, /static/image/laikas_den_welcome-640.jpg 640w, /static/image/laikas_den_welcome-992.jpg 992w, /static/image/laikas_den_welcome-1280.jpg 1280w, /static/image/laikas_den_welcome-1920.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width foreground_image">
-<div class="intro_text">Laika's <img src="/static/image/rocket-dog-moon-vector-logo-white.png" alt="rocket-dog-moon-vector-logo-white"> Den</div>
+<div id="intro_image">
+<img id="background_mirror_image" src="/static/image/laikas_den_welcome-640-bw.jpg" srcset="/static/image/laikas_den_welcome-320-bw.jpg 320w, /static/image/laikas_den_welcome-640-bw.jpg 640w, /static/image/laikas_den_welcome-992-bw.jpg 992w, /static/image/laikas_den_welcome-1280-bw.jpg 1280w, /static/image/laikas_den_welcome-1920-bw.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width">
+<img id="background_mirror_image_stable" src="/static/image/laikas_den_welcome-640-bw.jpg" srcset="/static/image/laikas_den_welcome-320-bw.jpg 320w, /static/image/laikas_den_welcome-640-bw.jpg 640w, /static/image/laikas_den_welcome-992-bw.jpg 992w, /static/image/laikas_den_welcome-1280-bw.jpg 1280w, /static/image/laikas_den_welcome-1920-bw.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width">
+<img id="lead_image_fade" src="/static/image/laikas_den_welcome-640.jpg" alt="laikas_den_welcome" srcset="/static/image/laikas_den_welcome-320.jpg 320w, /static/image/laikas_den_welcome-640.jpg 640w, /static/image/laikas_den_welcome-992.jpg 992w, /static/image/laikas_den_welcome-1280.jpg 1280w, /static/image/laikas_den_welcome-1920.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width foreground_image">
+<div id="intro_text">Laika's <img src="/static/image/rocket-dog-moon-vector-logo-white.png" alt="rocket-dog-moon-vector-logo-white"> Den</div>
 </div>
 <div class="container" style="height: 600px; overflow: auto;">
 <p>
@@ -84,57 +18,49 @@ abcdefghijklmnopqrstuvwxyz<br/>
 !@#$%^&*()-_=+[]{};':",.<>/?
 </p>
 </div>
-<article>
-  <div class="parallax">
-    <div class="bg__foo">foo</div>
-    <div class="bg__bar">bar</div>
-    <div class="bg__baz">baz</div>
-    <div class="bg__bazz">bazz</div>
-  </div>
-  <div class="header">
-    <h1>Example for 'background-attachment : fixed'</h1>
-  </div>
-  <section>
-    <div class="container">
-      <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
-      <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
-      <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
-    </div>
-  </section>
-  <section class="parallax">
-    <div class="bg__break">
-      <div class="capture">Caption for this beautiful break image, Caption for this beautiful break image, Caption for this beautiful break image, Caption for this beautiful break image.</div>
-    </div>
-  </section>
-  <section>
-    <div class="container">
-      <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
-      <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
-      <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
-      <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
-      <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
-      <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
-    </div>
-  </section>
-</article>
 {% endblock content %}
 
 {% block js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.0/TweenMax.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.5/ScrollMagic.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.5/plugins/animation.gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.5/plugins/debug.addIndicators.min.js"></script>
 <script type="text/javascript">
-var elem = document.getElementById("lead-image-fade");
-var range = 500;
-$(window).on('scroll', function () {
-    var scrollTop = $(this).scrollTop();
-    var offset = $(elem).offset().top;
-    var height = $(elem).outerHeight();
-    offset = offset + height / 2;
-    var calc = 1 - (scrollTop - offset + range) / range;
-    $(elem).css({ 'opacity': calc });
-    if ( calc > '1' ) {
-      $(elem).css({ 'opacity': 1 });
-    } else if ( calc < '0' ) {
-      $(elem).css({ 'opacity': 0 });
-    }
+// var elem = document.getElementById("lead_image_fade");
+// range = $(elem).outerHeight() / 2;
+// $(window).on('scroll', function () {
+//     var scrollTop = $(this).scrollTop();
+//     var offset = $(elem).offset().top;
+//     var height = $(elem).outerHeight();
+//     offset = offset + height / 2;
+//     var calc = 1 - (scrollTop - offset + range) / range;
+//     $(elem).css({ 'opacity': calc });
+//     if ( calc > '1' ) {
+//       $(elem).css({ 'opacity': 1 });
+//     } else if ( calc < '0' ) {
+//       $(elem).css({ 'opacity': 0 });
+//    }
+// });
+</script>
+<script type="text/javascript">
+var background_mirror_image = $("#background_mirror_image");
+TweenMax.to(background_mirror_image, 6, {opacity:0});
+var intro_text = $("#intro_text");
+TweenMax.to(intro_text, 4, {css:{color: "rgb(255, 255, 255)", visibility: "visible"}});
+var intro_text_img = $("#intro_text img");
+TweenMax.fromTo(intro_text_img, 8, {css: {opacity: 0, visibility: "visible", transform: "scale(0.8)"}}, {css:{opacity: 1, visibility: "visible", transform: "scale(1)"}});
+var controller = new ScrollMagic.Controller();
+var lead_image_fade = new ScrollMagic.Scene({
+ triggerElement: '#lead_image_fade',
+ triggerHook: 0,
+ duration: 500,
+ opacity: 0
 });
+lead_image_fade.addIndicators({
+ name: 'lead_image_fade',
+ colorStart: 'yellow',
+ colorTrigger: 'green',
+})
+controller.addScene(lead_image_fade);
 </script>
 {% endblock %}
