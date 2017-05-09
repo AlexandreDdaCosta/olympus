@@ -1,6 +1,7 @@
 // styles
 
 #intro_image { 
+  background-color: rgb(0, 0, 0);
   position: relative;
   text-align: center;
 }
@@ -82,4 +83,16 @@
   #intro_text img {
     display: none;
   }
+}
+#dedication { 
+  background-color: rgb(2, 0, 12);
+  height: 1200px;
+  padding-top: 4.0em;
+  text-align: center;
+}
+#dedication h1 { 
+  color: rgb(255, 255, 255);
+  font-family: "Alegreya Sans SC", sans-serif;
+  font-size: 2.2em;
+  opacity: 0;
 }
