@@ -1,7 +1,11 @@
 // Body
 
+* {
+  margin:0;
+  padding:0;
+}
 body {
-  font-size: 1.3rem;
+  font: 100% / 1.5 Nunito;
   @media (max-width: 991px) {
   padding-bottom: 1em;
   }
