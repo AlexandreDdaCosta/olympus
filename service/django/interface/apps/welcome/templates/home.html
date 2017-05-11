@@ -1,6 +1,5 @@
 {% extends "welcome.html" %}
 {% load i18n static %}
-{% block styles %}<link href='//fonts.googleapis.com/css?family=PT Sans Narrow' rel='stylesheet'>{% endblock %}
 {% block content %}
 <section id="intro_image">
 <img id="background_mirror_image" src="/static/apps/welcome/image/laikas_den_welcome_640_bw.jpg" srcset="/static/apps/welcome/image/laikas_den_welcome_320_bw.jpg 320w, /static/apps/welcome/image/laikas_den_welcome_640_bw.jpg 640w, /static/apps/welcome/image/laikas_den_welcome_992_bw.jpg 992w, /static/apps/welcome/image/laikas_den_welcome_1280_bw.jpg 1280w, /static/apps/welcome/image/laikas_den_welcome_1920_bw.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width">
@@ -9,9 +8,23 @@
 <div id="intro_text">Laika's <img src="/static/image/rocket-dog-moon-vector-logo-white.png" alt="rocket-dog-moon-vector-logo-white" class="wide-img"> Den
 <div id="intro_logo_under"><img src="/static/image/rocket-dog-moon-vector-logo-white.png" alt="rocket-dog-moon-vector-logo-white" class="thin-img"></div></div>
 </section>
-<section id="welcome">
-<div id="welcome_header">
-{% trans 'WELCOME' %}
+<section id="welcome" class="container">
+<span class="welcome_header welcome_header_intro">
+{% trans 'Welcome To' %}
+</span>
+<br/>
+<span class="welcome_header welcome_header_name">
+{% trans 'Laika\'s Den' %}
+</span>
+<br/>
+<br/>
+<br/>
+<div class="welcome_header welcome_header_slogan">
+{% trans 'And Gaze Through Our Window Into' %}
+</div>
+<br/>
+<div class="welcome_header welcome_header_slogan welcome_header_slogan_highlight">
+{% trans 'The Enigmatic Universe' %}
 </div>
 </section>
 <section id="blog">
