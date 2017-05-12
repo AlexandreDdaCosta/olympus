@@ -102,6 +102,7 @@
   height: 1600px;
   position: relative;
   text-align: left;
+  width: 100%;
 }
 #welcome_header_image {
   left: 0;
@@ -112,20 +113,10 @@
 #welcome_header_text {
   left: 0;
   padding-left: 4em;
-  padding-top: 4em;
+  padding-top: 8em;
   position: absolute;
   top: 0;
   z-index: 3;
-}
-#welcome_header_image_overlay { 
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 2;
-}
-#welcome_header_image_primary { 
-  position: relative;
-  z-index: 1;
 }
 .welcome_header {
   color: rgb(191, 191, 191);
@@ -139,6 +130,7 @@
   font-size: 6em;
 }
 .welcome_header_name {
+  color: rgb(255,51,0);
   font-weight: 500;
   font-size: 7em;
 }
@@ -148,7 +140,19 @@
   line-height: 115%;
 }
 .welcome_header_slogan_highlight {
-  font-weight: 300;
+  font-weight: 400;
   font-size: 3.0em;
+}
+#welcome_header_image_text {
+  right: 0;
+  position: absolute;
+  top: 0;
+  z-index: 1000;
   color: rgb(255, 255, 255);
+  font-family: Roboto;
+  letter-spacing: 0em;
+  font-weight: 300;
+  font-size: 4.0em;
+  opacity: 0.2;
+  transform: rotate(90deg);
 }
