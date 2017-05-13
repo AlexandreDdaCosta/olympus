@@ -98,8 +98,8 @@
     display: inline;
   }
 }
-#welcome { 
-  height: 1600px;
+#welcome, #dedication { 
+  height: 1100px;
   position: relative;
   text-align: left;
   width: 100%;
@@ -109,6 +109,7 @@
   opacity: 0;
   position: absolute;
   top: 0;
+  transform: rotateY(180deg);
 }
 #welcome_header_text {
   left: 0;
@@ -151,8 +152,14 @@
   color: rgb(255, 255, 255);
   font-family: Roboto;
   letter-spacing: 0em;
+  line-height: 90%;
   font-weight: 300;
   font-size: 4.0em;
   opacity: 0.2;
-  transform: rotate(90deg);
+  text-align: right;
+  transform: rotate(-90deg);
+  transform-origin: right bottom;
+}
+#welcome_header_image_text span {
+  font-size: 3.0em;
 }
