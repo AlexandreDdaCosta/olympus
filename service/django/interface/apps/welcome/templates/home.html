@@ -13,9 +13,9 @@
 <img src="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_640.jpg" alt="Hubble_Extreme_Deep_Field" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_320.jpg 320w, /static/apps/welcome/image/Hubble_Extreme_Deep_Field_640.jpg 640w, /static/apps/welcome/image/Hubble_Extreme_Deep_Field_992.jpg 992w, /static/apps/welcome/image/Hubble_Extreme_Deep_Field_1280.jpg 1280w, /static/apps/welcome/image/Hubble_Extreme_Deep_Field_1920_v2.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width">
 </div>
 <div id="welcome_header_image_text">
-<span>HUBBLE</span>
+<span>{% trans 'HUBBLE' %}</span>
 <br/>
-EXTREME DEEP FIELD
+{% trans 'EXTREME DEEP FIELD' %}
 </div>
 <div id="welcome_header_text">
 <span class="welcome_header welcome_header_intro">
@@ -77,23 +77,28 @@ EXTREME DEEP FIELD
 {% block js %}
 <script type="text/javascript" src="{% static "apps/welcome/js/home.js" %}"></script>
 <script>
+var viewport_width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+var viewport_height = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+if (viewport_width >= 1280)
+{
     // init controller
     var controller = new ScrollMagic.Controller({globalSceneOptions: {triggerHook: "onEnter", duration: "200%"}});
 
     // build scenes
     new ScrollMagic.Scene({triggerElement: "#parallax1"})
-                    .setTween("#parallax1 > div", {y: "80%", ease: Linear.easeNone})
+                    .setTween("#parallax1 > div", {y: "70%", ease: Linear.easeNone})
                     .addIndicators()
                     .addTo(controller);
 
     new ScrollMagic.Scene({triggerElement: "#parallax2"})
-                    .setTween("#parallax2 > div", {y: "80%", ease: Linear.easeNone})
+                    .setTween("#parallax2 > div", {y: "70%", ease: Linear.easeNone})
                     .addIndicators()
                     .addTo(controller);
 
     new ScrollMagic.Scene({triggerElement: "#parallax3"})
-                    .setTween("#parallax3 > div", {y: "80%", ease: Linear.easeNone})
+                    .setTween("#parallax3 > div", {y: "70%", ease: Linear.easeNone})
                     .addIndicators()
                     .addTo(controller);
+}
 </script>
 {% endblock %}
