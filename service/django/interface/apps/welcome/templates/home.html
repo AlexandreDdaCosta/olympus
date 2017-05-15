@@ -37,15 +37,22 @@
 </section>
 <section id="parallax">
 <style type="text/css">
-    .parallaxParent {
-        height: 100vh;
-        overflow: hidden;
-    }
-    .parallaxParent > * {
-        height: 150%;
-        position: relative;
-        top: -100%;
-    }
+@media only screen and (min-width: 992px) {
+.parallaxParent {
+  height: 80vh;
+  overflow: hidden;
+}
+.parallaxParent > * {
+  height: 110%;
+  position: relative;
+  top: -50%;
+}
+@media only screen and (max-width: 991px) {
+  .parallaxParent {
+  }
+  .parallaxParent > * {
+  }
+}
 </style>
 <div id="parallax1" class="parallaxParent">
 <img src="/static/apps/welcome/image/Zodiacal_Light_640.jpg" alt="Zodiacal_Light" srcset="/static/apps/welcome/image/Zodiacal_Light_320.jpg 320w, /static/apps/welcome/image/Zodiacal_Light_640.jpg 640w, /static/apps/welcome/image/Zodiacal_Light_992.jpg 992w, /static/apps/welcome/image/Zodiacal_Light_1280.jpg 1280w, /static/apps/welcome/image/Zodiacal_Light_1920.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width">
@@ -54,11 +61,13 @@
   <p>The Zodiacal Light</p>
 </div>
 <div id="parallax2" class="parallaxParent">
+<img src="/static/apps/welcome/image/Spaceship_Earth_640.jpg" alt="Zodiacal_Light" srcset="/static/apps/welcome/image/Zodiacal_Light_320.jpg 320w, /static/apps/welcome/image/Zodiacal_Light_640.jpg 640w, /static/apps/welcome/image/Zodiacal_Light_992.jpg 992w, /static/apps/welcome/image/Zodiacal_Light_1280.jpg 1280w, /static/apps/welcome/image/Spaceship_Earth_1920.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width">
 </div>
 <div>
   <p>Spaceship Earth</p>
 </div>
 <div id="parallax3" class="parallaxParent">
+<img src="/static/apps/welcome/image/New_Horizons_Pluto_640.jpg" alt="Zodiacal_Light" srcset="/static/apps/welcome/image/Zodiacal_Light_320.jpg 320w, /static/apps/welcome/image/Zodiacal_Light_640.jpg 640w, /static/apps/welcome/image/Zodiacal_Light_992.jpg 992w, /static/apps/welcome/image/Zodiacal_Light_1280.jpg 1280w, /static/apps/welcome/image/New_Horizons_Pluto_1920.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width">
 </div>
 <div>
   <p>The Kuiper Belt</p>
