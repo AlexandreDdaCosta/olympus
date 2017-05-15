@@ -42,32 +42,26 @@
         overflow: hidden;
     }
     .parallaxParent > * {
-        height: 200%;
+        height: 150%;
         position: relative;
         top: -100%;
     }
 </style>
-<div class="spacer s0"></div>
 <div id="parallax1" class="parallaxParent">
-    <div style="background-image: url(http://scrollmagic.io/img/example_parallax_bg1.png);"></div>
+<img src="/static/apps/welcome/image/Zodiacal_Light_640.jpg" alt="Zodiacal_Light" srcset="/static/apps/welcome/image/Zodiacal_Light_320.jpg 320w, /static/apps/welcome/image/Zodiacal_Light_640.jpg 640w, /static/apps/welcome/image/Zodiacal_Light_992.jpg 992w, /static/apps/welcome/image/Zodiacal_Light_1280.jpg 1280w, /static/apps/welcome/image/Zodiacal_Light_1920.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width">
 </div>
-<div class="spacer s1">
-    <div>
-        <p>Content 1</p>
-    </div>
+<div>
+  <p>The Zodiacal Light</p>
 </div>
-<div class="spacer s0"></div>
 <div id="parallax2" class="parallaxParent">
-    <div style="background-image: url(http://scrollmagic.io/img/example_parallax_bg2.png);"></div>
 </div>
-<div class="spacer s1">
-    <div>
-        <p>Content 2</p>
-    </div>
+<div>
+  <p>Spaceship Earth</p>
 </div>
-<div class="spacer s0"></div>
 <div id="parallax3" class="parallaxParent">
-    <div style="background-image: url(http://scrollmagic.io/img/example_parallax_bg3.png);"></div>
+</div>
+<div>
+  <p>The Kuiper Belt</p>
 </div>
 </section>
 <section id="dedication">
@@ -86,17 +80,17 @@ if (viewport_width >= 1280)
 
     // build scenes
     new ScrollMagic.Scene({triggerElement: "#parallax1"})
-                    .setTween("#parallax1 > div", {y: "70%", ease: Linear.easeNone})
+                    .setTween("#parallax1 > img", {y: "70%", ease: Linear.easeNone})
                     .addIndicators()
                     .addTo(controller);
 
     new ScrollMagic.Scene({triggerElement: "#parallax2"})
-                    .setTween("#parallax2 > div", {y: "70%", ease: Linear.easeNone})
+                    .setTween("#parallax2 > img", {y: "70%", ease: Linear.easeNone})
                     .addIndicators()
                     .addTo(controller);
 
     new ScrollMagic.Scene({triggerElement: "#parallax3"})
-                    .setTween("#parallax3 > div", {y: "70%", ease: Linear.easeNone})
+                    .setTween("#parallax3 > img", {y: "70%", ease: Linear.easeNone})
                     .addIndicators()
                     .addTo(controller);
 }
