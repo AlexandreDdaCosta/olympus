@@ -39,13 +39,9 @@
 <style type="text/css">
 @media only screen and (min-width: 992px) {
 .parallaxParent {
-  height: 80vh;
-  overflow: hidden;
 }
 .parallaxParent > * {
-  height: 110%;
   position: relative;
-  top: -50%;
 }
 @media only screen and (max-width: 991px) {
   .parallaxParent {
@@ -57,20 +53,11 @@
 <div id="parallax1" class="parallaxParent">
 <img src="/static/apps/welcome/image/Zodiacal_Light_640.jpg" alt="Zodiacal_Light" srcset="/static/apps/welcome/image/Zodiacal_Light_320.jpg 320w, /static/apps/welcome/image/Zodiacal_Light_640.jpg 640w, /static/apps/welcome/image/Zodiacal_Light_992.jpg 992w, /static/apps/welcome/image/Zodiacal_Light_1280.jpg 1280w, /static/apps/welcome/image/Zodiacal_Light_1920.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width">
 </div>
-<div>
-  <p>The Zodiacal Light</p>
-</div>
 <div id="parallax2" class="parallaxParent">
-<img src="/static/apps/welcome/image/Spaceship_Earth_640.jpg" alt="Zodiacal_Light" srcset="/static/apps/welcome/image/Zodiacal_Light_320.jpg 320w, /static/apps/welcome/image/Zodiacal_Light_640.jpg 640w, /static/apps/welcome/image/Zodiacal_Light_992.jpg 992w, /static/apps/welcome/image/Zodiacal_Light_1280.jpg 1280w, /static/apps/welcome/image/Spaceship_Earth_1920.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width">
-</div>
-<div>
-  <p>Spaceship Earth</p>
+<img src="/static/apps/welcome/image/Spaceship_Earth_640.jpg" alt="Spaceship_Earth" srcset="/static/apps/welcome/image/Spaceship_Earth_320.jpg 320w, /static/apps/welcome/image/Spaceship_Earth_640.jpg 640w, /static/apps/welcome/image/Spaceship_Earth_992.jpg 992w, /static/apps/welcome/image/Spaceship_Earth_1280.jpg 1280w, /static/apps/welcome/image/Spaceship_Earth_1920.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width">
 </div>
 <div id="parallax3" class="parallaxParent">
-<img src="/static/apps/welcome/image/New_Horizons_Pluto_640.jpg" alt="Zodiacal_Light" srcset="/static/apps/welcome/image/Zodiacal_Light_320.jpg 320w, /static/apps/welcome/image/Zodiacal_Light_640.jpg 640w, /static/apps/welcome/image/Zodiacal_Light_992.jpg 992w, /static/apps/welcome/image/Zodiacal_Light_1280.jpg 1280w, /static/apps/welcome/image/New_Horizons_Pluto_1920.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width">
-</div>
-<div>
-  <p>The Kuiper Belt</p>
+<img src="/static/apps/welcome/image/New_Horizons_Pluto_640.jpg" alt="New_Horizons_Pluto" srcset="/static/apps/welcome/image/Zodiacal_Light_320.jpg 320w, /static/apps/welcome/image/Zodiacal_Light_640.jpg 640w, /static/apps/welcome/image/Zodiacal_Light_992.jpg 992w, /static/apps/welcome/image/Zodiacal_Light_1280.jpg 1280w, /static/apps/welcome/image/New_Horizons_Pluto_1920.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width">
 </div>
 </section>
 <section id="dedication">
@@ -82,7 +69,7 @@
 <script>
 var viewport_width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 var viewport_height = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-if (viewport_width >= 1280)
+if (viewport_width >= 3280)
 {
     // init controller
     var controller = new ScrollMagic.Controller({globalSceneOptions: {triggerHook: "onEnter", duration: "200%"}});
