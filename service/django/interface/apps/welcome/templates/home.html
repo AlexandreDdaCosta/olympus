@@ -9,7 +9,7 @@
 <div id="intro_logo_under"><img src="/static/image/rocket-dog-moon-vector-logo-white.png" alt="rocket-dog-moon-vector-logo-white" class="thin-img"></div></div>
 </section>
 <section id="welcome">
-<div id="welcome_overlay" class="overlay overlay_black"></div>
+<div id="welcome_overlay" class="overlay overlay_black overlay_welcome"></div>
 <div id="welcome_header_image">
 <img src="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_320.jpg" class="img-responsive full-width" id="welcome_header_img">
 </div>
@@ -28,23 +28,32 @@
 </span>
 <br/>
 <br/>
-<div class="welcome_header welcome_header_slogan">
+<div class="welcome_header welcome_header_slogan" id="welcome_header_slogan">
 {% trans 'And Look Through Our Window Onto' %}
 </div>
-<div class="welcome_header welcome_header_slogan welcome_header_slogan_highlight" id="welcome_header_slogan">
+<div class="welcome_header welcome_header_slogan welcome_header_slogan_highlight">
 {% trans 'The Enigmatic Universe' %}
 </div>
 </div>
 </section>
 <section id="features">
-<div id="blog">
-BLOG
+<div id="blog" class="feature">
+<div id="blog_overlay" class="overlay overlay_black overlay_feature">BLOG</div>
 </div>
-<div id="photography">
-<img src="/static/apps/welcome/image/Spaceship_Earth_640.jpg" srcset="/static/apps/welcome/image/Spaceship_Earth_320.jpg 320w, /static/apps/welcome/image/Spaceship_Earth_640.jpg 640w, /static/apps/welcome/image/Spaceship_Earth_992.jpg 992w, /static/apps/welcome/image/Spaceship_Earth_1280.jpg 1280w, /static/apps/welcome/image/Spaceship_Earth_1920.jpg 1920w" sizes="(max-width: 1920px) 100vw, 1920px" class="img-responsive full-width">
+<div id="blog_summary" class="feature_summary">
+the zodiacal light
 </div>
-<div id="projects">
-<img src="/static/apps/welcome/image/Pluto_Heart_640.jpg" srcset="/static/apps/welcome/image/Pluto_Heart_320.jpg 320w, /static/apps/welcome/image/Pluto_Heart_640.jpg 640w, /static/apps/welcome/image/Pluto_Heart_992.jpg 992w, /static/apps/welcome/image/Pluto_Heart_1180.jpg 1180w" sizes="(max-width: 1180px) 100vw, 1180px" class="img-responsive full-width">
+<div id="photography" class="feature">
+<div id="photography_overlay" class="overlay overlay_black overlay_feature">PHOTOGRAPHY</div>
+</div>
+<div id="photography_summary" class="feature_summary">
+spaceship earth
+</div>
+<div id="projects" class="feature">
+<div id="projects_overlay" class="overlay overlay_black overlay_feature">PROJECTS</div>
+</div>
+<div id="projects_summary" class="feature_summary">
+the kuiper belt
 </div>
 </section>
 <section id="dedication">
@@ -54,29 +63,4 @@ DEDICATION
 
 {% block js %}
 <script type="text/javascript" src="{% static "apps/welcome/js/home.js" %}"></script>
-<script>
-var viewport_width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-var viewport_height = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-if (viewport_width >= 3280)
-{
-    // init controller
-    var controller = new ScrollMagic.Controller({globalSceneOptions: {triggerHook: "onEnter", duration: "200%"}});
-
-    // build scenes
-    new ScrollMagic.Scene({triggerElement: "#parallax1"})
-                    .setTween("#parallax1 > img", {y: "70%", ease: Linear.easeNone})
-                    .addIndicators()
-                    .addTo(controller);
-
-    new ScrollMagic.Scene({triggerElement: "#parallax2"})
-                    .setTween("#parallax2 > img", {y: "70%", ease: Linear.easeNone})
-                    .addIndicators()
-                    .addTo(controller);
-
-    new ScrollMagic.Scene({triggerElement: "#parallax3"})
-                    .setTween("#parallax3 > img", {y: "70%", ease: Linear.easeNone})
-                    .addIndicators()
-                    .addTo(controller);
-}
-</script>
 {% endblock %}
