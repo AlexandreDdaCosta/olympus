@@ -1,13 +1,52 @@
 // background imagery
 
 .blog_background {
-  background-image:url("/static/apps/welcome/image/Zodiacal_Glow_Lightens_Paranal_Sky_1280.jpg");
+  @media screen and (max-width: 320px) {
+    background-image:url("/static/apps/welcome/image/Zodiacal_Light_320.jpg");
+  } 
+  @media screen and (min-width: 321px) and (max-width: 640px) {
+    background-image:url("/static/apps/welcome/image/Zodiacal_Light_640.jpg");
+  } 
+  @media screen and (min-width: 641px) and (max-width: 992px) {
+    background-image:url("/static/apps/welcome/image/Zodiacal_Light_992.jpg");
+  } 
+  @media screen and (min-width: 993px) and (max-width: 1280px) {
+    background-image:url("/static/apps/welcome/image/Zodiacal_Glow_Lightens_Paranal_Sky_1280.jpg");
+  } 
+  @media screen and (min-width: 1281px) {
+    background-image:url("/static/apps/welcome/image/Zodiacal_Glow_Lightens_Paranal_Sky_1280.jpg");
+  } 
 }
 .photography_background {
-  background-image:url("/static/apps/welcome/image/Spaceship_Earth_1280.png");
+  @media screen and (max-width: 320px) {
+    background-image:url("/static/apps/welcome/image/Spaceship_Earth_320.jpg");
+  } 
+  @media screen and (min-width: 321px) and (max-width: 640px) {
+    background-image:url("/static/apps/welcome/image/Spaceship_Earth_640.jpg");
+  } 
+  @media screen and (min-width: 641px) and (max-width: 992px) {
+    background-image:url("/static/apps/welcome/image/Spaceship_Earth_992.jpg");
+  } 
+  @media screen and (min-width: 993px) and (max-width: 1280px) {
+    background-image:url("/static/apps/welcome/image/Spaceship_Earth_1280.jpg");
+  } 
+  @media screen and (min-width: 1281px) {
+    background-image:url("/static/apps/welcome/image/Spaceship_Earth_1920.jpg");
+  } 
 }
 .projects_background {
-  background-image:url("/static/apps/welcome/image/Pluto_Heart_1180.jpg");
+  @media screen and (max-width: 320px) {
+    background-image:url("/static/apps/welcome/image/Pluto_Heart_320.jpg");
+  } 
+  @media screen and (min-width: 321px) and (max-width: 640px) {
+    background-image:url("/static/apps/welcome/image/Pluto_Heart_640.jpg");
+  } 
+  @media screen and (min-width: 641px) and (max-width: 992px) {
+    background-image:url("/static/apps/welcome/image/Pluto_Heart_992.jpg");
+  } 
+  @media screen and (min-width: 993px) {
+    background-image:url("/static/apps/welcome/image/Pluto_Heart_1180.jpg");
+  } 
 }
 
 // styles, general
@@ -21,7 +60,6 @@
   background-position: center center;
   background-repeat: no-repeat;
   background-size: cover;
-  background-size: 100% auto;
   float: none !important;
   margin: 0 auto !important;
   max-width: 1820px;
@@ -350,6 +388,22 @@ img[id="welcome_header_img"] {
 .overlay_feature {
   height: 100vh;
   opacity: 1;
+}
+#feature_text {
+  right: 0.8em;
+  position: absolute;
+  bottom: 0;
+  z-index: 999;
+  color: rgb(255, 255, 255);
+  font-family: Roboto;
+  letter-spacing: 0em;
+  line-height: 90%;
+  font-weight: 300;
+  font-size: 3.0em;
+  opacity: 0.2;
+  text-align: right;
+  transform: rotate(90deg);
+  transform-origin: right top;
 }
 
 // styles, dedication
