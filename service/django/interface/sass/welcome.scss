@@ -51,6 +51,25 @@
 
 // styles, general
 
+.image_highlight_text {
+  right: 0.8em;
+  position: absolute;
+  bottom: 0;
+  z-index: 999;
+  color: rgb(255, 255, 255);
+  font-family: Roboto;
+  letter-spacing: 0em;
+  line-height: 90%;
+  font-weight: 300;
+  font-size: 3.0em;
+  opacity: 0.2;
+  text-align: right;
+  transform: rotate(90deg);
+  transform-origin: right top;
+}
+.image_highlight_text span {
+  font-size: 2.0em;
+}
 .welcome_body {
   -webkit-background-size: cover;
   -moz-background-size: cover;
@@ -281,26 +300,14 @@ img[id="welcome_header_img"] {
   font-weight: 400;
   font-size: 3.2em;
 }
-#welcome_header_image_text {
-  right: 0.8em;
-  position: absolute;
-  bottom: 0;
-  z-index: 999;
-  color: rgb(255, 255, 255);
-  font-family: Roboto;
-  letter-spacing: 0em;
-  line-height: 90%;
-  font-weight: 300;
-  font-size: 3.0em;
-  opacity: 0.2;
-  text-align: right;
-  transform: rotate(90deg);
-  transform-origin: right top;
-}
-#welcome_header_image_text span {
-  font-size: 2.0em;
-}
 @media only screen and (min-width: 992px) and (max-width: 1279px) {
+  .image_highlight_text {
+    right: .6em;
+    font-size: 2.5em;
+  }
+  .image_highlight_text span {
+    font-size: 1.5em;
+  }
   #welcome_header_text {
     padding-left: 3em;
     padding-top: 4em;
@@ -317,15 +324,15 @@ img[id="welcome_header_img"] {
   .welcome_header_slogan_highlight {
     font-size: 2.8em;
   }
-  #welcome_header_image_text {
-    right: .6em;
-    font-size: 2.5em;
-  }
-  #welcome_header_image_text span {
-    font-size: 1.5em;
-  }
 }
 @media only screen and (min-width: 640px) and (max-width: 991px) {
+  .image_highlight_text {
+    right: .5em;
+    font-size: 1.8em;
+  }
+  .image_highlight_text span {
+    font-size: 1.4em;
+  }
   #welcome_header_text {
     padding-left: 2.5em;
     padding-top: 3em;
@@ -342,15 +349,15 @@ img[id="welcome_header_img"] {
   .welcome_header_slogan_highlight {
     font-size: 2.2em;
   }
-  #welcome_header_image_text {
-    right: .5em;
-    font-size: 1.8em;
-  }
-  #welcome_header_image_text span {
-    font-size: 1.4em;
-  }
 }
 @media only screen and (max-width: 639px) {
+  .image_highlight_text {
+    right: .4em;
+    font-size: 1.8em;
+  }
+  .image_highlight_text span {
+    font-size: 1.4em;
+  }
   #welcome_header_text {
     padding-left: 2em;
     padding-top: 2em;
@@ -367,19 +374,16 @@ img[id="welcome_header_img"] {
   .welcome_header_slogan_highlight {
     font-size: 1.8em;
   }
-  #welcome_header_image_text {
-    right: .4em;
-    font-size: 1.8em;
-  }
-  #welcome_header_image_text span {
-    font-size: 1.4em;
-  }
 }
 
 // styles, features
 
 .feature{
+  display: inline-block;
   height: 100vh;
+  position: relative;
+  text-align: left;
+  width: 100%;
 }
 .feature_summary{
   min-height: 75vh;

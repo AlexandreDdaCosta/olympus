@@ -13,8 +13,8 @@
 <div id="welcome_header_image">
 <img src="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_320.jpg" class="img-responsive full-width" id="welcome_header_img">
 </div>
-<div id="welcome_header_image_text">
-<span>{% trans 'HUBBLE' %}</span>
+<div id="welcome_header_image_text" class="image_highlight_text">
+<span>{% trans 'Hubble' %}</span>
 <br/>
 {% trans 'EXTREME DEEP FIELD' %}
 </div>
@@ -38,24 +38,34 @@
 </section>
 <section id="features">
 <div id="blog" class="feature">
-<div id="feature_text">
-<span>{% trans 'ZODIACAL LIGHT' %}</span>
+<div id="blog_overlay" class="overlay overlay_black overlay_feature"></div>
+<div id="blog_highlight_text" class="image_highlight_text">
+<span>{% trans 'Paranal' %}</span>
 <br/>
-{% trans 'PARANAL' %}
+{% trans 'ZODIACAL LIGHT' %}
 </div>
-<div id="blog_overlay" class="overlay overlay_black overlay_feature">BLOG</div>
 </div>
 <div id="blog_summary" class="feature_summary">
 the zodiacal light
 </div>
 <div id="photography" class="feature">
 <div id="photography_overlay" class="overlay overlay_black overlay_feature">PHOTOGRAPHY</div>
+<div id="photography_highlight_text" class="image_highlight_text">
+<span>{% trans 'Apollo 8' %}</span>
+<br/>
+{% trans 'EARTHRISE' %}
+</div>
 </div>
 <div id="photography_summary" class="feature_summary">
 spaceship earth
 </div>
 <div id="projects" class="feature">
 <div id="projects_overlay" class="overlay overlay_black overlay_feature">PROJECTS</div>
+<div id="projects_highlight_text" class="image_highlight_text">
+<span>{% trans 'New Horizons' %}</span>
+<br/>
+{% trans 'PLUTO' %}
+</div>
 </div>
 <div id="projects_summary" class="feature_summary">
 the kuiper belt
