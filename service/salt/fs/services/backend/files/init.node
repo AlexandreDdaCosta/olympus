@@ -11,7 +11,7 @@
 # Short-Description: node init script
 ### END INIT INFO
 
-app=/srv/www/node/restapi/server.js
+app=/srv/www/node/restapi/app.js
 daemon=/usr/bin/node
 lockfile=/var/run/node.pid
 nodeuser=node:node
