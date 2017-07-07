@@ -7,17 +7,12 @@ var util = require('util');
 var logdir = '/var/log/node/';
 var access = fs.createWriteStream(logdir + 'access.log', { flags: 'a' });
 var error = fs.createWriteStream(logdir + 'error.log', { flags: 'a' });
-process.stdout.pipe(access);
-process.stderr.pipe(error);
-var logFile = fs.createWriteStream(logdir + 'debug.log', { flags: 'a' });
-console.log = function () {
-  logFile.write(util.format.apply(null, arguments) + '\n');
-}
-console.error = console.log;
+process.stdout.write = access.write.bind(access);
+process.stderr.write = error.write.bind(error);
 
 fs.writeFile("/var/run/node.pid", process.pid, function(err) {
     if (err) {
-        return console.log(err);
+        return console.error(err);
     }
 }); 
 
