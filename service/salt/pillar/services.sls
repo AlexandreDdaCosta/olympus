@@ -15,10 +15,14 @@ backend-packages:
 backend-npm-packages:
   body-parser:
     version: 1.17.1
+  chai:
+    version: 4.0.2
   express:
     version: 4.15.0
   express-generator:
     version: 4.14.1
+  mocha:
+    version: 3.4.2
   pg:
     version: 6.1.2
   pg-hstore:
