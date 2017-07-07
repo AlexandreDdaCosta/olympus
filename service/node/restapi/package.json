@@ -1,6 +1,9 @@
 {
-    "name": "restapi",
-    "main": "server.js",
     "dependencies": {
-    }
+    },
+    "main": "server.js",
+    "name": "restapi",
+    "scripts": {
+        "tests": "mocha lib/**/**.spec.js"
+    },
 }
