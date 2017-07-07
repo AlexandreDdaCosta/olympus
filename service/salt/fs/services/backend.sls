@@ -130,11 +130,10 @@ backend-user:
     - source: salt://services/backend/files/logrotate.node
     - user: root
 
-/var/log/node.log:
-  file.managed:
+/var/log/node:
+  file.directory:
     - group: {{ pillar['backend-user'] }}
     - mode: 0644
-    - replace: False
     - user: {{ pillar['backend-user'] }}
 
 {{ pillar.www_path }}/node:

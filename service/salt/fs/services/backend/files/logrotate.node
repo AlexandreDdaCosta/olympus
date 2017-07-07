@@ -1,4 +1,4 @@
-/var/log/node.log {
+/var/log/node/*log {
     compress
     create 0644 node node
     dateext

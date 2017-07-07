@@ -2,13 +2,27 @@ var fs = require('fs');
 var express = require('express');
 var bodyParser = require('body-parser');
 var process = require('process');
-fs.writeFile("/var/run/node.pid", process.pid, function(err) 
-{
-    if (err) 
-    {
+var util = require('util');
+
+var logdir = '/var/log/node/';
+var access = fs.createWriteStream(logdir + 'access.log', { flags: 'a' });
+var error = fs.createWriteStream(logdir + 'error.log', { flags: 'a' });
+proc.stdout.pipe(access);
+proc.stderr.pipe(error);
+var logFile = fs.createWriteStream(logdir + 'debug.log', { flags: 'a' });
+var logStdout = process.stdout;
+console.log = function () {
+  logFile.write(util.format.apply(null, arguments) + '\n');
+  logStdout.write(util.format.apply(null, arguments) + '\n');
+}
+console.error = console.log;
+
+fs.writeFile("/var/run/node.pid", process.pid, function(err) {
+    if (err) {
         return console.log(err);
     }
 }); 
+
 var app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
