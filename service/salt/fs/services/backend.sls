@@ -133,7 +133,7 @@ backend-user:
 /var/log/node:
   file.directory:
     - group: {{ pillar['backend-user'] }}
-    - mode: 0644
+    - mode: 0755
     - user: {{ pillar['backend-user'] }}
 
 {{ pillar.www_path }}/node:
