@@ -24,7 +24,7 @@ mongodb_repo:
     - dist: jessie/mongodb-org/3.4 
     - file: /etc/apt/sources.list.d/mongodb-org-3.4.list
     - humanname: MongoDB package repository for {{ pillar['distribution'] }} {{ pillar['release'] }}
-    - name: deb http://repo.mongodb.org/apt/debian/dists jessie/mongodb-org/3.4 main
+    - name: deb http://repo.mongodb.org/apt/debian jessie/mongodb-org/3.4 main
   cmd:
     - run
     - name: 'wget -O - https://www.mongodb.org/static/pgp/server-3.4.asc | apt-key add -'
