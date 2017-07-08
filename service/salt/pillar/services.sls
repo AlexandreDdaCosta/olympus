@@ -25,6 +25,8 @@ backend-npm-packages:
     version: 4.14.1
   mocha:
     version: 3.4.2
+  mongodb:
+    version: 2.2
   pg:
     version: 6.1.2
   pg-hstore:
