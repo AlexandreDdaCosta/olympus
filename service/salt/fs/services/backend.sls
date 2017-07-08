@@ -165,7 +165,7 @@ mongod-backend:
       - file: /etc/mongod.conf
 
 mongod-backend-enable-at-startup:
-  service.enable:
+  systemd.enable:
     - name: mongod
 
 node-backend:
