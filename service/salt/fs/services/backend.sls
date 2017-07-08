@@ -164,6 +164,10 @@ mongod-backend:
     - watch:
       - file: /etc/mongod.conf
 
+mongod-backend-enable-at-startup:
+  service.enable:
+    - name: mongod
+
 node-backend:
   service.running:
     - enable: True
