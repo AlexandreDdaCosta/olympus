@@ -11,11 +11,9 @@
 # Short-Description: mongod init script
 ### END INIT INFO
 
-app=/srv/www/node/restapi/app.js
-daemon=/usr/bin/node
-lockfile=/var/run/node.pid
-nodeuser=node:node
-prog=node
+daemon=/usr/bin/mongod
+lockfile=/var/run/mongod.pid
+mongouser=mongodb
 
 . /lib/lsb/init-functions
 
@@ -39,14 +37,13 @@ do_start()
     [ -x $daemon ] || exit 5
     touch $lockfile
     chmod 0664 $lockfile
-    chown node:node $lockfile
-    export NODE_PATH=/usr/lib/nodejs:/usr/lib/node_modules:/usr/share/javascript
-    start-stop-daemon --start --quiet --pidfile $lockfile --chuid $nodeuser --background --exec $daemon $app
+    chown $mongouser:$mongouser $lockfile
+    start-stop-daemon --start --quiet --pidfile $lockfile --chuid $mongouser --background --exec $daemon
 }
 
 do_stop()
 {
-    start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $lockfile --chuid $nodeuser --exec $daemon $app
+    start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $lockfile --chuid $mongouser --exec $daemon
     rm -f $lockfile
 }
 
