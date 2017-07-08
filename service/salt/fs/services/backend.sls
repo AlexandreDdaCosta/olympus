@@ -82,6 +82,7 @@ backend-user:
   file.exists:
     - name: /etc/mongod.conf
 
+
 /etc/nginx/conf.d/node.conf:
   file.managed:
     - group: root
