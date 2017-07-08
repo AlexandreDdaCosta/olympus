@@ -29,6 +29,8 @@ backend-npm-packages:
     version: 2.3.2
   pm2:
     version: 2.4.2
+  request:
+    version: 2.81.0
   sequelize:
     version: 3.30.2
   sequelize-cli:
