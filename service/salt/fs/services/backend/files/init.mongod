@@ -1,0 +1,71 @@
+#!/bin/sh
+#
+# /etc/init.d/mongod
+#
+### BEGIN INIT INFO
+# Provides:          mongod
+# Required-Start:    $local_fs $networking
+# Required-Stop:     $local_fs $networking
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: mongod init script
+### END INIT INFO
+
+app=/srv/www/node/restapi/app.js
+daemon=/usr/bin/node
+lockfile=/var/run/node.pid
+nodeuser=node:node
+prog=node
+
+. /lib/lsb/init-functions
+
+do_start()
+{
+    status="0"
+    wait=1
+    while [ $status -eq "0" ]
+    do
+        ps -p`cat $lockfile` 2>&1 > /dev/null
+        status=$?
+        if [ "$status" != "0" ]; then
+            break
+        fi
+        wait=$((wait+1))
+        if [[ $wait -eq 3 ]]; then
+            break
+        fi
+        sleep 1
+    done
+    [ -x $daemon ] || exit 5
+    touch $lockfile
+    chmod 0664 $lockfile
+    chown node:node $lockfile
+    export NODE_PATH=/usr/lib/nodejs:/usr/lib/node_modules:/usr/share/javascript
+    start-stop-daemon --start --quiet --pidfile $lockfile --chuid $nodeuser --background --exec $daemon $app
+}
+
+do_stop()
+{
+    start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $lockfile --chuid $nodeuser --exec $daemon $app
+    rm -f $lockfile
+}
+
+case "$1" in
+    restart)
+        do_stop
+        do_start
+        ;;
+    start)
+        do_start
+        ;;
+    status)
+        status_of_proc -p "$lockfile" "$daemon" "$prog" && exit 0 || exit $?
+        ;;
+    stop)
+        do_stop
+        ;;
+    *)
+        echo "Usage: /etc/init.d/node {restart|start|status|stop}"
+        exit 1
+    ;;
+esac

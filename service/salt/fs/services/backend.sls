@@ -82,6 +82,50 @@ backend-user:
   file.exists:
     - name: /etc/mongod.conf
 
+/etc/rc0.d/K01mongod:
+  file.symlink:
+    - target: /etc/init.d/mongod
+
+/etc/rc1.d/K01mongod:
+  file.symlink:
+    - target: /etc/init.d/mongod
+
+/etc/rc2.d/S01mongod:
+  file.symlink:
+    - target: /etc/init.d/mongod
+
+/etc/rc3.d/S01mongod:
+  file.symlink:
+    - target: /etc/init.d/mongod
+
+/etc/rc4.d/S01mongod:
+  file.symlink:
+    - target: /etc/init.d/mongod
+
+/etc/rc5.d/S01mongod:
+  file.symlink:
+    - target: /etc/init.d/mongod
+
+/etc/rc6.d/K01mongod:
+  file.symlink:
+    - target: /etc/init.d/mongod
+
+/etc/init.d/mongod:
+    file.managed:
+    - group: root
+    - makedirs: False
+    - mode: 0755
+    - source: salt://services/backend/files/init.mongod
+    - user: root
+
+/etc/logrotate.d/mongod:
+    file.managed:
+    - group: root
+    - makedirs: False
+    - mode: 0755
+    - source: salt://services/backend/files/logrotate.mongod
+    - user: root
+
 /etc/nginx/conf.d/node.conf:
   file.managed:
     - group: root
