@@ -4,7 +4,7 @@ backend-user: node
 
 backend-packages:
   mongodb-org:
-    repo: jessie/mongodb-org/3.4
+    repo: jessie
     version: 3.4
   nodejs:
     version: 6.10.0-1nodesource1~jessie1
