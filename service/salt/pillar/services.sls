@@ -23,6 +23,8 @@ backend-npm-packages:
     version: 4.15.0
   express-generator:
     version: 4.14.1
+  fs-extra:
+    version: 3.0.1
   mocha:
     version: 3.4.2
   mongodb:
