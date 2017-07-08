@@ -160,13 +160,10 @@ nginx-backend:
 
 mongod-backend:
   service.running:
+    - enable: True
     - name: mongod
     - watch:
       - file: /etc/mongod.conf
-
-mongod-backend-enable-at-startup:
-  systemd.enable:
-    - name: mongod
 
 node-backend:
   service.running:
