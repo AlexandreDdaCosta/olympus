@@ -78,6 +78,10 @@ backend-user:
     - groups:
       - {{ pillar['backend-user'] }}
 
+/etc/mongod.conf:
+  file.exists:
+    - name: /etc/mongod.conf
+
 /etc/nginx/conf.d/node.conf:
   file.managed:
     - group: root
