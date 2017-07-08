@@ -79,9 +79,12 @@ backend-user:
       - {{ pillar['backend-user'] }}
 
 /etc/mongod.conf:
-  file.exists:
-    - name: /etc/mongod.conf
-
+  file.managed:
+    - group: root
+    - makedirs: False
+    - mode: 0644
+    - source: salt://services/backend/files/mongod.conf
+    - user: root
 
 /etc/nginx/conf.d/node.conf:
   file.managed:
@@ -154,6 +157,12 @@ nginx-backend:
     - name: nginx
     - watch:
       - file: /etc/nginx/conf.d/node.conf
+
+mongod-backend:
+  service.running:
+    - name: mongod
+    - watch:
+      - file: /etc/mongod.conf
 
 node-backend:
   service.running:
