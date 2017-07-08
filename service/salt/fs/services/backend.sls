@@ -155,12 +155,6 @@ nginx-backend:
     - watch:
       - file: /etc/nginx/conf.d/node.conf
 
-mongod-backend:
-  service.running:
-    - name: mongod
-    - watch:
-      - file: /etc/mongod.conf
-
 node-backend:
   service.running:
     - enable: True
