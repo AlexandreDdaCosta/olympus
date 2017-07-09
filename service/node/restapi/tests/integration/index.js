@@ -1,7 +1,6 @@
 var chai = require('chai');
 var request = require('request');
 var expect = chai.expect;
-var fs = require('fs-promise');
 
 var url = 'http://127.0.0.1:8889/api/';
 var message = 'Olympus back-end API listening for requests via express/node.js.'
