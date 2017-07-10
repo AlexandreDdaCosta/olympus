@@ -23,7 +23,7 @@ ca.cnf:
     - group: root
     - mode: 600
     - name: /etc/ssl/localcerts/ca.cnf
-    - source: salt://web/ca.cnf.jinja
+    - source: salt://services/web/ca.cnf.jinja
     - template: jinja
     - user: root
   cmd.run:
