@@ -340,8 +340,8 @@ jquery:
 frontend-cert:
   cmd:
     - run
-    - name: service nginx stop; /usr/bin/certbot certonly --standalone -d {{ pillar ['core-domain-CN'] }} -d www.{{ pillar ['core-domain-CN'] }}
-    - unless: 'test -f /etc/letsencrypt/live/{{ pillar ['core-domain-CN'] }}/fullchain.pem'
+    - name: sudo service nginx stop; sudo /usr/bin/certbot certonly --standalone -d {{ pillar['core-domain-CN'] }} -d www.{{ pillar['core-domain-CN'] }}
+    - unless: 'test -f /etc/letsencrypt/live/{{ pillar['core-domain-CN'] }}/fullchain.pem'
 
 frontend_cert_renewal:
   cmd.run:
