@@ -18,7 +18,18 @@ include:
       - sls: package
 {% endfor %}
 
-default_web_certs:
+ca.cnf:
+  file.managed:
+    - group: root
+    - mode: 600
+    - name: /etc/ssl/localcerts/ca.cnf
+    - source: salt://web/ca.cnf.jinja
+    - template: jinja
+    - user: root
+  cmd.run:
+    - name: 'openssl req -new -x509 -days 9999 -config /etc/ssl/localcerts/ca.cnf -keyout /etc/ssl/localcerts/ca-key.pem -out /etc/ssl/localcerts/ca-crt.pem'
+
+local_certs:
   cmd:
     - run
     - name: 'openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -out /etc/ssl/localcerts/server.crt -keyout /etc/ssl/localcerts/server.key -subj "/C={{ pillar['core-domain-C'] }}/ST={{ pillar['core-domain-ST'] }}/L={{ pillar['core-domain-L'] }}/O={{ pillar['core-domain-O'] }}/OU={{ pillar['core-domain-OU'] }}/CN={{ pillar['core-domain-CN'] }}"'
