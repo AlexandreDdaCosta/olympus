@@ -1,0 +1,28 @@
+{% set trim_blocks=True -%}
+{# Template for local CA authority. -#}
+[ req ]
+default_bits       = 4096
+days               = 9999
+distinguished_name = req_distinguished_name
+attributes         = req_attributes
+prompt             = no
+x509_extensions    = v3_ca
+
+[ req_distinguished_name ]
+C            = {{ pillar['core-domain-C'] }}
+ST           = {{ pillar['core-domain-ST'] }}
+L            = {{ pillar['core-domain-L'] }}
+O            = {{ pillar['core-domain-O'] }}
+OU           = {{ pillar['core-domain-OU'] }}
+CN           = {{ grains.get('localhost') }}
+emailAddress = {{ pillar['core-email'] }}
+
+[ req_attributes ]
+challengePassword = {{ pillar['random_key']['ca_key'] }}
+
+[ v3_ca ]
+authorityInfoAccess = @issuer_info
+
+[ issuer_info ]
+OCSP;URI.0 = http://ocsp.{{ pillar['core-domain-CN'] }}/
+caIssuers;URI.0 = http://{{ pillar['core-domain-CN'] }}/ca.cert

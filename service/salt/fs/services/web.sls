@@ -29,6 +29,15 @@ ca.cnf:
   cmd.run:
     - name: 'openssl req -new -x509 -days 9999 -config /etc/ssl/localcerts/ca.cnf -keyout /etc/ssl/localcerts/ca-key.pem -out /etc/ssl/localcerts/ca-crt.pem'
 
+server.cnf:
+  file.managed:
+    - group: root
+    - mode: 600
+    - name: /etc/ssl/localcerts/server.cnf
+    - source: salt://services/web/server.cnf.jinja
+    - template: jinja
+    - user: root
+
 local_certs:
   cmd:
     - run
