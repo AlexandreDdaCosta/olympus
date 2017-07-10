@@ -337,6 +337,16 @@ jquery:
 {% endif %}
 {% endfor %}
 
+frontend-cert:
+  cmd:
+    - run
+    - name: service nginx stop; /usr/bin/certbot certonly --standalone -d {{ pillar ['core-domain-CN'] }} -d www.{{ pillar ['core-domain-CN'] }}
+    - unless: 'test -f /etc/letsencrypt/live/{{ pillar ['core-domain-CN'] }}/fullchain.pem'
+
+frontend_cert_renewal:
+  cmd.run:
+    - name: /usr/bin/certbot renew --pre-hook "service nginx stop" --post-hook "service nginx start"
+
 nginx-frontend:
   service.running:
     - name: nginx

@@ -18,10 +18,10 @@ include:
       - sls: package
 {% endfor %}
 
-web_certs:
+default_web_certs:
   cmd:
     - run
-    - name: 'openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -out /etc/ssl/localcerts/server.crt -keyout /etc/ssl/localcerts/server.key -subj "/C=US/ST=Lake Worth/L=Lake Worth/O=FeralCanids/OU=Olympus web services/CN=feralcanids.com"'
+    - name: 'openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -out /etc/ssl/localcerts/server.crt -keyout /etc/ssl/localcerts/server.key -subj "/C={{ pillar['core-domain-C'] }}/ST={{ pillar['core-domain-ST'] }}/L={{ pillar['core-domain-L'] }}/O={{ pillar['core-domain-O'] }}/OU={{ pillar['core-domain-OU'] }}/CN={{ pillar['core-domain-CN'] }}"'
 {% if pillar.refresh_security is not defined or not pillar.refresh_security %}
     - unless: 'test -f /etc/ssl/localcerts/server.crt && openssl verify /etc/ssl/localcerts/server.crt'
 {% endif %}
