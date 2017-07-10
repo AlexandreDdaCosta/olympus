@@ -38,12 +38,12 @@ server.cnf:
     - template: jinja
     - user: root
   cmd.run:
-    - name: 'openssl req -new -config /etc/ssl/localcerts/server.cnf -key /etc/ssl/localcerts/server.key -out /etc/ssl/localcerts/server-csr.pem'
+    - name: 'openssl req -new -config /etc/ssl/localcerts/server.cnf -key /etc/ssl/localcerts/server.key -out /etc/ssl/localcerts/server.csr'
 
 local_certs:
   cmd:
     - run
-    - name 'openssl -x509 -req -extfile /etc/ssl/localcerts/server.cnf -days 365 -in /etc/ssl/localcerts/server-csr.pem -CA /etc/ssl/localcerts/ca-crt.pem -CAkey /etc/ssl/localcerts/ca-key.pem -CAcreateserial -out /etc/ssl/localcerts/server.crt'
+    - name 'openssl -x509 -req -extfile /etc/ssl/localcerts/server.cnf -days 365 -in /etc/ssl/localcerts/server.csr -CA /etc/ssl/localcerts/ca-crt.pem -CAkey /etc/ssl/localcerts/ca-key.pem -CAcreateserial -out /etc/ssl/localcerts/server.crt'
 
 local_certs_old:
   cmd:
