@@ -43,7 +43,7 @@ server.cnf:
 local_certs:
   cmd:
     - run
-    - name: 'openssl x509 -req -extfile /etc/ssl/localcerts/server.cnf -days 365 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in /etc/ssl/localcerts/server-csr.pem -CA /etc/ssl/localcerts/ca-crt.pem -CAkey /etc/ssl/localcerts/ca-key.pem -CAcreateserial -out /etc/ssl/localcerts/server.crt'
+    - name: 'openssl x509 -req -extfile /etc/ssl/localcerts/server.cnf -days 365 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in /etc/ssl/localcerts/server.csr -CA /etc/ssl/localcerts/ca-crt.pem -CAkey /etc/ssl/localcerts/ca-key.pem -CAcreateserial -out /etc/ssl/localcerts/server.crt'
 
 local_certs_old:
   cmd:
