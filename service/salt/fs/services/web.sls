@@ -40,11 +40,6 @@ server.cnf:
   cmd.run:
     - name: 'openssl req -new -config /etc/ssl/localcerts/server.cnf -key /etc/ssl/localcerts/server.key -out /etc/ssl/localcerts/server-csr.pem'
 
-local_certs:
-  cmd:
-    - run
-    - name 'openssl -x509 -req -extfile /etc/ssl/localcerts/server.cnf -days 365 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in /etc/ssl/localcerts/server-csr.pem -CA /etc/ssl/localcerts/ca-crt.pem -CAkey /etc/ssl/localcerts/ca-key.pem -CAcreateserial -out /etc/ssl/localcerts/server.crt'
-
 local_certs_old:
   cmd:
     - run
