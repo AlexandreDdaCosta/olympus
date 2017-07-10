@@ -4,7 +4,7 @@ core-email: alex_investor@yahoo.com
 core-domain-C: US
 core-domain-ST: Florida
 core-domain-L: Lake Worth
-core-domain-O: Laika\'s Den
+core-domain-O: LaikasDen
 core-domain-OU: Olympus web services
 core-domain-CN: laikasden.com
 
