@@ -18,7 +18,7 @@ days               = 9999
 distinguished_name = req_distinguished_name
 attributes         = req_attributes
 prompt             = no
-output_password    = password
+output_password    = {{ pillar['random_key']['ca_key'] }}
 
 [ req_distinguished_name ]
 C            = {{ pillar['core-domain-C'] }}
