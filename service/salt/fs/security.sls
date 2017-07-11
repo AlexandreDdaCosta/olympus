@@ -8,6 +8,37 @@ include:
     - mode: 0600
     - user: root
 
+ca.cnf:
+  file.managed:
+    - group: root
+    - mode: 600
+    - name: /etc/ssl/localcerts/ca.cnf
+    - source: salt://services/web/ca.cnf.jinja
+    - template: jinja
+    - user: root
+  cmd.run:
+    - name: 'openssl req -new -x509 -days 9999 -config /etc/ssl/localcerts/ca.cnf -keyout /etc/ssl/localcerts/ca-key.pem -out /etc/ssl/localcerts/ca-crt.pem'
+
+server-key.pem:
+  cmd.run:
+    - name: 'openssl genrsa -out /etc/ssl/localcerts/server-key.pem 4096'
+
+server.cnf:
+  file.managed:
+    - group: root
+    - mode: 600
+    - name: /etc/ssl/localcerts/server.cnf
+    - source: salt://services/web/server.cnf.jinja
+    - template: jinja
+    - user: root
+  cmd.run:
+    - name: 'openssl req -new -config /etc/ssl/localcerts/server.cnf -key /etc/ssl/localcerts/server-key.pem -out /etc/ssl/localcerts/server-csr.pem'
+
+local_certs:
+  cmd:
+    - run
+    - name: 'openssl x509 -req -extfile /etc/ssl/localcerts/server.cnf -days 365 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in /etc/ssl/localcerts/server-csr.pem -CA /etc/ssl/localcerts/ca-crt.pem -CAkey /etc/ssl/localcerts/ca-key.pem -CAcreateserial -out /etc/ssl/localcerts/server-crt.pem'
+
 openssh-server-service:
   file.managed:
     - group: root
