@@ -49,14 +49,6 @@ local_certs:
     - run
     - name: 'openssl x509 -req -extfile /etc/ssl/localcerts/server.cnf -days 365 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in /etc/ssl/localcerts/server-csr.pem -CA /etc/ssl/localcerts/ca-crt.pem -CAkey /etc/ssl/localcerts/ca-key.pem -CAcreateserial -out /etc/ssl/localcerts/server-crt.pem'
 
-local_certs_old:
-  cmd:
-    - run
-    - name: 'openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -out /etc/ssl/localcerts/server.crt -keyout /etc/ssl/localcerts/server.key -subj "/C={{ pillar['core-domain-C'] }}/ST={{ pillar['core-domain-ST'] }}/L={{ pillar['core-domain-L'] }}/O={{ pillar['core-domain-O'] }}/OU={{ pillar['core-domain-OU'] }}/CN={{ pillar['core-domain-CN'] }}"'
-{% if pillar.refresh_security is not defined or not pillar.refresh_security %}
-    - unless: 'test -f /etc/ssl/localcerts/server.crt && openssl verify /etc/ssl/localcerts/server.crt'
-{% endif %}
-
 {{ pillar.www_path }}:
     file.directory:
     - group: root
