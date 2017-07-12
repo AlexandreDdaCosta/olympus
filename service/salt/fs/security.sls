@@ -57,7 +57,7 @@ push-CA-cert:
 
 copy-CA-cert:
   cmd.run:
-    - name: salt '*' cp.get_file salt://{{ grains.get('localhost') }}/files/etc/ssl/localcerts/ca-crt.pem /usr/local/share/ca-certificates/ca-master.crt
+    - name: salt '*' cp.get_file salt://{{ grains.get('localhost') }}/etc/ssl/localcerts/ca-crt.pem /usr/local/share/ca-certificates/ca-master.crt
     - require: 
       - push-CA-cert
 
