@@ -63,7 +63,7 @@ push-CA-cert:
   cmd.run:
     - name: salt '{{ grains.get('localhost') }}' cp.push /etc/ssl/localcerts/ca-crt.pem
     - require: 
-      - local_certs
+      - create_server_cert
 
 # Trigger all minions to retrieve master CA cert 
 
