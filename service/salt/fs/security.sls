@@ -54,11 +54,12 @@ push-CA-cert:
       - local_certs
 
 # Trigger all minions to retrieve master CA cert 
-# copy-CA-cert:
-#  cmd.run:
-#    - name: 
-#    - require: 
-#      - push-CA-cert
+
+copy-CA-cert:
+  cmd.run:
+    - name: salt '*' cp.get_file salt://minionfs/{{ grains.get('localhost') }}/etc/ssl/localcerts/ca-crt.pem /usr/local/share/ca-certificates/ca-master.crt
+    - require: 
+      - push-CA-cert
 
 # Trigger all minions to update certificate store
 
@@ -66,7 +67,7 @@ regen-trusted-CA:
   cmd.run:
     - name: salt '*' cmd.run '/usr/sbin/update-ca-certificates'
     - require: 
-      - push-CA-cert
+      - copy-CA-cert
 {% endif %}
 
 openssh-server-service:
