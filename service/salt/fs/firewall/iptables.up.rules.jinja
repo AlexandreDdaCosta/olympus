@@ -43,8 +43,7 @@
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 443 -j ACCEPT
 
 {%- endif -%}
-{%- endif -%}
-
+{%- endif %}
 {% if grains.get('server') and grains.get('server') == 'supervisor' %}
 # Internal network connections to backend
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -m iprange --src-range 192.168.1.2-192.168.1.255 -j ACCEPT
