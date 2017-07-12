@@ -45,14 +45,28 @@ local_certs:
       - server.cnf
 
 {%- if grains.get('server') and grains.get('server') == 'supervisor' %}
+
 # Push CA cert from minion to master
 push-CA-cert:
   cmd.run:
     - name: salt '{{ grains.get('localhost') }}' cp.push /etc/ssl/localcerts/ca-crt.pem
     - require: 
       - local_certs
-# Trigger all minions to retrieve file
+
+# Trigger all minions to retrieve master CA cert 
+# copy-CA-cert:
+#  cmd.run:
+#    - name: 
+#    - require: 
+#      - push-CA-cert
+
 # Trigger all minions to update certificate store
+
+regen-trusted-CA:
+  cmd.run:
+    - name: salt '*' cmd.run '/usr/sbin/update-ca-certificates'
+    - require: 
+      - push-CA-cert
 {% endif %}
 
 openssh-server-service:
