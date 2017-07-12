@@ -57,6 +57,12 @@ trust_server_cert:
     - require: 
       - create_server_cert
 
+web-security-restart:
+  cmd.run:
+    - name: service nginx status; if [ $? = 0 ]; then service nginx restart; fi;
+    - require:
+      - trust_server_cert
+
 {%- if grains.get('server') and grains.get('server') == 'supervisor' %}
 
 # Push CA cert from minion to master
@@ -81,6 +87,7 @@ regen-trusted-CA:
     - name: salt '*' cmd.run '/usr/sbin/update-ca-certificates --fresh'
     - require: 
       - copy-CA-cert
+
 {% endif %}
 
 openssh-server-service:
