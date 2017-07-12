@@ -38,11 +38,23 @@ server.cnf:
     - require: 
       - server-key.pem
 
-local_certs:
+create_server_cert:
   cmd.run:
     - name: 'openssl x509 -req -extfile /etc/ssl/localcerts/server.cnf -days 365 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in /etc/ssl/localcerts/server-csr.pem -CA /etc/ssl/localcerts/ca-crt.pem -CAkey /etc/ssl/localcerts/ca-key.pem -CAcreateserial -out /etc/ssl/localcerts/server-crt.pem'
     - require: 
       - server.cnf
+
+trust_server_cert:
+  file.copy:
+    - group: root
+    - mode: 644
+    - name: /usr/local/share/ca-certificates/server-crt.pem.crt
+    - source: /etc/ssl/localcerts/server-crt.pem
+    - user: root
+  cmd.run:
+    - name: /usr/sbin/update-ca-certificates --fresh 
+    - require: 
+      - create_server_cert
 
 {%- if grains.get('server') and grains.get('server') == 'supervisor' %}
 
@@ -57,7 +69,7 @@ push-CA-cert:
 
 copy-CA-cert:
   cmd.run:
-    - name: salt '*' cp.get_file salt://{{ grains.get('localhost') }}/etc/ssl/localcerts/ca-crt.pem /usr/local/share/ca-certificates/ca-master.crt
+    - name: salt '*' cp.get_file salt://{{ grains.get('localhost') }}/etc/ssl/localcerts/ca-crt.pem /usr/local/share/ca-certificates/ca-crt.pem.crt
     - require: 
       - push-CA-cert
 
@@ -65,7 +77,7 @@ copy-CA-cert:
 
 regen-trusted-CA:
   cmd.run:
-    - name: salt '*' cmd.run '/usr/sbin/update-ca-certificates'
+    - name: salt '*' cmd.run '/usr/sbin/update-ca-certificates --fresh'
     - require: 
       - copy-CA-cert
 {% endif %}
