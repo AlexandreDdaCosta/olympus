@@ -41,14 +41,13 @@ local_certs:
     - run
     - name: 'openssl x509 -req -extfile /etc/ssl/localcerts/server.cnf -days 365 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in /etc/ssl/localcerts/server-csr.pem -CA /etc/ssl/localcerts/ca-crt.pem -CAkey /etc/ssl/localcerts/ca-key.pem -CAcreateserial -out /etc/ssl/localcerts/server-crt.pem'
 
-{% if 'server' in hostinfo and hostinfo['server'] == 'supervisor' %}
+{%- if grains.get('server') and grains.get('server') == 'supervisor' %}
 # Push CA cert from minion to master
 push-CA-cert:
   cmd.run:
     - name: salt '{{ grains.get('localhost') }}' cp.push /etc/ssl/localcerts/ca-crt.pem
 # Trigger all minions to retrieve file
 # Trigger all minions to update certificate store
-#    - name: /etc/ssl/localcerts/ca-crt.pem
 {% endif %}
 
 openssh-server-service:
