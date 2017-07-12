@@ -46,6 +46,7 @@ create_server_cert:
 
 trust_server_cert:
   file.copy:
+    - force: True
     - group: root
     - mode: 644
     - name: /usr/local/share/ca-certificates/server-crt.pem.crt
