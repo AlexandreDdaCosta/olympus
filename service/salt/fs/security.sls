@@ -18,12 +18,6 @@ ca.cnf:
     - user: root
   cmd.run:
     - name: 'openssl req -new -x509 -days 9999 -config /etc/ssl/localcerts/ca.cnf -keyout /etc/ssl/localcerts/ca-key.pem -out /etc/ssl/localcerts/ca-crt.pem'
-#{% if 'server' in hostinfo and hostinfo['server'] == 'supervisor' %}
-# {% if pillar.regen_CA is not defined or not pillar.regen_CA %}
-# By default no regen of CA cert on supervisor minion. 
-#   - unless: 'test -f /etc/ssl/localcerts/ca-crt.pem && openssl verify /etc/ssl/localcerts/ca-crt.pem'
-# {% endif %}
-#{% endif %}
 
 server-key.pem:
   cmd.run:
