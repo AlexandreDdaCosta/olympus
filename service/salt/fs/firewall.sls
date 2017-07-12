@@ -10,3 +10,10 @@ firewall:
     - user: root
   cmd.run:
     - name: iptables-restore < {{ path }}
+
+web-firewall-restart:
+  cmd.run:
+    - name: service nginx status; if [ $? = 0 ]; then service nginx restart; fi;
+    - require:
+      - firewall
+
