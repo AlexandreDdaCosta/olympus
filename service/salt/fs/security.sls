@@ -18,10 +18,18 @@ ca.cnf:
     - user: root
   cmd.run:
     - name: 'openssl req -new -x509 -days 9999 -config /etc/ssl/localcerts/ca.cnf -keyout /etc/ssl/localcerts/ca-key.pem -out /etc/ssl/localcerts/ca-crt.pem'
+#{% if 'server' in hostinfo and hostinfo['server'] == 'supervisor' %}
+# {% if pillar.regen_CA is not defined or not pillar.regen_CA %}
+# By default no regen of CA cert on supervisor minion. 
+#   - unless: 'test -f /etc/ssl/localcerts/ca-crt.pem && openssl verify /etc/ssl/localcerts/ca-crt.pem'
+# {% endif %}
+#{% endif %}
 
 server-key.pem:
   cmd.run:
     - name: 'openssl genrsa -out /etc/ssl/localcerts/server-key.pem 4096'
+	- require: 
+      - security: ca.cnf
 
 server.cnf:
   file.managed:
@@ -38,6 +46,16 @@ local_certs:
   cmd:
     - run
     - name: 'openssl x509 -req -extfile /etc/ssl/localcerts/server.cnf -days 365 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in /etc/ssl/localcerts/server-csr.pem -CA /etc/ssl/localcerts/ca-crt.pem -CAkey /etc/ssl/localcerts/ca-key.pem -CAcreateserial -out /etc/ssl/localcerts/server-crt.pem'
+
+{% if 'server' in hostinfo and hostinfo['server'] == 'supervisor' %}
+# Push CA cert from minion to master
+push-CA-cert:
+  cmd.run:
+    - name: salt '{{ grains.get('localhost') }}' cp.push /etc/ssl/localcerts/ca-crt.pem
+# Trigger all minions to retrieve file
+# Trigger all minions to update certificate store
+#    - name: /etc/ssl/localcerts/ca-crt.pem
+{% endif %}
 
 openssh-server-service:
   file.managed:
