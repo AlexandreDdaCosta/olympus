@@ -23,7 +23,7 @@ server-key.pem:
   cmd.run:
     - name: 'openssl genrsa -out /etc/ssl/localcerts/server-key.pem 4096'
     - require: 
-      - security: ca.cnf
+      - ca.cnf
 
 server.cnf:
   file.managed:
