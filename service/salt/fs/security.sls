@@ -44,6 +44,17 @@ create_server_cert:
     - require: 
       - server.cnf
 
+copy_CA_cert_local:
+  file.copy:
+    - force: True
+    - group: root
+    - mode: 644
+    - name: /usr/local/share/ca-certificates/ca-crt.pem.crt
+    - source: /etc/ssl/localcerts/ca-crt.pem
+    - user: root
+    - require: 
+      - create_server_cert
+
 trust_server_cert:
   file.copy:
     - force: True
@@ -55,9 +66,9 @@ trust_server_cert:
   cmd.run:
     - name: /usr/sbin/update-ca-certificates --fresh 
     - require: 
-      - create_server_cert
+      - copy_CA_cert_local
 
-web-security-restart:
+web_security_restart:
   cmd.run:
     - name: service nginx status; if [ $? = 0 ]; then service nginx restart; fi;
     - require:
@@ -66,7 +77,7 @@ web-security-restart:
 {%- if grains.get('server') and grains.get('server') == 'supervisor' %}
 
 # Push CA cert from minion to master
-push-CA-cert:
+push_CA_cert:
   cmd.run:
     - name: salt '{{ grains.get('localhost') }}' cp.push /etc/ssl/localcerts/ca-crt.pem
     - require: 
@@ -74,7 +85,7 @@ push-CA-cert:
 
 # Trigger all minions to retrieve master CA cert 
 
-copy-CA-cert:
+copy_CA_cert:
   cmd.run:
     - name: salt '*' cp.get_file salt://{{ grains.get('localhost') }}/etc/ssl/localcerts/ca-crt.pem /usr/local/share/ca-certificates/ca-crt.pem.crt
     - require: 
@@ -82,7 +93,7 @@ copy-CA-cert:
 
 # Trigger all minions to update certificate store
 
-regen-trusted-CA:
+regen_trusted_CA:
   cmd.run:
     - name: salt '*' cmd.run '/usr/sbin/update-ca-certificates --fresh'
     - require: 
