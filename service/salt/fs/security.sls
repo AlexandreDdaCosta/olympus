@@ -44,6 +44,12 @@ create_server_cert:
     - require: 
       - server.cnf
 
+create_chained_cert:
+  cmd.run:
+    - name: cat /etc/ssl/localcerts/server-crt.pem /etc/ssl/localcerts/ca-crt.pem > /etc/ssl/localcerts/server-crt-chain.pem
+    - require: 
+      - create_server_cert
+
 copy_CA_cert_local:
   file.copy:
     - force: True
@@ -53,7 +59,7 @@ copy_CA_cert_local:
     - source: /etc/ssl/localcerts/ca-crt.pem
     - user: root
     - require: 
-      - create_server_cert
+      - create_chained_cert
 
 trust_server_cert:
   file.copy:
