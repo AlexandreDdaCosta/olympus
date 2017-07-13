@@ -51,8 +51,8 @@
 {%- if 'server' in hostinfo and hostinfo['server'] == 'interface' or hostinfo['server'] == 'supervisor' %}
 # ({{ host }})
 
-{%- for ip in hostinfo['ipv4'] %}
-{% if ip != '127.0.0.1' %}
+{%- for ip in hostinfo['ipv4'] -%}
+{%- if ip != '127.0.0.1' %}
 # Backend
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -s {{ ip }} -j ACCEPT
 # Postgresql
