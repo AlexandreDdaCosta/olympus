@@ -81,7 +81,7 @@ push_CA_cert:
   cmd.run:
     - name: salt '{{ grains.get('localhost') }}' cp.push /etc/ssl/localcerts/ca-crt.pem
     - require: 
-      - create_server_cert
+      - trust_server_cert
 
 # Trigger all minions to retrieve master CA cert 
 
@@ -89,7 +89,7 @@ copy_CA_cert:
   cmd.run:
     - name: salt '*' cp.get_file salt://{{ grains.get('localhost') }}/etc/ssl/localcerts/ca-crt.pem /usr/local/share/ca-certificates/ca-crt.pem.crt
     - require: 
-      - push-CA-cert
+      - push_CA_cert
 
 # Trigger all minions to update certificate store
 
@@ -97,7 +97,7 @@ regen_trusted_CA:
   cmd.run:
     - name: salt '*' cmd.run '/usr/sbin/update-ca-certificates --fresh'
     - require: 
-      - copy-CA-cert
+      - copy_CA_cert
 
 {% endif %}
 
