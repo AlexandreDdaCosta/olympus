@@ -15,9 +15,3 @@ core-states:
   - firewall
   - services
   - users
-
-mine_functions:
-  grains.get: []
-  test.ping: []
-  network.interfaces: []
-  network.ip_addrs: []
