@@ -25,7 +25,7 @@ include:
   file.managed:
     - group: root
     - mode: 600
-    - source: salt://services/security/ca.cnf.jinja
+    - source: salt://security/ca.cnf.jinja
     - template: jinja
     - user: root
   cmd.run:
@@ -58,7 +58,7 @@ include:
     - group: root
     - mode: 600
     - name: {{ client_certificates }}{{ host }}/client.cnf
-    - source: salt://services/security/client.cnf.jinja
+    - source: salt://security/client.cnf.jinja
     - template: jinja
     - user: root
 
@@ -87,7 +87,7 @@ server.cnf:
     - group: root
     - mode: 600
     - name: /etc/ssl/localcerts/server.cnf
-    - source: salt://services/security/server.cnf.jinja
+    - source: salt://security/server.cnf.jinja
     - template: jinja
     - user: root
   cmd.run:
