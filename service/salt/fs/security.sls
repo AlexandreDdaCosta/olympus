@@ -1,9 +1,10 @@
-{% set client_certificates = '/etc/ssl/salt/client_certificates/' %}
+{% set cert_dir = '/etc/ssl/localcerts' %}
+{% set cert_dir_client = '/etc/ssl/salt/client_certificates/' %}
 
 include:
   - base: package
 
-/etc/ssl/localcerts:
+{{ cert_dir }}:
   file.directory:
     - group: root
     - makedirs: False
@@ -12,7 +13,7 @@ include:
 
 {%- if grains.get('server') and grains.get('server') == 'supervisor' %}
 
-{{ client_certificates }}:
+{{ cert_dir_client }}:
   file.directory:
     - group: root
     - makedirs: True
@@ -21,7 +22,7 @@ include:
 
 # Regenerate CA
 
-/etc/ssl/localcerts/ca.cnf:
+{{ cert_dir }}/ca.cnf:
   file.managed:
     - group: root
     - mode: 600
@@ -29,14 +30,14 @@ include:
     - template: jinja
     - user: root
   cmd.run:
-    - name: 'openssl req -new -x509 -days 9999 -config /etc/ssl/localcerts/ca.cnf -keyout /etc/ssl/localcerts/ca-key.pem -out /etc/ssl/localcerts/ca-crt.pem'
+    - name: 'openssl req -new -x509 -days 9999 -config {{ cert_dir }}/ca.cnf -keyout {{ cert_dir }}/ca-key.pem -out {{ cert_dir }}/ca-crt.pem'
     - onchanges:
-      - file: /etc/ssl/localcerts/ca.cnf
+      - file: {{ cert_dir }}/ca.cnf
 
 # Create keys/csr/pem for minions, missing only
 
 {%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
-{% set dir = client_certificates + host %}
+{% set dir = cert_dir_client + host %}
 
 {{ dir }}:
   file.directory:
@@ -48,10 +49,10 @@ include:
 {{ host }}_client-key.pem:
   cmd:
     - run
-    - name: 'openssl genrsa -out {{ client_certificates }}{{ host }}/client-key.pem 4096'
-    - unless: 'test -f {{ client_certificates }}{{ host }}/client-key.pem && test -f {{ client_certificates }}{{ host }}/client-csr.pem'
+    - name: 'openssl genrsa -out {{ dir }}/client-key.pem 4096'
+    - unless: 'test -f {{ dir }}/client-key.pem && test -f {{ dir }}/client-csr.pem'
 
-{{ client_certificates }}{{ host }}/client.cnf:
+{{ dir }}/client.cnf:
   file.managed:
     - context:
       client_hostname: {{ host }}
@@ -64,12 +65,12 @@ include:
 {{ host }}_client-csr.pem:
   cmd.run:
     - onchanges:
-      - file: {{ client_certificates }}{{ host }}/client.cnf
-    - name: 'openssl req -new -config {{ client_certificates }}{{ host }}/client.cnf -key {{ client_certificates }}{{ host }}/client-key.pem -out {{ client_certificates }}{{ host }}/client-csr.pem'
+      - file: {{ dir }}/client.cnf
+    - name: 'openssl req -new -config {{ dir }}/client.cnf -key {{ dir }}/client-key.pem -out {{ dir }}/client-csr.pem'
 
 {{ host }}_client-csr.pem_sign:
   cmd.run:
-    - name: openssl x509 -req -extfile {{ client_certificates }}{{ host }}/client.cnf -days 999 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in {{ client_certificates }}{{ host }}/client-csr.pem -CA /etc/ssl/localcerts/ca-crt.pem -CAkey /etc/ssl/localcerts/ca-key.pem -CAcreateserial -out {{ client_certificates }}{{ host }}/client-crt.pem
+    - name: openssl x509 -req -extfile {{ dir }}/client.cnf -days 999 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in {{ dir }}/client-csr.pem -CA {{ cert_dir }}/ca-crt.pem -CAkey {{ cert_dir }}/ca-key.pem -CAcreateserial -out {{ dir }}/client-crt.pem
 
 {%- endfor %}
 
@@ -77,32 +78,32 @@ include:
 
 server-key.pem:
   cmd.run:
-    - name: 'openssl genrsa -out /etc/ssl/localcerts/server-key.pem 4096'
+    - name: 'openssl genrsa -out {{ cert_dir }}/server-key.pem 4096'
     - require: 
-      - /etc/ssl/localcerts/ca.cnf
+      - {{ cert_dir }}/ca.cnf
 
 server.cnf:
   file.managed:
     - group: root
     - mode: 600
-    - name: /etc/ssl/localcerts/server.cnf
+    - name: {{ cert_dir }}/server.cnf
     - source: salt://security/server.cnf.jinja
     - template: jinja
     - user: root
   cmd.run:
-    - name: 'openssl req -new -config /etc/ssl/localcerts/server.cnf -key /etc/ssl/localcerts/server-key.pem -out /etc/ssl/localcerts/server-csr.pem'
+    - name: 'openssl req -new -config {{ cert_dir }}/server.cnf -key {{ cert_dir }}/server-key.pem -out {{ cert_dir }}/server-csr.pem'
     - require: 
       - server-key.pem
 
 create_server_cert:
   cmd.run:
-    - name: 'openssl x509 -req -extfile /etc/ssl/localcerts/server.cnf -days 365 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in /etc/ssl/localcerts/server-csr.pem -CA /etc/ssl/localcerts/ca-crt.pem -CAkey /etc/ssl/localcerts/ca-key.pem -CAcreateserial -out /etc/ssl/localcerts/server-crt.pem'
+    - name: 'openssl x509 -req -extfile {{ cert_dir }}/server.cnf -days 365 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in {{ cert_dir }}/server-csr.pem -CA {{ cert_dir }}/ca-crt.pem -CAkey {{ cert_dir }}/ca-key.pem -CAcreateserial -out {{ cert_dir }}/server-crt.pem'
     - require: 
       - server.cnf
 
 create_chained_cert:
   cmd.run:
-    - name: cat /etc/ssl/localcerts/server-crt.pem /etc/ssl/localcerts/ca-crt.pem > /etc/ssl/localcerts/server-crt-chain.pem
+    - name: cat {{ cert_dir }}/server-crt.pem {{ cert_dir }}/ca-crt.pem > {{ cert_dir }}/server-crt-chain.pem
     - require: 
       - create_server_cert
 
@@ -112,7 +113,7 @@ copy_CA_cert_local:
     - group: root
     - mode: 644
     - name: /usr/local/share/ca-certificates/ca-crt.pem.crt
-    - source: /etc/ssl/localcerts/ca-crt.pem
+    - source: {{ cert_dir }}/ca-crt.pem
     - user: root
     - require: 
       - create_chained_cert
@@ -123,7 +124,7 @@ trust_server_cert:
     - group: root
     - mode: 644
     - name: /usr/local/share/ca-certificates/server-crt.pem.crt
-    - source: /etc/ssl/localcerts/server-crt.pem
+    - source: {{ cert_dir }}/server-crt.pem
     - user: root
     - require: 
       - copy_CA_cert_local
@@ -131,14 +132,14 @@ trust_server_cert:
 # Push CA cert from supervisor minion to master
 push_CA_cert:
   cmd.run:
-    - name: salt '{{ grains.get('localhost') }}' cp.push /etc/ssl/localcerts/ca-crt.pem
+    - name: salt '{{ grains.get('localhost') }}' cp.push {{ cert_dir }}/ca-crt.pem
     - require: 
       - trust_server_cert
 
 # Trigger all minions to get supervisor CA certificate
 get_client_cert_and_key:
   cmd.run:
-    - name: salt '*' cp.get_dir "salt://{{ grains.get('localhost') }}/etc/ssl/localcerts" /etc/ssl/localcerts
+    - name: salt '*' cp.get_dir "salt://{{ grains.get('localhost') }}{{ cert_dir }}" {{ cert_dir }}
     - require: 
       - push_CA_cert
 
@@ -149,7 +150,7 @@ copy_CA_cert:
     - group: root
     - mode: 644
     - name: /usr/local/share/ca-certificates/ca-crt-supervisor.pem.crt
-    - source: /etc/ssl/localcerts/ca-crt.pem
+    - source: {{ cert_dir }}/ca-crt.pem
     - user: root
     - require: 
       - get_client_cert_and_key
@@ -162,14 +163,14 @@ regen_trusted_CA:
 # Trigger all minions to update client certificate:
 transfer_client_certificates:
   cmd.run:
-    - name: salt '*' cp.get_file "salt://client_certificates/{% raw %}{{ grains.localhost }}{% endraw %}/client-crt.pem" /etc/ssl/localcerts/client-crt.pem template=jinja
+    - name: salt '*' cp.get_file "salt://client_certificates/{% raw %}{{ grains.localhost }}{% endraw %}/client-crt.pem" {{ cert_dir }}/client-crt.pem template=jinja
     - require:
       - regen_trusted_CA
 
 # Trigger all minions to update client key:
 transfer_client_keys:
   cmd.run:
-    - name: salt '*' cp.get_file "salt://client_certificates/{% raw %}{{ grains.localhost }}{% endraw %}/client-key.pem" /etc/ssl/localcerts/client-key.pem template=jinja
+    - name: salt '*' cp.get_file "salt://client_certificates/{% raw %}{{ grains.localhost }}{% endraw %}/client-key.pem" {{ cert_dir }}/client-key.pem template=jinja
     - require:
       - regen_trusted_CA
 
