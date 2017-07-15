@@ -49,7 +49,7 @@ include:
   cmd:
     - run
     - name: 'openssl genrsa -out {{ client_certificates }}{{ host }}/client-key.pem 4096'
-    - unless: '[ -f {{ client_certificates }}{{ host }}/client-key.pem ]'
+    - unless: 'test -f {{ client_certificates }}{{ host }}/client-key.pem && test -f {{ client_certificates }}{{ host }}/client-csr.pem'
 
 {{ host }}_client.cnf:
   file.managed:
@@ -66,6 +66,7 @@ include:
   cmd.run:
     - onchanges:
       - file: {{ client_certificates }}{{ host }}/client.cnf
+      - file: {{ client_certificates }}{{ host }}/client-key.pem
     - name: 'openssl req -new -config {{ client_certificates }}{{ host }}/client.cnf -key {{ client_certificates }}{{ host }}/client-key.pem -out {{ client_certificates }}{{ host }}/client-csr.pem'
 
 {{ host }}_client-csr.pem_sign:
