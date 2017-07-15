@@ -69,7 +69,7 @@ include:
 
 {{ host }}_client-csr.pem_sign:
   cmd.run:
-    - name: openssl x509 -req -extfile {{ client_certificates }}{{ host }}/client.cnf -days 999 -passin "{{ pillar['random_key']['ca_key'] }}" -in {{ client_certificates }}{{ host }}/client-csr.pem -CA /etc/ssl/localcerts/ca-crt.pem -CAkey /etc/ssl/localcerts/ca-key.pem -CAcreateserial -out {{ client_certificates }}{{ host }}/client-crt.pem
+    - name: openssl x509 -req -extfile {{ client_certificates }}{{ host }}/client.cnf -days 999 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in {{ client_certificates }}{{ host }}/client-csr.pem -CA /etc/ssl/localcerts/ca-crt.pem -CAkey /etc/ssl/localcerts/ca-key.pem -CAcreateserial -out {{ client_certificates }}{{ host }}/client-crt.pem
 
 {%- endfor %}
 
@@ -133,14 +133,14 @@ trust_server_cert:
 # Push CA cert from supervisor minion to master
 push_CA_cert:
   cmd.run:
-    - name: salt '{{ grains.get('localhost') }}' cp.push /etc/ssl/localcerts/ca-crt-supervisor.pem
+    - name: salt '{{ grains.get('localhost') }}' cp.push /etc/ssl/localcerts/ca-crt.pem
     - require: 
       - trust_server_cert
 
-# Trigger all minions to get supervisor CA certificate
+# Trigger all non-supervisory minions to get supervisor CA certificate
 get_client_cert_and_key:
   cmd.run:
-    - name: salt '*' cp.get_dir "salt://{% raw %}{{ grains.localhost }}{% endraw %}/etc/ssl/localcerts" /etc/ssl/localcerts
+    - name: salt -C '* and not G@server:supervisor' cp.get_dir "salt://{% raw %}{{ grains.localhost }}{% endraw %}/etc/ssl/localcerts" /etc/ssl/localcerts
     - require: 
       - push_CA_cert
 
@@ -151,7 +151,7 @@ copy_CA_cert:
     - group: root
     - mode: 644
     - name: /usr/local/share/ca-certificates/ca-crt-supervisor.pem.crt
-    - source: /etc/ssl/localcerts/ca-crt-supervisor.pem
+    - source: /etc/ssl/localcerts/ca-crt.pem
     - user: root
     - require: 
       - get_client_cert_and_key
