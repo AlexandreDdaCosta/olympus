@@ -125,8 +125,6 @@ trust_server_cert:
     - name: /usr/local/share/ca-certificates/server-crt.pem.crt
     - source: /etc/ssl/localcerts/server-crt.pem
     - user: root
-  cmd.run:
-    - name: /usr/sbin/update-ca-certificates --fresh 
     - require: 
       - copy_CA_cert_local
 
@@ -137,10 +135,10 @@ push_CA_cert:
     - require: 
       - trust_server_cert
 
-# Trigger all non-supervisory minions to get supervisor CA certificate
+# Trigger all minions to get supervisor CA certificate
 get_client_cert_and_key:
   cmd.run:
-    - name: salt -C '* and not G@server:supervisor' cp.get_dir "salt://{% raw %}{{ grains.localhost }}{% endraw %}/etc/ssl/localcerts" /etc/ssl/localcerts
+    - name: salt '*' cp.get_dir "salt://{% raw %}{{ grains.localhost }}{% endraw %}/etc/ssl/localcerts" /etc/ssl/localcerts
     - require: 
       - push_CA_cert
 
