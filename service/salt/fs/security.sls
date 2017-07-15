@@ -7,7 +7,7 @@ include:
   file.directory:
     - group: root
     - makedirs: False
-    - mode: 0600
+    - mode: 0755
     - user: root
 
 {%- if grains.get('server') and grains.get('server') == 'supervisor' %}

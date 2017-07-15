@@ -24,7 +24,9 @@ var options = {
     port: 4443, 
     path: '/api', 
     method: 'get',
-    ca: fs.readFileSync('/etc/ssl/certs/ca-crt.pem.pem')
+    key: fs.readFileSync('/etc/ssl/localcerts/client-key.pem'), 
+    cert: fs.readFileSync('/etc/ssl/localcerts/client-crt.pem'), 
+    ca: fs.readFileSync('/etc/ssl/certs/ca-crt-supervisor.pem.pem')
 }; 
 describe('Connection to HTTPS index page of API', function () {
   it('Should return HTTP code 200 with JSON reply including a "message" key.', function (done) {
