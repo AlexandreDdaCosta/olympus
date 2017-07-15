@@ -139,21 +139,9 @@ push_CA_cert:
 # Trigger all minions to get supervisor CA certificate
 get_client_cert_and_key:
   cmd.run:
-    - name: salt '*' cp.get_dir "salt://{{ grains.get('localhost') }}{{ cert_dir }}" {{ cert_dir }}
+    - name: salt '*' cp.get_file "salt://{{ grains.get('localhost') }}{{ cert_dir }}/ca-crt.pem" /usr/local/share/ca-certificates/ca-crt-supervisor.pem.crt
     - require: 
       - push_CA_cert
-
-# Trigger all minions to copy regenerated supervisor CA cert 
-copy_CA_cert:
-  file.copy:
-    - force: True
-    - group: root
-    - mode: 644
-    - name: /usr/local/share/ca-certificates/ca-crt-supervisor.pem.crt
-    - source: {{ cert_dir }}/ca-crt.pem
-    - user: root
-    - require: 
-      - get_client_cert_and_key
 
 # Trigger all minions to update trusted certificate store
 regen_trusted_CA:
