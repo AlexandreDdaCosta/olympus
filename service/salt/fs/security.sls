@@ -138,7 +138,7 @@ push_CA_cert:
 # Trigger all minions to get supervisor CA certificate
 get_client_cert_and_key:
   cmd.run:
-    - name: salt '*' cp.get_dir "salt://{% raw %}{{ grains.localhost }}{% endraw %}/etc/ssl/localcerts" /etc/ssl/localcerts
+    - name: salt '*' cp.get_dir "salt://{{ grains.get('localhost') }}/etc/ssl/localcerts" /etc/ssl/localcerts
     - require: 
       - push_CA_cert
 
@@ -159,10 +159,15 @@ regen_trusted_CA:
   cmd.run:
     - name: salt '*' cmd.run '/usr/sbin/update-ca-certificates --fresh'
 
-# Trigger all minions to update client certificates:
+# Trigger all minions to update client certificate:
 transfer_client_certificates:
   cmd.run:
-    - name: salt-cp '*' "{{ client_certificates }}{% raw %}{{ grains.localhost }}{% endraw %}/*.pem" /etc/ssl/localcerts
+    - name: salt '*' cp.get_file "salt://client_certificates/{% raw %}{{ grains.localhost }}{% endraw %}/client-crt.pem" /etc/ssl/localcerts/client-crt.pem template=jinja
+
+# Trigger all minions to update client key:
+transfer_client_certificates:
+  cmd.run:
+    - name: salt '*' cp.get_file "salt://client_certificates/{% raw %}{{ grains.localhost }}{% endraw %}/client-key.pem" /etc/ssl/localcerts/client-key.pem template=jinja
 
 cert_security_restart:
   cmd.run:
