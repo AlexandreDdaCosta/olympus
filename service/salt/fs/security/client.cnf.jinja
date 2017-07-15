@@ -18,7 +18,7 @@ CN           = {{ client_hostname }}
 emailAddress = {{ pillar['core-email'] }}
 
 [ req_attributes ]
-challengePassword = {{ pillar['random_key']['ca_key'] }}
+challengePassword = {{ client_hostname }}
 
 [ v3_ca ]
 authorityInfoAccess = @issuer_info

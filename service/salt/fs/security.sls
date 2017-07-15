@@ -51,13 +51,12 @@ include:
     - name: 'openssl genrsa -out {{ client_certificates }}{{ host }}/client-key.pem 4096'
     - unless: 'test -f {{ client_certificates }}{{ host }}/client-key.pem && test -f {{ client_certificates }}{{ host }}/client-csr.pem'
 
-{{ host }}_client.cnf:
+{{ client_certificates }}{{ host }}/client.cnf:
   file.managed:
     - context:
       client_hostname: {{ host }}
     - group: root
     - mode: 600
-    - name: {{ client_certificates }}{{ host }}/client.cnf
     - source: salt://security/client.cnf.jinja
     - template: jinja
     - user: root
@@ -66,7 +65,6 @@ include:
   cmd.run:
     - onchanges:
       - file: {{ client_certificates }}{{ host }}/client.cnf
-      - file: {{ client_certificates }}{{ host }}/client-key.pem
     - name: 'openssl req -new -config {{ client_certificates }}{{ host }}/client.cnf -key {{ client_certificates }}{{ host }}/client-key.pem -out {{ client_certificates }}{{ host }}/client-csr.pem'
 
 {{ host }}_client-csr.pem_sign:
