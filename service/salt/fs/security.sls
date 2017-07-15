@@ -35,7 +35,7 @@ ca.cnf:
 # Create keys/csr/pem for minions, missing only
 
 {%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
-{% set dir = {{ client_certificates }}{{ host }} %}
+{% set dir = client_certificates + host %}
 
 {{ dir }}:
   file.directory:
