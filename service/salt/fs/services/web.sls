@@ -1,6 +1,5 @@
 include:
   - base: package
-  - base: security
 
 {% for packagename, package in pillar.get('web-packages', {}).items() %}
 {{ packagename }}-web:
