@@ -165,7 +165,7 @@ transfer_client_certificates:
     - name: salt '*' cp.get_file "salt://client_certificates/{% raw %}{{ grains.localhost }}{% endraw %}/client-crt.pem" /etc/ssl/localcerts/client-crt.pem template=jinja
 
 # Trigger all minions to update client key:
-transfer_client_certificates:
+transfer_client_keys:
   cmd.run:
     - name: salt '*' cp.get_file "salt://client_certificates/{% raw %}{{ grains.localhost }}{% endraw %}/client-key.pem" /etc/ssl/localcerts/client-key.pem template=jinja
 
