@@ -163,18 +163,21 @@ regen_trusted_CA:
 transfer_client_certificates:
   cmd.run:
     - name: salt '*' cp.get_file "salt://client_certificates/{% raw %}{{ grains.localhost }}{% endraw %}/client-crt.pem" /etc/ssl/localcerts/client-crt.pem template=jinja
+    - require:
+      - regen_trusted_CA
 
 # Trigger all minions to update client key:
 transfer_client_keys:
   cmd.run:
     - name: salt '*' cp.get_file "salt://client_certificates/{% raw %}{{ grains.localhost }}{% endraw %}/client-key.pem" /etc/ssl/localcerts/client-key.pem template=jinja
+    - require:
+      - regen_trusted_CA
 
 cert_security_restart:
   cmd.run:
     - name: service nginx status; if [ $? = 0 ]; then service nginx restart; fi;
     - require:
       - regen_trusted_CA
-      - transfer_client_certificates
 
 {% endif %}
 
