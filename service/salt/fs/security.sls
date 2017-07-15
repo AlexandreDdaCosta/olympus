@@ -80,7 +80,7 @@ server-key.pem:
   cmd.run:
     - name: 'openssl genrsa -out /etc/ssl/localcerts/server-key.pem 4096'
     - require: 
-      - ca.cnf
+      - /etc/ssl/localcerts/ca.cnf
 
 server.cnf:
   file.managed:
@@ -165,7 +165,7 @@ regen_trusted_CA:
 # Trigger all minions to update client certificates:
 transfer_client_certificates:
   cmd.run:
-    - name: salt-cp '*' "{{ client_certificates }}{% raw %}{{ grains.localhost }}{% endraw %}/*" /etc/ssl/localcerts
+    - name: salt-cp '*' "{{ client_certificates }}{% raw %}{{ grains.localhost }}{% endraw %}/*.pem" /etc/ssl/localcerts
 
 cert_security_restart:
   cmd.run:
