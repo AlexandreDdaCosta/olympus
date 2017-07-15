@@ -21,16 +21,17 @@ include:
 
 # Regenerate CA
 
-ca.cnf:
+/etc/ssl/localcerts/ca.cnf:
   file.managed:
     - group: root
     - mode: 600
-    - name: /etc/ssl/localcerts/ca.cnf
     - source: salt://services/security/ca.cnf.jinja
     - template: jinja
     - user: root
   cmd.run:
     - name: 'openssl req -new -x509 -days 9999 -config /etc/ssl/localcerts/ca.cnf -keyout /etc/ssl/localcerts/ca-key.pem -out /etc/ssl/localcerts/ca-crt.pem'
+    - onchanges:
+      - file: /etc/ssl/localcerts/ca.cnf
 
 # Create keys/csr/pem for minions, missing only
 
