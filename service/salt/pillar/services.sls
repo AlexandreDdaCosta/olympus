@@ -48,6 +48,24 @@ backend-npm-packages:
 
 backend-version: 0.1
 
+bigdata-pip3-packages:
+  ipython:
+    version: == 6.1.0
+  jupyter:
+    version: == 1.0.0
+  matplotlib:
+    version: == 2.0.2
+  nose:
+    version: == 1.3.7
+  numpy:
+    version: == 1.13.1
+  pandas:
+    version: == 0.20.3
+  scipy:
+    version: == 0.19.1
+  sympy:
+    version: == 1.1
+
 frontend-user: uwsgi
 
 frontend-packages:

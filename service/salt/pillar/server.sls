@@ -5,4 +5,9 @@ interface:
 supervisor:
   services:
     - backend
+
+unified:
+  services:
+    - backend
+    - bigdata
     - frontend
