@@ -1,0 +1,12 @@
+{
+    "dependencies": {
+{%- for package in pillar['backend-npm-packages'] -%}
+      "{{ package }}": "{{ package['version'] }}",
+{%- endfor -%}
+    },
+    "main": "app.js",
+    "name": "restapi",
+    "scripts": {
+        "tests": "mocha lib/**/**.spec.js"
+    },
+}
