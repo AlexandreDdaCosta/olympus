@@ -63,8 +63,6 @@ frontend-packages:
     version: 3.4.6-2
 
 frontend-pip3-packages:
-  django:
-    version: == 1.10.6
   psycopg2:
     version: == 2.7
   uwsgi:
