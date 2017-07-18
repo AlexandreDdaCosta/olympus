@@ -49,8 +49,8 @@ backend-npm-packages:
 backend-version: 0.1
 
 bigdata-pip3-packages:
-  sympy:
-    version: == 1.1
+  django:
+    version: == 1.10.6
 
 frontend-user: uwsgi
 
