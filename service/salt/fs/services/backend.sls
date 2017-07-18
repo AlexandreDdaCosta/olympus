@@ -158,6 +158,14 @@ backend-user:
     - source: salt://service/node
     - user: root
 
+{{ pillar.www_path }}/node/restapi/package.json:
+  file.managed:
+    - group: root
+    - mode: 0755
+    - user: root
+    - source: salt://services/backend/package.json.jinja
+    - template: jinja
+
 nginx-backend:
   service.running:
     - name: nginx

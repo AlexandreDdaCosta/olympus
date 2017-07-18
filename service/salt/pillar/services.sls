@@ -44,6 +44,10 @@ backend-npm-packages:
   supervisor:
     version: 0.12.0
 
+# Temporary until we start tagging releases
+
+backend-version: 0.1
+
 frontend-user: uwsgi
 
 frontend-packages:
