@@ -1,6 +1,6 @@
 {
     "dependencies": {
-{%- for packagename, package in pillar['backend-npm-packages'] -%}
+{% for packagename, package in pillar.get('backend-npm-packages', {}).items() %}
       "{{ packagename }}": "{{ package['version'] }}",
 {%- endfor -%}
     },
