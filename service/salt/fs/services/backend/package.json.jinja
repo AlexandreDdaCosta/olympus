@@ -1,7 +1,7 @@
 {
     "dependencies": {
-{%- for package in pillar['backend-npm-packages'] -%}
-      "{{ package }}": "{{ package['version'] }}",
+{%- for packagename, package in pillar['backend-npm-packages'] -%}
+      "{{ packagename }}": "{{ package['version'] }}",
 {%- endfor -%}
     },
     "main": "app.js",
@@ -9,5 +9,5 @@
     "scripts": {
         "tests": "mocha lib/**/**.spec.js"
     },
-    "version": "{{ pillar['backend-version'] }}",
+    "version": "{{ pillar.backend-version }}",
 }

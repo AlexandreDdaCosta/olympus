@@ -65,18 +65,18 @@ postgresql:
 
 backend-group:
   group.present:
-    - name: {{ pillar['backend-user'] }}
+    - name: {{ pillar.backend-user }}
     - system: True
 
 backend-user:
   user.present:
     - createhome: True
-    - fullname: {{ pillar['backend-user'] }}
-    - name: {{ pillar['backend-user'] }}
+    - fullname: {{ pillar.backend-user }}
+    - name: {{ pillar.backend-user }}
     - shell: /bin/false
-    - home: /home/{{ pillar['backend-user'] }}
+    - home: /home/{{ pillar.backend-user }}
     - groups:
-      - {{ pillar['backend-user'] }}
+      - {{ pillar.backend-user }}
 
 /etc/mongod.conf:
   file.managed:
@@ -146,9 +146,9 @@ backend-user:
 
 /var/log/node:
   file.directory:
-    - group: {{ pillar['backend-user'] }}
+    - group: {{ pillar.backend-user }}
     - mode: 0755
-    - user: {{ pillar['backend-user'] }}
+    - user: {{ pillar.backend-user }}
 
 {{ pillar.www_path }}/node:
   file.recurse:
