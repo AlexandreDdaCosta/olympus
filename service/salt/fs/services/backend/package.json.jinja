@@ -1,8 +1,8 @@
 {
     "dependencies": {
-{% for packagename, package in pillar.get('backend-npm-packages', {}).items() %}
+{% for packagename, package in pillar.get('backend-npm-packages', {}).items() -%}
       "{{ packagename }}": "{{ package['version'] }}",
-{%- endfor -%}
+{%- endfor %}
     },
     "main": "app.js",
     "name": "restapi",
