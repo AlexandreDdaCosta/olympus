@@ -153,16 +153,6 @@ frontend-user:
     - source: salt://service/django
     - user: root
 
-{{ project_path }}/settings_local.py:
-  file.managed:
-    - dir_mode: 0755
-    - group: {{ pillar['frontend-user'] }}
-    - makedirs: False
-    - mode: 0640
-    - source: salt://services/frontend/settings_local.jinja
-    - template: jinja
-    - user: {{ pillar['frontend-user'] }}
-
 {{ project_path }}/media:
     file.directory:
     - group: root

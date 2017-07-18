@@ -48,10 +48,6 @@ backend-npm-packages:
 
 backend-version: 0.1
 
-bigdata-pip3-packages:
-  django:
-    version: == 1.10.6
-
 frontend-user: uwsgi
 
 frontend-packages:
@@ -63,6 +59,8 @@ frontend-packages:
     version: 3.4.6-2
 
 frontend-pip3-packages:
+  django:
+    version: == 1.10.6
   psycopg2:
     version: == 2.7
   uwsgi:
