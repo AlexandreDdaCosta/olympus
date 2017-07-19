@@ -6,13 +6,13 @@ backend-packages:
   mongodb-org:
     repo: jessie/mongodb-org
   nodejs:
-    version: 6.10.0-1nodesource1~jessie1
+    version: 6.11.1-2nodesource1~jessie1
   pgadmin3:
     repo: jessie-pgdg
     version: 1.22.2-1.pgdg80+1
   postgresql-9.6:
     repo: jessie-pgdg
-    version: 9.6.2-1.pgdg80+1
+    version: 9.6.3-1.pgdg80+1
 
 backend-npm-packages:
   body-parser:
@@ -45,7 +45,7 @@ backend-npm-packages:
     version: 0.12.0
 
 bigdata-pip3-packages:
-    sympy:
+  sympy:
     version: == 1.1
 
 # Temporary until we start tagging releases
@@ -79,6 +79,6 @@ frontend-gems:
 web-packages:
   certbot:
     repo: jessie-backports
-    version: 0.9.3-1~bpo8+2
+    version: 0.10.2-1~bpo8+1
   nginx:
     version: 1.10.3-1~jessie
