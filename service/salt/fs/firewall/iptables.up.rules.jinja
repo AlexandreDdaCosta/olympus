@@ -36,19 +36,20 @@
 # Server- and environment-specific rules
 
 {%- if grains.get('server') -%}
-{%- if grains.get('server') == 'interface' or grains.get('server') == 'supervisor' %}
+{%- if grains.get('server') == 'interface' or grains.get('server') == 'unified' %}
 
 # UI
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 80 -j ACCEPT
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 443 -j ACCEPT
 
 {%- endif -%}
-{%- endif %}
-{% if grains.get('server') and grains.get('server') == 'supervisor' %}
+{%- endif -%}
+{%- if grains.get('server') -%}
+{%- if grains.get('server') == 'supervisor' or grains.get('server') == 'unified' %}
 # Internal network connections to backend
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -m iprange --src-range 192.168.1.2-192.168.1.255 -j ACCEPT
 {% for host, hostinfo in salt['mine.get']('*', 'grains.items').items() %}
-{%- if 'server' in hostinfo and hostinfo['server'] == 'interface' or hostinfo['server'] == 'supervisor' %}
+{%- if 'server' in hostinfo and hostinfo['server'] == 'interface' or hostinfo['server'] == 'unified' %}
 # ({{ host }})
 
 {%- for ip in hostinfo['ipv4'] -%}
@@ -62,6 +63,7 @@
 {%- endif -%}
 
 {%- endfor -%}
+{%- endif %}
 {%- endif %}
 
 # Ban everything else
