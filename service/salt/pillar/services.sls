@@ -47,6 +47,8 @@ backend-npm-packages:
 bigdata-packages:
   libfreetype6-dev:
     version: 2.5.2-3+deb8u2
+  pkg-config:
+    version: 0.28-1
 
 bigdata-pip3-packages:
   freetype-py:
