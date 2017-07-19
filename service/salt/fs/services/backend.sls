@@ -57,7 +57,7 @@ postgresql:
     - enable: True
     - watch:
       - file: /etc/postgresql/9.6/main/pg_hba.conf
-      - file: /usr/lib/tmpfiles.d/postgresql.conf
+      - file: /etc/postgresql/9.6/main/postgresql.conf
       - pkg: pgadmin3
       - pkg: postgresql-9.6
     - require:
