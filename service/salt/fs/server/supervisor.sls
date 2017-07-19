@@ -35,3 +35,14 @@ frontend-user_data_privs:
     - object_type: database
     - privileges:
       - ALL
+
+/srv/www/django/interface/settings_local.py:
+  file.managed:
+    - dir_mode: 0755
+    - group: {{ pillar['frontend-user'] }}
+    - makedirs: False
+    - mode: 0640
+    - source: salt://services/frontend/settings_local.jinja
+    - template: jinja
+    - user: {{ pillar['frontend-user'] }}
+

@@ -44,6 +44,10 @@ backend-npm-packages:
   supervisor:
     version: 0.12.0
 
+bigdata-pip3-packages:
+    sympy:
+    version: == 1.1
+
 # Temporary until we start tagging releases
 
 backend-version: 0.1
