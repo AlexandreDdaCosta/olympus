@@ -12,7 +12,7 @@ include:
     - user: root
 
 {%- if grains.get('server') %}
-{%- if grains.get('server') == 'unified' and grains.get('server') == 'supervisor' %}
+{%- if grains.get('server') == 'unified' or grains.get('server') == 'supervisor' %}
 
 {{ cert_dir_client }}:
   file.directory:
