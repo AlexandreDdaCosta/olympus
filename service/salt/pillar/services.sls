@@ -47,8 +47,6 @@ backend-npm-packages:
 bigdata-pip3-packages:
   ipython:
     version: == 6.1.0
-  matplotlib:
-    version: == 2.0.2
   nose:
     version: == 1.3.7
   numpy:
