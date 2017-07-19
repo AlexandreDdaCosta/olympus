@@ -28,4 +28,4 @@ packages:
   sudo:
     version: 1.8.10p3-1+deb8u3
   vim:
-    version: 2:7.4.488-7+deb8u2
+    version: 2:7.4.488-7+deb8u3
