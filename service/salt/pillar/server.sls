@@ -10,5 +10,5 @@ supervisor:
 unified:
   services:
     - backend
-    - bigdata
     - frontend
+    - bigdata
