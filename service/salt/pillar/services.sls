@@ -56,7 +56,7 @@ frontend-user: uwsgi
 
 frontend-packages:
   libpq-dev:
-    version: 9.6.2-1.pgdg80+1
+    version: 9.6.3-1.pgdg80+1
   python3-dev:
     version: 3.4.2-2
   ruby-sass:
