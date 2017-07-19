@@ -9,7 +9,6 @@ base:
     - services/{{ service }}
     {% endfor %}
     {% endif %}
-    - server/{{ grains.get('server') }}
     {% endif %}
     {% if grains.get('services') %}
     {% for service in grains.get('services') %}
