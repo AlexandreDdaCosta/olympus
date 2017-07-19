@@ -45,6 +45,8 @@ backend-npm-packages:
     version: 0.12.0
 
 bigdata-packages:
+  libblas-devi:
+    version: 1.2.20110419-10
   libfreetype6-dev:
     version: 2.5.2-3+deb8u2
   pkg-config:
