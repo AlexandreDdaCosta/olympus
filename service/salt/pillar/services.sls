@@ -44,17 +44,23 @@ backend-npm-packages:
   supervisor:
     version: 0.12.0
 
+bigdata-packages:
+  libfreetype6-dev:
+    version: 2.5.2-3+deb8u2
+
 bigdata-pip3-packages:
+  freetype-py:
+    version: == 1.0.2
   ipython:
     version: == 6.1.0
+  matplotlib:
+    version: == 2.0.2
   nose:
     version: == 1.3.7
   numpy:
     version: == 1.13.1
   pandas:
     version: == 0.20.3
-  scipy:
-    version: == 0.19.1
   sympy:
     version: == 1.1
 

@@ -1,6 +1,22 @@
 include:
   - base: package
 
+{% for packagename, package in pillar.get('bigdata-packages', {}).items() %}
+{{ packagename }}-frontend:
+{% if pillar.pkg_latest is defined and pillar.pkg_latest or package != None and 'version' not in package or package == None %}
+  pkg.latest:
+{% else %}
+  pkg.installed:
+    - version: {{ package['version'] }}
+{% endif %}
+    - name: {{ packagename }}
+{% if package != None and 'repo' in package %}
+    - fromrepo: {{ package['repo'] }}
+{% endif %}
+    - require:
+      - sls: package
+{% endfor %}
+
 {% for packagename, package in pillar.get('bigdata-pip3-packages', {}).items() %}
 {{ packagename }}:
   pip.installed:
