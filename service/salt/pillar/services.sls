@@ -55,6 +55,8 @@ bigdata-pip3-packages:
     version: == 1.0.2
   ipython:
     version: == 6.1.0
+  jupyter:
+    version: == 1.0.0
   matplotlib:
     version: == 2.0.2
   nose:
