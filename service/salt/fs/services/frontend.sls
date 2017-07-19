@@ -188,6 +188,16 @@ frontend-user:
     - mode: 0755
     - user: root
 
+{{ project_path }}/settings_local.py:
+  file.managed:
+    - dir_mode: 0755
+    - group: {{ pillar['frontend-user'] }}
+    - makedirs: False
+    - mode: 0640
+    - source: salt://services/frontend/settings_local.jinja
+    - template: jinja
+    - user: {{ pillar['frontend-user'] }}
+
 /usr/local/bin/killserver.sh:
   file.managed:
     - group: root
@@ -340,7 +350,7 @@ jquery:
 frontend-cert:
   cmd:
     - run
-    - name: sudo service nginx stop; sudo /usr/bin/certbot certonly --quiet --standalone -d {{ pillar['core-domain-CN'] }} -d www.{{ pillar['core-domain-CN'] }}
+    - name: sudo service nginx stop; sudo /usr/bin/certbot certonly --quiet --standalone -d {{ pillar['core-domain-CN'] }} -d www.{{ pillar['core-domain-CN'] }} --agree-tos -m {{ pillar['core-email'] }} 
     - unless: 'test -f /etc/letsencrypt/live/{{ pillar['core-domain-CN'] }}/fullchain.pem'
 
 frontend_cert_renewal:
