@@ -45,7 +45,7 @@ include:
     - source: salt://services/backend/files/pg_hba.conf
     - user: postgres
 
-/usr/lib/tmpfiles.d/postgresql.conf:
+/etc/postgresql/9.6/main/postgresql.conf:
   file.managed:
     - group: postgres
     - mode: 0600
