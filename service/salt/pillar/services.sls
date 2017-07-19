@@ -53,6 +53,8 @@ bigdata-pip3-packages:
     version: == 1.13.1
   pandas:
     version: == 0.20.3
+  scipy:
+    version: == 0.19.1
   sympy:
     version: == 1.1
 
