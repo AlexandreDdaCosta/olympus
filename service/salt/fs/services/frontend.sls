@@ -372,6 +372,6 @@ frontend-uwsgi:
       - file: /etc/init.d/uwsgi
       - file: /etc/nginx/conf.d/django.conf
       - file: /etc/uwsgi/vassals/django.ini
-      - file: {{ project_path }}/settings_local.py:
+      - file: {{ project_path }}/settings_local.py
     - require:
       - sls: services/web
