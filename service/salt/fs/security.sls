@@ -11,7 +11,8 @@ include:
     - mode: 0755
     - user: root
 
-{%- if grains.get('server') and grains.get('server') == 'supervisor' %}
+{%- if grains.get('server') %}
+{%- if grains.get('server') == 'unified' and grains.get('server') == 'supervisor' %}
 
 {{ cert_dir_client }}:
   file.directory:
@@ -168,6 +169,7 @@ cert_security_restart:
     - require:
       - regen_trusted_CA
 
+{% endif %}
 {% endif %}
 
 openssh-server-service:
