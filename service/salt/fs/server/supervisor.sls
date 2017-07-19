@@ -45,4 +45,3 @@ frontend-user_data_privs:
     - source: salt://services/frontend/settings_local.jinja
     - template: jinja
     - user: {{ pillar['frontend-user'] }}
-
