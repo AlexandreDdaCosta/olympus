@@ -45,30 +45,38 @@ backend-npm-packages:
     version: 0.12.0
 
 bigdata-packages:
+  gfortran:
+    version: 4:4.9.2-2
+  gfortran-multilib:
+    version: 4:4.9.2-2
   libblas-dev:
     version: 1.2.20110419-10
   libfreetype6-dev:
     version: 2.5.2-3+deb8u2
+  liblapack-dev:
+    version: 3.5.0-4
   pkg-config:
     version: 0.28-1
 
 bigdata-pip3-packages:
+  numpy:
+    version: == 1.13.1
   freetype-py:
     version: == 1.0.2
   ipython:
     version: == 6.1.0
-  jupyter:
-    version: == 1.0.0
-  matplotlib:
-    version: == 2.0.2
   nose:
     version: == 1.3.7
-  numpy:
-    version: == 1.13.1
   pandas:
     version: == 0.20.3
   sympy:
     version: == 1.1
+  jupyter:
+    version: == 1.0.0
+  matplotlib:
+    version: == 2.0.2
+  scipy:
+    version: == 0.19.1
 
 # Temporary until we start tagging releases
 
