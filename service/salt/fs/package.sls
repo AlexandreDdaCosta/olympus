@@ -11,6 +11,9 @@ include:
     - version: {{ package['version'] }}
     {% endif %}
 {% endif %}
+{% if package != None and 'repo' in package %}
+    - fromrepo: {{ package['repo'] }}
+{% endif %}
     - require:
       - sls: repository
 {% endfor %}

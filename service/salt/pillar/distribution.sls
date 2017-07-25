@@ -13,6 +13,8 @@ packages:
     version: 7.38.0-4+deb8u5
   fail2ban:
     version: 0.8.13-1
+  mongodb-org:
+    repo: jessie/mongodb-org
   ntp:
     version: 1:4.2.6.p5+dfsg-7+deb8u2
   ntpdate:

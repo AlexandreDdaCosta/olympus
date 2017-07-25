@@ -3,8 +3,6 @@ www_path: /srv/www
 backend-user: node
 
 backend-packages:
-  mongodb-org:
-    repo: jessie/mongodb-org
   nodejs:
     version: 6.11.1-2nodesource1~jessie1
   pgadmin3:
@@ -59,6 +57,8 @@ bigdata-packages:
     version: 0.28-1
 
 bigdata-pip3-packages:
+  pymongo:
+    version: == 3.4.0
   numpy:
     version: == 1.13.1
   freetype-py:
