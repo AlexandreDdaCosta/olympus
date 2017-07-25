@@ -11,4 +11,3 @@ unified:
   services:
     - backend
     - frontend
-    - bigdata
