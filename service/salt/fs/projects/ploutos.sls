@@ -12,4 +12,4 @@ include:
     - user: root
     - require:
       - sls: projects
-      - sls: bigdata
+      - sls: services.bigdata
