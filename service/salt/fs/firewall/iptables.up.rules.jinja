@@ -46,8 +46,6 @@
 {%- endif -%}
 {%- if grains.get('server') -%}
 {%- if grains.get('server') == 'supervisor' or grains.get('server') == 'unified' %}
-# Internal network connections to backend
--A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -m iprange --src-range 192.168.1.2-192.168.1.255 -j ACCEPT
 {% for host, hostinfo in salt['mine.get']('*', 'grains.items').items() %}
 {%- if 'server' in hostinfo -%}
 {%- if hostinfo['server'] == 'interface'%}
@@ -62,7 +60,7 @@
 {%- elif hostinfo['server'] == 'unified' %}
 # ({{ host }}) -- unified
 
-{% for ip in hostinfo['ipv4'] -%}
+{%- for ip in hostinfo['ipv4'] -%}
 {%- if ip != '127.0.0.1' %}
 # Backend API
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -s {{ ip }} -j ACCEPT
@@ -81,10 +79,9 @@
 {% endfor -%}
 {%- endif -%}
 {%- endif -%}
-
 {%- endfor -%}
-{%- endif %}
-{%- endif %}
+{%- endif -%}
+{%- endif -%}
 
 # Ban everything else
 
