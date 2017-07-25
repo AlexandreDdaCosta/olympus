@@ -2,7 +2,7 @@
 
 include:
   - base: projects
-  - services: bigdata
+  - base: services.bigdata
 
 {{ project_ploutos_path }}:
     file.directory:
