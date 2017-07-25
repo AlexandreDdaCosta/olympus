@@ -9,6 +9,8 @@ repo-packages:
 packages:
   at:
     version: 3.1.16-1
+  build-essential:
+    version: 11.7
   curl:
     version: 7.38.0-4+deb8u5
   fail2ban:
@@ -25,6 +27,8 @@ packages:
     version: 1:6.7p1-5+deb8u3
   python-pip:
     version: 1.5.6-5
+  python3-dev:
+    version: 3.4.2-2
   python3-pip:
     version: 1.5.6-5
   sudo:
