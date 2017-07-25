@@ -9,7 +9,7 @@ include:
     - dir_mode: 0755
     - file_mode: 0644
     - group: root
-    - source: salt://projects/ploutos
+    - source: salt://project/ploutos
     - require:
       - sls: projects
       - sls: services.bigdata
