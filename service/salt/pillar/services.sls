@@ -3,6 +3,8 @@ www_path: /srv/www
 backend-user: node
 
 backend-packages:
+  mongodb-org:
+    repo: jessie/mongodb-org
   nodejs:
     version: 6.11.1-2nodesource1~jessie1
   pgadmin3:

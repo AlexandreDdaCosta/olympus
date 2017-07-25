@@ -49,17 +49,37 @@
 # Internal network connections to backend
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -m iprange --src-range 192.168.1.2-192.168.1.255 -j ACCEPT
 {% for host, hostinfo in salt['mine.get']('*', 'grains.items').items() %}
-{%- if 'server' in hostinfo and hostinfo['server'] == 'interface' or hostinfo['server'] == 'unified' %}
-# ({{ host }})
+{%- if 'server' in hostinfo -%}
+{%- if hostinfo['server'] == 'interface'%}
+# ({{ host }}) -- interface
 
-{%- for ip in hostinfo['ipv4'] -%}
-{%- if ip != '127.0.0.1' %}
-# Backend
+{% for ip in hostinfo['ipv4'] %}
+# Backend API
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -s {{ ip }} -j ACCEPT
 # Postgresql
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 5432 -s {{ ip }} -j ACCEPT
-{%- endif -%}
+{% endfor -%}
+{%- elif hostinfo['server'] == 'unified' %}
+# ({{ host }}) -- unified
+
+{% for ip in hostinfo['ipv4'] -%}
+{%- if ip != '127.0.0.1' %}
+# Backend API
+-A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -s {{ ip }} -j ACCEPT
+# MongoDB
+-A INPUT -p tcp -m state --state NEW -m tcp --dport 27017 -s {{ ip }} -j ACCEPT
+{% endif -%}
 {%- endfor -%}
+{%- elif hostinfo['server'] == 'worker' %}
+# ({{ host }}) -- worker
+
+{% for ip in hostinfo['ipv4'] %}
+# Backend API
+-A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -s {{ ip }} -j ACCEPT
+# MongoDB
+-A INPUT -p tcp -m state --state NEW -m tcp --dport 27017 -s {{ ip }} -j ACCEPT
+{% endfor -%}
+{%- endif -%}
 {%- endif -%}
 
 {%- endfor -%}
