@@ -5,11 +5,12 @@ include:
   - base: services.bigdata
 
 {{ project_ploutos_path }}:
-    file.directory:
+  file.recurse:
+    - dir_mode: 0755
+    - file_mode: 0644
     - group: root
-    - makedirs: False
-    - mode: 0755
-    - user: root
+    - source: salt://projects/ploutos
     - require:
       - sls: projects
       - sls: services.bigdata
+    - user: root
