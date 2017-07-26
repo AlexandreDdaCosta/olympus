@@ -108,6 +108,12 @@ create_chained_cert:
     - require: 
       - create_server_cert
 
+create_combined_cert:
+  cmd.run:
+    - name: cat {{ cert_dir }}/server-key.pem {{ cert_dir }}/server-crt.pem > {{ cert_dir }}/server-key-crt.pem
+    - require: 
+      - create_chained_cert
+
 copy_CA_cert_local:
   file.copy:
     - force: True
@@ -117,7 +123,7 @@ copy_CA_cert_local:
     - source: {{ cert_dir }}/ca-crt.pem
     - user: root
     - require: 
-      - create_chained_cert
+      - create_combined_cert
 
 trust_server_cert:
   file.copy:
