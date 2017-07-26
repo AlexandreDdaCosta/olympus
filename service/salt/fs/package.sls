@@ -17,3 +17,11 @@ include:
     - require:
       - sls: repository
 {% endfor %}
+
+/usr/local/lib/python3.4/dist-packages/olympus:
+  file.recurse:
+    - dir_mode: 0755
+    - file_mode: 0644
+    - group: root
+    - source: salt://core/python3/lib
+    - user: root

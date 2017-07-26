@@ -2,9 +2,20 @@
 
 var chai = require('chai');
 var expect = chai.expect;
+var fs = require('fs');
 
+var ca_cert = fs.readFileSync('/usr/local/share/ca-certificates/ca-crt-supervisor.pem.crt');
+var ssl_cert = fs.readFileSync('/etc/ssl/localcerts/client-crt.pem');
+var ssl_key = fs.readFileSync('/etc/ssl/localcerts/client-key.pem');
 var MongoClient = require('mongodb').MongoClient;
-var url = 'mongodb://127.0.0.1:27017/olympus';
+var options =  {
+  server: {
+    sslCA: ca_cert,
+    sslCert: ssl_cert,
+    sslKey: ssl_key
+  }
+};
+var url = 'mongodb://127.0.0.1:27017/olympus?ssl=true';
 var test_collection = 'test'
 
 var findDocuments = function(db, callback) {
@@ -109,7 +120,7 @@ var updateDocument = function(db, callback) {
 
 describe('MongoDB basic connection and operations', function () {
   it('Connect to olympus database, manage test document', function (done) {
-    MongoClient.connect(url, function(err, db) {
+    MongoClient.connect(url, options, function(err, db) {
       expect(err).to.equal(null);
       removeCollection(db, function() {
         insertDocuments(db, function() {
