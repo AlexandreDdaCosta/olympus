@@ -169,9 +169,15 @@ transfer_client_keys:
     - require:
       - regen_trusted_CA
 
-cert_security_restart:
+cert_www_restart:
   cmd.run:
     - name: service nginx status; if [ $? = 0 ]; then service nginx restart; fi;
+    - require:
+      - regen_trusted_CA
+
+cert_mongo_restart:
+  cmd.run:
+    - name: service mongod status; if [ $? = 0 ]; then service mongod restart; fi;
     - require:
       - regen_trusted_CA
 
