@@ -44,7 +44,7 @@ include:
       - sls: services.bigdata
     - user: {{ ploutos_user }}
   cmd.run:
-    - name: 'chmod -R -0755 {{ project_ploutos_path }}/scripts'
+    - name: 'chmod -R 0755 {{ project_ploutos_path }}/scripts'
 
 initialize_ploutos:
   cmd.run:
