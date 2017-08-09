@@ -5,13 +5,17 @@ include:
   - base: projects
   - base: services.bigdata
 
-ploutos-user:
-  user.present:
+{{ ploutos_user }}:
+  group:
+    - name: {{ ploutos_user }}
+    - present
+  user:
     - createhome: True
     - fullname: {{ ploutos_user }}
-    - name: {{ ploutos_user }}
-    - shell: /bin/false
     - home: /home/{{ ploutos_user }}
+    - name: {{ ploutos_user }}
+    - present
+    - shell: /bin/false
     - groups:
       - {{ ploutos_user }}
 
