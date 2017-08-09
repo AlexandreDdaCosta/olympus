@@ -124,12 +124,6 @@ backend-user:
     - source: salt://services/backend/files/mongod.conf
     - user: root
 
-/var/lib/mongodb/olympus:
-  file.directory:
-    - group: mongodb
-    - mode: 0755
-    - user: mongodb
-
 /etc/nginx/conf.d/node.conf:
   file.managed:
     - group: root
