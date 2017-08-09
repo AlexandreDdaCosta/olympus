@@ -19,6 +19,13 @@ include:
     - groups:
       - {{ ploutos_user }}
 
+/home/{{ ploutos_user }}/Downloads:
+  file.directory:
+    - group: {{ ploutos_user }}
+    - makedirs: False
+    - mode: 0755
+    - user: {{ ploutos_user }}
+
 /run/olympus/projects/ploutos:
   file.directory:
     - group: root
