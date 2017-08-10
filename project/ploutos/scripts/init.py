@@ -8,8 +8,7 @@ KEYFILE = '/etc/ssl/localcerts/client-key.pem'
 URL = 'mongodb://zeus:27017/?ssl=true';
 
 DATABASE= 'ploutos'
-#DATADIR= '/home/ploutos/Downloads'
-DATADIR= '/home/alex/Downloads'
+DATADIR= '/home/ploutos/Downloads'
 LOCKFILE = '/var/run/olympus/projects/ploutos/init.pid'
 
 COMPANY_DATA_URLS = [
