@@ -26,20 +26,6 @@ include:
     - mode: 0755
     - user: {{ ploutos_user }}
 
-/run/olympus/projects/ploutos:
-  file.directory:
-    - group: root
-    - makedirs: False
-    - mode: 0755
-    - user: root
-
-/var/run/olympus/projects/ploutos/init.pid:
-  file.managed:
-    - group: {{ ploutos_user }}
-    - mode: 0644
-    - replace: False
-    - user: {{ ploutos_user }}
-
 {{ project_ploutos_path }}:
   file.recurse:
     - dir_mode: 0755

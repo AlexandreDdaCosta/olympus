@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import datetime, fcntl, os, pymongo, socket, wget
+import csv, datetime, fcntl, json, os, pymongo, socket, wget
 
 CAFILE = '/usr/local/share/ca-certificates/ca-crt-supervisor.pem.crt'
 CERTFILE = '/etc/ssl/localcerts/client-crt.pem'

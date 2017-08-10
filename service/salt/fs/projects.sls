@@ -5,9 +5,10 @@
     - mode: 0755
     - user: root
 
-/run/olympus/projects:
-  file.directory:
+/usr/lib/tmpfiles.d/olympus.conf
+  file.managed:
     - group: root
-    - makedirs: True
-    - mode: 0755
+    - makedirs: False
+    - mode: 0644
+    - source: salt://projects/files/tmpfiles.d/olympus.conf
     - user: root
