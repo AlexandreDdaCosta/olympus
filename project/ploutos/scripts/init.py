@@ -8,18 +8,18 @@ KEYFILE = '/etc/ssl/localcerts/client-key.pem'
 URL = 'mongodb://zeus:27017/?ssl=true';
 
 DATABASE= 'ploutos'
+#DATADIR= '/home/ploutos/Downloads'
+DATADIR= '/home/alex/Downloads'
 LOCKFILE = '/var/run/olympus/projects/ploutos/init.pid'
 
 COMPANY_DATA_URLS = [
-{'exchange':'amex','url':'http://www.nasdaq.com/screening/companies-by-industry.aspx?exchange=AMEX'},
-{'exchange':'nasdaq','url':'http://www.nasdaq.com/screening/companies-by-industry.aspx?exchange=NASDAQ'},
-{'exchange':'nyse','url':'http://www.nasdaq.com/screening/companies-by-industry.aspx?exchange=NYSE'},
+{'exchange':'amex','url':'http://www.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=amex&render=download'},
+{'exchange':'nasdaq','url':'http://www.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=nasdaq&render=download'},
+{'exchange':'nyse','url':'http://www.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=nyse&render=download'}
 ]
 OPTIONS_DATA_URL = 'http://www.cboe.com/publish/scheduledtask/mktdata/cboesymboldir2.csv'
 
 class InitProject():
-
-    print(COMPANY_DATA_URLS)
 
     def __init__(self,**kwargs):
         self.client = pymongo.MongoClient(URL,ssl=True,ssl_ca_certs=CAFILE,ssl_certfile=CERTFILE,ssl_keyfile=KEYFILE)
@@ -27,13 +27,27 @@ class InitProject():
         self.collection = self.db.init
 
     def build_collections(self):
-        pass
-
-    def get_initial_data(self):
-        print('Retrieving foundational data sets.')
         if self.initialized() != socket.gethostname():
             raise Exception('Initialization record check failed; cannot record end of initialization.')
-        cursor = self.collection.find({"host":socket.gethostname()})
+
+        print('Retrieving foundational data sets.')
+        for urlconf in COMPANY_DATA_URLS:
+            target_filename = DATADIR+'/'+urlconf['exchange']+'-companylist.csv'
+            try:
+                os.remove(target_filename)
+            except OSError:
+                pass
+            filename = wget.download(urlconf['url'],out=DATADIR)
+            os.rename(filename,target_filename)
+        target_filename = DATADIR+'/'+'cboesymboldir.csv'
+        try:
+            os.remove(target_filename)
+        except OSError:
+            pass
+        filename = wget.download(OPTIONS_DATA_URL,out=DATADIR)
+        os.rename(filename,target_filename)
+
+        print('Initializing collections.')
 
     def initialized(self):
         dbnames = self.client.database_names()
@@ -51,17 +65,12 @@ class InitProject():
                     host = init_entry['host']
             return host
 
-    def record_end(self):
-        print('Recording end of initialization.')
-        if self.initialized() != socket.gethostname():
-            raise Exception('Initialization record check failed; cannot record end of initialization.')
-
     def record_start(self):
         print('Create document to record initialization.')
         dbnames = self.client.database_names()
         host = self.initialized();
         if host is None:
-            init_record = {"host":socket.gethostname(),"last":None,"start":datetime.datetime.utcnow(),"end":None}
+            init_record = {"host":socket.gethostname(),"start":datetime.datetime.utcnow()}
             self.collection.insert_one(init_record)
         elif host != socket.gethostname():
             print('Already initialized by host '+host)
@@ -93,4 +102,4 @@ if __name__ == "__main__":
         print('Successfully recorded project initialization.')
     else:
         raise Exception('Project initialization detected; exiting.')
-    Init.record_end()
+    Init.build_collections()
