@@ -30,6 +30,7 @@ class InitProject():
             raise Exception('Initialization record check failed; cannot record end of initialization.')
 
         print('Retrieving foundational data sets.')
+        os.chdir(DATADIR)
         for urlconf in COMPANY_DATA_URLS:
             target_filename = DATADIR+'/'+urlconf['exchange']+'-companylist.csv'
             try:
