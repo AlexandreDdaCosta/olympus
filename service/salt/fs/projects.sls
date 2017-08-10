@@ -5,7 +5,7 @@
     - mode: 0755
     - user: root
 
-/usr/lib/tmpfiles.d/olympus.conf
+/usr/lib/tmpfiles.d/olympus.conf:
   file.managed:
     - group: root
     - makedirs: False
