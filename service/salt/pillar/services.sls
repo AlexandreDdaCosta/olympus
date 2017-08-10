@@ -59,6 +59,8 @@ bigdata-packages:
     version: 0.28-1
 
 bigdata-pip3-packages:
+  wget:
+    version: == 3.2
   pymongo:
     version: == 3.4.0
   numpy:
