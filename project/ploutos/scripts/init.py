@@ -1,31 +1,23 @@
 #!/usr/bin/env python3
 
 import csv, datetime, fcntl, json, os, pymongo, re, shutil, socket, wget
-import CAFILE, CERTFILE, KEYFILE, MONGO_URL from olympus.conf
 
-#CAFILE = '/usr/local/share/ca-certificates/ca-crt-supervisor.pem.crt'
-#CERTFILE = '/etc/ssl/localcerts/client-crt.pem'
-#KEYFILE = '/etc/ssl/localcerts/client-key.pem'
-#MONGO_URL = 'mongodb://zeus:27017/?ssl=true';
+from olympus.conf import CAFILE, CERTFILE, KEYFILE, MONGO_URL
+from olympus.projects.ploutos.conf import DOWNLOAD_DIR, LOCKFILE_DIR, WORKING_DIR
+from olympus.projects.ploutos.data.conf import DATABASE, OPTIONS_COLLECTION, SYMBOL_COLLECTIONS_PREFIX
 
-#WORKINGDIR = '/home/ploutos/'
-WORKINGDIR = '/tmp/'
-
-DATABASE = 'ploutos'
-DATADIR = WORKINGDIR+'Downloads/'
-#LOCKFILE = '/var/run/olympus/projects/ploutos/init.pid'
+WORKING_DIR = '/tmp/'
+DOWNLOAD_DIR = WORKING_DIR+'Downloads/'
 LOCKFILE = '/tmp/init.pid'
 
+LOCKFILE = LOCKFILE_DIR+'init.pid'
 NORMALIZE_CAP_REGEX = re.compile('[^0-9\.]')
-SYMBOL_COLLECTION_PREFIX = 'symbol_'
-OPTIONS_COLLECTION = 'options'
-
-COMPANY_DATA_URLS = [
+OPTIONS_DATA_URL = 'http://www.cboe.com/publish/scheduledtask/mktdata/cboesymboldir2.csv'
+SYMBOL_DATA_URLS = [
 {'exchange':'amex','url':'http://www.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=amex&render=download'},
 {'exchange':'nasdaq','url':'http://www.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=nasdaq&render=download'},
 {'exchange':'nyse','url':'http://www.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=nyse&render=download'}
 ]
-OPTIONS_DATA_URL = 'http://www.cboe.com/publish/scheduledtask/mktdata/cboesymboldir2.csv'
 
 class InitProject():
 
@@ -34,7 +26,7 @@ class InitProject():
         self.db = self.client.ploutos
         self.collection = self.db.init
         try:
-            os.makedirs(DATADIR)
+            os.makedirs(DOWNLOAD_DIR)
         except OSError:
             pass
 
@@ -47,25 +39,25 @@ class InitProject():
         # company files
 
         company_files = []
-        for urlconf in COMPANY_DATA_URLS:
+        for urlconf in SYMBOL_DATA_URLS:
             target_file = urlconf['exchange']+'-companylist.csv'
             company_files.insert(0,target_file)
-            target_file = DATADIR+target_file
+            target_file = DOWNLOAD_DIR+target_file
             try:
                 os.remove(target_file)
             except OSError:
                 pass
-            filename = wget.download(urlconf['url'],out=DATADIR)
+            filename = wget.download(urlconf['url'],out=DOWNLOAD_DIR)
             os.rename(filename,target_file)
 
         # options file
 
-        option_file = DATADIR+'cboesymboldir.csv'
+        option_file = DOWNLOAD_DIR+'cboesymboldir.csv'
         try:
             os.remove(option_file)
         except OSError:
             pass
-        filename = wget.download(OPTIONS_DATA_URL,out=DATADIR)
+        filename = wget.download(OPTIONS_DATA_URL,out=DOWNLOAD_DIR)
         os.rename(filename,option_file)
 
         print('\nCleaning up received csv files.')
@@ -74,8 +66,8 @@ class InitProject():
 
         fieldnames = ["Symbol","Name","Last","Capitalization","IPO Year","Sector","Industry","Summary"]
         for company_file in company_files:
-            repaired_csvfile = open(WORKINGDIR+company_file+'.import','w+')
-            csvfile = open(DATADIR+company_file,'r')
+            repaired_csvfile = open(WORKING_DIR+company_file+'.import','w+')
+            csvfile = open(DOWNLOAD_DIR+company_file,'r')
             first_line = csvfile.readline().rstrip(',\n')
             for line in csvfile:
                 symbol = line.split(',')[0]
@@ -98,8 +90,8 @@ class InitProject():
                 repaired_csvfile.write(line)
             csvfile.close()
             repaired_csvfile.close()
-            csvfile = open(WORKINGDIR+company_file+'.import','r')
-            jsonfile = open(WORKINGDIR+company_file+'.json','w')
+            csvfile = open(WORKING_DIR+company_file+'.import','r')
+            jsonfile = open(WORKING_DIR+company_file+'.json','w')
             jsonfile.write('[')
             reader = csv.DictReader(csvfile,fieldnames)
             for row in reader:
@@ -109,13 +101,13 @@ class InitProject():
                 jsonstring = json.dumps(row)
                 jsonfile.write('\n'+jsonstring+',')
             jsonfile.close()
-            os.remove(WORKINGDIR+company_file+'.import')
-            with open(WORKINGDIR+company_file+'.json','rb+') as f:
+            os.remove(WORKING_DIR+company_file+'.import')
+            with open(WORKING_DIR+company_file+'.json','rb+') as f:
                 f.seek(0,2)
                 size=f.tell()
                 f.truncate(size-1)
                 f.close()
-            jsonfile = open(WORKINGDIR+company_file+'.json','a')
+            jsonfile = open(WORKING_DIR+company_file+'.json','a')
             jsonfile.write('\n]')
             jsonfile.close()
 
@@ -127,9 +119,9 @@ class InitProject():
 
         # company_files
         
-        for urlconf in COMPANY_DATA_URLS:
-            json_import_file = WORKINGDIR+urlconf['exchange']+'-companylist.csv.json'
-            collection_name = SYMBOL_COLLECTION_PREFIX + urlconf['exchange']
+        for urlconf in SYMBOL_DATA_URLS:
+            json_import_file = WORKING_DIR+urlconf['exchange']+'-companylist.csv.json'
+            collection_name = SYMBOL_COLLECTIONS_PREFIX + urlconf['exchange']
             collection = self.db[collection_name]
             collection.drop()
             jsonfile = open(json_import_file,'r')
@@ -202,7 +194,7 @@ if __name__ == "__main__":
     lockfilehandle = open(LOCKFILE,'w')
     fcntl.flock(lockfilehandle,fcntl.LOCK_EX|fcntl.LOCK_NB)
     lockfilehandle.write(str(os.getpid()))
-    os.chdir(WORKINGDIR)
+    os.chdir(WORKING_DIR)
     Init = InitProject()
     if Init.record_start() is True:
         print('Successfully recorded project initialization.')
