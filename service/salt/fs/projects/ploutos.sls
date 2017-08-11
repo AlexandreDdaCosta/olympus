@@ -39,10 +39,6 @@ include:
   cmd.run:
     - name: 'chmod -R 0755 {{ project_ploutos_path }}/scripts'
 
-initialize_ploutos:
-  cmd.run:
-    - name: "su -s /bin/bash -c '/srv/projects/ploutos/scripts/init.py' {{ ploutos_user}}"
-
 {{ pillar['olympus-package-path']  }}/projects/ploutos:
   file.recurse:
     - dir_mode: 0755
@@ -50,3 +46,7 @@ initialize_ploutos:
     - group: root
     - source: salt://projects/ploutos/files/lib
     - user: root
+
+initialize_ploutos:
+  cmd.run:
+    - name: "su -s /bin/bash -c '/srv/projects/ploutos/scripts/init.py' {{ ploutos_user}}"
