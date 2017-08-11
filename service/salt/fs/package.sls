@@ -18,7 +18,7 @@ include:
       - sls: repository
 {% endfor %}
 
-{{ pillar.olympus-package-path }}:
+{{ pillar['olympus-package-path'] }}:
   file.recurse:
     - dir_mode: 0755
     - file_mode: 0644
