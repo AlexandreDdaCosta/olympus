@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
 import csv, datetime, fcntl, json, os, pymongo, re, shutil, socket, wget
+import CAFILE, CERTFILE, KEYFILE, MONGO_URL from olympus.conf
 
-CAFILE = '/usr/local/share/ca-certificates/ca-crt-supervisor.pem.crt'
-CERTFILE = '/etc/ssl/localcerts/client-crt.pem'
-KEYFILE = '/etc/ssl/localcerts/client-key.pem'
-URL = 'mongodb://zeus:27017/?ssl=true';
+#CAFILE = '/usr/local/share/ca-certificates/ca-crt-supervisor.pem.crt'
+#CERTFILE = '/etc/ssl/localcerts/client-crt.pem'
+#KEYFILE = '/etc/ssl/localcerts/client-key.pem'
+#MONGO_URL = 'mongodb://zeus:27017/?ssl=true';
 
 #WORKINGDIR = '/home/ploutos/'
 WORKINGDIR = '/tmp/'
@@ -29,7 +30,7 @@ OPTIONS_DATA_URL = 'http://www.cboe.com/publish/scheduledtask/mktdata/cboesymbol
 class InitProject():
 
     def __init__(self,**kwargs):
-        self.client = pymongo.MongoClient(URL,ssl=True,ssl_ca_certs=CAFILE,ssl_certfile=CERTFILE,ssl_keyfile=KEYFILE)
+        self.client = pymongo.MongoClient(MONGO_URL,ssl=True,ssl_ca_certs=CAFILE,ssl_certfile=CERTFILE,ssl_keyfile=KEYFILE)
         self.db = self.client.ploutos
         self.collection = self.db.init
         try:
