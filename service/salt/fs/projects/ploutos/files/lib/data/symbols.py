@@ -22,9 +22,9 @@ class InitSymbols(data.Connection):
         self.graceful = kwargs.get('force',False)
 
     def populate_collections(self):
-        LOCKFILE = '/tmp/symbols.pid' # ALEX
-        DOWNLOAD_DIR = '/tmp/Downloads/' # ALEX
-        WORKING_DIR = '/tmp/' # ALEX
+        #LOCKFILE = '/tmp/symbols.pid' # ALEX
+        #DOWNLOAD_DIR = '/tmp/Downloads/' # ALEX
+        #WORKING_DIR = '/tmp/' # ALEX
 
         # Set up environment
         lockfilehandle = open(LOCKFILE,'w')

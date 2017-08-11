@@ -19,7 +19,6 @@ class Connection():
             os.makedirs(DOWNLOAD_DIR)
         except OSError:
             pass
-        os.chdir(WORKING_DIR)
 
     def _initialized(self,init_type):
         dbnames = self.client.database_names()
