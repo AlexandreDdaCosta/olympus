@@ -6,7 +6,7 @@ from olympus.projects.ploutos import *
 from olympus.projects.ploutos.data import *
 
 INIT_TYPE = 'symbols'
-LOCKFILE = LOCKFILE_DIR+'symbols.pid'
+LOCKFILE = LOCKFILE_DIR+INIT_TYPE+'.pid'
 NORMALIZE_CAP_REGEX = re.compile('[^0-9\.]')
 SYMBOL_DATA_URLS = [
 {'exchange':'amex','url':'http://www.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=amex&render=download'},
@@ -22,10 +22,6 @@ class InitSymbols(data.Connection):
         self.graceful = kwargs.get('force',False)
 
     def populate_collections(self):
-        #LOCKFILE = '/tmp/symbols.pid' # ALEX
-        #DOWNLOAD_DIR = '/tmp/Downloads/' # ALEX
-        #WORKING_DIR = '/tmp/' # ALEX
-
         # Set up environment
         lockfilehandle = open(LOCKFILE,'w')
         fcntl.flock(lockfilehandle,fcntl.LOCK_EX|fcntl.LOCK_NB)

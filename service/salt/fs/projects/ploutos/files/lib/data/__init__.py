@@ -8,7 +8,7 @@ DATABASE = USER
 # Collections
 
 OPTIONS_COLLECTION = 'options'
-SYMBOL_COLLECTIONS_PREFIX = 'symbol_'
+SYMBOL_COLLECTIONS_PREFIX = 'symbols_'
 
 class Connection():
     def __init__(self,**kwargs):
