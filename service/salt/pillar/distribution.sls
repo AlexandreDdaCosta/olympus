@@ -2,6 +2,8 @@ distribution: debian
 nodejs-repo: node_6.x
 release: jessie
 
+olympus-package-path: /usr/local/lib/python3.4/dist-packages/olympus
+
 repo-packages:
   apt-transport-https:
     version: 1.0.9.8.4

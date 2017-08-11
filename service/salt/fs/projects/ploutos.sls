@@ -42,3 +42,11 @@ include:
 initialize_ploutos:
   cmd.run:
     - name: "su -s /bin/bash -c '/srv/projects/ploutos/scripts/init.py' {{ ploutos_user}}"
+
+{{ pillar.olympus-package-path  }}/projects/ploutos:
+  file.recurse:
+    - dir_mode: 0755
+    - file_mode: 0644
+    - group: root
+    - source: salt://projects/ploutos/files/lib
+    - user: root
