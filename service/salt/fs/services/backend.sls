@@ -184,6 +184,7 @@ backend-user:
 
 {{ pillar.www_path }}/node:
   file.recurse:
+    - clean: True
     - dir_mode: 0755
     - file_mode: 0644
     - group: root

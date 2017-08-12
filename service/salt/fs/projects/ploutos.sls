@@ -28,6 +28,7 @@ include:
 
 {{ project_ploutos_path }}:
   file.recurse:
+    - clean: True
     - dir_mode: 0755
     - file_mode: 0644
     - group: {{ ploutos_user }}
@@ -41,6 +42,7 @@ include:
 
 {{ pillar['olympus-package-path']  }}/projects/ploutos:
   file.recurse:
+    - clean: True
     - dir_mode: 0755
     - file_mode: 0644
     - group: root
