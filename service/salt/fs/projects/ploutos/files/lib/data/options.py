@@ -92,6 +92,7 @@ class InitOptions(data.Connection):
         json_data = json.loads(jsonfile.read())
         jsonfile.close()
         collection.insert_many(json_data)
+        collection.create_index("Symbol")
 		
         lockfilehandle.write('')
         fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
