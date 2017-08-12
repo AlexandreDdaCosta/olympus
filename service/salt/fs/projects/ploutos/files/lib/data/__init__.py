@@ -7,7 +7,7 @@ DATABASE = USER
 
 # Collections
 
-OPTIONS_COLLECTION = 'options'
+OPTIONS_COLLECTIONS_PREFIX = 'options_'
 SYMBOL_COLLECTIONS_PREFIX = 'symbols_'
 
 class Connection():

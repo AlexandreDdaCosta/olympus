@@ -1,4 +1,4 @@
-import csv, datetime, fcntl, json, os, re, socket, wget
+import ast, csv, datetime, fcntl, json, os, re, socket, wget
 
 import olympus.projects.ploutos.data as data
 
@@ -14,6 +14,8 @@ SYMBOL_DATA_URLS = [
 {'exchange':'nyse','url':'http://www.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=nyse&render=download'}
 ]
 
+FIRST_LINE_STRING = '"Symbol","Name","LastSale","MarketCap","IPOyear","Sector","industry","Summary Quote"'
+
 class InitSymbols(data.Connection):
 
     def __init__(self,**kwargs):
@@ -22,7 +24,9 @@ class InitSymbols(data.Connection):
         self.graceful = kwargs.get('force',False)
 
     def populate_collections(self):
+
         # Set up environment
+
         lockfilehandle = open(LOCKFILE,'w')
         fcntl.flock(lockfilehandle,fcntl.LOCK_EX|fcntl.LOCK_NB)
         lockfilehandle.write(str(os.getpid()))
@@ -60,6 +64,8 @@ class InitSymbols(data.Connection):
             repaired_csvfile = open(WORKING_DIR+company_file+'.import','w+')
             csvfile = open(DOWNLOAD_DIR+company_file,'r')
             first_line = csvfile.readline().rstrip(',\n')
+            if first_line != FIRST_LINE_STRING:
+                raise Exception('First line does not match expected format; exiting.')
             for line in csvfile:
                 symbol = line.split(',')[0]
                 if re.match(r'.*?\^',symbol) or re.match(r'.*?\.',symbol):
