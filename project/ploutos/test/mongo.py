@@ -4,10 +4,7 @@ import pymongo, unittest
 
 import olympus.testing as testing
 
-CAFILE = '/usr/local/share/ca-certificates/ca-crt-supervisor.pem.crt'
-CERTFILE = '/etc/ssl/localcerts/client-crt.pem'
-KEYFILE = '/etc/ssl/localcerts/client-key.pem'
-URL = 'mongodb://zeus:27017/test?ssl=true';
+from olympus import CAFILE, CERTFILE, KEYFILE, MONGO_URL
 
 class TestMongo(testing.Test):
 
@@ -15,7 +12,7 @@ class TestMongo(testing.Test):
         pass
 
     def test_connect(self):
-        client = pymongo.MongoClient(URL,ssl=True,ssl_ca_certs=CAFILE,ssl_certfile=CERTFILE,ssl_keyfile=KEYFILE)
+        client = pymongo.MongoClient(MONGO_URL,ssl=True,ssl_ca_certs=CAFILE,ssl_certfile=CERTFILE,ssl_keyfile=KEYFILE)
         test_collection = client.test.pymongo_test
         test_collection.drop()
         delete_result = test_collection.delete_many({})
