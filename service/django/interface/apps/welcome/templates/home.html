@@ -2,16 +2,37 @@
 {% load i18n static %}
 {% block content %}
 <section id="intro_image">
-<img src="/static/apps/welcome/image/laikas_den_welcome_640_bw.jpg" class="img-responsive full-width" id="background_mirror_image">
-<img src="/static/apps/welcome/image/laikas_den_welcome_640_bw.jpg" class="img-responsive full-width" id="background_mirror_image_stable">
-<img src="/static/apps/welcome/image/laikas_den_welcome_640.jpg" class="img-responsive full-width" id="lead_image_fade">
+<picture>
+  <source media="(min-width: 641px) and (max-width: 992px)" srcset="/static/apps/welcome/image/laikas_den_welcome_992_bw.jpg">
+  <source media="(min-width: 993px) and (max-width: 1280px)" srcset="/static/apps/welcome/image/laikas_den_welcome_1280_bw.jpg">
+  <source media="(min-width: 1281px)" srcset="/static/apps/welcome/image/laikas_den_welcome_1920_bw.jpg">
+  <img src="/static/apps/welcome/image/laikas_den_welcome_640_bw.jpg" class="img-responsive full-width" id="background_mirror_image">
+</picture>
+<picture>
+  <source media="(min-width: 641px) and (max-width: 992px)" srcset="/static/apps/welcome/image/laikas_den_welcome_992_bw.jpg">
+  <source media="(min-width: 993px) and (max-width: 1280px)" srcset="/static/apps/welcome/image/laikas_den_welcome_1280_bw.jpg">
+  <source media="(min-width: 1281px)" srcset="/static/apps/welcome/image/laikas_den_welcome_1920_bw.jpg">
+  <img src="/static/apps/welcome/image/laikas_den_welcome_640_bw.jpg" class="img-responsive full-width" id="background_mirror_image_stable">
+</picture>
+<picture>
+  <source media="(min-width: 641px) and (max-width: 992px)" srcset="/static/apps/welcome/image/laikas_den_welcome_992.jpg">
+  <source media="(min-width: 993px) and (max-width: 1280px)" srcset="/static/apps/welcome/image/laikas_den_welcome_1280.jpg">
+  <source media="(min-width: 1281px)" srcset="/static/apps/welcome/image/laikas_den_welcome_1920.jpg">
+  <img src="/static/apps/welcome/image/laikas_den_welcome_640.jpg" class="img-responsive full-width" id="lead_image_fade">
+</picture>
 <div id="intro_text">Laika's <img src="/static/image/rocket-dog-moon-vector-logo-white.png" alt="rocket-dog-moon-vector-logo-white" class="wide-img"> Den
 <div id="intro_logo_under"><img src="/static/image/rocket-dog-moon-vector-logo-white.png" alt="rocket-dog-moon-vector-logo-white" class="thin-img"></div></div>
 </section>
 <section id="welcome">
 <div id="welcome_overlay" class="overlay overlay_black overlay_welcome"></div>
 <div id="welcome_header_image">
-<img src="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_320.jpg" class="img-responsive full-width" id="welcome_header_img">
+<picture>
+  <source media="(min-width: 321px) and (max-width: 640px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_640.jpg">
+  <source media="(min-width: 641px) and (max-width: 992px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_992.jpg">
+  <source media="(min-width: 993px) and (max-width: 1280px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_1280.jpg">
+  <source media="(min-width: 1281px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_1920.jpg">
+  <img src="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_320.jpg" class="img-responsive full-width">
+</picture>
 </div>
 <div id="welcome_header_image_text" class="image_highlight_text">
 <span>{% trans 'Hubble' %}</span>

@@ -100,23 +100,13 @@
   display: inline-block;
   position: relative;
   text-align: center;
+  width: 100%;
 }
 #background_mirror_image {
   position: absolute;
   top: 0;
   left: 0;
   z-index: 4;
-}
-img[id="background_mirror_image"], img[id="background_mirror_image_stable"] {
-  @media screen and (min-width: 641px) and (max-width: 992px) {
-    content:url("/static/apps/welcome/image/laikas_den_welcome_992_bw.jpg");
-  } 
-  @media screen and (min-width: 993px) and (max-width: 1280px) {
-    content:url("/static/apps/welcome/image/laikas_den_welcome_1280_bw.jpg");
-  } 
-  @media screen and (min-width: 1281px) {
-    content:url("/static/apps/welcome/image/laikas_den_welcome_1920_bw.jpg");
-  } 
 }
 #background_mirror_image_stable {
   position: absolute;
@@ -127,17 +117,6 @@ img[id="background_mirror_image"], img[id="background_mirror_image_stable"] {
 #lead_image_fade {
   position: relative;
   z-index: 2;
-}
-img[id="lead_image_fade"] {
-  @media screen and (min-width: 641px) and (max-width: 992px) {
-    content:url("/static/apps/welcome/image/laikas_den_welcome_992.jpg");
-  } 
-  @media screen and (min-width: 993px) and (max-width: 1280px) {
-    content:url("/static/apps/welcome/image/laikas_den_welcome_1280.jpg");
-  } 
-  @media screen and (min-width: 1281px) {
-    content:url("/static/apps/welcome/image/laikas_den_welcome_1920.jpg");
-  } 
 }
 #intro_text {
   color: rgb(0, 0, 0);
