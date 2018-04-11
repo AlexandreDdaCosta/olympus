@@ -13,18 +13,11 @@ class Quote(data.Connection):
     def __init__(self,**kwargs):
         super(Quote,self).__init__(**kwargs)
 
-    def Daily(self,symbol,verify=True,**kwargs):
+    def Daily(self,symbol,**kwargs):
         # Adjusted daily price quote series
         url = ALPHAVANTAGE_URL + '&function=TIME_SERIES_DAILY_ADJUSTED&outputsize=full&symbol=' + str(symbol)
         request = urllib.request.urlopen(url)
         json_reply = re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8"))
-        if verify is False:
-            return json.loads(json_reply)
-        url = GOOGLE_HISTORICAL_URL + str(symbol)
-        target_file = DOWNLOAD_DIR + 'daily.price.' + str(symbol)
-        print(url)
-        request = urllib.request.urlretrieve(url,target_file)
-        print(request)
         return json.loads(json_reply)
 
     def DailyUnadjusted(self,symbol,**kwargs):
@@ -39,7 +32,6 @@ class Quote(data.Connection):
         if interval not in [1,5,15,30,60]:
             raise Exception("If specified, 'interval' must be in the set: 1, 5, 15, 30, 60.")
         url = ALPHAVANTAGE_URL + '&function=TIME_SERIES_INTRADAY&outputsize=full&symbol=' + str(symbol) + '&interval=' + str(interval) + 'min'
-        request = urllib.request.urlopen(url)
         json_reply = re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8"))
         return json.loads(json_reply)
 
@@ -47,9 +39,9 @@ class Quote(data.Connection):
         # "symbols" can be a list or a string
         if isinstance(symbols,list):
             url_symbols = ",".join(symbols)
-            url = GOOGLE_REALTIME_URL+url_symbols
+            url = ALPHAVANTAGE_URL + '&function=BATCH_STOCK_QUOTES&outputsize=full&symbols=' + url_symbols
         elif isinstance(symbols,str):
-            url = GOOGLE_REALTIME_URL+symbols
+            url = ALPHAVANTAGE_URL + '&function=BATCH_STOCK_QUOTES&outputsize=full&symbols=' + symbols
         else:
             raise Exception("Variable 'symbols' must be a list or string.")
         request = urllib.request.urlopen(url)

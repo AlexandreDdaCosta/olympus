@@ -10,8 +10,8 @@ LOCKFILE = LOCKFILE_DIR+INIT_TYPE+'.pid'
 OPTIONS_DATA_URL = 'http://www.cboe.com/publish/scheduledtask/mktdata/cboesymboldir2.csv'
 WORKING_FILE = 'cboesymboldir.csv'
 
-FIRST_ROW_STRING = "{'2017': None, '2018': None, '2019': None, 'Post/Station': None, 'Product Types': None, 'Cycle': None, 'Primary Market': None, 'Name': 'NOTE: All directories are updated daily using information from the previous business day.', 'Traded on C2': None, 'Symbol': None}"
-SECOND_ROW_STRING = "{'2017': 'LEAPS 2017', '2018': 'LEAPS 2018', '2019': 'LEAPS 2019', 'Post/Station': ' Post/Station', 'Product Types': 'Product Types', 'Cycle': 'Cycle', 'Primary Market': 'DPM', 'Name': 'Company Name', 'Traded on C2': 'Traded at C2', 'Symbol': 'Stock Symbol'}"
+FIRST_ROW_STRING = "{'2018': None, '2019': None, '2020': None, 'Post/Station': None, 'Product Types': None, 'Cycle': None, 'Primary Market': None, 'Name': 'NOTE: All directories are updated daily using information from the previous business day.', 'Traded on C2': None, 'Symbol': None}"
+SECOND_ROW_STRING = "{'2018': 'LEAPS 2018', '2019': 'LEAPS 2019', '2020': 'LEAPS 2020', 'Post/Station': ' Post/Station', 'Product Types': 'Product Types', 'Cycle': 'Cycle', 'Primary Market': 'DPM', 'Name': 'Company Name', 'Traded on C2': 'Traded at C2', 'Symbol': 'Stock Symbol'}"
 
 class InitOptions(data.Connection):
 
@@ -52,7 +52,7 @@ class InitOptions(data.Connection):
 
         # Clean up received data
 
-        fieldnames = ["Name","Symbol","Primary Market","Cycle","Traded on C2","2017","2018","2019","Product Types","Post/Station"]
+        fieldnames = ["Name","Symbol","Primary Market","Cycle","Traded on C2","2018","2019","2020","Product Types","Post/Station"]
         csvfile = open(DOWNLOAD_DIR+WORKING_FILE,'r')
         jsonfile = open(WORKING_DIR+WORKING_FILE+'.json','w')
         jsonfile.write('[')
@@ -63,10 +63,10 @@ class InitOptions(data.Connection):
             rowcount = rowcount + 1
             if rowcount == 1:
                 if row != ast.literal_eval(FIRST_ROW_STRING.strip('\n')):
-                    raise Exception('First row does not match expected format; exiting.')
+                    raise Exception('First row does not match expected format; exiting. '+str(row)+' v '+FIRST_ROW_STRING)
             elif rowcount == 2:
                 if row != ast.literal_eval(SECOND_ROW_STRING.strip('\n')):
-                    raise Exception('Second row does not match expected format; exiting.')
+                    raise Exception('Second row does not match expected format; exiting. '+str(row)+' v '+SECOND_ROW_STRING)
             else:
                 for name in fieldnames:
                     if row[name] == '' or row[name] is None:
