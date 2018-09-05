@@ -76,7 +76,3 @@ postgresql_repo:
     - run
     - name: 'wget -qO - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -'
     - unless: 'apt-key list | grep -i postgresql'
-
-update_keyexpired:
-  cmd.run:
-    - ALEX 
