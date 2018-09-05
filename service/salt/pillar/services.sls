@@ -6,39 +6,39 @@ backend-packages:
   mongodb-org:
     repo: jessie/mongodb-org
   nodejs:
-    version: 6.11.1-2nodesource1~jessie1
+    version: 6.14.4-2nodesource1~jessie1
   pgadmin3:
     repo: jessie-pgdg
-    version: 1.22.2-1.pgdg80+1
+    version: 1.22.2-4.pgdg80+1
   postgresql-9.6:
     repo: jessie-pgdg
-    version: 9.6.3-1.pgdg80+1
+    version: 9.6.10-1.pgdg80+1
 
 backend-npm-packages:
   body-parser:
-    version: 1.17.1
+    version: 1.18.3
   chai:
-    version: 4.0.2
+    version: 4.1.2
   express:
-    version: 4.15.0
+    version: 4.16.3
   express-generator:
-    version: 4.14.1
+    version: 4.16.0
   fs-extra:
-    version: 3.0.1
+    version: 7.0.0
   mocha:
-    version: 3.4.2
+    version: 5.2.0
   mongodb:
-    version: 2.2
+    version: 3.1.4
   pg:
-    version: 6.1.2
+    version: 7.4.3
   pg-hstore:
     version: 2.3.2
   pm2:
-    version: 2.4.2
+    version: 3.0.4
   request:
-    version: 2.81.0
+    version: 2.88.0
   sequelize:
-    version: 3.30.2
+    version: 4.38.0
   sequelize-cli:
     version: 2.5.1
   supervisor:
@@ -62,25 +62,25 @@ bigdata-pip3-packages:
   wget:
     version: == 3.2
   pymongo:
-    version: == 3.4.0
+    version: == 3.7.1
   numpy:
-    version: == 1.13.1
+    version: == 1.15.1
   freetype-py:
-    version: == 1.0.2
+    version: == 2.0.0.post6
   ipython:
-    version: == 6.1.0
+    version: == 6.5.0
   nose:
     version: == 1.3.7
   pandas:
-    version: == 0.20.3
+    version: == 0.23.4
   sympy:
-    version: == 1.1
+    version: == 1.2
   jupyter:
     version: == 1.0.0
   matplotlib:
-    version: == 2.0.2
+    version: == 2.2.3
   scipy:
-    version: == 0.19.1
+    version: == 1.1.0
 
 # Temporary until we start tagging releases
 
@@ -90,7 +90,7 @@ frontend-user: uwsgi
 
 frontend-packages:
   libpq-dev:
-    version: 9.6.3-1.pgdg80+1
+    version: 10.5-1.pgdg80+1
   python3-dev:
     version: 3.4.2-2
   ruby-sass:
@@ -98,21 +98,22 @@ frontend-packages:
 
 frontend-pip3-packages:
   django:
-    version: == 1.10.6
+    version: == 2.1.1
+  # Formerly 1.10.6
   psycopg2:
-    version: == 2.7
+    version: == 2.7.5
   uwsgi:
-    version: == 2.0.14
+    version: == 2.0.17.1
   virtualenv:
-    version: == 15.1.0
+    version: == 16.0.0
 
 frontend-gems:
   sass:
-    version: 3.4.23
+    version: 3.4.6
 
 web-packages:
   certbot:
     repo: jessie-backports
     version: 0.10.2-1~bpo8+1
   nginx:
-    version: 1.10.3-1~jessie
+    version: 1.14.0-1~jessie
