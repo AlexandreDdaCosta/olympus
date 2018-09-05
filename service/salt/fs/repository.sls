@@ -76,3 +76,10 @@ postgresql_repo:
     - run
     - name: 'wget -qO - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -'
     - unless: 'apt-key list | grep -i postgresql'
+
+/usr/local/bin/update_repo_keys.sh:
+  file.managed:
+    - group: root
+    - mode: 0755
+    - source: salt://repository/files/update_repo_keys.sh
+    - user: root
