@@ -83,3 +83,7 @@ postgresql_repo:
     - mode: 0755
     - source: salt://repository/files/update_repo_keys.sh
     - user: root
+
+verify_gnupg_keys:
+  cmd.run:
+    - name: /usr/local/bin/update_repo_keys.sh

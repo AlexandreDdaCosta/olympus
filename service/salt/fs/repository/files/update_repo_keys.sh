@@ -1,18 +1,11 @@
 #!/bin/sh
 
-pgrep -f runserver
+apt-key list | grep expired
 if [ $? -eq 0 ]
 then
-  pkill -f runserver
-  if [ $? -eq 0 ]
-  then
-    echo "Dev server stopped"
-	exit 0
-  else
-    echo "Failure when stopping dev server"
-	exit 1
-  fi
+  echo "OK"
+  exit 1
 else
-  echo "Dev server not running"
-  exit 0
+  echo "Key verification failure"
+  exit 1
 fi
