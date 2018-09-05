@@ -6,7 +6,7 @@ backend-packages:
   mongodb-org:
     repo: jessie/mongodb-org
   nodejs:
-    version: 6.14.4-1nodesource1~jessie1
+    version: 6.14.4-1nodesource1
   pgadmin3:
     repo: jessie-pgdg
     version: 1.22.2-4.pgdg80+1
