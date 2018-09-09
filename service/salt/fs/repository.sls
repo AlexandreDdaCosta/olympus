@@ -4,7 +4,7 @@
   pkg.latest:
 {% else %}
   pkg.installed:
-    {% if pillar.pkg_noversion is not defined or pillar.pkg_noversion is False %}
+    {% if pillar.pkg_noversion is not defined or not pillar.pkg_noversion %}
     - version: {{ package['version'] }}
     {% endif %}
 {% endif %}
