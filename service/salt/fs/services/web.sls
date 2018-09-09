@@ -7,7 +7,9 @@ include:
   pkg.latest:
 {% else %}
   pkg.installed:
+    {% if pillar.pkg_noversion is not defined or pillar.pkg_noversion is False %}
     - version: {{ package['version'] }}
+    {% endif %}
 {% endif %}
     - name: {{ packagename }}
 {% if 'repo' in package %}

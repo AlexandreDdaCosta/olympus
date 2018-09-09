@@ -8,7 +8,9 @@ include:
 {% else %}
   pkg.installed:
     {% if package and 'version' in package %}
+    {% if pillar.pkg_noversion is not defined or pillar.pkg_noversion is False %}
     - version: {{ package['version'] }}
+    {% endif %}
     {% endif %}
 {% endif %}
 {% if package != None and 'repo' in package %}

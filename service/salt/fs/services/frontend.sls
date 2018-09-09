@@ -12,7 +12,9 @@ include:
   pkg.latest:
 {% else %}
   pkg.installed:
+    {% if pillar.pkg_noversion is not defined or pillar.pkg_noversion is False %}
     - version: {{ package['version'] }}
+    {% endif %}
 {% endif %}
     - name: {{ packagename }}
 {% if package != None and 'repo' in package %}
@@ -29,7 +31,11 @@ include:
     - name: {{ packagename }}
     - upgrade: True
 {% elif package != None and 'version' in package %}
+    {% if pillar.pkg_noversion is not defined or pillar.pkg_noversion is False %}
     - name: {{ packagename }} {{ package['version'] }}
+    {% else %}
+    - name: {{ packagename }}
+    {% endif %}
 {% else %}
     - name: {{ packagename }}
 {% endif %}
@@ -42,7 +48,9 @@ include:
 {{ packagename }}:
   gem.installed:
 {% if package != None and 'version' in package %}
+    {% if pillar.pkg_noversion is not defined or pillar.pkg_noversion is False %}
     - version: {{ package['version'] }}
+    {% endif %}
 {% endif %}
     - require:
       - sls: package
