@@ -1,3 +1,6 @@
+include:
+  - base: package
+
 atd:
   service.running:
     - enable: True
