@@ -106,7 +106,7 @@ frontend-pip3-packages:
   virtualenv:
     version: == 16.0.0
 
-frontend-gems:
+frontend-gem-packages:
   sass:
     version: 3.4.6
 
