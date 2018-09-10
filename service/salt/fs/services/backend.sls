@@ -11,7 +11,7 @@ include:
 {% else %}
   pkg.installed:
     {% if package != None and 'version' in package %}
-    {% if pillar.pkg_noversion is not defined or pillar.pkg_noversion is False %}
+    {% if pillar.pkg_noversion is not defined or not pillar.pkg_noversion %}
     - version: {{ package['version'] }}
     {% endif %}
     {% endif %}
@@ -30,7 +30,7 @@ include:
     npm.installed:
       - force_reinstall: True
 {% elif package != None and 'version' in package %}
-{% if pillar.pkg_noversion is not defined or pillar.pkg_noversion is False %}
+{% if pillar.pkg_noversion is not defined or not pillar.pkg_noversion %}
 {{ packagename }}@{{ package['version'] }}:
     npm.installed:
 {% else %}
