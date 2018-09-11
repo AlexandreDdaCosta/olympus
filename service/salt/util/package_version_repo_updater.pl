@@ -1,14 +1,31 @@
 #!/usr/bin/env perl
 
-# Indicates differences between version numbers of installed packages
-# and those in the attached git repository. Update version numbers
-# in repository on request. Used for managing package updates.
+my $intro = <<'ENDINTRO';
+-------------------------------
+package_version_repo_updater.pl
+-------------------------------
+
+Identifies differences between version numbers of installed packages
+and those indicated in salt pillar files from the local git repository. 
+Creates updated salt files in /tmp.
+
+This utility is Used for managing package updates.
+ENDINTRO
+print $intro;
+print "Enter (Y/y) to execute: " ;
+my $proceed = <STDIN>;
+$proceed =~ s/\s//g;
+if ($proceed !~ /^(Y|y)$/)
+{
+    print "Terminating.\n";
+    exit 0;
+}
 
 use strict;
 use Data::Dumper;
 use Cwd qw{abs_path getcwd};
 
-use vars qw{@data $installed_packages $PACKAGE_VERSIONS $results};
+use vars qw{@data $installed_packages $results @UPDATES};
 my $GIT_FILE_DIR= q{../../salt/pillar/};
 my @GIT_FILES= ('services.sls','distribution.sls');
 my $outfile_prefix = q{/tmp/package_version_repo_updater.}.time().q{.};
@@ -17,13 +34,72 @@ my $abs_dir = abs_path($0);
 $abs_dir =~ s/^(.*)(\/)(.*?)$/$1/;
 chdir $abs_dir;
 
-# read repository versions
+print qq{Getting installed package data...\n};
+print qq{Reading apt...\n};
+$installed_packages->{'apt'} = {};
+$results = `apt list --installed 2>&1`;
+@data = split "\n", $results;
+foreach my $line (@data)
+{
+    next if ($line !~ /\[.*?installed.*?\]/);
+    my @entry = split ' ', $line;
+    #print join(", ", @entry) . qq{\n};
+    my $package = $entry[0];
+    $package =~ s/\/[^\s]*$//;
+    $installed_packages->{'apt'}->{$package} = $entry[1];
+}
+print qq{Reading pip3...\n};
+$installed_packages->{'pip3'} = {};
+$results = `pip3 list 2>&1`;
+@data = split "\n", $results;
+foreach my $line (@data)
+{
+    next if ($line !~ /^[^\s]+ \([^\s]+\)$/);
+    my @entry = split ' ', $line;
+    #print join(", ", @entry) . qq{\n};
+    my $package = lc $entry[0];
+    my $version = $entry[1];
+    $version =~ s/\(([^\s]*)\)/$1/;
+    $installed_packages->{'pip3'}->{$package} = $version;
+}
+print qq{Reading npm...\n};
+$installed_packages->{'npm'} = {};
+$results = `npm list -g --depth=0 2>&1`;
+@data = split "\n", $results;
+foreach my $line (@data)
+{
+    my @entry = split ' ', $line;
+    next if (! defined $entry[1]);
+    #print join(", ", @entry) . qq{\n};
+    my ($module,$version) = split '@', $entry[1];
+    $installed_packages->{'npm'}->{$module} = $version;
+}
+print qq{Reading gem...\n};
+$installed_packages->{'gem'} = {};
+$results = `gem query --local 2>&1`;
+@data = split "\n", $results;
+foreach my $line (@data)
+{
+    my ($package,$version,$more_versions) = split ' ', $line;
+    next if (! defined $version);
+    if (defined $more_versions)
+    {
+        $version =~ s/\,/\)/;
+    }
+    #print qq{$package $version\n};
+    next if ($version !~ /^\([^\s]+\)$/);
+    $version =~ s/[\(\)]//g;
+    $installed_packages->{'gem'}->{$package} = $version;
+}
+
+print qq{Examining package versions in salt state files from repository...\n};
 foreach my $filename (@GIT_FILES)
 {
-    print "Finding $filename\n";
+    print "Reading $filename...\n";
     my $filepath = $GIT_FILE_DIR . $filename;
     (-e $filepath) || die "Can't locate $filename. Pillar file must be in a git repo, along with this script.";
-    $PACKAGE_VERSIONS->{$filename} = {};
+    my $STATE_FILE_UPDATES=0;
+    my $NEW_STATE_FILE = '';
     my $installer = undef;
     my $package = undef;
 	open(GITFILE,"$filepath") || die "Can't open $filepath";
@@ -51,10 +127,7 @@ foreach my $filename (@GIT_FILES)
             {
                 $installer = 'apt'
             }
-            if (! exists $PACKAGE_VERSIONS->{$filename}->{$installer})
-            {
-                $PACKAGE_VERSIONS->{$filename}->{$installer} = {};
-            }
+            $NEW_STATE_FILE .= $_.qq{\n};
             next;
         }
         elsif ($_ =~ /^\s*?$/)
@@ -62,7 +135,6 @@ foreach my $filename (@GIT_FILES)
             # divider or end of stanza
             $installer = undef;
             $package = undef;
-            next;
         }
         if (defined $installer)
         {
@@ -79,7 +151,23 @@ foreach my $filename (@GIT_FILES)
                     {
                         $version =~ s/^(\s+version\:\s*\=\=\s*)([^\s]*)(\s*?)$/$2/;
                     }
-                    $PACKAGE_VERSIONS->{$filename}->{$installer}->{$package} = $version;
+                    #print qq{Installed version: } . $installed_packages->{$installer}->{$package} . qq{ $version $installer $package};
+                    if ($version ne $installed_packages->{$installer}->{$package})
+                    {
+                        print qq{$installer $package $installed_packages->{$installer}->{$package} --> $version\n};
+                        my $line_to_update = $_;
+                        if ($installer eq 'pip3')
+                        {
+                            $line_to_update =~ s/^(\s+version\:\s*\=\=\s*)([^\s]*)(\s*?)$/$1$installed_packages->{$installer}->{$package}$3/;
+                        }
+                        else
+                        {
+                            $line_to_update =~ s/^(\s+version\:\s*)([^\s]*)(\s*?)$/$1$installed_packages->{$installer}->{$package}$3/;
+                        }
+                        $STATE_FILE_UPDATES++;
+                        $NEW_STATE_FILE .= $line_to_update.qq{\n};
+                        next;
+                    }
                 }
             }
             elsif ($_ =~ /^  [^\s]+/)
@@ -89,53 +177,42 @@ foreach my $filename (@GIT_FILES)
                 $package =~ s/\:$//;
                 $package =~ s/\s//g;
                 #print qq{package $package\n};
-                next;
             }
         }
+        $NEW_STATE_FILE .= $_.qq{\n};
     }
 	close(GITFILE);
-}
-#print Dumper $PACKAGE_VERSIONS;
-
-# Get apt, pip3, npm, gem installed data
-
-$installed_packages->{'apt'} = {};
-$results = `apt list --installed 2>&1`;
-@data = split "\n", $results;
-foreach my $line (@data)
-{
-    next if ($line !~ /\[[^\s]*installed[^\s]*\]/);
-    my @entry = split ' ', $line;
-    #print join(", ", @entry) . qq{\n};
-    my $package = $entry[0];
-    $package =~ s/\/[^\s]*$//;
-    $installed_packages->{'apt'}->{$package} = $entry[1];
-}
-$installed_packages->{'pip3'} = {};
-$results = `pip3 list 2>&1`;
-@data = split "\n", $results;
-foreach my $line (@data)
-{
-    next if ($line !~ /^[^\s]+ \([\d\.]+\)$/);
-    my @entry = split ' ', $line;
-    #print join(", ", @entry) . qq{\n};
-    my $version = $entry[1];
-    $version =~ s/\(([^\s]*)\)/$1/;
-    $installed_packages->{'pip3'}->{$entry[0]} = $version;
+    #print $NEW_STATE_FILE;
+    if ($STATE_FILE_UPDATES)
+    {
+        my $outfile = $outfile_prefix . $filename;
+        open OUTFILE, ">$outfile" or die "Failed to create output file $outfile";
+        print OUTFILE $NEW_STATE_FILE;
+        close OUTFILE;
+        #print qq{Outfile for $filename created in $outfile\n};
+        push @UPDATES, $outfile;
+    }
 }
 
-print Dumper $installed_packages;
-
-# Output
-
-foreach my $filename (@GIT_FILES)
+if (@UPDATES)
 {
-    # create output file
+my $end_header = <<'ENDHEADER';
 
-    my $outfile = $outfile_prefix . $filename;
-    open OUTFILE, ">$outfile" or die "Failed to create output file $outfile";
-    close OUTFILE;
-    print qq{Outfile for $filename created in $outfile\n};
-    system(qq{ls -la $outfile});
+------------------------
+Listing of updated files
+------------------------
+ENDHEADER
+    print $end_header;
+    foreach my $outfile (@UPDATES)
+    {
+        my $root_file_name = $outfile;
+        $root_file_name =~ s/^(.*\.)(.*?)(\.sls)$/$2$3/;
+        print qq{\n$root_file_name:\n};
+        system(qq{ls -la $outfile});
+    }
+}
+else
+{
+    print qq{No required updates detected\n};
 }
 exit 0

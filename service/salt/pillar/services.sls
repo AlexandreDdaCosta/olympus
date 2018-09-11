@@ -108,7 +108,7 @@ frontend-pip3-packages:
 
 frontend-gem-packages:
   sass:
-    version: 3.4.6
+    version: 3.4.23
 
 web-packages:
   certbot:
