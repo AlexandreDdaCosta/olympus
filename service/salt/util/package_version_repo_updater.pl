@@ -8,7 +8,7 @@ use strict;
 use Data::Dumper;
 use Cwd qw{abs_path getcwd};
 
-use vars qw{$PACKAGE_VERSIONS};
+use vars qw{@data $installed_packages $PACKAGE_VERSIONS $results};
 my $GIT_FILE_DIR= q{../../salt/pillar/};
 my @GIT_FILES= ('services.sls','distribution.sls');
 my $outfile_prefix = q{/tmp/package_version_repo_updater.}.time().q{.};
@@ -16,6 +16,8 @@ my $outfile_prefix = q{/tmp/package_version_repo_updater.}.time().q{.};
 my $abs_dir = abs_path($0);
 $abs_dir =~ s/^(.*)(\/)(.*?)$/$1/;
 chdir $abs_dir;
+
+# read repository versions
 foreach my $filename (@GIT_FILES)
 {
     print "Finding $filename\n";
@@ -86,16 +88,43 @@ foreach my $filename (@GIT_FILES)
                 $package = $_;
                 $package =~ s/\:$//;
                 $package =~ s/\s//g;
-                print qq{package $package\n};
+                #print qq{package $package\n};
                 next;
             }
         }
     }
 	close(GITFILE);
 }
-print Dumper $PACKAGE_VERSIONS;
+#print Dumper $PACKAGE_VERSIONS;
 
 # Get apt, pip3, npm, gem installed data
+
+$installed_packages->{'apt'} = {};
+$results = `apt list --installed 2>&1`;
+@data = split "\n", $results;
+foreach my $line (@data)
+{
+    next if ($line !~ /\[[^\s]*installed[^\s]*\]/);
+    my @entry = split ' ', $line;
+    #print join(", ", @entry) . qq{\n};
+    my $package = $entry[0];
+    $package =~ s/\/[^\s]*$//;
+    $installed_packages->{'apt'}->{$package} = $entry[1];
+}
+$installed_packages->{'pip3'} = {};
+$results = `pip3 list 2>&1`;
+@data = split "\n", $results;
+foreach my $line (@data)
+{
+    next if ($line !~ /^[^\s]+ \([\d\.]+\)$/);
+    my @entry = split ' ', $line;
+    #print join(", ", @entry) . qq{\n};
+    my $version = $entry[1];
+    $version =~ s/\(([^\s]*)\)/$1/;
+    $installed_packages->{'pip3'}->{$entry[0]} = $version;
+}
+
+print Dumper $installed_packages;
 
 # Output
 
