@@ -1,4 +1,4 @@
-a% set project_path=pillar.www_path+'/django/interface' %}
+{% set project_path=pillar.www_path+'/django/interface' %}
 {% set sass_path=project_path+'/sass' %}
 {%- set random_password_generator='echo "import random; import string; print \'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100))" | /usr/bin/python' -%}
 
