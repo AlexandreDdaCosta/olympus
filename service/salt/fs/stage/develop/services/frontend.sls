@@ -1,6 +1,15 @@
 include:
   - base: services/frontend
 
+{# Enable permanent dev server on highstate run by setting "stage" grain. Useful commands:
+
+sudo -i salt '*' grains.setval stage develop
+sudo -i salt '*' grains.delval stage
+
+Currently the dev server does not restart automatically on server shutdown, unlike the
+full uWSGI server.
+#}
+
 /usr/local/bin/startserver.py:
   file.managed:
     - group: root
