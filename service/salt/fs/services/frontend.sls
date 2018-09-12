@@ -236,7 +236,7 @@ django-migrate:
     file.directory:
     - group: root
     - makedirs: False
-    - mode:a0755
+    - mode: 0755
     - user: root
 
 {{ sass_path }}/public/js:
