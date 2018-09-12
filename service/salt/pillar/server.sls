@@ -5,7 +5,6 @@ interface:
 supervisor:
   services:
     - backend
-    - frontend
 
 unified:
   services:

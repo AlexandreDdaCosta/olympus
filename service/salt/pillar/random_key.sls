@@ -3,4 +3,6 @@
 random_key: 
   ca_key: {{ salt['cmd.shell'](random_string_generator) }}
   django_secret_key: {{ salt['cmd.shell'](random_string_generator) }}
+
+persistent_key: 
   frontend_db_key: {{ salt['cmd.shell'](random_string_generator) }}

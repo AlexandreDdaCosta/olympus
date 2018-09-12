@@ -4,6 +4,8 @@
 include:
   - base: package
 
+# BEGIN Server certificates and keys
+
 {{ cert_dir }}:
   file.directory:
     - group: root
@@ -183,6 +185,8 @@ cert_mongo_restart:
 
 {% endif %}
 {% endif %}
+
+# END Server certificates and keys
 
 openssh-server-service:
   file.managed:
