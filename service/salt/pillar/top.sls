@@ -3,7 +3,7 @@ base:
     - core
     - distribution
     - projects
-    - keys
+    - random_key
     - server
     - services
     - stage
