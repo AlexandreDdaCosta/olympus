@@ -188,8 +188,8 @@ cert_mongo_restart:
 # START Database remote credentials
 
 # 1. Write new random frontend user key to file
-# 2. Trigger backend to update credentials
-# 3. Trigger frontend to update credentials
+# 2. Run credentials update state on all backends
+# 3. Run credentials update state on all frontends
 
 # END Database remote credentials
 
