@@ -196,12 +196,13 @@ frontend-user:
     - mode: 0755
     - user: root
 
-{{ project_path }}/settings_local.py:
+frontend_conf_file::
   file.managed:
     - dir_mode: 0755
     - group: {{ pillar['frontend-user'] }}
     - makedirs: False
     - mode: 0640
+    - name:{{ project_path }}/settings_local.py
     - source: salt://services/frontend/settings_local.jinja
     - template: jinja
     - user: {{ pillar['frontend-user'] }}

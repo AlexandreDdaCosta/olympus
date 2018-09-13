@@ -183,10 +183,18 @@ cert_mongo_restart:
     - require:
       - regen_trusted_CA
 
-{% endif %}
-{% endif %}
-
 # END Server certificates and keys
+
+# START Database remote credentials
+
+# 1. Write new random frontend user key to file
+# 2. Trigger backend to update credentials
+# 3. Trigger frontend to update credentials
+
+# END Database remote credentials
+
+{% endif %}
+{% endif %}
 
 openssh-server-service:
   file.managed:
