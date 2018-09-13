@@ -114,6 +114,8 @@ chmod -R g+ws $GIT_PATH/$GIT_REPO
 chgrp -R $GIT_OWNER $GIT_PATH/$GIT_REPO
 
 echo 'Updating salt configuration...'
+mkdir -p /etc/salt/shared_credentials
+chmod 0700 /etc/salt/shared_credentials
 cd /etc/salt/master.d
 echo 'Extracting /etc/salt/master.d/core.conf from git'
 git archive --remote=file://$GIT_PATH/$GIT_REPO HEAD:service/salt/conf/master.d core.conf | tar -x

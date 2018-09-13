@@ -1,5 +1,7 @@
 {% set cert_dir = '/etc/ssl/localcerts' %}
 {% set cert_dir_client = '/etc/ssl/salt/client_certificates/' %}
+{% set db_credential_file = 'frontend_database' %}
+{% set password_dir = '/etc/salt/shared_credentials' %}
 
 include:
   - base: package
@@ -185,11 +187,48 @@ cert_mongo_restart:
 
 # END Server certificates and keys
 
-# START Database remote credentials
+# BEGIN Shared credentials
 
-# 1. Write new random frontend user key to file
-# 2. Run credentials update state on all backends
-# 3. Run credentials update state on all frontends
+# Also created as part of minion initialization
+{{ password_dir }}:
+  file.directory:
+    - group: root
+    - makedirs: False
+    - mode: 0700
+    - user: root
+
+# 1. Create database shared credential file
+
+frontend_db_credential_file:
+  file.managed:
+    - group: root
+    - makedirs: False
+    - mode: 0600
+    - name: {{ password_dir }}/{{ db_credential_file }}
+    - require: 
+      - {{ password_dir }}
+    - source: salt://security/{{ db_credential_file }}.jinja
+    - template: jinja
+    - user: root
+
+# 2. Push db credential file from supervisor minion to master
+
+push_db_credential_file:
+  cmd.run:
+    - name: salt '{{ grains.get('localhost') }}' cp.push {{ password_dir }}/{{ db_credential_file }}
+    - require: 
+      - frontend_db_credential_file
+
+# 3. Trigger relevant minions to get db credential file
+
+get_db_credential_file:
+  cmd.run:
+    - name: salt '*' cp.get_file "salt://{{ grains.get('localhost') }}{{ password_dir }}/{{ db_credential_file }}" {{ password_dir }}/{{ db_credential_file }}
+    - require: 
+      - frontend_db_credential_file
+
+# 4. Trigger relevant minions to run update tasks
+# ALEX
 
 # END Database remote credentials
 
