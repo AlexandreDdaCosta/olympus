@@ -219,18 +219,23 @@ push_db_credential_file:
     - require: 
       - frontend_db_credential_file
 
-# 3. Trigger frontend minions to get db credential file (unified/backend would be running this process)
+# 3. Trigger minions to get db credential file
 
 get_db_credential_file:
   cmd.run:
-    - name: salt -C 'G@server:interface or G@server:supervisor or G@server:unified' cp.get_file "salt://{{ grains.get('localhost') }}{{ password_dir }}/{{ db_credential_file }}" {{ password_dir }}/{{ db_credential_file }}
+    - name: salt -C 'not G@worker' cp.get_file "salt://{{ grains.get('localhost') }}{{ password_dir }}/{{ db_credential_file }}" {{ password_dir }}/{{ db_credential_file }}
     - require: 
       - push_db_credential_file
 
-# 4. Call backend/frontend security update script
-# ALEX
+# 4. Call security update script
 
-# END Database remote credentials
+update_db_credential:
+  cmd.run:
+    - name: salt '*' db_credentials.update
+    - require: 
+      - get_db_credential_file
+
+# END Shared credentials
 
 {% endif %}
 {% endif %}

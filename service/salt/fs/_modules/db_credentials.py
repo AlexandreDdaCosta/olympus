@@ -1,0 +1,2 @@
+def update()
+    return True
