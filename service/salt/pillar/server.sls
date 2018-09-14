@@ -10,3 +10,7 @@ unified:
   services:
     - backend
     - frontend
+
+worker:
+  services:
+    - bigdata

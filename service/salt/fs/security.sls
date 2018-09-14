@@ -223,7 +223,7 @@ push_db_credential_file:
 
 get_db_credential_file:
   cmd.run:
-    - name: salt -C 'not G@worker' cp.get_file "salt://{{ grains.get('localhost') }}{{ password_dir }}/{{ db_credential_file }}" {{ password_dir }}/{{ db_credential_file }}
+    - name: salt -C 'not G@{{ pillar['db_credential_exclude_server_type'] }}' cp.get_file "salt://{{ grains.get('localhost') }}{{ password_dir }}/{{ db_credential_file }}" {{ password_dir }}/{{ db_credential_file }}
     - require: 
       - push_db_credential_file
 
@@ -231,7 +231,7 @@ get_db_credential_file:
 
 update_db_credential:
   cmd.run:
-    - name: salt '*' db_credentials.update
+    - name: salt '*' credentials.database
     - require: 
       - get_db_credential_file
 

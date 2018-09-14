@@ -1,2 +1,2 @@
-def update()
+def database()
     return True
