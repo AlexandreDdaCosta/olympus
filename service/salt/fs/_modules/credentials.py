@@ -13,12 +13,14 @@ def database():
     services = None
     if (server is not None and server != exclude_server):
         key = server + ':services'
+        passphrase = None
         services = __salt__['pillar.get'](key)
         try:
             with open(credential_file) as f:
                 passphrase = f.readlines()
-        except:
-            raise
+        except IOError as e:
+            raise e.errno
+        if passphrase is not None
         if 'backend' in services:
             return 'backend'
         if 'frontend' == services:
