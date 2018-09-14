@@ -12,8 +12,9 @@ def database():
     server = __grains__['server']
     services = None
     if (server is not None and server != exclude_server):
-        string = server + ':services'
-        services = __salt__['pillar.get'](string)
+        key = server + ':services'
+        services = __salt__['pillar.get'](key)
+        services = services.split()
         try:
             with open(credential_file) as f:
                 passphrase = f.readlines()
