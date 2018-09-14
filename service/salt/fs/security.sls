@@ -227,20 +227,7 @@ get_db_credential_file:
     - require: 
       - push_db_credential_file
 
-# 4. Call backend/frontend security states
-
-backend_db_credential:
-  cmd.run:
-    - name: salt -C 'G@server:supervisor or G@server:unified' state.sls backend/security
-    - require: 
-      - get_db_credential_file
-
-frontend_db_credential:
-  cmd.run:
-    - name: salt -C 'G@server:interface or g@server:unified' state.sls frontend/security
-    - require: 
-      - backend_db_credential
-
+# 4. Call backend/frontend security update script
 # ALEX
 
 # END Database remote credentials
