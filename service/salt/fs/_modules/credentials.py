@@ -12,6 +12,6 @@ def database():
     credential_directory = __salt__['pillar.get']('credential_directory', None)
     server = __grains__['server']
 
-    if (server is not None and server ne exclude_server)
+    if (server is not None and server ne exclude_server):
         pass
     return credential_file + ' ' + exclude_server + ' ' + server
