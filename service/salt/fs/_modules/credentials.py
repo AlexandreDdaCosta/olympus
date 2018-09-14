@@ -18,14 +18,10 @@ def database():
                 passphrase = f.readlines()
         except:
             raise
-        else:
-            raise
     '''
     try:
         os.remove(credential_file)
     except:
-        raise
-    else:
         raise
     '''
     return services
