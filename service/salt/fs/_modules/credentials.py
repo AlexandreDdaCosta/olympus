@@ -14,12 +14,15 @@ def database():
     if (server is not None and server != exclude_server):
         key = server + ':services'
         services = __salt__['pillar.get'](key)
-        services = services.split()
         try:
             with open(credential_file) as f:
                 passphrase = f.readlines()
         except:
             raise
+        if 'backend' in services:
+            return 'backend'
+        if 'frontend' == services:
+            return 'frontend'
     '''
     try:
         os.remove(credential_file)
