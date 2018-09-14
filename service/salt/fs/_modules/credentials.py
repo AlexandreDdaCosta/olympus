@@ -20,12 +20,12 @@ def database():
             return True
         else:
             raise
-'''
+    '''
     try:
         os.remove(credential_file)
     except FileNotFoundError:
         pass
     else:
         raise
-'''
+    '''
     return services
