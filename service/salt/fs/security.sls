@@ -1,7 +1,7 @@
-{% set cert_dir = '/etc/ssl/localcerts' %}
-{% set cert_dir_client = '/etc/ssl/salt/client_certificates/' %}
-{% set db_credential_file = 'frontend_database' %}
-{% set password_dir = '/etc/salt/shared_credentials' %}
+{% set cert_dir = {{ pillar['cert_dir'] }} %}
+{% set cert_dir_client = {{ pillar['cert_dir_client'] }} %}
+{% set db_credential_file = {{ pillar['db_credential_file'] }} %}
+{% set password_dir = {{ pillar['password_dir'] }} %}
 
 include:
   - base: package

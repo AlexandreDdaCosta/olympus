@@ -4,6 +4,7 @@ base:
     - distribution
     - projects
     - random_key
+    - security
     - server
     - services
     - stage
