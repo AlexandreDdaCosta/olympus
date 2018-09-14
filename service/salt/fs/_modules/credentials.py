@@ -4,14 +4,28 @@
 Tools for managing cross-server credentials
 '''
 
-import json
+import os
 
 def database():
-    credential_file = __salt__['pillar.get']('db_credential_file', None)
-    exclude_server = __salt__['pillar.get']('db_credential_exclude_server_type', None)
-    credential_directory = __salt__['pillar.get']('credential_directory', None)
+    credential_file = __salt__['pillar.get']('credential_directory') + '/' + __salt__['pillar.get']('db_credential_file')
+    exclude_server = __salt__['pillar.get']('db_credential_exclude_server_type')
     server = __grains__['server']
-
+    services = None
     if (server is not None and server != exclude_server):
+        services = __salt__['pillar.get'](server)('services')
+        try:
+            with open(credential_file) as f:
+                passphrase = f.readlines()
+        except FileNotFoundError:
+            return True
+        else:
+            raise
+'''
+    try:
+        os.remove(credential_file)
+    except FileNotFoundError:
         pass
-    return credential_file + ' ' + exclude_server + ' ' + server
+    else:
+        raise
+'''
+    return services
