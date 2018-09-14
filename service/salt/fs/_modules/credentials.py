@@ -7,7 +7,7 @@ Tools for managing cross-server credentials
 import os
 
 def database():
-    credential_file = __salt__['pillar.get']('credential_dir') + '/' + __salt__['pillar.get']('db_credential_file')
+    credential_file = __salt__['pillar.get']('credential_dir') + '/' + __salt__['pillar.get']('db_credential_file') + 'foo'
     exclude_server = __salt__['pillar.get']('db_credential_exclude_server_type')
     server = __grains__['server']
     services = None
