@@ -1,7 +1,7 @@
 {% set cert_dir = pillar.cert_dir %}
 {% set cert_dir_client = pillar.cert_dir_client %}
+{% set credential_directory = pillar.credential_directory %}
 {% set db_credential_file = pillar.db_credential_file %}
-{% set password_dir = pillar.password_dir %}
 
 include:
   - base: package
@@ -190,7 +190,7 @@ cert_mongo_restart:
 # BEGIN Shared credentials
 
 # Also created as part of minion initialization
-{{ password_dir }}:
+{{ credential_directory }}:
   file.directory:
     - group: root
     - makedirs: False
@@ -204,9 +204,9 @@ frontend_db_credential_file:
     - group: root
     - makedirs: False
     - mode: 0600
-    - name: {{ password_dir }}/{{ db_credential_file }}
+    - name: {{ credential_directory }}/{{ db_credential_file }}
     - require: 
-      - {{ password_dir }}
+      - {{ credential_directory }}
     - source: salt://security/{{ db_credential_file }}.jinja
     - template: jinja
     - user: root
@@ -215,7 +215,7 @@ frontend_db_credential_file:
 
 push_db_credential_file:
   cmd.run:
-    - name: salt '{{ grains.get('localhost') }}' cp.push {{ password_dir }}/{{ db_credential_file }}
+    - name: salt '{{ grains.get('localhost') }}' cp.push {{ credential_directory }}/{{ db_credential_file }}
     - require: 
       - frontend_db_credential_file
 
@@ -223,7 +223,7 @@ push_db_credential_file:
 
 get_db_credential_file:
   cmd.run:
-    - name: salt -C 'not G@{{ pillar['db_credential_exclude_server_type'] }}' cp.get_file "salt://{{ grains.get('localhost') }}{{ password_dir }}/{{ db_credential_file }}" {{ password_dir }}/{{ db_credential_file }}
+    - name: salt -C 'not G@{{ pillar['db_credential_exclude_server_type'] }}' cp.get_file "salt://{{ grains.get('localhost') }}{{ credential_directory }}/{{ db_credential_file }}" {{ credential_directory }}/{{ db_credential_file }}
     - require: 
       - push_db_credential_file
 
