@@ -231,7 +231,7 @@ get_db_credential_file:
 
 update_db_credential:
   cmd.run:
-    - name: salt '*' credentials.database
+    - name: salt -C 'not G@{{ pillar['db_credential_exclude_server_type'] }}' credentials.database
     - require: 
       - get_db_credential_file
 

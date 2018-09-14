@@ -1,2 +1,2 @@
-def database()
+def database():
     return True
