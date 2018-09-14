@@ -219,11 +219,11 @@ push_db_credential_file:
     - require: 
       - frontend_db_credential_file
 
-# 3. Trigger relevant minions to get db credential file
+# 3. Trigger frontend minions to get db credential file (unified/backend would be running this process)
 
 get_db_credential_file:
   cmd.run:
-    - name: salt '*' cp.get_file "salt://{{ grains.get('localhost') }}{{ password_dir }}/{{ db_credential_file }}" {{ password_dir }}/{{ db_credential_file }}
+    - name: salt -C 'G@server:interface' cp.get_file "salt://{{ grains.get('localhost') }}{{ password_dir }}/{{ db_credential_file }}" {{ password_dir }}/{{ db_credential_file }}
     - require: 
       - frontend_db_credential_file
 
