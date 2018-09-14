@@ -16,15 +16,15 @@ def database():
         try:
             with open(credential_file) as f:
                 passphrase = f.readlines()
-        except FileNotFoundError:
-            return True
+        except:
+            raise
         else:
             raise
     '''
     try:
         os.remove(credential_file)
-    except FileNotFoundError:
-        pass
+    except:
+        raise
     else:
         raise
     '''
