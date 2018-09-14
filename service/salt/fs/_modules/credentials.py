@@ -13,5 +13,5 @@ def database():
     server = __grains__['server']
 
     if (server is not None and server ne exclude_server)
-        
+        pass
     return credential_file + ' ' + exclude_server + ' ' + server
