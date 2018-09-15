@@ -21,8 +21,9 @@ def database():
         except:
             raise
         if 'backend' in services:
-            stdout = subprocess.getoutput("ps -A | grep postgres | wc -l")
-            return stdout
+            p = subprocess.Popen(["ps -A | grep postgres | wc -l"], stdout=subprocess.PIPE)
+            out, err = p.communicate()
+            return out
             # If backend user exists, update password
             return 'backend'
         if 'frontend' in services:
