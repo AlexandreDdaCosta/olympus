@@ -25,12 +25,12 @@ def database():
             # Check for running database
             cmd = "ps -A | grep postgres | wc -l"
             p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-            database_processes = p.communicate()[0].strip("\n")
+            database_processes = p.communicate().strip("\n")
             if int(database_processes) > 0:
                 # Does frontend user exist?
                 cmd = "sudo -u postgres psql -tAc \"SELECT rolname FROM pg_roles WHERE rolname='" + frontend_user + "'\""
                 p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-                output = p.communicate()[0].split("\n")
+                output = p.communicate().split("\n")
                 return output.pop()
                 # Update frontend user password
                 cmd = "sudo -u postgres psql -c \"ALTER USER " + frontend_user  + " ENCRYPTED PASSWORD '" + passphrase  + "';\""
