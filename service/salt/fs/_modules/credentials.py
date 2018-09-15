@@ -21,10 +21,13 @@ def database():
         except:
             raise
         if 'backend' in services:
+            cmd = "ps -A | grep postgres | wc -l"
+            p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+            output = p.communicate()[0]
             #process = subprocess.Popen(['ps','-A','|','grep','postgres','|','wc','-l'], stdout=subprocess.PIPE)
-            process = subprocess.Popen(['ps','-A','| grep','postgres'], stdout=subprocess.PIPE)
+            #process = subprocess.Popen(['ps','-A','| grep','postgres'], stdout=subprocess.PIPE)
             #output = process.communicate()[0]
-            output = process.communicate()
+            #output = process.communicate()
             return output
             # If backend user exists, update password
             return 'backend'
