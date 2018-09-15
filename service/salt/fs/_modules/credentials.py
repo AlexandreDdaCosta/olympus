@@ -29,8 +29,9 @@ def database():
             if int(database_processes) > 0:
                 # Does frontend user exist?
                 cmd = "sudo -u postgres psql -tAc \"SELECT 1 FROM pg_roles WHERE rolname='" + frontend_user + "'\" | grep -q 1"
+                return cmd
                 p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-                output = p.communicate()[-1].strip()
+                output = p.communicate().strip()
                 return output
                 # Update frontend user password
         if 'frontend' in services:
