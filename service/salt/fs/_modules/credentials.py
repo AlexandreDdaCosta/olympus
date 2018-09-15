@@ -4,7 +4,7 @@
 Tools for managing cross-server credentials
 '''
 
-import os
+import os, subprocess
 
 def database():
     credential_file = __salt__['pillar.get']('credential_dir') + '/' + __salt__['pillar.get']('db_credential_file')
@@ -21,13 +21,12 @@ def database():
         except:
             raise
         if 'backend' in services:
+            stdout = subprocess.getoutput("ps -A | grep postgres | wc -l")
+            return stdout
+            # If backend user exists, update password
             return 'backend'
         if 'frontend' in services:
+            # If frontend configuration exists, update password
+            # If frontend web service is running, restart
             return 'frontend'
-    '''
-    try:
-        os.remove(credential_file)
-    except:
-        raise
-    '''
-    return services
+    return True
