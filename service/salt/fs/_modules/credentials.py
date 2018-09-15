@@ -17,7 +17,7 @@ def database():
         services = __salt__['pillar.get'](key)
         try:
             with open(credential_file) as f:
-                passphrase = f.readlines()
+                passphrase = f.readlines()[0].strip()
         except:
             raise
         if 'backend' in services:
@@ -27,7 +27,7 @@ def database():
             output = p.communicate()[0].strip()
             if int(output) > 0:
                 # If backend user exists, update password
-                return output + ' ' + passphrase
+                return passphrase
         if 'frontend' in services:
             # If frontend configuration exists, update password
             # If frontend web service is running, restart
