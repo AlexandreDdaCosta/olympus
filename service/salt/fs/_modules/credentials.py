@@ -24,7 +24,8 @@ def database():
         if 'backend' in services:
             # Is database running?
             cmd = "ps -A | grep postgres | wc -l"
-            p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+            #p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+            p = subprocess.Popen(cmd,shell=True)
             database_processes = p.communicate()[0].strip("\n")
             if int(database_processes) > 0:
                 # Does frontend user exist?
