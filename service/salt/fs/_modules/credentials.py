@@ -24,8 +24,10 @@ def database():
         if 'backend' in services:
             # Is database running?
             cmd = "ps -A | grep postgres | wc -l"
-            p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-            database_processes = p.communicate()[0].strip("\n")
+            p = subprocess.check_output(cmd)
+            return p
+            #p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+            #database_processes = p.communicate()[0].strip("\n")
             if int(database_processes) > 0:
                 # Does frontend user exist?
                 cmd = "sudo -u postgres psql -tAc \"SELECT rolname FROM pg_roles WHERE rolname='" + frontend_user + "'\""
