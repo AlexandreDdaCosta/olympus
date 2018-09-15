@@ -32,10 +32,11 @@ def database():
                 p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
                 output = p.communicate()
                 rolname = output[0].split("\n")[-2]
-                return rolname
-                # Update frontend user password
-                cmd = "sudo -u postgres psql -c \"ALTER USER " + frontend_user  + " ENCRYPTED PASSWORD '" + passphrase  + "';\""
-                p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+                if rolname == frontend_user:
+                    # Update frontend user password
+                    cmd = "sudo -u postgres psql -c \"ALTER USER " + frontend_user  + " ENCRYPTED PASSWORD '" + passphrase  + "';\""
+                    p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+                    return cmd
         if 'frontend' in services:
             # If frontend configuration exists, update password
             # If frontend web service is running, restart
