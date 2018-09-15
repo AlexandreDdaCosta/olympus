@@ -9,3 +9,6 @@ base:
     - services
     - stage
     - users
+  'server:(unified|frontend)':
+    - match: grain_pcre
+    - services.frontend

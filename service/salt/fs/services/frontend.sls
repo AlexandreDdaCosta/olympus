@@ -196,7 +196,7 @@ frontend-user:
     - mode: 0755
     - user: root
 
-frontend_conf_file::
+frontend_conf_file:
   file.managed:
     - dir_mode: 0755
     - group: {{ pillar['frontend-user'] }}

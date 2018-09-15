@@ -36,9 +36,9 @@ def database():
                     # Update frontend user password
                     cmd = "sudo -u postgres psql -c \"ALTER USER " + frontend_user  + " ENCRYPTED PASSWORD '" + passphrase  + "';\""
                     p = subprocess.check_call(cmd,shell=True)
-                    return cmd
         if 'frontend' in services:
+            frontend_credential_file = '/srv/www/django/interface/settings_local.py'
             # If frontend configuration exists, update password
             # If frontend web service is running, restart
-            return 'frontend'
+            return __salt__['pillar.get']('test_foo')
     return True
