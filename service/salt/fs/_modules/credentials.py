@@ -22,7 +22,7 @@ def database():
             raise
         if 'backend' in services:
             #process = subprocess.Popen(['ps','-A','|','grep','postgres','|','wc','-l'], stdout=subprocess.PIPE)
-            process = subprocess.Popen(['ps','-A','|','grep','postgres'], stdout=subprocess.PIPE)
+            process = subprocess.Popen(['ps','-A','| grep','postgres'], stdout=subprocess.PIPE)
             #output = process.communicate()[0]
             output = process.communicate()
             return output
