@@ -1,5 +1,6 @@
 www_path: /srv/www
 
+backend-database: postgres
 backend-user: node
 
 backend-packages:

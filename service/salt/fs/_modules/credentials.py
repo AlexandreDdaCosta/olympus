@@ -7,8 +7,10 @@ Tools for managing cross-server credentials
 import os, subprocess
 
 def database():
+    database = __salt__['pillar.get']('backend_database')
     credential_file = __salt__['pillar.get']('credential_dir') + '/' + __salt__['pillar.get']('db_credential_file')
     exclude_server = __salt__['pillar.get']('db_credential_exclude_server_type')
+    frontend_user = __salt__['pillar.get']('frontend_user')
     server = __grains__['server']
     services = None
     if (server is not None and server != exclude_server):
@@ -21,13 +23,17 @@ def database():
         except:
             raise
         if 'backend' in services:
-            # Check for running postgres
-            cmd = "ps -A | grep postgres | wc -l"
+            # Check for running database
+            cmd = "ps -A | grep " + database + " | wc -l"
             p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-            output = p.communicate()[0].strip()
-            if int(output) > 0:
-                # If backend user exists, update password
-                return passphrase
+            database_processes = int(p.communicate()[0].strip())
+            if database_processes > 0:
+                # Does frontend user exist?
+                cmd = "sudo -u postgres psql -tAc \"SELECT 1 FROM pg_roles WHERE rolname='" + frontend_user + "'\" | grep -q 1"
+                p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+                output = p.communicate()[-1].strip()
+                return output
+                # Update frontend user password
         if 'frontend' in services:
             # If frontend configuration exists, update password
             # If frontend web service is running, restart

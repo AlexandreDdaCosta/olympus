@@ -59,6 +59,17 @@ include:
     - source: salt://services/backend/files/postgresql.conf
     - user: postgres
 
+postgresql:
+  service.running:
+    - enable: True
+    - watch:
+      - file: /etc/postgresql/9.6/main/pg_hba.conf
+      - file: /etc/postgresql/9.6/main/postgresql.conf
+      - pkg: pgadmin3
+      - pkg: postgresql-9.6
+    - require:
+      - sls: services/web
+
 olympus.db:
   postgres_database.present:
     - name: olympus
@@ -77,9 +88,9 @@ frontend_db_user:
     - encrypted: True
     - name: {{ pillar['frontend-user'] }}
 
-frontend_db_user_pwd_reset:
-  cmd.run:
-    - name: sudo -u postgres psql -c "ALTER USER {{ pillar['frontend-user'] }} ENCRYPTED PASSWORD '{{ pillar['random_key']['frontend_db_key'] }}';"
+#frontend_db_user_pwd_reset:
+#  cmd.run:
+#    - name: sudo -u postgres psql -c "ALTER USER {{ pillar['frontend-user'] }} ENCRYPTED PASSWORD '{{ pillar['random_key']['frontend_db_key'] }}';"
 
 frontend_app_data_privs:
   postgres_privileges.present:
@@ -96,17 +107,6 @@ frontend-user_data_privs:
     - object_type: database
     - privileges:
       - ALL
-
-postgresql:
-  service.running:
-    - enable: True
-    - watch:
-      - file: /etc/postgresql/9.6/main/pg_hba.conf
-      - file: /etc/postgresql/9.6/main/postgresql.conf
-      - pkg: pgadmin3
-      - pkg: postgresql-9.6
-    - require:
-      - sls: services/web
 
 backend-group:
   group.present:
