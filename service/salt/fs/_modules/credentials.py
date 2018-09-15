@@ -19,7 +19,8 @@ def database():
             with open(credential_file) as f:
                 passphrase = f.readlines()
         except Exception as e:
-            raise e.errno
+            print e.errno
+            raise
         if passphrase is not None:
             pass
     '''
