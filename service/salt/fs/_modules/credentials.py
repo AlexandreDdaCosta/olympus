@@ -4,7 +4,7 @@
 Tools for managing cross-server credentials
 '''
 
-import os, 
+import os
 from subprocess import Popen, PIPE
 
 def database():
