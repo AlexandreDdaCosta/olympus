@@ -30,7 +30,7 @@ def database():
                 # Does frontend user exist?
                 cmd = "sudo -u postgres psql -tAc \"SELECT rolname FROM pg_roles WHERE rolname='" + frontend_user + "'\""
                 p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-                output = p.communicate()[0].split("\n")
+                output = p.communicate()
                 last = output.pop()
                 return last
                 # Update frontend user password
