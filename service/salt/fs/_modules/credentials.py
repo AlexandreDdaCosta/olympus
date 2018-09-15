@@ -28,7 +28,7 @@ def database():
             database_processes = p.communicate()[0].strip("\n")
             if int(database_processes) > 0:
                 # Does frontend user exist?
-                cmd = "sudo -u postgres psql -tAc \"SELECT 1 FROM pg_roles WHERE rolname='" + frontend_user + "'\""
+                cmd = "sudo -u postgres psql -tAc \"SELECT " + frontend_user  + " FROM pg_roles WHERE rolname='" + frontend_user + "'\""
                 p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
                 output = p.communicate()[0].split("\n")
                 return output
