@@ -20,11 +20,8 @@ def database():
                 passphrase = f.readlines()
         except IOError as e:
             raise e.errno
-        if passphrase is not None
-        if 'backend' in services:
-            return 'backend'
-        if 'frontend' == services:
-            return 'frontend'
+        if passphrase is not None:
+            pass
     '''
     try:
         os.remove(credential_file)
