@@ -26,6 +26,7 @@ def database():
             cmd = "ps -A | grep postgres | wc -l"
             p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
             line = p.communicate()[0].strip()
+            return line
             database_processes = line.replace("\n", "")
             if int(database_processes) > 0:
                 # Does frontend user exist?
