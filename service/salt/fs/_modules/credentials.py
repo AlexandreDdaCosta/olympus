@@ -31,7 +31,7 @@ def database():
                 cmd = "sudo -u postgres psql -tAc \"SELECT rolname FROM pg_roles WHERE rolname='" + frontend_user + "'\""
                 p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
                 output = p.communicate()[0].split("\n")
-                return output
+                return output[0]
                 # Update frontend user password
 #    - name: sudo -u postgres psql -c "ALTER USER {{ pillar['frontend-user'] }} ENCRYPTED PASSWORD '{{ pillar['random_key']['frontend_db_key'] }}';"
         if 'frontend' in services:
