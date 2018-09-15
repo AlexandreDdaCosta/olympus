@@ -36,8 +36,7 @@ def database():
                     # Update frontend user password
                     cmd = "sudo -u postgres psql -c \"ALTER USER " + frontend_user  + " ENCRYPTED PASSWORD '" + passphrase  + "';\""
                     p = subprocess.check_call(cmd,shell=True)
-                    #p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-                    return p
+                    return cmd
         if 'frontend' in services:
             # If frontend configuration exists, update password
             # If frontend web service is running, restart
