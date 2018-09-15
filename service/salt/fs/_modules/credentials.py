@@ -9,7 +9,7 @@ import os, subprocess
 def database():
     credential_file = __salt__['pillar.get']('credential_dir') + '/' + __salt__['pillar.get']('db_credential_file')
     exclude_server = __salt__['pillar.get']('db_credential_exclude_server_type')
-    frontend_user = __salt__['pillar.get']('frontend_user')
+    frontend_user = __salt__['pillar.get']('frontend-user')
     server = __grains__['server']
     services = None
     if (server is not None and server != exclude_server):
