@@ -4,7 +4,8 @@
 Tools for managing cross-server credentials
 '''
 
-import os, subprocess
+import os, 
+from subprocess import Popen, PIPE
 
 def database():
     credential_file = __salt__['pillar.get']('credential_dir') + '/' + __salt__['pillar.get']('db_credential_file')
@@ -21,9 +22,9 @@ def database():
         except:
             raise
         if 'backend' in services:
-            p = subprocess.Popen(["ps -A | grep postgres | wc -l"], stdout=subprocess.PIPE)
-            out, err = p.communicate()
-            return out
+            process = Popen(['ps -A | grep postgres | wc -l'], stdout=PIPE, stderr=PIPE)
+            stdout, stderr = process.communicate()
+            return stdout
             # If backend user exists, update password
             return 'backend'
         if 'frontend' in services:
