@@ -22,7 +22,7 @@ def database():
         except:
             raise
         if 'backend' in services:
-            process = Popen(['ps -A | grep postgres | wc -l'], stdout=PIPE, stderr=PIPE)
+            process = Popen(['ps','-A','|','grep','postgres','|','wc','-l'], stdout=PIPE, stderr=PIPE)
             stdout, stderr = process.communicate()
             return stdout
             # If backend user exists, update password
