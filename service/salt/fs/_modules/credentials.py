@@ -24,20 +24,20 @@ def database():
         if 'backend' in services:
             # Is database running?
             cmd = "ps -A | grep postgres | wc -l"
-            #p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-            p = subprocess.Popen(cmd,shell=True)
+            p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
             database_processes = p.communicate()[0].strip("\n")
             if int(database_processes) > 0:
                 # Does frontend user exist?
                 cmd = "sudo -u postgres psql -tAc \"SELECT rolname FROM pg_roles WHERE rolname='" + frontend_user + "'\""
-                p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+                p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
                 output = p.communicate()
                 rolname = output[0].split("\n")[-2]
                 if rolname == frontend_user:
                     # Update frontend user password
                     cmd = "sudo -u postgres psql -c \"ALTER USER " + frontend_user  + " ENCRYPTED PASSWORD '" + passphrase  + "';\""
-                    p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-                    return cmd
+                    p = subprocess.check_call(cmd)
+                    #p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+                    return p
         if 'frontend' in services:
             # If frontend configuration exists, update password
             # If frontend web service is running, restart
