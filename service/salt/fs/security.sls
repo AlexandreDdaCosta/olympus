@@ -1,7 +1,5 @@
 {% set cert_dir = pillar.cert_dir %}
 {% set cert_dir_client = pillar.cert_dir_client %}
-{% set credential_directory = pillar.credential_directory %}
-{% set db_credential_file = pillar.db_credential_file %}
 
 include:
   - base: package
@@ -188,6 +186,9 @@ cert_mongo_restart:
 # END Server certificates and keys
 
 # BEGIN Shared credentials
+
+{% set foo1 = grains.get('server') %}
+{% set foo2 = pillar.['foo1'].services %}
 
 # 1. Update database credential in minion data
 update_minion_credential_data:
