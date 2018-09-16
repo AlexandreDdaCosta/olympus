@@ -52,6 +52,6 @@ def database():
                     cmd = "service uwsgi restart"
                     p = subprocess.check_call(cmd,shell=True)
                     updated = True
-        #if updated is True:
-        #    pass
-    return __salt__['pillar.get']('test_foo')
+        if updated is True:
+            os.renove(credential_file)
+    return True
