@@ -90,6 +90,10 @@ frontend_db_user:
     - encrypted: True
     - name: {{ pillar['frontend-user'] }}
 
+test_getvar:
+  cmd.run:
+    - name: new_password
+
 # ALEX
 #frontend_db_user_pwd_reset:
 #  cmd.run:
