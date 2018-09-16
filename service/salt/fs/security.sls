@@ -188,6 +188,7 @@ cert_mongo_restart:
 # BEGIN Shared credentials
 
 # ALEX
+# Fix "I" targeting below ...
 # Reorganize pillars for services
 # Set for server types used in next two stanzas
 
