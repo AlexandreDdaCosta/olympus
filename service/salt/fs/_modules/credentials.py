@@ -11,7 +11,7 @@ def database():
     frontend_user = __salt__['pillar.get']('frontend-user')
     server = __grains__['server']
     services = None
-    if (passphrase is not None and server is not None)
+    if (passphrase is not None and server is not None):
         key = server + ':services'
         services = __salt__['pillar.get'](key)
         updated = False

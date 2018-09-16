@@ -16,4 +16,3 @@ web-firewall-restart:
     - name: service nginx status; if [ $? = 0 ]; then service nginx restart; fi;
     - require:
       - firewall
-
