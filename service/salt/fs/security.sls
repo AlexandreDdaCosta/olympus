@@ -193,8 +193,6 @@ cert_mongo_restart:
 update_minion_credential_data:
   cmd.run:
     - name: salt -C 'not G@{{ pillar['db_credential_exclude_server_type'] }}' data.update frontend_db_key {{ pillar['random_key']['frontend_db_key'] }}
-    - require: 
-      - get_db_credential_file
 
 # 2. Call security update script
 
@@ -202,7 +200,7 @@ update_db_credential:
   cmd.run:
     - name: salt -C 'not G@{{ pillar['db_credential_exclude_server_type'] }}' credentials.database
     - require: 
-      - get_db_credential_file
+      - update_minion_credential_data
 
 # END Shared credentials
 
