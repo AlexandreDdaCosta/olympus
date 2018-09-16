@@ -89,15 +89,14 @@ frontend_db_user:
     - default_password: 'md5{MD5OF({{ pillar['random_key']['frontend_db_key'] }})}'
     - encrypted: True
     - name: {{ pillar['frontend-user'] }}
-
-test_getvar:
-  cmd.run:
-    - name: new_password
+{% if new_password is not None %}
+    - password: 'md5{MD5OF({{ new_password }})}'
 
 # ALEX
 #frontend_db_user_pwd_reset:
 #  cmd.run:
-#    - name: sudo -u postgres psql -c "ALTER USER {{ pillar['frontend-user'] }} ENCRYPTED PASSWORD '{{ pillar['random_key']['frontend_db_key'] }}';"
+#    - name: sudo -u postgres psql -c "ALTER USER {{ pillar['frontend-user'] }} ENCRYPTED PASSWORD '{{ new_password }}';"
+{% endif %}
 
 frontend_app_data_privs:
   postgres_privileges.present:
