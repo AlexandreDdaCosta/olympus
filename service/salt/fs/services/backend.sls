@@ -82,16 +82,14 @@ frontend-user_data.db:
   postgres_database.present:
     - name: user_data
 
-{% set new_password = salt['data.get']('frontend_db_key', None) %}
-
 frontend_db_user:
   postgres_user.present:
     - default_password: 'md5{MD5OF({{ pillar['random_key']['frontend_db_key'] }})}'
     - encrypted: True
     - name: {{ pillar['frontend-user'] }}
-{% if new_password is not none %}
-    - password: 'md5{MD5OF({{ new_password }})}'
 
+{% set new_password = salt['data.get']('frontend_db_key', None) %}
+{% if new_password is not none %}
 frontend_db_user_pwd_reset:
   cmd.run:
     - name: sudo -u postgres psql -c "ALTER USER {{ pillar['frontend-user'] }} ENCRYPTED PASSWORD '{{ new_password }}';"
