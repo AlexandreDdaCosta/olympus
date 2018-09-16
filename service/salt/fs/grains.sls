@@ -4,6 +4,7 @@
 reset-services-grains:
   grains.absent:
     - destructive: True
+    - force: True
     - name: services
 
 services:
