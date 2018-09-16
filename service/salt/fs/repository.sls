@@ -1,3 +1,6 @@
+include:
+  - base: grains
+
 {% for packagename, package in pillar.get('repo-packages', {}).items() %}
 {{ packagename }}-repo:
 {% if pillar.pkg_latest is defined and pillar.pkg_latest or 'version' not in package %}
