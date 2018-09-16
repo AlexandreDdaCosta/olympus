@@ -3,6 +3,7 @@
 # Add pillar definitions for services in each server type
 reset-services-grains:
   grains.absent:
+    - destructive: True
     - name: services
 
 services:

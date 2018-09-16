@@ -188,8 +188,9 @@ cert_mongo_restart:
 # BEGIN Shared credentials
 
 # ALEX
-# Reorganize pillars for services
 # Fix frontend.sls and backend.sls
+# Reorganize pillars for services
+# Optimize credentials.py
 
 # 1. Update database credential in minion data
 update_minion_credential_data:
