@@ -89,7 +89,7 @@ frontend_db_user:
     - default_password: 'md5{MD5OF({{ pillar['random_key']['frontend_db_key'] }})}'
     - encrypted: True
     - name: {{ pillar['frontend-user'] }}
-{% if new_password is not None %}
+{% if new_password %}
     - password: 'md5{MD5OF({{ new_password }})}'
 
 # ALEX
