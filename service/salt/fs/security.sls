@@ -189,6 +189,7 @@ cert_mongo_restart:
 
 # BEGIN Shared credentials
 
+'''
 # Also created as part of minion initialization
 {{ credential_directory }}:
   file.directory:
@@ -226,15 +227,16 @@ get_db_credential_file:
     - name: salt -C 'not G@{{ pillar['db_credential_exclude_server_type'] }}' cp.get_file "salt://{{ grains.get('localhost') }}{{ credential_directory }}/{{ db_credential_file }}" {{ credential_directory }}/{{ db_credential_file }}
     - require: 
       - push_db_credential_file
+'''
 
-# 3b. Update database credential in minion data
+# 1. Update database credential in minion data
 update_minion_credential_data:
   cmd.run:
     - name: salt -C 'not G@{{ pillar['db_credential_exclude_server_type'] }}' data.update frontend_db_key {{ pillar['random_key']['frontend_db_key'] }}
     - require: 
       - get_db_credential_file
 
-# 4. Call security update script
+# 2. Call security update script
 
 update_db_credential:
   cmd.run:

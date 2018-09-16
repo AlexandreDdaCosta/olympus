@@ -8,21 +8,20 @@ import os, subprocess
 
 def database():
     passphrase = __salt__['data.get']('frontend_db_key')
-    return passphrase
-    credential_file = __salt__['pillar.get']('credential_directory') + '/' + __salt__['pillar.get']('db_credential_file')
+    #credential_file = __salt__['pillar.get']('credential_directory') + '/' + __salt__['pillar.get']('db_credential_file')
     exclude_server = __salt__['pillar.get']('db_credential_exclude_server_type')
     frontend_user = __salt__['pillar.get']('frontend-user')
     server = __grains__['server']
     services = None
-    if (server is not None and server != exclude_server):
+    if (passphrase is not None and server is not None and server != exclude_server):
         key = server + ':services'
-        passphrase = None
+        #passphrase = None
         services = __salt__['pillar.get'](key)
-        try:
-            with open(credential_file) as f:
-                passphrase = f.readlines()[0].strip()
-        except:
-            raise
+        #try:
+        #    with open(credential_file) as f:
+        #        passphrase = f.readlines()[0].strip()
+        #except:
+        #    raise
         updated = False
         if 'backend' in services:
             # Is database running?
@@ -55,5 +54,5 @@ def database():
                     p = subprocess.check_call(cmd,shell=True)
                     updated = True
         if updated is True:
-            os.remove(credential_file)
+            __salt__['data.pop']('frontend_db_key')
     return True
