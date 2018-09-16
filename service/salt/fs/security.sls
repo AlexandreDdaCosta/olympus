@@ -187,22 +187,20 @@ cert_mongo_restart:
 
 # BEGIN Shared credentials
 
-{% set foo1 = grains.get('server') %}
-{% set foo2 = pillar[foo1]['services'] %}
-narf_update_minion_credential_data:
-  cmd.run:
-    - name: foo2
+# ALEX
+# Reorganize pillars for services
+# Set for server types used in next two stanzas
 
 # 1. Update database credential in minion data
 update_minion_credential_data:
   cmd.run:
-    - name: salt -C 'not G@{{ pillar['db_credential_exclude_server_type'] }}' data.update frontend_db_key {{ pillar['random_key']['frontend_db_key'] }}
+    - name: salt -C 'G@interface or G@supervisor or G@unified' data.update frontend_db_key {{ pillar['random_key']['frontend_db_key'] }}
 
 # 2. Call security update script
 
 update_db_credential:
   cmd.run:
-    - name: salt -C 'not G@{{ pillar['db_credential_exclude_server_type'] }}' credentials.database
+    - name: salt -C 'G@interface or G@supervisor or G@unified' credentials.database
     - require: 
       - update_minion_credential_data
 

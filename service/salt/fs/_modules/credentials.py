@@ -8,11 +8,10 @@ import os, subprocess
 
 def database():
     passphrase = __salt__['data.get']('frontend_db_key')
-    exclude_server = __salt__['pillar.get']('db_credential_exclude_server_type')
     frontend_user = __salt__['pillar.get']('frontend-user')
     server = __grains__['server']
     services = None
-    if (passphrase is not None and server is not None and server != exclude_server):
+    if (passphrase is not None and server is not None)
         key = server + ':services'
         services = __salt__['pillar.get'](key)
         updated = False
