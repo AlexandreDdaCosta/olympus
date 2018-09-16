@@ -21,12 +21,13 @@ def database():
                 passphrase = f.readlines()[0].strip()
         except:
             raise
+        updated = False
         if 'backend' in services:
             # Is database running?
             cmd = "ps -A | grep postgres | wc -l"
             p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-            database_processes = p.communicate()[0].strip("\n")
-            if int(database_processes) > 0:
+            backend_processes = p.communicate()[0].strip("\n")
+            if int(backend_processes) > 0:
                 # Does frontend user exist?
                 cmd = "sudo -u postgres psql -tAc \"SELECT rolname FROM pg_roles WHERE rolname='" + frontend_user + "'\""
                 p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
@@ -36,9 +37,18 @@ def database():
                     # Update frontend user password
                     cmd = "sudo -u postgres psql -c \"ALTER USER " + frontend_user  + " ENCRYPTED PASSWORD '" + passphrase  + "';\""
                     p = subprocess.check_call(cmd,shell=True)
+                    updated = True
         if 'frontend' in services:
             frontend_credential_file = '/srv/www/django/interface/settings_local.py'
             # If frontend configuration exists, update password
             # If frontend web service is running, restart
-            return __salt__['pillar.get']('test_foo')
-    return True
+            cmd = "ps -A | grep uwsgi | wc -l"
+            p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+            frontend_processes = p.communicate()[0].strip("\n")
+            if int(frontend_processes) > 0:
+                cmd = "service uwsgi restart"
+                p = subprocess.check_call(cmd,shell=True)
+                updated = True
+        if updated is True:
+            pass
+    return __salt__['pillar.get']('test_foo')
