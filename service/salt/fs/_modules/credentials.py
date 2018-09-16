@@ -40,18 +40,18 @@ def database():
                     updated = True
         if 'frontend' in services:
             frontend_credential_file = '/srv/www/django/interface/settings_local.py'
-            # If frontend configuration exists, update password
-            cmd = "perl -e 'open my $in, \"" + credential_file  + "\" or die \"$!\"; $/ = undef; my $all = <$in>; close $in; $all =~ s/(\\'PASSWORD\\'\\:\s*\\').*?(\\')/$1" + passphrase + "$2/; open my $out, \">$file\" or die \"$!\"; print $out $all; close $out;'"
-            return cmd
-            # p = subprocess.check_call(cmd,shell=True)
-            # If frontend web service is running, restart
-            cmd = "ps -A | grep uwsgi | wc -l"
-            p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-            frontend_processes = p.communicate()[0].strip("\n")
-            if int(frontend_processes) > 0:
-                cmd = "service uwsgi restart"
+            if os.path.isfile(frontend_credential_file):
+                # If frontend configuration exists, update password
+                cmd = "perl -e 'open my $in, \"" + credential_file  + "\" or die \"$!\"; $/ = undef; my $all = <$in>; close $in; $all =~ s/(\\'PASSWORD\\'\\:\s*\\').*?(\\')/$1" + passphrase + "$2/; open my $out, \">$file\" or die \"$!\"; print $out $all; close $out;'"
                 p = subprocess.check_call(cmd,shell=True)
-                updated = True
-        if updated is True:
-            pass
+                # If frontend web service is running, restart
+                cmd = "ps -A | grep uwsgi | wc -l"
+                p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+                frontend_processes = p.communicate()[0].strip("\n")
+                if int(frontend_processes) > 0:
+                    cmd = "service uwsgi restart"
+                    p = subprocess.check_call(cmd,shell=True)
+                    updated = True
+        #if updated is True:
+        #    pass
     return __salt__['pillar.get']('test_foo')
