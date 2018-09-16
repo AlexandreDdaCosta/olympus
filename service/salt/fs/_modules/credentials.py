@@ -53,5 +53,5 @@ def database():
                     p = subprocess.check_call(cmd,shell=True)
                     updated = True
         if updated is True:
-            os.renove(credential_file)
+            os.remove(credential_file)
     return True
