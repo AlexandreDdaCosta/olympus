@@ -14,9 +14,3 @@ unified:
 worker:
   services:
     - bigdata
-
-{% set local_services = pillar[grains['server']]['services'] }}
-services:
-{% for service in local_services %}
-  - {{ service }}
-{% endfor %}

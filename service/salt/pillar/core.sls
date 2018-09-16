@@ -9,6 +9,7 @@ core-domain-OU: Olympus web services
 core-domain-CN: laikasden.com
 
 core-states:
+  - grains
   - repository
   - package
   - security
