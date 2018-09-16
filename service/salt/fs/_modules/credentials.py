@@ -41,7 +41,7 @@ def database():
         if 'frontend' in services:
             frontend_credential_file = '/srv/www/django/interface/settings_local.py'
             # If frontend configuration exists, update password
-            cmd = "perl -e 'open my $in, " + credential_file  + " or die \"$!\"; $/ = undef; my $all = <$in>; close $in; $all =~ s/(\\'PASSWORD\\'\\:\s*\\').*?(\\')/$1" + passphrase + "$2/; open my $out, \">$file\" or die \"$!\"; print $out $all; close $out;'"
+            cmd = "perl -e 'open my $in, \"" + credential_file  + "\" or die \"$!\"; $/ = undef; my $all = <$in>; close $in; $all =~ s/(\\'PASSWORD\\'\\:\s*\\').*?(\\')/$1" + passphrase + "$2/; open my $out, \">$file\" or die \"$!\"; print $out $all; close $out;'"
             return cmd
             # p = subprocess.check_call(cmd,shell=True)
             # If frontend web service is running, restart
