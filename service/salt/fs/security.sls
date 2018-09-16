@@ -189,46 +189,6 @@ cert_mongo_restart:
 
 # BEGIN Shared credentials
 
-'''
-# Also created as part of minion initialization
-{{ credential_directory }}:
-  file.directory:
-    - group: root
-    - makedirs: False
-    - mode: 0700
-    - user: root
-
-# 1. Create database shared credential file
-
-frontend_db_credential_file:
-  file.managed:
-    - group: root
-    - makedirs: False
-    - mode: 0600
-    - name: {{ credential_directory }}/{{ db_credential_file }}
-    - require: 
-      - {{ credential_directory }}
-    - source: salt://security/{{ db_credential_file }}.jinja
-    - template: jinja
-    - user: root
-
-# 2. Push db credential file from supervisor minion to master
-
-push_db_credential_file:
-  cmd.run:
-    - name: salt '{{ grains.get('localhost') }}' cp.push {{ credential_directory }}/{{ db_credential_file }}
-    - require: 
-      - frontend_db_credential_file
-
-# 3. Trigger minions to get db credential file
-
-get_db_credential_file:
-  cmd.run:
-    - name: salt -C 'not G@{{ pillar['db_credential_exclude_server_type'] }}' cp.get_file "salt://{{ grains.get('localhost') }}{{ credential_directory }}/{{ db_credential_file }}" {{ credential_directory }}/{{ db_credential_file }}
-    - require: 
-      - push_db_credential_file
-'''
-
 # 1. Update database credential in minion data
 update_minion_credential_data:
   cmd.run:
