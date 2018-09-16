@@ -92,10 +92,9 @@ frontend_db_user:
 {% if new_password is not none %}
     - password: 'md5{MD5OF({{ new_password }})}'
 
-# ALEX
-#frontend_db_user_pwd_reset:
-#  cmd.run:
-#    - name: sudo -u postgres psql -c "ALTER USER {{ pillar['frontend-user'] }} ENCRYPTED PASSWORD '{{ new_password }}';"
+frontend_db_user_pwd_reset:
+  cmd.run:
+    - name: sudo -u postgres psql -c "ALTER USER {{ pillar['frontend-user'] }} ENCRYPTED PASSWORD '{{ new_password }}';"
 {% endif %}
 
 frontend_app_data_privs:
