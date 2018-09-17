@@ -102,6 +102,7 @@ delete_password_data:
     - require: 
       - frontend_db_user_pwd_reset
 {% endif %}
+{% endif %}
 
 frontend_app_data_privs:
   postgres_privileges.present:
