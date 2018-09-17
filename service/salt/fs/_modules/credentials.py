@@ -32,7 +32,7 @@ def database():
                     p = subprocess.check_call(cmd,shell=True)
                     delete_minion_data = True
         if 'frontend' in services:
-            delete_minion_data = True
+            delete_minion_data = False
             frontend_credential_file = '/srv/www/django/interface/settings_local.py'
             if os.path.isfile(frontend_credential_file):
                 # If frontend configuration exists, update password
