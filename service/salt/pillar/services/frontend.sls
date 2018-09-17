@@ -1,5 +1,5 @@
-{% from 'services.sls' import foo %}
-test_frontend_path: {{ foo }}
+{% from 'services.sls' import web_path %}
+test_frontend_path: {{ web_path }}
 
 frontend-packages:
   libpq-dev:
