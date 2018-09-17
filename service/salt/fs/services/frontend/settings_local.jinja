@@ -1,4 +1,5 @@
 {% set trim_blocks=True -%}
+{% set frontend_db_key = salt['data.get']('frontend_db_key', salt['pillar.get']['random_key']['frontend_db_key']) %}
 {# Template for django local settings.  Managed by the supervisor. -#}
 """
 Django settings for the Olympus local environment
@@ -32,7 +33,7 @@ DATABASES = {
 {%- endfor %}
         'NAME': 'app_data',
         'OPTIONS': { 'sslmode': 'require' },
-        'PASSWORD': '{{ pillar['random_key']['frontend_db_key'] }}',
+        'PASSWORD': '{{ frontend_db_key }}',
         'PORT': '5432',
         'USER': '{{ pillar['frontend-user'] }}',
     },
@@ -49,7 +50,7 @@ DATABASES = {
 {%- endfor %}
         'NAME': 'user_data',
         'OPTIONS': { 'sslmode': 'require' },
-        'PASSWORD': '{{ pillar['random_key']['frontend_db_key'] }}',
+        'PASSWORD': '{{ frontend_db_key }}',
         'PORT': '5432',
         'USER': '{{ pillar['frontend-user'] }}',
     }
