@@ -1,9 +1,3 @@
-{% from 'services.sls' import web_path %}
-
-frontend_path: {{ web_path }} + '/django/interface'
-frontend_conf_file: {{ web_path }} + '/django/interface' + '/settings_local.py'
-frontend_sass_path: {{ web_path }} + '/django/interface' + '/sass'
-
 frontend-packages:
   libpq-dev:
     version: 10.5-1.pgdg80+1
