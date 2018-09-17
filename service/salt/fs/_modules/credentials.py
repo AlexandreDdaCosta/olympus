@@ -21,7 +21,6 @@ def backend():
             __salt__['data.pop']('frontend_db_key')
     return True
 
-# ALEX pillar for conf file; restart dev server if running instead of uwsgi
 def shared_database():
     frontend_user = __salt__['pillar.get']('frontend-user')
     passphrase = __salt__['data.get']('frontend_db_key')
