@@ -21,7 +21,7 @@ def usb_backup_olympus():
     if partition is None:
         raise Exception('USB drive for olympus backup not detected.')
     epoch_time = str(time.time())
-    return partitioa + ' ' + epoch_time
+    return partition + ' ' + epoch_time
 
 def foo_shared_database():
     frontend_user = __salt__['pillar.get']('frontend-user')
