@@ -1,3 +1,5 @@
+{% from 'services.sls' import foo %}
+
 frontend-packages:
   libpq-dev:
     version: 10.5-1.pgdg80+1
