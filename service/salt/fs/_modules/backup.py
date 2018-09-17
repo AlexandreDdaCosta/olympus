@@ -21,6 +21,7 @@ def usb_backup_olympus():
     if partition is None:
         raise Exception('USB drive for olympus backup not detected.')
     mount_directory = '/media/usb_backup_olympus_' + str(int(time.time()))
-    #cmd = "/usr/local/bin/killserver.sh"
-    #p = subprocess.check_call(cmd,shell=True)
+    os.mkdir(mount_directory)
+    cmd = "mount " + partition + " " + mount_directory
+    p = subprocess.check_call(cmd,shell=True)
     return True
