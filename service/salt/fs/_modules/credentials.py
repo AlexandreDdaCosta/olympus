@@ -54,13 +54,23 @@ def shared_database():
                 # If frontend configuration exists, update password
                 cmd = "perl -i -pe 's/('\\''PASSWORD'\\''\\:\\s+'\\'')(.*?)('\\'')/$1" + passphrase + "$3/g' " + frontend_credential_file
                 p = subprocess.check_call(cmd,shell=True)
-                # If frontend web service is running, restart
-                cmd = "ps -A | grep uwsgi | wc -l"
+                # If dev frontend web service is running, restart
+                cmd = "ps -A | grep runserver | wc -l"
                 p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-                frontend_processes = p.communicate()[0].strip("\n")
-                if int(frontend_processes) > 0:
-                    cmd = "service uwsgi restart"
+                frontend_dev_processes = p.communicate()[0].strip("\n")
+                if int(frontend_dev_processes) > 0:
+                    cmd = "/usr/local/bin/killserver.sh"
                     p = subprocess.check_call(cmd,shell=True)
+                    cmd = "/usr/local/bin/startserver.py"
+                    p = subprocess.check_call(cmd,shell=True)
+                else:
+                    # If frontend web service is running, restart
+                    cmd = "ps -A | grep uwsgi | wc -l"
+                    p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+                    frontend_processes = p.communicate()[0].strip("\n")
+                    if int(frontend_processes) > 0:
+                        cmd = "service uwsgi restart"
+                        p = subprocess.check_call(cmd,shell=True)
         if delete_minion_data is True:
             __salt__['data.pop']('frontend_db_key')
     return True
