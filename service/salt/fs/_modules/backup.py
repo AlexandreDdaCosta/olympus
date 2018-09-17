@@ -8,6 +8,8 @@ import re, os, shutil, subprocess, time
 
 def usb_backup_olympus():
     user = __salt__['pillar.get']('core-staff-user')
+    if user is None:
+        raise Exception("Can't get core-staff-user from pillar.")
     # Verify presence of olympus USB
     cmd = "blkid"
     p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
@@ -21,28 +23,31 @@ def usb_backup_olympus():
             break
     if partition is None:
         raise Exception('USB drive for olympus backup not detected.')
+
+    # Mount USB
     mount_directory = '/media/usb_backup_olympus_' + str(int(time.time()))
     os.mkdir(mount_directory)
     cmd = "mount " + partition + " " + mount_directory
     p = subprocess.check_call(cmd,shell=True)
-    # Git repository
-    dir = mount_directory + '/BAK/repository'
-    sourcedir = '/home/git/repository'
-    os.rename(dir,dir + '.bak')
-    shutil.copytree(sourcedir,dir)
-    # Working git directory
-    dir = mount_directory + '/BAK/olympus'
-    sourcedir = '/home/' + user + '/olympus'
-    os.rename(dir,dir + '.bak')
-    shutil.copytree(sourcedir,dir)
-    # Debian installation files
-    dir = mount_directory + '/debian8'
-    sourcedir = '/home/' + user + '/olympus/install/debian8'
-    os.rename(dir,dir + '.bak')
-    shutil.copytree(sourcedir,dir)
 
-    # Unmount USB
-    cmd = "umount " + partition + " " + mount_directory
+    # Make backups
+    # Git repository
+    _backup_directory(mount_directory + '/BAK/repository', '/home/git/repository')
+    # Working git directory
+    _backup_directory(mount_directory + '/BAK/olympus', '/home/' + user + '/olympus')
+    # Debian installation files
+    _backup_directory(mount_directory + '/debian8', '/home/' + user + '/olympus/install/debian8')
+
+    # Unmount partition
+    cmd = "umount " + mount_directory
     p = subprocess.check_call(cmd,shell=True)
     os.rmdir(mount_directory)
     return True
+
+def _backup_directory(target, source):
+    if not os.path.isdir(target):
+        raise Exception(dir + " not found");
+    if not os.path.isdir(source):
+        raise Exception(dir + " not found");
+    os.rename(target,target + '.bak')
+    shutil.copytree(source,target)
