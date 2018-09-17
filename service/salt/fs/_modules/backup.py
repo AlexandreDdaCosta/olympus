@@ -37,12 +37,14 @@ def usb_backup_olympus():
     _backup_directory(mount_directory + '/BAK/olympus', '/home/' + user + '/olympus')
     # Debian installation files
     _backup_directory(mount_directory + '/debian8', '/home/' + user + '/olympus/install/debian8')
+    cmd = "chown -R " + user + ":" + user + " " + mount_directory
+    p = subprocess.check_call(cmd,shell=True)
 
     # Unmount partition
-    cmd = "umount " + mount_directory
-    p = subprocess.check_call(cmd,shell=True)
-    os.rmdir(mount_directory)
-    return True
+    #cmd = "umount " + mount_directory
+    #p = subprocess.check_call(cmd,shell=True)
+    #os.rmdir(mount_directory)
+    return mount_directory
 
 def _backup_directory(target, source):
     if not os.path.isdir(target):
