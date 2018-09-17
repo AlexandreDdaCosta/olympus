@@ -4,13 +4,17 @@
 Manage data backup and restoration
 '''
 
-import os, subprocess
+import re, os, subprocess
 
 def usb_backup_olympus():
     # Verify presence of olympus USB
     cmd = "blkid"
     p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
     output = p.communicate()
+    r = re.compile('LABEL\=\"olympus\"')
+    for line in output:
+        if r.match(line):
+            return line
     return output
 
 def foo_shared_database():
