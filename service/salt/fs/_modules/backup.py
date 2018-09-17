@@ -16,7 +16,7 @@ def usb_backup_olympus():
     partition = None
     for line in lines:
         if re.match(matchstring,line):
-            partition = re.sub(r"\s+(^[\:]*).*$", r"\1", line.rstrip())
+            partition = re.sub(r"\s*?(^[\:]*).*$", r"\1", line.rstrip())
             break
     if partition is None:
         raise Exception('USB drive for olympus backup not detected.')
