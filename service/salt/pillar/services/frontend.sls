@@ -1,8 +1,8 @@
 {% from 'services.sls' import web_path %}
 
 frontend_path: {{ web_path }} + '/django/interface'
-frontend_conf_file: {{ pillar.frontend_path }} + '/settings_local.py'
-frontend_sass_path: {{ pillar.frontend_path }} + '/sass'
+frontend_conf_file: {{ web_path }} + '/django/interface' + '/settings_local.py'
+frontend_sass_path: {{ web_path }} + '/django/interface' + '/sass'
 
 frontend-packages:
   libpq-dev:
