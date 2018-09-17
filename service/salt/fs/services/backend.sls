@@ -97,7 +97,7 @@ frontend_db_user_pwd_reset:
 
 # ALEX
 # Add state to clear frontend_db_key from data store if no frontend service on this server
-{% for local_service in pillar.get('services') %}
+{% for local_service in grains.get('services') %}
 {{ local_service }}:
   cmd.run:
     - name: ls /tmp
