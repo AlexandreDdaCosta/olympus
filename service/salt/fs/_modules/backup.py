@@ -23,4 +23,4 @@ def usb_backup_olympus():
     mount_directory = '/media/usb_backup_olympus_' + str(int(time.time()))
     #cmd = "/usr/local/bin/killserver.sh"
     #p = subprocess.check_call(cmd,shell=True)
-    return mount_directory + ' XXXX ' + partition
+    return True
