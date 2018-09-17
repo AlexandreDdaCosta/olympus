@@ -95,13 +95,6 @@ frontend_db_user_pwd_reset:
     - name: sudo -u postgres psql -c "ALTER USER {{ pillar['frontend-user'] }} ENCRYPTED PASSWORD '{{ new_password }}';"
 
 # Clear frontend_db_key from data store if no frontend service on this server
-#{% set vars = {'is_frontend': False} %}
-#{% for local_service in grains.get('services') %}
-#{% if local_service == 'frontend' %}
-#{% vars.update({'is_frontend': True}) %}
-#{% endif %}
-#{% endfor %}
-#{% if not is_frontend %}
 {% if 'frontend' not in grains.get('services') %}
 delete_password_data:
   cmd.run:
@@ -109,7 +102,6 @@ delete_password_data:
     - require: 
       - frontend_db_user_pwd_reset
 {% endif %}
-#{% endif %}
 
 frontend_app_data_privs:
   postgres_privileges.present:
