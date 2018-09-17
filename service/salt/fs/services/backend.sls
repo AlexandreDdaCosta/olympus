@@ -88,22 +88,16 @@ frontend_db_user:
     - encrypted: True
     - name: {{ pillar['frontend-user'] }}
 
-{% set is_frontend = False %}
 {% set new_password = salt['data.get']('frontend_db_key', None) %}
 {% if new_password is not none %}
 frontend_db_user_pwd_reset:
   cmd.run:
     - name: sudo -u postgres psql -c "ALTER USER {{ pillar['frontend-user'] }} ENCRYPTED PASSWORD '{{ new_password }}';"
 
-# ALEX
-# Add state to clear frontend_db_key from data store if no frontend service on this server
+# Clear frontend_db_key from data store if no frontend service on this server
 {% for local_service in grains.get('services') %}
-{{ local_service }}:
-  cmd.run:
-    - name: ls /tmp
-
 {% if local_service == 'frontend' %}
-{% set is_frontend = True %}
+{% set is_frontend=True %}
 {% endif %}
 {% endfor %}
 {% if not is_frontend %}

@@ -188,7 +188,7 @@ cert_mongo_restart:
 # BEGIN Shared credentials
 
 # ALEX
-# Fix frontend.sls and backend.sls
+# Fix frontend.sls
 # Reorganize pillars for services
 # Optimize credentials.py
 
