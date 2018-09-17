@@ -41,9 +41,9 @@ def usb_backup_olympus():
     p = subprocess.check_call(cmd,shell=True)
 
     # Unmount partition
-    #cmd = "umount " + mount_directory
-    #p = subprocess.check_call(cmd,shell=True)
-    #os.rmdir(mount_directory)
+    cmd = "umount " + mount_directory
+    p = subprocess.check_call(cmd,shell=True)
+    os.rmdir(mount_directory)
     return mount_directory
 
 def _backup_directory(target, source):
@@ -53,3 +53,4 @@ def _backup_directory(target, source):
         raise Exception(dir + " not found");
     os.rename(target,target + '.bak')
     shutil.copytree(source,target)
+    shutil.rmtree(target + '.bak')
