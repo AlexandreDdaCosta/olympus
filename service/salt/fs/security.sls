@@ -187,20 +187,16 @@ cert_mongo_restart:
 
 # BEGIN Shared credentials
 
-# ALEX
-# Reorganize pillars for services
-# Optimize credentials.py
-
 # 1. Update database credential in minion data
 update_minion_credential_data:
   cmd.run:
     - name: salt -C 'G@services:frontend or G@services:backend' data.update frontend_db_key {{ pillar['random_key']['frontend_db_key'] }}
 
-# 2. Call security update script
+# 2. Call credentials update script for all frontend/backend minions
 
 update_db_credential:
   cmd.run:
-    - name: salt -C 'G@services:frontend or G@services:backend' credentials.database
+    - name: salt -C 'G@services:frontend or G@services:backend' credentials.shared_database
     - require: 
       - update_minion_credential_data
 

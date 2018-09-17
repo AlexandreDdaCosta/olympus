@@ -6,9 +6,25 @@ Tools for managing cross-server credentials
 
 import os, subprocess
 
-def database():
-    passphrase = __salt__['data.get']('frontend_db_key')
+# ALEX optimize
+def backend():
     frontend_user = __salt__['pillar.get']('frontend-user')
+    passphrase = __salt__['data.get']('frontend_db_key')
+    server = __grains__['server']
+    services = None
+    if (passphrase is not None and server is not None):
+        key = server + ':services'
+        services = __salt__['pillar.get'](key)
+        if 'backend' in services:
+            cmd = "sudo -u postgres psql -c \"ALTER USER " + frontend_user  + " ENCRYPTED PASSWORD '" + passphrase  + "';\""
+            p = subprocess.check_call(cmd,shell=True)
+        if 'frontend' not in services:
+            __salt__['data.pop']('frontend_db_key')
+    return True
+
+def shared_database():
+    frontend_user = __salt__['pillar.get']('frontend-user')
+    passphrase = __salt__['data.get']('frontend_db_key')
     server = __grains__['server']
     services = None
     if (passphrase is not None and server is not None):

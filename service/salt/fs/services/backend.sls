@@ -88,21 +88,11 @@ frontend_db_user:
     - encrypted: True
     - name: {{ pillar['frontend-user'] }}
 
-{% set new_password = salt['data.get']('frontend_db_key', None) %}
-{% if new_password is not none %}
 frontend_db_user_pwd_reset:
   cmd.run:
-    - name: sudo -u postgres psql -c "ALTER USER {{ pillar['frontend-user'] }} ENCRYPTED PASSWORD '{{ new_password }}';"
-
-# Clear frontend_db_key from data store if no frontend service on this server
-{% if 'frontend' not in grains.get('services') %}
-delete_password_data:
-  cmd.run:
-    - name: salt '{{ grains.get('localhost') }}' data.pop frontend_db_key
+    - name: salt '{{ grains.get('localhost') }}' credentials.backend
     - require: 
-      - frontend_db_user_pwd_reset
-{% endif %}
-{% endif %}
+      - frontend_db_user
 
 frontend_app_data_privs:
   postgres_privileges.present:
