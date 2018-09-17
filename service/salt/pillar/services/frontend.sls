@@ -1,6 +1,3 @@
-{% from 'services.sls' import web_path %}
-test_frontend_path: {{ web_path }}
-
 frontend-packages:
   libpq-dev:
     version: 10.5-1.pgdg80+1
