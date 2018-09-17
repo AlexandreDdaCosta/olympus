@@ -1,6 +1,7 @@
 {% from 'services.sls' import web_path %}
 
 frontend_path: {{ web_path }} + '/django/interface'
+frontend_conf_file: {{ frontend_path }} + '/settings_local.py'
 frontend_sass_path: {{ frontend_path }} + '/sass'
 
 frontend-packages:
