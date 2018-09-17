@@ -1,5 +1,6 @@
 core-user: root
 core-email: alex_investor@yahoo.com
+core-staff-user: alex
 
 core-domain-C: US
 core-domain-ST: Florida
