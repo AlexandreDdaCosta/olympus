@@ -1,5 +1,5 @@
 {% set frontend_path=pillar.test_frontend_path %}
-{% set frontend_sass_path=frontend_path+'/sass' %}
+{% set frontend_sass_path=pillar.test_frontend_path+'/sass' %}
 {%- set random_password_generator='echo "import random; import string; print \'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100))" | /usr/bin/python' -%}
 
 include:
