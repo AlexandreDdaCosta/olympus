@@ -104,7 +104,7 @@ then
     echo 'Error configuring git repository; terminating...'
     exit 1
 fi
-cp -rp ../../misc/git/$GIT_REPO $GIT_PATH
+cp -rp ../../BAK/repository/$GIT_REPO $GIT_PATH
 if [ "$?" != '0' ]
 then
     echo 'Error copying git repository; terminating...'
