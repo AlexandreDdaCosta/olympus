@@ -1,6 +1,6 @@
 frontend-user: uwsgi
 www_path: /srv/www
-{% set foo = 'bar' %}
+{% set foo = '/srv/www' %}
 
 bigdata-packages:
   gfortran:
