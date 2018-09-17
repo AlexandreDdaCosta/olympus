@@ -12,7 +12,7 @@ def usb_backup_olympus():
     p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
     output = p.communicate()
     lines = output[0].split("\n")
-    matchstring = re.escape('LABEL="olympus"')
+    matchstring = '.*' + re.escape('LABEL="olympus"') + '.*'
     for line in lines:
         if re.match(matchstring,line):
             return line
