@@ -14,7 +14,7 @@ def database():
     if (passphrase is not None and server is not None):
         key = server + ':services'
         services = __salt__['pillar.get'](key)
-        updated = False
+        delete_minion_data = False
         if 'backend' in services:
             # Is database running?
             cmd = "ps -A | grep postgres | wc -l"
@@ -30,8 +30,9 @@ def database():
                     # Update frontend user password
                     cmd = "sudo -u postgres psql -c \"ALTER USER " + frontend_user  + " ENCRYPTED PASSWORD '" + passphrase  + "';\""
                     p = subprocess.check_call(cmd,shell=True)
-                    updated = True
+                    delete_minion_data = True
         if 'frontend' in services:
+            delete_minion_data = True
             frontend_credential_file = '/srv/www/django/interface/settings_local.py'
             if os.path.isfile(frontend_credential_file):
                 # If frontend configuration exists, update password
@@ -44,7 +45,6 @@ def database():
                 if int(frontend_processes) > 0:
                     cmd = "service uwsgi restart"
                     p = subprocess.check_call(cmd,shell=True)
-                    updated = True
-        if updated is True:
+        if delete_minion_data is True:
             __salt__['data.pop']('frontend_db_key')
     return True
