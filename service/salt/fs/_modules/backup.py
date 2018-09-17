@@ -11,10 +11,11 @@ def usb_backup_olympus():
     cmd = "blkid"
     p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
     output = p.communicate()
+    lines = output[0].split("\n")
     r = re.compile('LABEL\=\"olympus\"')
-    #for line in output:
-    #    if r.match(line):
-    #        return line
+    for line in lines:
+        if r.match(line):
+            return line
     return output
 
 def foo_shared_database():
