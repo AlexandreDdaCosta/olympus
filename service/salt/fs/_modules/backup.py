@@ -4,7 +4,7 @@
 Manage data backup and restoration
 '''
 
-import re, os, subprocess
+import re, os, subprocess, time
 
 def usb_backup_olympus():
     # Verify presence of olympus USB
@@ -13,10 +13,15 @@ def usb_backup_olympus():
     output = p.communicate()
     lines = output[0].split("\n")
     matchstring = '.*' + re.escape('LABEL="olympus"') + '.*'
+    partition = None
     for line in lines:
         if re.match(matchstring,line):
-            return line
-    return output
+            partition = re.sub(r"^\s*([^\:]*?).*$", r"$1", line.rstrip())
+            break
+    if partition is None:
+        raise Exception('USB drive for olympus backup not detected.')
+    epoch_time = str(time.time())
+    return partitioa + ' ' + epoch_time
 
 def foo_shared_database():
     frontend_user = __salt__['pillar.get']('frontend-user')
