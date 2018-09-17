@@ -1,4 +1,5 @@
 {% from 'services.sls' import foo %}
+test_frontend_path: {{ foo }}
 
 frontend-packages:
   libpq-dev:
