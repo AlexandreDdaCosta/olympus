@@ -14,7 +14,7 @@ def usb_backup_olympus():
     lines = output[0].split("\n")
     matchstring = re.escape('LABEL="olympus"')
     for line in lines:
-        if r.match(matchstring,line):
+        if re.match(matchstring,line):
             return line
     return output
 
