@@ -45,7 +45,7 @@ def usb_backup_olympus():
     cmd = "umount " + mount_directory
     p = subprocess.check_call(cmd,shell=True)
     os.rmdir(mount_directory)
-    return mount_directory
+    return True
 
 def _backup_directory(target, source):
     if not os.path.isdir(source):
