@@ -53,4 +53,5 @@ def _backup_directory(target, source):
     if os.path.exists(target):
         os.rename(target,target + '.bak')
     shutil.copytree(source,target)
-    shutil.rmtree(target + '.bak')
+    if os.path.exists(target + '.bak'):
+        shutil.rmtree(target + '.bak')
