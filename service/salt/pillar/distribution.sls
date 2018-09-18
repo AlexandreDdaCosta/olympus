@@ -20,7 +20,7 @@ release-version: 8
 #}
 
 python3-version: {{ python3 }}
-olympus-package-path: /usr/local/lib/{{ python3 }}/dist-packages/olympus
+olympus-package-path: /usr/local/lib/python{{ python3 }}/dist-packages/olympus
 
 repo-packages:
   apt-transport-https:

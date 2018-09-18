@@ -51,4 +51,4 @@ include:
 
 initialize_ploutos:
   cmd.run:
-    - name: "su -s /bin/bash -c '/srv/projects/ploutos/scripts/init.py' {{ ploutos_user}}"
+    - name: "su -s /bin/bash -c '/srv/projects/ploutos/scripts/init.py' {{ ploutos_user }}"
