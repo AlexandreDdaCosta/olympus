@@ -23,7 +23,7 @@ include:
     - name: {{ packagename }}
 {% endfor %}
 
-jessie_backports_repo:
+{{ pillar['release'] }}_backports_repo:
   pkgrepo.managed:
     - dist: jessie-backports
     - file: /etc/apt/sources.list.d/jessie-backports.list
