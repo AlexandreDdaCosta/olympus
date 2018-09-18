@@ -1,3 +1,5 @@
+{% from 'distribution.sls' import release_name %}
+
 frontend-user: uwsgi
 www_path: /srv/www
 
@@ -41,7 +43,7 @@ bigdata-pip3-packages:
 
 web-packages:
   certbot:
-    repo: jessie-backports
+    repo: {{ release_name }}-backports
     version: 0.10.2-1~bpo8+1
   nginx:
-    version: 1.14.0-1~jessie
+    version: 1.14.0-1~{{ release_name }}
