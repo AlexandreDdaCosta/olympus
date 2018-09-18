@@ -1,17 +1,19 @@
+{% from 'distribution.sls' import release_name %}
+
 backend-user: node
 # Temporary until we start tagging releases
 backend-version: 0.1
 
 backend-packages:
   mongodb-org:
-    repo: jessie/mongodb-org
+    repo: {{ release_name }}/mongodb-org
   nodejs:
     version: 6.14.4-1nodesource1
   pgadmin3:
-    repo: jessie-pgdg
+    repo: {{ release_name }}-pgdg
     version: 1.22.2-4.pgdg80+1
   postgresql-9.6:
-    repo: jessie-pgdg
+    repo: {{ release_name }}-pgdg
     version: 9.6.10-1.pgdg80+1
 
 backend-npm-packages:
