@@ -25,20 +25,20 @@ include:
 
 {{ pillar['release'] }}_backports_repo:
   pkgrepo.managed:
-    - dist: jessie-backports
-    - file: /etc/apt/sources.list.d/jessie-backports.list
+    - dist: {{ pillar['release'] }}-backports
+    - file: /etc/apt/sources.list.d/{{ pillar['release'] }}-backports.list
     - humanname: Added packages for Debian
-    - name: deb http://ftp.debian.org/debian jessie-backports main
+    - name: deb http://ftp.debian.org/debian {{ pillar['release'] }}-backports main
   cmd:
     - run
     - name: 'apt-get update'
 
 mongodb_repo:
   pkgrepo.managed:
-    - dist: jessie/mongodb-org/3.4 
+    - dist: {{ pillar['release'] }}/mongodb-org/3.4 
     - file: /etc/apt/sources.list.d/mongodb-org-3.4.list
     - humanname: MongoDB package repository for {{ pillar['distribution'] }} {{ pillar['release'] }}
-    - name: deb http://repo.mongodb.org/apt/debian jessie/mongodb-org/3.4 main
+    - name: deb http://repo.mongodb.org/apt/debian {{ pillar['release'] }}/mongodb-org/3.4 main
   cmd:
     - run
     - name: 'wget -O - https://www.mongodb.org/static/pgp/server-3.4.asc | apt-key add -'
