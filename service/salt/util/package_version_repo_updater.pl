@@ -91,6 +91,7 @@ foreach my $line (@data)
     $version =~ s/[\(\)]//g;
     $installed_packages->{'gem'}->{$package} = $version;
 }
+#print Dumper $installed_packages;
 
 print qq{Examining package versions in salt state files from repository...\n};
 foreach my $filename (@GIT_FILES)
@@ -143,6 +144,7 @@ foreach my $filename (@GIT_FILES)
                 if ($_ =~ /^\s+version\:/)
                 {
                     my $version = $_;
+                    #print qq{version $version\n};
                     if ($installer ne 'pip3')
                     {
                         $version =~ s/^(\s+version\:\s*)([^\s]*)(\s*?)$/$2/;
@@ -151,22 +153,30 @@ foreach my $filename (@GIT_FILES)
                     {
                         $version =~ s/^(\s+version\:\s*\=\=\s*)([^\s]*)(\s*?)$/$2/;
                     }
-                    #print qq{Installed version: } . $installed_packages->{$installer}->{$package} . qq{ $version $installer $package};
+                    #print qq{version2 $version\n};
+                    #print qq{Installed version: [} . $installed_packages->{$installer}->{$package} . qq{] SLS version: [$version] [$installer] [$package]\n};
                     if ($version ne $installed_packages->{$installer}->{$package})
                     {
-                        print qq{$installer $package $installed_packages->{$installer}->{$package} --> $version\n};
-                        my $line_to_update = $_;
-                        if ($installer eq 'pip3')
+                        if (exists $installed_packages->{$installer}->{$package})
                         {
-                            $line_to_update =~ s/^(\s+version\:\s*\=\=\s*)([^\s]*)(\s*?)$/$1$installed_packages->{$installer}->{$package}$3/;
+                            print qq{$installer $package $version ----> $installed_packages->{$installer}->{$package}\n};
+                            my $line_to_update = $_;
+                            if ($installer eq 'pip3')
+                            {
+                                $line_to_update =~ s/^(\s+version\:\s*\=\=\s*)([^\s]*)(\s*?)$/$1$installed_packages->{$installer}->{$package}$3/;
+                            }
+                            else
+                            {
+                                $line_to_update =~ s/^(\s+version\:\s*).*$/$1$installed_packages->{$installer}->{$package}$3/;
+                            }
+                            $STATE_FILE_UPDATES++;
+                            $NEW_STATE_FILE .= $line_to_update.qq{\n};
+                            next;
                         }
                         else
                         {
-                            $line_to_update =~ s/^(\s+version\:\s*)([^\s]*)(\s*?)$/$1$installed_packages->{$installer}->{$package}$3/;
+                            print qq{$installer Specified SLS package $package NOT INSTALLED\n};
                         }
-                        $STATE_FILE_UPDATES++;
-                        $NEW_STATE_FILE .= $line_to_update.qq{\n};
-                        next;
                     }
                 }
             }
