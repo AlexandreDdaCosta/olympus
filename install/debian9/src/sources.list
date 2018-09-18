@@ -1,0 +1,18 @@
+# Local repository
+
+deb file:/var/cache/apt-local/archives/ /
+
+# Remote repositories
+
+## debian
+
+deb http://ftp.us.debian.org/debian/ stretch main contrib
+deb-src http://ftp.us.debian.org/debian/ stretch main contrib
+deb http://ftp.us.debian.org/debian/ stretch-updates main contrib
+deb-src http://ftp.us.debian.org/debian/ stretch-updates main contrib
+deb http://security.debian.org/ stretch/updates main contrib
+deb-src http://security.debian.org/ stretch/updates main contrib
+
+## Saltstack
+
+deb http://repo.saltstack.com/apt/debian/9/amd64/latest stretch main

@@ -1,0 +1,3 @@
+# Local repository
+
+deb file:/var/cache/apt-local/archives/ /

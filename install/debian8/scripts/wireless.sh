@@ -51,6 +51,10 @@ then
     exit 1
 fi
 
+echo 'Restoring aptitude database sources...'
+cp $TMP_INSTALL/src/sources.list /etc/apt/sources.list
+apt-get update
+
 echo 'Updating network configuration file for wireless'
 echo $NETWORK_FILE_TGT
 cp -p $TMP_INSTALL/$NETWORK_FILE_SRC $NETWORK_FILE_TGT
