@@ -1,9 +1,21 @@
+{% set release_name = 'stretch' %}
+distribution: debian
+mongo-repo: 4.0
+nodejs-repo: node_10.x
+release: {{ release_name }}
+release_version: 9
+
+{#
+
+Debian 8 backup
+
 {% set release_name = 'jessie' %}
 distribution: debian
 mongo-repo: 3.4
 nodejs-repo: node_6.x
 release: {{ release_name }}
 release_version: 8
+#}
 
 olympus-package-path: /usr/local/lib/python3.4/dist-packages/olympus
 
