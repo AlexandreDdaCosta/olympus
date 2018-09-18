@@ -35,13 +35,13 @@ include:
 
 mongodb_repo:
   pkgrepo.managed:
-    - dist: {{ pillar['release'] }}/mongodb-org/3.4 
-    - file: /etc/apt/sources.list.d/mongodb-org-3.4.list
+    - dist: {{ pillar['release'] }}/mongodb-org/{{ pillar['mongo_repo'] }}
+    - file: /etc/apt/sources.list.d/mongodb-org-{{ pillar['mongo_repo'] }}.list
     - humanname: MongoDB package repository for {{ pillar['distribution'] }} {{ pillar['release'] }}
-    - name: deb http://repo.mongodb.org/apt/debian {{ pillar['release'] }}/mongodb-org/3.4 main
+    - name: deb http://repo.mongodb.org/apt/debian {{ pillar['release'] }}/mongodb-org/{{ pillar['mongo_repo'] }} main
   cmd:
     - run
-    - name: 'wget -O - https://www.mongodb.org/static/pgp/server-3.4.asc | apt-key add -'
+    - name: 'wget -O - https://www.mongodb.org/static/pgp/server-{{ pillar['mongo_repo'] }}.asc | apt-key add -'
     - unless: 'apt-key list | grep -i MongoDB' 
 
 nginx_repo:

@@ -1,6 +1,8 @@
+{% set release_name = 'jessie' %}
 distribution: debian
+mongo-repo: 3.4
 nodejs-repo: node_6.x
-release: jessie
+release: {{ release_name }}
 release_version: 8
 
 olympus-package-path: /usr/local/lib/python3.4/dist-packages/olympus
