@@ -207,6 +207,17 @@ frontend_conf_file:
     - template: jinja
     - user: {{ pillar['frontend-user'] }}
 
+frontend_wsgi_app_file:
+  file.managed:
+    - dir_mode: 0755
+    - group: root
+    - makedirs: False
+    - mode: 0644
+    - name: {{ frontend_path }}/wsgi.py
+    - source: salt://services/frontend/wsgi.py.jinja
+    - template: jinja
+    - user: root
+
 /usr/local/bin/killserver.sh:
   file.managed:
     - group: root

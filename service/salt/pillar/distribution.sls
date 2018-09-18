@@ -4,6 +4,7 @@ mongo-repo: 4.0
 nodejs-repo: node_10.x
 release: {{ release_name }}
 release_version: 9
+{% set python3 = 3.5 %}
 
 {#
 
@@ -14,10 +15,12 @@ distribution: debian
 mongo-repo: 3.4
 nodejs-repo: node_6.x
 release: {{ release_name }}
-release_version: 8
+release-version: 8
+{% set python3 = 3.4 %}
 #}
 
-olympus-package-path: /usr/local/lib/python3.4/dist-packages/olympus
+python3-version: {{ python3 }}
+olympus-package-path: /usr/local/lib/{{ python3 }}/dist-packages/olympus
 
 repo-packages:
   apt-transport-https:
