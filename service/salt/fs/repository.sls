@@ -42,7 +42,7 @@ mongodb_repo:
   cmd:
     - run
     - name: 'wget -O - https://www.mongodb.org/static/pgp/server-{{ pillar['mongo-repo'] }}.asc | apt-key add -'
-    - unless: 'apt-key list | grep -i MongoDB' 
+    - unless: 'apt-key list | grep -i MongoDB | grep {{ pillar['mongo-repo'] }}' 
 
 nginx_repo:
   pkgrepo.managed:
