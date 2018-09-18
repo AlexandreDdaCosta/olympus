@@ -48,10 +48,9 @@ def usb_backup_olympus():
     return mount_directory
 
 def _backup_directory(target, source):
-    if not os.path.isdir(target):
-        raise Exception(dir + " not found");
     if not os.path.isdir(source):
-        raise Exception(dir + " not found");
-    os.rename(target,target + '.bak')
+        raise Exception(source + " not found");
+    if os.path.exists(target):
+        os.rename(target,target + '.bak')
     shutil.copytree(source,target)
     shutil.rmtree(target + '.bak')
