@@ -23,11 +23,12 @@ if ($proceed !~ /^(Y|y)$/)
 
 use strict;
 use Data::Dumper;
+use File::Basename;
 use Cwd qw{abs_path getcwd};
 
 use vars qw{@data $installed_packages $results @UPDATES};
 my $GIT_FILE_DIR= q{../../salt/pillar/};
-my @GIT_FILES= ('services.sls','distribution.sls');
+my @GIT_FILES= ('services.sls','distribution.sls','services/backend.sls','services/frontend.sls');
 my $outfile_prefix = q{/tmp/package_version_repo_updater.}.time().q{.};
 
 my $abs_dir = abs_path($0);
@@ -195,7 +196,8 @@ foreach my $filename (@GIT_FILES)
     #print $NEW_STATE_FILE;
     if ($STATE_FILE_UPDATES)
     {
-        my $outfile = $outfile_prefix . $filename;
+        my $basename = basename($filename);
+        my $outfile = $outfile_prefix . $basename;
         open OUTFILE, ">$outfile" or die "Failed to create output file $outfile";
         print OUTFILE $NEW_STATE_FILE;
         close OUTFILE;
