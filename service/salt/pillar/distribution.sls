@@ -1,6 +1,8 @@
 distribution: debian
 nodejs-repo: node_6.x
 release: jessie
+release_version: 8
+release_version_full: 8.11
 
 olympus-package-path: /usr/local/lib/python3.4/dist-packages/olympus
 
