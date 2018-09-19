@@ -21,14 +21,10 @@ class TestMongo(testing.Test):
         self.assertTrue(insert_many_result.acknowledged,'Result should be an acknowledged write operation.')
         self.assertEqual(test_collection.count_documents({}),4,'Four entries should exist in test database.')
         self.assertEqual(len(insert_many_result.inserted_ids),4,'Four entries should exist in test database.')
-        cursor = test_collection.find({'a':1})
-        self.assertEqual(cursor.count(),1,'One document where "a" equals "1".')
-        cursor = test_collection.find({'a':3})
-        self.assertEqual(cursor.count(),2,'Two documents where "a" equals "3".')
-        cursor = test_collection.find({'a':4})
-        self.assertEqual(cursor.count(),0,'No documents where "a" equals "4".')
-        cursor = test_collection.find({})
-        self.assertEqual(cursor.count(),4,'Four documents in test collection.')
+        self.assertEqual(test_collection.count_documents({'a': 1}),1,'One document where "a" equals "1".')
+        self.assertEqual(test_collection.count_documents({'a': 3}),2,'Two documents where "a" equals "3".')
+        self.assertEqual(test_collection.count_documents({'a': 4}),0,'No documents where "a" equals "4".')
+        self.assertEqual(test_collection.count_documents({}),4,'Four documents in test collection.')
         test_collection.drop()
 
 if __name__ == '__main__':
