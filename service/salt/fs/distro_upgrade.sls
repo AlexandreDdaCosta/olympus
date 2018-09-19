@@ -10,6 +10,7 @@ apt-get upgrade
 apt-get dist-upgrade
 -- Check for issues
 -- May need to run wireless.sh from install (networking issues)
+-- Verify latest available updates of all major applications: Django, mongodb
 
 dpkg -C
 apt-mark showhold
