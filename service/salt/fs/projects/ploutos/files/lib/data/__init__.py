@@ -12,7 +12,7 @@ SYMBOL_COLLECTIONS_PREFIX = 'symbols_'
 
 class Connection():
     def __init__(self,**kwargs):
-        self.client = pymongo.MongoClient(MONGO_URL,ssl=True,ssl_ca_certs=CAFILE,ssl_certfile=CERTFILE,ssl_keyfile=KEYFILE)
+        self.client = pymongo.MongoClient(MONGO_URL,ssl=True,ssl_ca_certs=CAFILE,ssl_certfile=CERTFILE,ssl_keyfile=KEYFILE,,ssl_match_hostname=False)
         self.db = self.client.ploutos
         self.init_collection = self.db.init
         try:

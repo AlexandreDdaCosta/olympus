@@ -19,7 +19,7 @@ class TestMongo(testing.Test):
         self.assertEqual(delete_result.deleted_count,0,'No entries should exist in test database.')
         insert_many_result = test_collection.insert_many([{'a':1},{'a':2},{'a':3},{'a':3}])
         self.assertTrue(insert_many_result.acknowledged,'Result should be an acknowledged write operation.')
-        self.assertEqual(test_collection.count(),4,'Four entries should exist in test database.')
+        self.assertEqual(test_collection.count_documents(),4,'Four entries should exist in test database.')
         self.assertEqual(len(insert_many_result.inserted_ids),4,'Four entries should exist in test database.')
         cursor = test_collection.find({'a':1})
         self.assertEqual(cursor.count(),1,'One document where "a" equals "1".')
