@@ -8,5 +8,4 @@ KEYFILE = '/etc/ssl/localcerts/client-key.pem'
 
 # Backend
 
-MONGO_URL = 'mongodb://zeus:27017/?ssl=true';
-
+MONGO_URL = 'mongodb://localhost:27017/?ssl=true';
