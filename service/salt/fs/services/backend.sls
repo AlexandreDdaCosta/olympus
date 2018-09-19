@@ -214,6 +214,10 @@ nginx-backend:
     - watch:
       - file: /etc/nginx/conf.d/node.conf
 
+systmctl_enable_mongod:
+  cmd.run:
+    - name: systemctl enable mongod
+
 mongod-backend:
   service.running:
     - enable: True
