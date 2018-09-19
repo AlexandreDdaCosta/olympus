@@ -132,6 +132,10 @@ backend-user:
     - mode: 0644
     - source: salt://services/backend/files/mongod.conf
     - user: root
+{#
+command line: 
+mongo --ssl --sslCAFile /etc/ssl/localcerts/ca-crt.pem --sslPEMKeyFile /etc/ssl/localcerts/server-key-crt.pem --sslAllowInvalidHostnames
+#}
 
 /etc/nginx/conf.d/node.conf:
   file.managed:
@@ -217,6 +221,11 @@ nginx-backend:
 systmctl_enable_mongod:
   cmd.run:
     - name: systemctl enable mongod
+
+mongodb_proper_perms:
+  cmd.run:
+    - name: chown -R mongodb:mongodb /var/lib/mongodb
+{# Bug: Found bad perms of unknown origin #}
 
 mongod-backend:
   service.running:
