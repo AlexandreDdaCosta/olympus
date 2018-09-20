@@ -1,4 +1,4 @@
-{%- set check_BCM57='lspci | egrep -i 'network|ethernet' | grep Broadcom | grep BCM57 | wc -l' -%}
+{%- set check_BCM57=salt['cmd.shell']('lspci | egrep -i \'network|ethernet\' | grep Broadcom | grep BCM57 | wc -l') -%}
 
 firmware:
   firmware-misc-nonfree:
