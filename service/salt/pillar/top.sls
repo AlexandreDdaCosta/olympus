@@ -2,6 +2,7 @@ base:
   '*':
     - core
     - distribution
+    - hardware
     - projects
     - random_key
     - security

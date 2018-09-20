@@ -20,6 +20,22 @@ include:
       - sls: repository
 {% endfor %}
 
+{% for packagename, package in pillar.get('firmware', {}).items() %}
+{{ packagename }}:
+{% if pillar.pkg_latest is defined and pillar.pkg_latest %}
+  pkg.latest:
+{% else %}
+  pkg.installed:
+    {% if package and 'version' in package %}
+    {% if pillar.pkg_noversion is not defined or not pillar.pkg_noversion %}
+    - version: {{ package['version'] }}
+    {% endif %}
+    {% endif %}
+{% endif %}
+    - require:
+      - sls: repository
+{% endfor %}
+
 {{ pillar['olympus-package-path'] }}:
   file.recurse:
     - dir_mode: 0755
