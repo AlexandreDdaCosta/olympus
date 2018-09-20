@@ -3,7 +3,7 @@
 firmware:
   firmware-misc-nonfree:
     version: 20161130-3
-{% if {{ check_BCM57 }} != '0' %}
+{% if check_BCM57 != '0' %}
   firmware-bnx2:
     version: 20161130-3
 {% endif %}
