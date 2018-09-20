@@ -11,7 +11,7 @@ OPTIONS_DATA_URL = 'http://www.cboe.com/publish/scheduledtask/mktdata/cboesymbol
 WORKING_FILE = 'cboesymboldir.csv'
 
 FIRST_ROW_STRING = "{'2018': None, '2019': None, '2020': None, 'Post/Station': None, 'Product Types': None, 'Cycle': None, 'Primary Market': None, 'Name': 'NOTE: All directories are updated daily using information from the previous business day.', 'Traded on C2': None, 'Symbol': None}"
-SECOND_ROW_STRING = "{'2018': 'LEAPS 2018', '2019': 'LEAPS 2019', '2020': 'LEAPS 2020', 'Post/Station': ' Post/Station', 'Product Types': 'Product Types', 'Cycle': 'Cycle', 'Primary Market': 'DPM', 'Name': 'Company Name', 'Traded on C2': 'Traded at C2', 'Symbol': 'Stock Symbol'}"
+SECOND_ROW_STRING = "{'2018': 'LEAPS 2019', '2019': 'LEAPS 2020', '2020': 'LEAPS 2021', 'Post/Station': ' Post/Station', 'Product Types': 'Product Types', 'Cycle': 'Cycle', 'Primary Market': 'DPM', 'Name': 'Company Name', 'Traded on C2': 'Traded at C2', 'Symbol': 'Stock Symbol'}"
 
 class InitOptions(data.Connection):
 
@@ -63,10 +63,10 @@ class InitOptions(data.Connection):
             rowcount = rowcount + 1
             if rowcount == 1:
                 if row != ast.literal_eval(FIRST_ROW_STRING.strip('\n')):
-                    raise Exception('First row does not match expected format; exiting. '+str(row)+' v '+FIRST_ROW_STRING)
+                    raise Exception('First row does not match expected format; exiting. \n['+str(row)+']\n['+FIRST_ROW_STRING+']')
             elif rowcount == 2:
                 if row != ast.literal_eval(SECOND_ROW_STRING.strip('\n')):
-                    raise Exception('Second row does not match expected format; exiting. '+str(row)+' v '+SECOND_ROW_STRING)
+                    raise Exception('Second row does not match expected format; exiting. \n['+str(row)+']\n['+SECOND_ROW_STRING+']')
             else:
                 for name in fieldnames:
                     if row[name] == '' or row[name] is None:
