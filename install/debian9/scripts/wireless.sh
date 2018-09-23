@@ -1,10 +1,13 @@
 #!/bin/bash
 
-DRIVER='mt7601Usta.ko'
-NETWORK_FILE_SRC='src/wireless_init/interfaces'
-NETWORK_FILE_TGT='/etc/network/interfaces'
+# Not yet tested. Bin file may be unnecessary. Be aware when trying for first time.
+
 TMP_INSTALL='/tmp/olympus'
 
+BIN_FILE_SRC='src/wireless_init/mt7601u.bin'
+BIN_FILE_TGT='/lib/firmware/mt7601u.bin'
+NETWORK_FILE_SRC='src/wireless_init/interfaces'
+NETWORK_FILE_TGT='/etc/network/interfaces'
 WPA_CONF='wpa_supplicant.conf'
 WPA_CONF_DIR='/etc/wpa_supplicant/'
 WPA_CONF_SRC='src/wireless_init/wpa_supplicant.conf'
@@ -33,29 +36,23 @@ rm -rf $TMP_INSTALL
 mkdir -p $TMP_INSTALL
 cp -rp ../src $TMP_INSTALL
 
-echo 'Creating local apt repository and updating aptitude database...'
-mkdir -p /var/cache/apt-local/
-cp -rp $TMP_INSTALL/src/archives /var/cache/apt-local/
-cp $TMP_INSTALL/src/wireless_init/sources.list /etc/apt/sources.list
-apt-get update
-
 echo 'Installing USB wifi driver with dependencies...'
-cd $TMP_INSTALL/src/archives
-dpkg -i ./mt7601-sta-dkms_3.0.0.4-0-201602170733-rev26-pkg4-ubuntu16.04.1_all.deb
-apt-get --yes --force-yes install -f
-installed_driver=$(find /lib | grep $DRIVER)
-insmod $installed_driver
+cd $TMP_INSTALL/src/archive
+dpkg -i ./firmware-misc-nonfree_20161130-3_all.deb
+dpkg -i ./firmware-bnx2_20161130-3_all.deb
+modprobe mt7601u
 if [ "$?" != '0' ]
 then
     echo 'Error installing USB wifi driver; terminating...'
     exit 1
 fi
 
-echo 'Restoring aptitude database sources...'
-cp $TMP_INSTALL/src/sources.list /etc/apt/sources.list
-apt-get update
+echo 'Adding mt7601u.bin...'
+cp -p $TMP_INSTALL/$BIN_FILE_SRC $BIN_FILE_TGT
+chown root:root $BIN_FILE_TGT
+chmod 0644 $BIN_FILE_TGT
 
-echo 'Updating network configuration file for wireless'
+echo 'Updating network configuration file for wireless...'
 echo $NETWORK_FILE_TGT
 cp -p $TMP_INSTALL/$NETWORK_FILE_SRC $NETWORK_FILE_TGT
 chown root:root $NETWORK_FILE_TGT
