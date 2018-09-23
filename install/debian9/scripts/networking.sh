@@ -4,15 +4,15 @@
 
 TMP_INSTALL='/tmp/olympus'
 
-BIN_FILE_SRC='src/wireless_init/mt7601u.bin'
+BIN_FILE_SRC='src/networking_init/mt7601u.bin'
 BIN_FILE_TGT='/lib/firmware/mt7601u.bin'
-NETWORK_FILE_SRC='src/wireless_init/interfaces'
+NETWORK_FILE_SRC='src/networking_init/interfaces'
 NETWORK_FILE_TGT='/etc/network/interfaces'
 WPA_CONF='wpa_supplicant.conf'
 WPA_CONF_DIR='/etc/wpa_supplicant/'
-WPA_CONF_SRC='src/wireless_init/wpa_supplicant.conf'
+WPA_CONF_SRC='src/networking_init/wpa_supplicant.conf'
 
-echo 'Debian wireless networking initialization utility for Olympus installation'
+echo 'Debian networking initialization utility for Olympus installation'
 if [[ $EUID -ne 0 ]]
 then
    echo "This script must be run as root" 1>&2
@@ -52,7 +52,7 @@ cp -p $TMP_INSTALL/$BIN_FILE_SRC $BIN_FILE_TGT
 chown root:root $BIN_FILE_TGT
 chmod 0644 $BIN_FILE_TGT
 
-echo 'Updating network configuration file for wireless...'
+echo 'Updating network configuration file...'
 echo $NETWORK_FILE_TGT
 cp -p $TMP_INSTALL/$NETWORK_FILE_SRC $NETWORK_FILE_TGT
 chown root:root $NETWORK_FILE_TGT

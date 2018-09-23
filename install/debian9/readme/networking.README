@@ -11,4 +11,4 @@ If you don't have installation media, download the DVD ISO file from the Debian 
 (a) mkdir /media/usb
 (b) mount /dev/sdb2 /media/usb
 
-3. Change directory into the Debian "scripts" directory.  There, run "wireless.sh". Follow the prompts, entering the SSID and passkey when asked.
+3. Change directory into the Debian "scripts" directory.  There, run "networking.sh". Follow the prompts, entering the SSID and passkey when asked.
