@@ -43,8 +43,8 @@ class InitQuarterlyIndices(data.Connection):
 
         # Index/create collection
         collection = self.db[EDGAR_COLLECTIONS_PREFIX+'quarterlies']
-        collection.create_index( { year:1 }, { name:'year'+EDGAR_INDEX_SUFFIX, unique:False } )
-        collection.create_index( { quarter:1 }, { name:'quarter'+EDGAR_INDEX_SUFFIX, unique:False } )
+        collection.create_index([('year', pymongo.ASCENDING)], name='year'+EDGAR_INDEX_SUFFIX, unique:False)
+        collection.create_index([('quarter', pymongo.ASCENDING)], name='quarter'+EDGAR_INDEX_SUFFIX, unique:False)
 
         # ?. Read completion entries (start with last incomplete quarter, if any)
 
