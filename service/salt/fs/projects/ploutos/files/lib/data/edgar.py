@@ -8,9 +8,8 @@ from olympus.projects.ploutos.data import *
 class InitQuarterlyIndices(data.Connection):
 
     def __init__(self,**kwargs):
-        super(InitQuarterlyIndices,self).__init__(**kwargs)
-        self.INIT_TYPE = 'edgar_indices'
-        self.LOCKFILE = LOCKFILE_DIR+self.INIT_TYPE+'.pid'
+        super(InitQuarterlyIndices,self).__init__('edgar_indices',**kwargs)
+        self.LOCKFILE = LOCKFILE_DIR+self.init_type+'.pid'
         self.FIRST_YEAR = '1993'
         self.force = kwargs.get('force',False)
         self.graceful = kwargs.get('force',False)
@@ -24,7 +23,7 @@ class InitQuarterlyIndices(data.Connection):
         lockfilehandle.write(str(os.getpid()))
         os.chdir(WORKING_DIR)
        
-        if self._record_start(self.INIT_TYPE) is not True:
+        if self._record_start() is not True:
             if self.graceful is True:
                 lockfilehandle.write('')
                 fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
@@ -32,7 +31,7 @@ class InitQuarterlyIndices(data.Connection):
                 return
             else:
                 raise Exception('Initialization of edgar indices detected; exiting.')
-        if self._initialized(self.INIT_TYPE) != socket.gethostname():
+        if self._initialized() != socket.gethostname():
             raise Exception('Initialization record check failed; cannot record start of initialization.')
 
 		# Check for existing completed indices
@@ -56,6 +55,3 @@ class InitQuarterlyIndices(data.Connection):
         lockfilehandle.write('')
         fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
         lockfilehandle.close()
-       
-        # Ending entry
-		

@@ -8,6 +8,7 @@ from olympus.projects.ploutos.data import *
 INIT_TYPE = 'symbols'
 LOCKFILE = LOCKFILE_DIR+INIT_TYPE+'.pid'
 NORMALIZE_CAP_REGEX = re.compile('[^0-9\.]')
+SYMBOL_COLLECTIONS_PREFIX = 'symbols_'
 SYMBOL_DATA_URLS = [
 {'exchange':'amex','url':'http://www.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=amex&render=download'},
 {'exchange':'nasdaq','url':'http://www.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=nasdaq&render=download'},
@@ -19,7 +20,7 @@ FIRST_LINE_STRING = '"Symbol","Name","LastSale","MarketCap","IPOyear","Sector","
 class InitSymbols(data.Connection):
 
     def __init__(self,**kwargs):
-        super(InitSymbols,self).__init__(**kwargs)
+        super(InitSymbols,self).__init__(INIT_TYPE,**kwargs)
         self.force = kwargs.get('force',False)
         self.graceful = kwargs.get('force',False)
 
@@ -32,7 +33,7 @@ class InitSymbols(data.Connection):
         lockfilehandle.write(str(os.getpid()))
         os.chdir(WORKING_DIR)
        
-        if self._record_start(INIT_TYPE) is not True:
+        if self._record_start() is not True:
             if self.graceful is True:
                 lockfilehandle.write('')
                 fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
@@ -40,7 +41,7 @@ class InitSymbols(data.Connection):
                 return
             else:
                 raise Exception('Data initialization detected; exiting.')
-        if self._initialized(INIT_TYPE) != socket.gethostname():
+        if self._initialized() != socket.gethostname():
             raise Exception('Initialization record check failed; cannot record start of initialization.')
     
         # Download

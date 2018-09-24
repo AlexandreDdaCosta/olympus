@@ -7,6 +7,7 @@ from olympus.projects.ploutos.data import *
 
 INIT_TYPE = 'options'
 LOCKFILE = LOCKFILE_DIR+INIT_TYPE+'.pid'
+OPTIONS_COLLECTIONS_PREFIX = 'options_'
 OPTIONS_DATA_URL = 'http://www.cboe.com/publish/scheduledtask/mktdata/cboesymboldir2.csv'
 WORKING_FILE = 'cboesymboldir.csv'
 
@@ -16,7 +17,7 @@ SECOND_ROW_STRING = "{'2018': 'LEAPS 2019', '2019': 'LEAPS 2020', '2020': 'LEAPS
 class InitOptions(data.Connection):
 
     def __init__(self,**kwargs):
-        super(InitOptions,self).__init__(**kwargs)
+        super(InitOptions,self).__init__(INIT_TYPE,**kwargs)
         self.force = kwargs.get('force',False)
         self.graceful = kwargs.get('force',False)
 
@@ -29,7 +30,7 @@ class InitOptions(data.Connection):
         lockfilehandle.write(str(os.getpid()))
         os.chdir(WORKING_DIR)
        
-        if self._record_start(INIT_TYPE) is not True:
+        if self._record_start() is not True:
             if self.graceful is True:
                 lockfilehandle.write('')
                 fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
@@ -37,7 +38,7 @@ class InitOptions(data.Connection):
                 return
             else:
                 raise Exception('Data initialization detected; exiting.')
-        if self._initialized(INIT_TYPE) != socket.gethostname():
+        if self._initialized() != socket.gethostname():
             raise Exception('Initialization record check failed; cannot record start of initialization.')
     
 		# Download

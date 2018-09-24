@@ -11,7 +11,7 @@ GOOGLE_REALTIME_URL = 'https://www.google.com/finance/info?infotype=infoquoteall
 class Quote(data.Connection):
 
     def __init__(self,**kwargs):
-        super(Quote,self).__init__(**kwargs)
+        super(Quote,self).__init__('quote',**kwargs)
 
     def Daily(self,symbol,**kwargs):
         # Adjusted daily price quote series
