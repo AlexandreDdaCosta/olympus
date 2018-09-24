@@ -47,7 +47,7 @@ class Connection():
         elif host != socket.gethostname():
             print('Already initialized by host '+host)
             return False
-        else
+        else:
             for init_entry in self.init_collection.find({"datatype":init_type}):
                 if 'end' in init_entry and init_entry['host'] == socket.gethostname():
                     print('Cannot add ending record: ending record already found')
