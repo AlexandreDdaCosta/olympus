@@ -10,7 +10,7 @@ class InitQuarterlyIndices(data.Connection):
     def __init__(self,**kwargs):
         super(InitQuarterlyIndices,self).__init__(**kwargs)
         self.INIT_TYPE = 'edgar_indices'
-        self.LOCKFILE = LOCKFILE_DIR+INIT_TYPE+'.pid'
+        self.LOCKFILE = LOCKFILE_DIR+self.INIT_TYPE+'.pid'
         self.FIRST_YEAR = '1993'
         self.force = kwargs.get('force',False)
         self.graceful = kwargs.get('force',False)
