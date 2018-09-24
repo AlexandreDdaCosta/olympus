@@ -4,11 +4,12 @@ from olympus import CAFILE, CERTFILE, KEYFILE, MONGO_URL
 from olympus.projects.ploutos import DOWNLOAD_DIR, USER
 
 DATABASE = USER
+INDEX_SUFFIX = '_idx'
 
 # Collections
 
 class Connection():
-    def __init__(self,init_type,**kwargs):
+    def __init__(self,init_type=None,**kwargs):
         self.init_type = init_type
         self.client = pymongo.MongoClient(MONGO_URL,ssl=True,ssl_ca_certs=CAFILE,ssl_certfile=CERTFILE,ssl_keyfile=KEYFILE,ssl_match_hostname=False)
         self.db = self.client.ploutos
@@ -19,6 +20,8 @@ class Connection():
             pass
 
     def _initialized(self):
+        if self.init_type is None:
+            raise Exception('Initialization not available for this data type; exiting.')
         dbnames = self.client.database_names()
         if DATABASE not in dbnames:
             return None
@@ -36,6 +39,8 @@ class Connection():
             return host
 
     def _record_start(self):
+        if self.init_type is None:
+            raise Exception('Initialization not available for this data type; exiting.')
         print('Create document to record initialization.')
         dbnames = self.client.database_names()
         if self.force is True:

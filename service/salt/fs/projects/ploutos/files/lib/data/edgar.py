@@ -5,6 +5,9 @@ import olympus.projects.ploutos.data as data
 from olympus.projects.ploutos import *
 from olympus.projects.ploutos.data import *
 
+EDGAR_COLLECTIONS_PREFIX = 'edgar_quarterlies_'
+EDGAR_INDEX_SUFFIX = '_edgar' + INDEX_SUFFIX
+
 class InitQuarterlyIndices(data.Connection):
 
     def __init__(self,**kwargs):
@@ -37,6 +40,11 @@ class InitQuarterlyIndices(data.Connection):
 		# Check for existing completed indices
         # The edgar module retrieves based on a starting date. Our check is to see 
         # which data sets have already been retrieved and indexed.
+
+        # Index/create collection
+        collection = self.db[EDGAR_COLLECTIONS_PREFIX+'quarterlies']
+        collection.create_index( { year:1 }, { name='year'+EDGAR_INDEX_SUFFIX, unique=False } )
+        collection.create_index( { quarter:1 }, { name='quarter'+EDGAR_INDEX_SUFFIX, unique=False } )
 
         # ?. Read completion entries (start with last incomplete quarter, if any)
 
