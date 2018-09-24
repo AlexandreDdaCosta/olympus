@@ -31,23 +31,31 @@ class InitQuarterlyIndices(data.Connection):
                 lockfilehandle.close()
                 return
             else:
-                raise Exception('Data initialization detected; exiting.')
+                raise Exception('Initialization of edgar indices detected; exiting.')
         if self._initialized(self.INIT_TYPE) != socket.gethostname():
             raise Exception('Initialization record check failed; cannot record start of initialization.')
-    
+
 		# Check for existing completed indices
+        # The edgar module retrieves based on a starting date. Our check is to see 
+        # which data sets have already been retrieved and indexed.
+
         # ?. Read completion entries (start with last incomplete quarter, if any)
 
 		# Download
 
         #edgar.download_index(download_directory, since_year)
-        edgar.download_index(DOWNLOAD_DIR,'2017')
+        #edgar.download_index(DOWNLOAD_DIR,'2017')
 
         # Clean up received data
 
         
         # Create collection
 		
+        # Unlock process
+		
         lockfilehandle.write('')
         fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
         lockfilehandle.close()
+       
+        # Ending entry
+		

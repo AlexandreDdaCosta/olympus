@@ -31,10 +31,29 @@ class Connection():
             start = None
             host = None
             for init_entry in self.init_collection.find({"datatype":init_type}):
-                if start is None or init_entry['start'] < start:
-                    start = init_entry['start']
-                    host = init_entry['host']
+                if 'start' in init_entry:
+                    if start is None or init_entry['start'] < start:
+                        start = init_entry['start']
+                        host = init_entry['host']
             return host
+
+    def _record_end(self,init_type):
+        print('Create document to record completion.')
+        dbnames = self.client.database_names()
+        host = self._initialized(init_type)
+        if host is None:
+            print('Cannot add ending record: start record not found')
+            return False
+        elif host != socket.gethostname():
+            print('Already initialized by host '+host)
+            return False
+        else
+            for init_entry in self.init_collection.find({"datatype":init_type}):
+                if 'end' in init_entry and init_entry['host'] == socket.gethostname():
+                    print('Cannot add ending record: ending record already found')
+                    return False
+        end_record = {"host":socket.gethostname(),"end":datetime.datetime.utcnow(),"datatype":init_type}
+        self.init_collection.insert_one(end_record)
 
     def _record_start(self,init_type):
         print('Create document to record initialization.')
