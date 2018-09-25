@@ -1,8 +1,20 @@
 #!/usr/bin/env python3
 
+import getopt, sys
+
 from olympus.projects.ploutos.data.edgar import InitForm4Indices
 from olympus.projects.ploutos.data.options import InitOptions
 from olympus.projects.ploutos.data.symbols import InitSymbols
+
+verbose = False
+try:
+    opts, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
+except getopt.GetoptError:
+    print('init.py --verbose')
+    sys.exit(2)
+for opt, arg in opts:
+    if opt in ('-v', '--verbose'):
+        verbose = True
 
 print("Begin symbol import.")
 #process = InitSymbols(graceful=True)
@@ -13,6 +25,6 @@ print("Begin options import.")
 #process.populate_collections()
 print("Ended options import.")
 print("Begin import of EDGAR quarterly indices.")
-#process = InitForm4Indices(graceful=True)
-#process.populate_collections()
+process = InitForm4Indices(graceful=True,verbose=verbose)
+process.populate_collections()
 print("Ended import of EDGAR quarterly indices.")

@@ -1,4 +1,4 @@
-import datetime, fcntl, json, re
+import datetime, fcntl, json, re, shutil
 import edgar as form4_index_downloader
 
 import olympus.projects.ploutos.data as data
@@ -17,12 +17,15 @@ class InitForm4Indices(data.Connection):
         super(InitForm4Indices,self).__init__('form4_indices',**kwargs)
         self.LOCKFILE = LOCKFILE_DIR+self.init_type+'.pid'
         self.force = kwargs.get('force',False)
-        self.graceful = kwargs.get('force',False)
+        self.graceful = kwargs.get('graceful',False)
+        self.verbose = kwargs.get('verbose',False)
 
     def populate_collections(self):
 
         # Set up environment
 
+        if self.verbose:
+            print('Initializing Form4 collection procedure.')
         lockfilehandle = open(self.LOCKFILE,'w')
         fcntl.flock(lockfilehandle,fcntl.LOCK_EX|fcntl.LOCK_NB)
         lockfilehandle.write(str(os.getpid()))
@@ -55,7 +58,8 @@ class InitForm4Indices(data.Connection):
 
 		# Download
 
-        #download_directory = '/tmp//'
+        if self.verbose:
+            print('Downloading quarterly index files.')
         download_directory = '/tmp/form4_indices_'+str(datetime.datetime.utcnow()).replace(" ", "_").replace(":", "_")
         if not os.path.isdir(download_directory):
             os.mkdir(download_directory)
@@ -63,8 +67,12 @@ class InitForm4Indices(data.Connection):
 
         # Create and populate Form 4 index collections, by year
 
+        if self.verbose:
+            print('Adding quarterly index files to database.')
         collection_range = range(start_year,datetime.datetime.now().year+1)
         for year in collection_range:
+            if self.verbose:
+                print('Starting read for '+str(year)+'.')
             json_data = '['
             for quarter in (1, 2, 3, 4):
                 filename = download_directory + str(year) + '-QTR' + str(quarter) + '.tsv'
@@ -80,6 +88,7 @@ class InitForm4Indices(data.Connection):
                             row['file'] = re.sub(r'^.*\/(.*)\.txt',r'\g<1>',pieces[4])
                             jsonstring = json.dumps(row)
                             json_data += '\n'+jsonstring+','
+                    f.close()
             if len(json_data) > 1:
                 json_data = json_data[:-1]
             json_data += '\n]'
@@ -88,9 +97,14 @@ class InitForm4Indices(data.Connection):
             collection = self.db[FORM4_INDEX_COLLECTIONS_PREFIX+str(year)]
             collection.insert_many(out_data)
             collection.create_index([('cik', pymongo.ASCENDING)], name='cik_'+str(year)+'_'+INDEX_SUFFIX, unique=False)
+            if self.verbose:
+                print('Added indices for '+str(year)+'.')
 		
-        # Unlock process
+        # Clean-up
 		
+        if self.verbose:
+             print('Cleaning uo.')
+        shutil.rmtree(download_directory)
         lockfilehandle.write('')
         fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
         lockfilehandle.close()
