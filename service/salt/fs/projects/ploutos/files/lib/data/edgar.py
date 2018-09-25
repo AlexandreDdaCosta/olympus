@@ -7,7 +7,6 @@ from olympus.projects.ploutos import *
 from olympus.projects.ploutos.data import *
 
 FORM4_INDEX_COLLECTIONS_PREFIX = 'form4_index_'
-FORM4_INDEX_SUFFIX = '_form4' + INDEX_SUFFIX
 QUARTERLY_FIRST_YEAR = 2004
 QUARTERLY_ORIGINAL_YEAR = 1993
 QUARTERLY_YEAR_LIST = range(QUARTERLY_FIRST_YEAR,datetime.datetime.now().year+1)
@@ -56,11 +55,11 @@ class InitForm4Indices(data.Connection):
 
 		# Download
 
-        download_directory = '/tmp/form4_indices_2018-09-25_03_20_48.208421/'
-        #download_directory = '/tmp/form4_indices_'+str(datetime.datetime.utcnow()).replace(" ", "_").replace(":", "_")
-        #if not os.path.isdir(download_directory):
-        #    os.mkdir(download_directory)
-        #form4_index_downloader.download_index(download_directory,start_year)
+        #download_directory = '/tmp//'
+        download_directory = '/tmp/form4_indices_'+str(datetime.datetime.utcnow()).replace(" ", "_").replace(":", "_")
+        if not os.path.isdir(download_directory):
+            os.mkdir(download_directory)
+        form4_index_downloader.download_index(download_directory,start_year)
 
         # Create and populate Form 4 index collections, by year
 
@@ -89,9 +88,7 @@ class InitForm4Indices(data.Connection):
             collection_name = FORM4_INDEX_COLLECTIONS_PREFIX+str(year)
             collection = self.db[FORM4_INDEX_COLLECTIONS_PREFIX+str(year)]
             collection.insert_many(out_data)
-            #collection.create_index("Symbol")
-            #collection.create_index([('quarter', pymongo.ASCENDING)], name='quarter'+FORM4_INDEX_SUFFIX, unique=False)
-            raise Exception('ALEX')
+            collection.create_index([('cik', pymongo.ASCENDING)], name='cik_'+str(year)+'_'+INDEX_SUFFIX, unique=False)
 		
         # Unlock process
 		
