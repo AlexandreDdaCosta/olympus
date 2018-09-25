@@ -60,10 +60,13 @@ class InitForm4Indices(data.Connection):
 
         if self.verbose:
             print('Downloading quarterly index files.')
+        download_directory = '/tmp/form4_indices_2018-09-25_19_14_22.946895/'
+        '''
         download_directory = '/tmp/form4_indices_'+str(datetime.datetime.utcnow()).replace(" ", "_").replace(":", "_")
         if not os.path.isdir(download_directory):
             os.mkdir(download_directory)
         form4_index_downloader.download_index(download_directory,start_year)
+        '''
 
         # Create and populate Form 4 index collections, by year
 
