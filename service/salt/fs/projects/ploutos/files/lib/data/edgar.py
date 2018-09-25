@@ -77,7 +77,6 @@ class InitForm4Indices(data.Connection):
                             row = {}
                             row['cik'] = pieces[0]
                             row['file'] = pieces[4]
-                            # "edgar/data/1000015/0001047469-04-001808.txt"
                             row['file'] = re.sub(r'^.*\/(.*)\.txt',r'\g<1>',pieces[4])
                             jsonstring = json.dumps(row)
                             json_data += '\n'+jsonstring+','
