@@ -1,4 +1,4 @@
-import datetime, fcntl, json, re, shutil
+import datetime, fcntl, json, re, shutil, sys
 import edgar as form4_index_downloader
 
 import olympus.projects.ploutos.data as data
@@ -44,31 +44,30 @@ class InitForm4Indices(data.Connection):
 
         # The edgar module retrieves based on a starting year. 
         # Check is to see which data sets have already been retrieved and indexed.
+        # Then create/update collections as needed.
 
-        # Index/create collection
+        # Read existing collections, looking for last worked year, in order oldest to newest
+        
         existing_collections = self.db.collection_names()
-        start_year = datetime.datetime.now().year+1
+        start_year = datetime.datetime.now().year
         for year in QUARTERLY_YEAR_LIST:
             collection_name = FORM4_INDEX_COLLECTIONS_PREFIX+str(year)
             if collection_name not in existing_collections:
                 start_year = year
                 break
-
-        # ?. Read completion entries (start with last incomplete quarter, if any)
+        if self.verbose:
+            print('Starting year for init/sync: '+ str(start_year))
 
 		# Download
 
         if self.verbose:
             print('Downloading quarterly index files.')
-        download_directory = '/tmp/form4_indices_2018-09-25_19_14_22.946895/'
-        '''
         download_directory = '/tmp/form4_indices_'+str(datetime.datetime.utcnow()).replace(" ", "_").replace(":", "_")
         if not os.path.isdir(download_directory):
             os.mkdir(download_directory)
         form4_index_downloader.download_index(download_directory,start_year)
-        '''
 
-        # Create and populate Form 4 index collections, by year
+        # Create/update Form 4 index collections, by year
 
         if self.verbose:
             print('Adding quarterly index files to database.')
@@ -76,9 +75,17 @@ class InitForm4Indices(data.Connection):
         for year in collection_range:
             if self.verbose:
                 print('Starting read for '+str(year)+'.')
-            json_data = '['
+            collection_name = FORM4_INDEX_COLLECTIONS_PREFIX+str(year)
+            collection = self.db[FORM4_INDEX_COLLECTIONS_PREFIX+str(year)]
+            if collection_name in existing_collections:
+                collection_exists = True
+                if self.verbose:
+                    print('Collection exists; will search for missing entries.')
+            else:
+                collection_exists = False
+                json_data = '['
             for quarter in (1, 2, 3, 4):
-                filename = download_directory + str(year) + '-QTR' + str(quarter) + '.tsv'
+                filename = download_directory + '/' + str(year) + '-QTR' + str(quarter) + '.tsv'
                 if os.path.isfile(filename):
                     with open(filename) as f:
                         for line in f:
@@ -89,24 +96,36 @@ class InitForm4Indices(data.Connection):
                             row['cik'] = pieces[0]
                             row['file'] = pieces[4]
                             row['file'] = re.sub(r'^.*\/(.*)\.txt',r'\g<1>',pieces[4])
-                            jsonstring = json.dumps(row)
-                            json_data += '\n'+jsonstring+','
+                            if collection_exists:
+                                # Search for this entry
+                                document_count = collection.find({'cik': row['cik'], 'file': row['file']},{}).count()
+                                if document_count > 1:
+                                    raise Exception('Two of same document found in collection! :' + str(row))
+                                elif document_count == 0:
+                                    if self.verbose:
+                                        print('Adding entry ' + str(row))
+                            else:
+                                jsonstring = json.dumps(row)
+                                json_data += '\n'+jsonstring+','
                     f.close()
-            if len(json_data) > 1:
-                json_data = json_data[:-1]
-            json_data += '\n]'
-            out_data = json.loads(json_data)
-            collection_name = FORM4_INDEX_COLLECTIONS_PREFIX+str(year)
-            collection = self.db[FORM4_INDEX_COLLECTIONS_PREFIX+str(year)]
-            collection.insert_many(out_data)
-            collection.create_index([('cik', pymongo.ASCENDING)], name='cik_'+str(year)+'_'+INDEX_SUFFIX, unique=False)
-            if self.verbose:
-                print('Added indices for '+str(year)+'.')
-		
+                else:
+                    if self.verbose:
+                        print(filename + ' not found; skipping.')
+            if not collection_exists:
+                if self.verbose:
+                    print('Creating indices for '+str(year)+'.')
+                if len(json_data) > 1:
+                    json_data = json_data[:-1]
+                json_data += '\n]'
+                out_data = json.loads(json_data)
+                collection.insert_many(out_data)
+                collection.create_index([('cik', pymongo.ASCENDING)], name='cik_'+str(year)+'_'+INDEX_SUFFIX, unique=False)
+                collection.create_index([('file', pymongo.ASCENDING)], name='file_'+str(year)+'_'+INDEX_SUFFIX, unique=True)
+
         # Clean-up
 		
         if self.verbose:
-             print('Cleaning uo.')
+             print('Cleaning up.')
         shutil.rmtree(download_directory)
         lockfilehandle.write('')
         fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
