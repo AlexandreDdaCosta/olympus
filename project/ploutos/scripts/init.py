@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import getopt, sys
+import getopt, sys, time
 
 from olympus.projects.ploutos.data.edgar import InitForm4Indices
 from olympus.projects.ploutos.data.options import InitOptions
