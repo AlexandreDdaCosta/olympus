@@ -49,12 +49,15 @@ class InitForm4Indices(data.Connection):
         # Read existing collections, looking for last worked year, in order oldest to newest
         
         existing_collections = self.db.collection_names()
-        start_year = datetime.datetime.now().year
+        # Subtract one year in case the last created collection was incomplete
+        start_year = datetime.datetime.now().year - 1
         for year in QUARTERLY_YEAR_LIST:
             collection_name = FORM4_INDEX_COLLECTIONS_PREFIX+str(year)
             if collection_name not in existing_collections:
-                start_year = year
+                start_year = year - 1
                 break
+        if start_year < QUARTERLY_FIRST_YEAR:
+            start_year = QUARTERLY_FIRST_YEAR
         if self.verbose:
             print('Starting year for init/sync: '+ str(start_year))
 
@@ -78,55 +81,60 @@ class InitForm4Indices(data.Connection):
             collection_name = FORM4_INDEX_COLLECTIONS_PREFIX+str(year)
             collection = self.db[FORM4_INDEX_COLLECTIONS_PREFIX+str(year)]
             if collection_name in existing_collections:
-                collection_exists = True
+                # Execution check: If number of existing documents match relevant rows
+                # in download, assume no changes and exit.
+                document_count = collection.find().count()
+                line_count = 0
+                for quarter in (1, 2, 3, 4):
+                    filename = download_directory + '/' + str(year) + '-QTR' + str(quarter) + '.tsv'
+                    if os.path.isfile(filename):
+                        file = open(filename,"r")
+                        for line in file:
+                            if '|4|' in line or '|4/' in line:
+                                line_count = line_count + 1
+                        file.close()
+                if line_count == document_count:
+                    if self.verbose:
+                        print('Download document count matches existing collection; bypassing ' + str(year) + '.')
+                    continue
                 if self.verbose:
-                    print('Collection exists; will search for missing entries.')
-            else:
-                collection_exists = False
-                json_data = '['
+                    print('Collection exists; rebuilding.')
+                collection.drop()
+            json_data = '['
             for quarter in (1, 2, 3, 4):
                 filename = download_directory + '/' + str(year) + '-QTR' + str(quarter) + '.tsv'
                 if os.path.isfile(filename):
                     with open(filename) as f:
                         for line in f:
                             pieces = line.rstrip().split('|')
-                            if pieces[2][:1] != '4':
+                            if pieces[2] != '4' and pieces[2][:2] != '4/':
                                 continue
                             row = {}
                             row['cik'] = pieces[0]
                             row['file'] = pieces[4]
                             row['file'] = re.sub(r'^.*\/(.*)\.txt',r'\g<1>',pieces[4])
-                            if collection_exists:
-                                # Search for this entry
-                                document_count = collection.find({'cik': row['cik'], 'file': row['file']},{}).count()
-                                if document_count > 1:
-                                    raise Exception('Two of same document found in collection! :' + str(row))
-                                elif document_count == 0:
-                                    if self.verbose:
-                                        print('Adding entry ' + str(row))
-                            else:
-                                jsonstring = json.dumps(row)
-                                json_data += '\n'+jsonstring+','
+                            jsonstring = json.dumps(row)
+                            json_data += '\n'+jsonstring+','
                     f.close()
                 else:
                     if self.verbose:
                         print(filename + ' not found; skipping.')
-            if not collection_exists:
-                if self.verbose:
-                    print('Creating indices for '+str(year)+'.')
-                if len(json_data) > 1:
-                    json_data = json_data[:-1]
-                json_data += '\n]'
-                out_data = json.loads(json_data)
-                collection.insert_many(out_data)
-                collection.create_index([('cik', pymongo.ASCENDING)], name='cik_'+str(year)+'_'+INDEX_SUFFIX, unique=False)
-                collection.create_index([('file', pymongo.ASCENDING)], name='file_'+str(year)+'_'+INDEX_SUFFIX, unique=True)
+            if self.verbose:
+                print('Creating indices for '+str(year)+'.')
+            if len(json_data) > 1:
+                json_data = json_data[:-1]
+            json_data += '\n]'
+            out_data = json.loads(json_data)
+            collection.insert_many(out_data)
+            collection.create_index([('cik', pymongo.ASCENDING)], name='cik_'+str(year)+'_'+INDEX_SUFFIX, unique=False)
+            collection.create_index([('file', pymongo.ASCENDING)], name='file_'+str(year)+'_'+INDEX_SUFFIX, unique=False)
 
         # Clean-up
 		
         if self.verbose:
-             print('Cleaning up.')
+            print('Cleaning up.')
         shutil.rmtree(download_directory)
+        self._record_end()
         lockfilehandle.write('')
         fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
         lockfilehandle.close()

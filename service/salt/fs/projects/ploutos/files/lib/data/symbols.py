@@ -121,7 +121,10 @@ class InitSymbols(data.Connection):
             jsonfile.close()
             collection.insert_many(json_data)
             collection.create_index("Symbol")
-		
+	
+        # Clean-up
+	
+        self._record_end()
         lockfilehandle.write('')
         fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
         lockfilehandle.close()

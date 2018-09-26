@@ -38,6 +38,15 @@ class Connection():
                         host = init_entry['host']
             return host
 
+    def _record_end(self):
+        if self.init_type is None:
+            raise Exception('Initialization not available for this data type; exiting.')
+        host = self._initialized()
+        if host == socket.gethostname():
+            self.init_collection.delete_many({"datatype":self.init_type})
+            return True
+        raise Exception('Attempt to end initialization for data type without having recorded the beginning; exiting.')
+
     def _record_start(self):
         if self.init_type is None:
             raise Exception('Initialization not available for this data type; exiting.')

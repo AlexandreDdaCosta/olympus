@@ -95,8 +95,9 @@ class InitOptions(data.Connection):
         collection.insert_many(json_data)
         collection.create_index("Symbol")
 		
-        # Unlock process
+        # Clean-up
 		
+        self._record_end()
         lockfilehandle.write('')
         fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
         lockfilehandle.close()

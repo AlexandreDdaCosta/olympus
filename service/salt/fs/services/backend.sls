@@ -185,7 +185,7 @@ mongo --ssl --sslCAFile /etc/ssl/localcerts/ca-crt.pem --sslPEMKeyFile /etc/ssl/
     file.managed:
     - group: root
     - makedirs: False
-    - mode: 0755
+    - mode: 0644
     - source: salt://services/backend/files/logrotate.node
     - user: root
 
@@ -207,7 +207,7 @@ mongo --ssl --sslCAFile /etc/ssl/localcerts/ca-crt.pem --sslPEMKeyFile /etc/ssl/
 {{ pillar.www_path }}/node/restapi/package.json:
   file.managed:
     - group: root
-    - mode: 0755
+    - mode: 0644
     - user: root
     - source: salt://services/backend/package.json.jinja
     - template: jinja

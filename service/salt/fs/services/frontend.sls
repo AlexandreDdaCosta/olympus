@@ -126,7 +126,7 @@ frontend-user:
     file.managed:
     - group: root
     - makedirs: False
-    - mode: 0755
+    - mode: 0644
     - source: salt://services/frontend/files/logrotate.uwsgi
     - user: root
 
