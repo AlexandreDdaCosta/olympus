@@ -147,7 +147,8 @@ class Form4(data.Connection):
         self.graceful = kwargs.get('graceful',False)
         self.verbose = kwargs.get('verbose',False)
 
-    def add_records(self):
+    def get_indexed_forms(self):
         # Gather detailed Form4 records based on EDGAR indices
         # Start with most recent year, go backwards
+        pass
 
