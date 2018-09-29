@@ -138,3 +138,16 @@ class InitForm4Indices(data.Connection):
         lockfilehandle.write('')
         fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
         lockfilehandle.close()
+
+class Form4(data.Connection):
+
+    def __init__(self,**kwargs):
+        super(Form4,self).__init__('form4_indices',**kwargs)
+        self.LOCKFILE = LOCKFILE_DIR+self.init_type+'.pid'
+        self.graceful = kwargs.get('graceful',False)
+        self.verbose = kwargs.get('verbose',False)
+
+    def add_records(self):
+        # Gather detailed Form4 records based on EDGAR indices
+        # Start with most recent year, go backwards
+
