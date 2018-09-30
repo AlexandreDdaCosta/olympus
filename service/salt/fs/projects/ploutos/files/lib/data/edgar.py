@@ -82,7 +82,7 @@ class InitForm4Indices(data.Connection):
             collection = self.db[FORM4_INDEX_COLLECTIONS_PREFIX+str(year)]
             if collection_name in existing_collections:
                 # Execution check: If number of existing documents match relevant rows
-                # in download, assume no changes and exit.
+                # in download, assume no changes and skip
                 document_count = collection.find().count()
                 line_count = 0
                 for quarter in (1, 2, 3, 4):
@@ -98,6 +98,7 @@ class InitForm4Indices(data.Connection):
                         print('Download document count matches existing collection; bypassing ' + str(year) + '.')
                     continue
                 if self.verbose:
+                    print('Line count '+ str(line_count) + ', document count ' + str(document_count))
                     print('Collection exists; rebuilding.')
                 collection.drop()
             json_data = '['
@@ -142,13 +143,20 @@ class InitForm4Indices(data.Connection):
 class Form4(data.Connection):
 
     def __init__(self,**kwargs):
-        super(Form4,self).__init__('form4_indices',**kwargs)
-        self.LOCKFILE = LOCKFILE_DIR+self.init_type+'.pid'
-        self.graceful = kwargs.get('graceful',False)
+        super(Form4,self).__init__(**kwargs)
         self.verbose = kwargs.get('verbose',False)
+        self.year = kwargs.get('year',None)
 
     def get_indexed_forms(self):
         # Gather detailed Form4 records based on EDGAR indices
-        # Start with most recent year, go backwards
+        # Look for an available chunk of the data set to process.
+        # Record execution of this chunk
         pass
 
+    def _initialized(self):
+        print('foo')
+        #
+        #Batches of 100 for processing
+        #cursor = self.init_collection.find({"datatype":self.init_type})
+        #return(Index year, offset)
+        return('2004',0) 
