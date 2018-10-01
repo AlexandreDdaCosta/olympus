@@ -18,6 +18,7 @@ for opt, arg in opts:
 
 if verbose == True:
     start = time.time()
+'''
 print("Begin symbol import.")
 process = InitSymbols(graceful=True)
 process.populate_collections()
@@ -26,6 +27,7 @@ print("Begin options import.")
 process = InitOptions(graceful=True)
 process.populate_collections()
 print("Ended options import.")
+'''
 print("Begin import of EDGAR quarterly indices.")
 process = InitForm4Indices(graceful=True,verbose=verbose)
 process.populate_collections()

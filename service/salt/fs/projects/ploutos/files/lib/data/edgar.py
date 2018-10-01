@@ -1,6 +1,8 @@
 import datetime, fcntl, json, re, shutil, sys
 import edgar as form4_index_downloader
 
+from bson.json_util import dumps, loads
+
 import olympus.projects.ploutos.data as data
 
 from olympus.projects.ploutos import *
@@ -104,15 +106,22 @@ class InitForm4Indices(data.Connection):
             if len(json_data) > 1:
                 json_data = json_data[:-1]
             json_data += '\n]'
+            downloaded_data = json.loads(json_data)
             if collection_name in existing_collections:
                 # Execution check: If number of existing documents match relevant rows
                 # in download, assume no changes and skip
+                '''
                 if line_count == collection.find().count():
                     if self.verbose:
                         print('Download document count matches existing collection; bypassing ' + str(year) + '.')
                     continue
+                '''
                 # Differentiate collections, add missing entries to existing collection
-
+                if self.verbose:
+                    print('Differentating new download and existing collection for ' + str(year) + '.')
+                existing_data = loads(dumps(collection.find({}, {'cik':1, 'file':1, '_id':0})))
+                value = set(downloaded_data)-set(existing_data)
+                print(str(value))
             '''
                 if self.verbose:
                     print('Line count '+ str(line_count) + ', document count ' + str(document_count))
@@ -121,8 +130,7 @@ class InitForm4Indices(data.Connection):
             
             if self.verbose:
                 print('Loading data and creating indices for '+str(year)+'.')
-            out_data = json.loads(json_data)
-            collection.insert_many(out_data)
+            collection.insert_many(downloaded_data)
             collection.create_index([('cik', pymongo.ASCENDING)], name='cik_'+str(year)+'_'+INDEX_SUFFIX, unique=False)
             collection.create_index([('file', pymongo.ASCENDING)], name='file_'+str(year)+'_'+INDEX_SUFFIX, unique=False)
             '''
