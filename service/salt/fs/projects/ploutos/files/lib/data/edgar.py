@@ -7,6 +7,7 @@ from olympus.projects.ploutos import *
 from olympus.projects.ploutos.data import *
 
 FORM4_INDEX_COLLECTIONS_PREFIX = 'form4_index_'
+FORM4_INIT_TYPE = 'form4_indices'
 QUARTERLY_FIRST_YEAR = 2004
 QUARTERLY_ORIGINAL_YEAR = 1993
 QUARTERLY_YEAR_LIST = range(QUARTERLY_FIRST_YEAR,datetime.datetime.now().year+1)
@@ -14,7 +15,7 @@ QUARTERLY_YEAR_LIST = range(QUARTERLY_FIRST_YEAR,datetime.datetime.now().year+1)
 class InitForm4Indices(data.Connection):
 
     def __init__(self,**kwargs):
-        super(InitForm4Indices,self).__init__('form4_indices',**kwargs)
+        super(InitForm4Indices,self).__init__(FORM4_INIT_TYPE,**kwargs)
         self.LOCKFILE = LOCKFILE_DIR+self.init_type+'.pid'
         self.force = kwargs.get('force',False)
         self.graceful = kwargs.get('graceful',False)
@@ -49,8 +50,7 @@ class InitForm4Indices(data.Connection):
         # Read existing collections, looking for last worked year, in order oldest to newest
         
         existing_collections = self.db.collection_names()
-        # Subtract one year in case the last created collection was incomplete
-        start_year = datetime.datetime.now().year - 1
+        start_year = datetime.datetime.now().year
         for year in QUARTERLY_YEAR_LIST:
             collection_name = FORM4_INDEX_COLLECTIONS_PREFIX+str(year)
             if collection_name not in existing_collections:
@@ -80,27 +80,7 @@ class InitForm4Indices(data.Connection):
                 print('Starting read for '+str(year)+'.')
             collection_name = FORM4_INDEX_COLLECTIONS_PREFIX+str(year)
             collection = self.db[FORM4_INDEX_COLLECTIONS_PREFIX+str(year)]
-            if collection_name in existing_collections:
-                # Execution check: If number of existing documents match relevant rows
-                # in download, assume no changes and skip
-                document_count = collection.find().count()
-                line_count = 0
-                for quarter in (1, 2, 3, 4):
-                    filename = download_directory + '/' + str(year) + '-QTR' + str(quarter) + '.tsv'
-                    if os.path.isfile(filename):
-                        file = open(filename,"r")
-                        for line in file:
-                            if '|4|' in line or '|4/' in line:
-                                line_count = line_count + 1
-                        file.close()
-                if line_count == document_count:
-                    if self.verbose:
-                        print('Download document count matches existing collection; bypassing ' + str(year) + '.')
-                    continue
-                if self.verbose:
-                    print('Line count '+ str(line_count) + ', document count ' + str(document_count))
-                    print('Collection exists; rebuilding.')
-                collection.drop()
+            line_count = 0
             json_data = '['
             for quarter in (1, 2, 3, 4):
                 filename = download_directory + '/' + str(year) + '-QTR' + str(quarter) + '.tsv'
@@ -116,19 +96,36 @@ class InitForm4Indices(data.Connection):
                             row['file'] = re.sub(r'^.*\/(.*)\.txt',r'\g<1>',pieces[4])
                             jsonstring = json.dumps(row)
                             json_data += '\n'+jsonstring+','
+                            line_count = line_count + 1
                     f.close()
                 else:
                     if self.verbose:
                         print(filename + ' not found; skipping.')
-            if self.verbose:
-                print('Creating indices for '+str(year)+'.')
             if len(json_data) > 1:
                 json_data = json_data[:-1]
             json_data += '\n]'
+            if collection_name in existing_collections:
+                # Execution check: If number of existing documents match relevant rows
+                # in download, assume no changes and skip
+                if line_count == collection.find().count():
+                    if self.verbose:
+                        print('Download document count matches existing collection; bypassing ' + str(year) + '.')
+                    continue
+                # Differentiate collections, add missing entries to existing collection
+
+            '''
+                if self.verbose:
+                    print('Line count '+ str(line_count) + ', document count ' + str(document_count))
+                    print('Collection exists; rebuilding.')
+                collection.drop()
+            
+            if self.verbose:
+                print('Loading data and creating indices for '+str(year)+'.')
             out_data = json.loads(json_data)
             collection.insert_many(out_data)
             collection.create_index([('cik', pymongo.ASCENDING)], name='cik_'+str(year)+'_'+INDEX_SUFFIX, unique=False)
             collection.create_index([('file', pymongo.ASCENDING)], name='file_'+str(year)+'_'+INDEX_SUFFIX, unique=False)
+            '''
 
         # Clean-up
 		
