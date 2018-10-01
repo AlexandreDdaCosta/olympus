@@ -82,7 +82,7 @@ class InitForm4Indices(data.Connection):
                 print('Starting read for '+str(year)+'.')
             collection_name = FORM4_INDEX_COLLECTIONS_PREFIX+str(year)
             collection = self.db[FORM4_INDEX_COLLECTIONS_PREFIX+str(year)]
-            line_count = 0
+            downloaded_entries = []
             json_data = '['
             for quarter in (1, 2, 3, 4):
                 filename = download_directory + '/' + str(year) + '-QTR' + str(quarter) + '.tsv'
@@ -96,9 +96,9 @@ class InitForm4Indices(data.Connection):
                             row['cik'] = pieces[0]
                             row['file'] = pieces[4]
                             row['file'] = re.sub(r'^.*\/(.*)\.txt',r'\g<1>',pieces[4])
+                            downloaded_entries.append(row['cik'] + '_' + row['file'])
                             jsonstring = json.dumps(row)
                             json_data += '\n'+jsonstring+','
-                            line_count = line_count + 1
                     f.close()
                 else:
                     if self.verbose:
@@ -110,30 +110,33 @@ class InitForm4Indices(data.Connection):
             if collection_name in existing_collections:
                 # Execution check: If number of existing documents match relevant rows
                 # in download, assume no changes and skip
-                '''
-                if line_count == collection.find().count():
+                if len(downloaded_entries) == collection.find().count():
                     if self.verbose:
                         print('Download document count matches existing collection; bypassing ' + str(year) + '.')
                     continue
-                '''
                 # Differentiate collections, add missing entries to existing collection
                 if self.verbose:
                     print('Differentating new download and existing collection for ' + str(year) + '.')
-                existing_data = loads(dumps(collection.find({}, {'cik':1, 'file':1, '_id':0})))
-                value = set(downloaded_data)-set(existing_data)
-                print(str(value))
-            '''
+                existing_entries = []
+                for entry in collection.find({}, {'cik':1, 'file':1, '_id':0}):
+                    existing_entries.append(entry['cik'] + '_' + entry['file'])
+                missing_entries = set(downloaded_entries)-set(existing_entries)
+                if len(missing_entries) == 0:
+                    if self.verbose:
+                        print('No new entries for '+str(year)+'.')
+                else:
+                    if self.verbose:
+                        print('Adding missing entries for '+str(year)+'.')
+                    for entry in missing_entries:
+                        row = {}
+                        row['cik'], row['file'] = entry.split('_')
+                        collection.insert_one(row)
+            else:
                 if self.verbose:
-                    print('Line count '+ str(line_count) + ', document count ' + str(document_count))
-                    print('Collection exists; rebuilding.')
-                collection.drop()
-            
-            if self.verbose:
-                print('Loading data and creating indices for '+str(year)+'.')
-            collection.insert_many(downloaded_data)
-            collection.create_index([('cik', pymongo.ASCENDING)], name='cik_'+str(year)+'_'+INDEX_SUFFIX, unique=False)
-            collection.create_index([('file', pymongo.ASCENDING)], name='file_'+str(year)+'_'+INDEX_SUFFIX, unique=False)
-            '''
+                    print('Loading initial data and creating indices for '+str(year)+'.')
+                collection.insert_many(downloaded_data)
+                collection.create_index([('cik', pymongo.ASCENDING)], name='cik_'+str(year)+'_'+INDEX_SUFFIX, unique=False)
+                collection.create_index([('file', pymongo.ASCENDING)], name='file_'+str(year)+'_'+INDEX_SUFFIX, unique=False)
 
         # Clean-up
 		
@@ -153,15 +156,9 @@ class Form4(data.Connection):
         self.year = kwargs.get('year',None)
 
     def get_indexed_forms(self):
-        # Gather detailed Form4 records based on EDGAR indices
+        # Gather detailed Form4 records based on downloaded EDGAR indices
+
+        # PROCEDURE: 
         # Look for an available chunk of the data set to process.
         # Record execution of this chunk
         pass
-
-    def _initialized(self):
-        print('foo')
-        #
-        #Batches of 100 for processing
-        #cursor = self.init_collection.find({"datatype":self.init_type})
-        #return(Index year, offset)
-        return('2004',0) 
