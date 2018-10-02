@@ -9,6 +9,7 @@ INDEX_SUFFIX = '_idx'
 # Collections
 
 class Connection():
+
     def __init__(self,init_type=None,**kwargs):
         self.init_type = init_type
         self.client = pymongo.MongoClient(MONGO_URL,ssl=True,ssl_ca_certs=CAFILE,ssl_certfile=CERTFILE,ssl_keyfile=KEYFILE,ssl_match_hostname=False)
@@ -18,6 +19,18 @@ class Connection():
             os.makedirs(DOWNLOAD_DIR)
         except OSError:
             pass
+    
+    def _init_running(self):
+        if self.init_type is None:
+            raise Exception('Initialization not known for this data type; exiting.')
+        dbnames = self.client.database_names()
+        if DATABASE not in dbnames:
+            return False
+        else:
+            cursor = self.init_collection.find({"datatype":self.init_type})
+            if cursor.count() == 0:
+                return False
+            return True
 
     def _initialized(self):
         if self.init_type is None:

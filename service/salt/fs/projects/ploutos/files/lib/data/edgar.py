@@ -1,4 +1,4 @@
-import datetime, fcntl, json, re, shutil, sys
+import datetime, fcntl, json, re, shutil, sys, time
 import edgar as form4_index_downloader
 
 from bson.json_util import dumps, loads
@@ -150,15 +150,51 @@ class InitForm4Indices(data.Connection):
 
 class Form4(data.Connection):
 
+    INIT_SLEEP = 30
+    INIT_WAIT = 6
+    PROCESSING_BLOCK_SIZE = 10
+
     def __init__(self,**kwargs):
-        super(Form4,self).__init__(**kwargs)
+        super(Form4,self).__init__(FORM4_INIT_TYPE,**kwargs)
         self.verbose = kwargs.get('verbose',False)
-        self.year = kwargs.get('year',None)
 
-    def get_indexed_forms(self):
+    def populate_indexed_forms(self,**kwargs):
         # Gather detailed Form4 records based on downloaded EDGAR indices
+        year = kwargs.get('year',None)
 
-        # PROCEDURE: 
-        # Look for an available chunk of the data set to process.
-        # Record execution of this chunk
-        pass
+        # Verify initialization not in progress; wait otherwise (with limit)
+        wait = 0
+        if self._init_running() is True:
+            wait = wait + 1
+            if wait >= self.INIT_WAIT:
+                 raise Exception('Initialization running; exceeded maximum wait time.')
+            if self.verbose:
+                print('Main index initializing; waiting '+str(self.INIT_SLEEP)+' seconds.')
+            time.sleep(self.INIT_SLEEP)
+
+        if year is not None:
+            while True:
+                records = self._select_lock_slice(year)
+                if len(records) == 0:
+                    if self.verbose:
+                        print('No unprocessed index entries found for '+str(year)+'; ending.')
+                    return
+                self._get_write_forms(self.year,records)
+        else:
+            for year in QUARTERLY_YEAR_LIST:
+                while True:
+                    records = self._select_lock_slice(year)
+                    if len(records) == 0:
+                        if self.verbose:
+                            print('No unprocessed index entries found for '+str(year)+'; skipping.')
+                        break
+                    self._get_write_forms(year,records)
+
+    def _get_write_forms(self,year,records):
+        collection_name = FORM4_INDEX_COLLECTIONS_PREFIX+str(year)
+        # HTTP call to get linked document
+    
+    def _select_lock_slice(self,year):
+        collection_name = FORM4_INDEX_COLLECTIONS_PREFIX+str(year)
+        # Go through records where 'cik_owner'/'processing' == null, update locking of PROCESSING_BLOCK_SIZE entries in main index. Handle collisions (multiple processes)
+        return []
