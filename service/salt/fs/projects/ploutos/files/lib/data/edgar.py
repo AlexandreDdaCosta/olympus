@@ -1,4 +1,4 @@
-import datetime, fcntl, json, os, re, shutil, sys, time
+import datetime, fcntl, json, os, re, shutil, sys, time, wget, xmltodict
 import edgar as form4_index_downloader
 
 from bson.json_util import dumps, loads
@@ -180,11 +180,30 @@ class Form4(data.Connection):
                     self._get_write_forms(year,records)
 
     def _get_write_forms(self,year,records):
+        download_directory = '/tmp/form4_submissions_'+str(os.getpid())+'_'+str(datetime.datetime.utcnow()).replace(" ", "_").replace(":", "_")+'/'
+        if not os.path.isdir(download_directory):
+            os.mkdir(download_directory)
+        # HTTP get linked documents
         for record in records:
-            # HTTP call to get linked document
             url = 'https://www.sec.gov/Archives/edgar/data/'+record['cik']+'/'+record['file']+'.txt'
-            print(url)
-        raise Exception('ALEX')
+            filename = wget.download(url, out=download_directory+record['cik']+'_'+record['file']+'.txt')
+        for record in records:
+            filename = download_directory+record['cik']+'_'+record['file']+'.txt'
+            xml_content = ''
+            xml_found = False
+            with open(filename,'r') as f:
+                for line in f:
+                    if xml_found is True:
+                        if re.match(r'\<\/XML\>',line):
+                            break
+                        else:
+                            xml_content += line
+                    elif re.match(r'\<XML\>',line):
+                        xml_found = True
+            f.close()
+            data = xmltodict.parse(xml_content)
+            print(str(data))
+            raise Exception('ALEX')
     
     def _select_lock_slice(self,year):
         collection = self.db[FORM4_INDEX_COLLECTIONS_PREFIX+str(year)]
