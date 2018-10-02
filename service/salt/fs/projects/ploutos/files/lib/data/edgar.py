@@ -159,6 +159,7 @@ class Form4(data.Connection):
     def populate_indexed_forms(self,**kwargs):
         # Gather detailed Form4 records based on downloaded EDGAR indices
         self.force = kwargs.get('force',False)
+        self.epoch_time = int(time.time())
         year = kwargs.get('year',None)
 
         if year is not None:
@@ -167,7 +168,7 @@ class Form4(data.Connection):
                 if len(records) == 0:
                     if self.verbose:
                         print('No unprocessed index entries found for '+str(year)+'; ending.')
-                    return
+                    break
                 self._get_write_forms(year,records)
         else:
             for year in QUARTERLY_YEAR_LIST:
@@ -180,31 +181,46 @@ class Form4(data.Connection):
                     self._get_write_forms(year,records)
 
     def _get_write_forms(self,year,records):
-        download_directory = '/tmp/form4_submissions_'+str(os.getpid())+'_'+str(datetime.datetime.utcnow()).replace(" ", "_").replace(":", "_")+'/'
-        if not os.path.isdir(download_directory):
-            os.mkdir(download_directory)
-        # HTTP get linked documents
+        try:
+            download_directory = '/tmp/form4_submissions_'+str(os.getpid())+'_'+str(self.epoch_time)+'/'
+            if not os.path.isdir(download_directory):
+                os.mkdir(download_directory)
+            for record in records:
+                url = 'https://www.sec.gov/Archives/edgar/data/'+record['cik']+'/'+record['file']+'.txt'
+                filename = wget.download(url, out=download_directory+record['cik']+'_'+record['file']+'.txt')
+            for record in records:
+                filename = download_directory+record['cik']+'_'+record['file']+'.txt'
+                xml_content = ''
+                xml_found = False
+                with open(filename,'r') as f:
+                    for line in f:
+                        if xml_found is True:
+                            if re.match(r'\<\/XML\>',line):
+                                break
+                            else:
+                                xml_content += line
+                        elif re.match(r'\<XML\>',line):
+                            xml_found = True
+                f.close()
+                data = xmltodict.parse(xml_content)
+                data = data['ownershipDocument']
+                cik_owner = data['reportingOwner']['reportingOwnerId']['rptOwnerCik']
+                print('\nCIK Owner: '+str(cik_owner))
+                foo = bar() # ALEX, intentional error
+        except KeyError:
+            self._revert_unlock_slice(records,year)
+            raise Exception('Key error detected in parsing; check XML format of Form4 submissions for '+str(year))
+        except Exception as e:
+            self._revert_unlock_slice(records,year)
+            raise
+
+    def _revert_unlock_slice(self,records,year):
+        collection = self.db[FORM4_INDEX_COLLECTIONS_PREFIX+str(year)]
+        bulk = collection.initialize_ordered_bulk_op()
         for record in records:
-            url = 'https://www.sec.gov/Archives/edgar/data/'+record['cik']+'/'+record['file']+'.txt'
-            filename = wget.download(url, out=download_directory+record['cik']+'_'+record['file']+'.txt')
-        for record in records:
-            filename = download_directory+record['cik']+'_'+record['file']+'.txt'
-            xml_content = ''
-            xml_found = False
-            with open(filename,'r') as f:
-                for line in f:
-                    if xml_found is True:
-                        if re.match(r'\<\/XML\>',line):
-                            break
-                        else:
-                            xml_content += line
-                    elif re.match(r'\<XML\>',line):
-                        xml_found = True
-            f.close()
-            data = xmltodict.parse(xml_content)
-            print(str(data))
-            raise Exception('ALEX')
-    
+            bulk.find({ '_id': record['_id'], 'processing': self.epoch_time, 'pid': os.getpid() }).update({ '$unset': { 'processing': 1, 'pid': 1 } })
+        bulk.execute()
+
     def _select_lock_slice(self,year):
         collection = self.db[FORM4_INDEX_COLLECTIONS_PREFIX+str(year)]
         if self.force is True:
@@ -233,7 +249,7 @@ class Form4(data.Connection):
         records = []
         for record in collection.find({'cik_owner':{'$exists':False},'processing':{'$exists':False}}).limit(self.PROCESSING_BLOCK_SIZE):
             records.append(record)
-            bulk.find({ '_id': record['_id'] }).update({ '$set': { 'processing': int(time.time()) } })
+            bulk.find({ '_id': record['_id'] }).update({ '$set': { 'processing': self.epoch_time, 'pid': os.getpid() } })
         if len(records) > 0:
             bulk.execute()
         self._record_end(year=year)
