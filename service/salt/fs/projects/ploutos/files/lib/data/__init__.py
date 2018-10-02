@@ -20,20 +20,23 @@ class Connection():
         except OSError:
             pass
     
-    def _initialized(self):
+    def _initialized(self,**kwargs):
         if self.init_type is None:
             raise Exception('Initialization not available for this data type; exiting.')
         dbnames = self.client.database_names()
         if DATABASE not in dbnames:
             return None, None
         else:
-            cursor = self.init_collection.find({"datatype":self.init_type})
+            querydict = {"datatype":self.init_type}
+            for key in kwargs:
+                querydict[key] = kwargs[key]
+            cursor = self.init_collection.find(querydict)
             if cursor.count() == 0:
                 return None, None
             start = None
             host = None
             pid = None
-            for init_entry in self.init_collection.find({"datatype":self.init_type}):
+            for init_entry in self.init_collection.find(querydict):
                 if 'start' in init_entry:
                     if start is None or init_entry['start'] < start:
                         host = init_entry['host']
@@ -41,25 +44,33 @@ class Connection():
                         start = init_entry['start']
             return host, pid
 
-    def _record_end(self):
+    def _record_end(self,**kwargs):
         if self.init_type is None:
             raise Exception('Initialization not available for this data type; exiting.')
-        host, pid = self._initialized()
+        host, pid = self._initialized(**kwargs)
         if host == socket.gethostname() and pid == os.getpid():
-            self.init_collection.delete_many({"datatype":self.init_type})
+            deletedict = {"datatype":self.init_type}
+            for key in kwargs:
+                deletedict[key] = kwargs[key]
+            self.init_collection.delete_many(deletedict)
             return True
         raise Exception('Attempt to end initialization for data type without having recorded the beginning; exiting.')
 
-    def _record_start(self):
+    def _record_start(self,**kwargs):
         if self.init_type is None:
             raise Exception('Initialization not available for this data type; exiting.')
-        print('Create document to record initialization.')
+        print('Creating document to record initialization.')
         dbnames = self.client.database_names()
         if self.force is True:
-            self.init_collection.delete_many({"datatype":self.init_type})
-        host, pid = self._initialized()
+            querydict = {"datatype":self.init_type}
+            for key in kwargs:
+                querydict[key] = kwargs[key]
+            self.init_collection.delete_many(querydict)
+        host, pid = self._initialized(**kwargs)
         if host is None or self.force is True:
             init_record = {"host":socket.gethostname(),"pid":os.getpid(),"start":datetime.datetime.utcnow(),"datatype":self.init_type}
+            for key in kwargs:
+                init_record[key] = kwargs[key]
             self.init_collection.insert_one(init_record)
         elif host != socket.gethostname():
             print('Already initialized by host '+host)
@@ -69,16 +80,12 @@ class Connection():
             return False
         # Check for race condition: two or more servers/processes initializing at same time
         print('Checking for multiple init processes')
-        start = None
-        host = None
-        pid = None
-        for init_entry in self.init_collection.find({"datatype":self.init_type}):
-            if start is None or init_entry['start'] < start:
-                start = init_entry['start']
-                host = init_entry['host']
-                pid = init_entry['pid']
+        host, pid = self._initialized(**kwargs)
         if host != socket.gethostname() or pid != os.getpid():
             # Other host/pid got there first. Remove entry, exit initialization.
-            self.db.init.delete_many({'hostname':socket.gethostname(),"pid":os.getpid(),"datatype":self.init_type})
+            deletedict = {'hostname':socket.gethostname(),"pid":os.getpid(),"datatype":self.init_type}
+            for key in kwargs:
+                deletedict[key] = kwargs[key]
+            self.db.init.delete_many(deletedict)
             return False
         return True

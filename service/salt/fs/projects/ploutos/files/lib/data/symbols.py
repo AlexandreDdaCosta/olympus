@@ -40,10 +40,7 @@ class InitSymbols(data.Connection):
                 lockfilehandle.close()
                 return
             else:
-                raise Exception('Data initialization detected; exiting.')
-        host, pid = self._initialized()
-        if host != socket.gethostname() or pid != os.getpid():
-            raise Exception('Initialization record check failed; cannot record start of initialization.')
+                raise Exception('Initialization record check failed; cannot record start of initialization.')
     
         # Download
 

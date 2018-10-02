@@ -40,10 +40,7 @@ class InitForm4Indices(data.Connection):
                 lockfilehandle.close()
                 return
             else:
-                raise Exception('Initialization of EDGAR Form4 indices detected; exiting.')
-        host, pid = self._initialized()
-        if host != socket.gethostname() or pid != os.getpid():
-            raise Exception('Initialization record check failed; cannot record start of initialization.')
+                raise Exception('Initialization record check failed; cannot record start of initialization.')
 
         # The edgar module retrieves based on a starting year. 
         # Check is to see which data sets have already been retrieved and indexed.
@@ -150,30 +147,19 @@ class InitForm4Indices(data.Connection):
 
 class Form4(data.Connection):
 
-    INIT_SLEEP = 30
-    INIT_WAIT = 6
-    PROCESSING_BLOCK_SIZE = 10
+    INIT_SLEEP = 5
+    INIT_WAIT = 20
+    #PROCESSING_BLOCK_SIZE = 100
+    PROCESSING_BLOCK_SIZE = 5
 
     def __init__(self,**kwargs):
-        super(Form4,self).__init__('form4_data',**kwargs)
-        self.force = kwargs.get('force',False)
+        super(Form4,self).__init__('form4_submissions',**kwargs)
         self.verbose = kwargs.get('verbose',False)
 
     def populate_indexed_forms(self,**kwargs):
         # Gather detailed Form4 records based on downloaded EDGAR indices
+        self.force = kwargs.get('force',False)
         year = kwargs.get('year',None)
-
-        '''
-        # Verify initialization not in progress; wait otherwise (with limit)
-        wait = 0
-        if self._init_running() is True:
-            wait = wait + 1
-            if wait >= self.INIT_WAIT:
-                 raise Exception('Initialization running; exceeded maximum wait time.')
-            if self.verbose:
-                print('Main index initializing; waiting '+str(self.INIT_SLEEP)+' seconds.')
-            time.sleep(self.INIT_SLEEP)
-        '''
 
         if year is not None:
             while True:
@@ -182,7 +168,7 @@ class Form4(data.Connection):
                     if self.verbose:
                         print('No unprocessed index entries found for '+str(year)+'; ending.')
                     return
-                self._get_write_forms(self.year,records)
+                self._get_write_forms(year,records)
         else:
             for year in QUARTERLY_YEAR_LIST:
                 while True:
@@ -194,13 +180,42 @@ class Form4(data.Connection):
                     self._get_write_forms(year,records)
 
     def _get_write_forms(self,year,records):
-        collection_name = FORM4_INDEX_COLLECTIONS_PREFIX+str(year)
-        # HTTP call to get linked document
+        for record in records:
+            # HTTP call to get linked document
+            url = 'https://www.sec.gov/Archives/edgar/data/'+record['cik']+'/'+record['file']+'.txt'
+            print(url)
+        raise Exception('ALEX')
     
     def _select_lock_slice(self,year):
-        collection_name = FORM4_INDEX_COLLECTIONS_PREFIX+str(year)
-        # Go through records where 'cik_owner'/'processing' == null
-        # Update locking of PROCESSING_BLOCK_SIZE entries in main index. 
-        # Handle collisions (multiple processes)
-        #for entry in collection.find({}, {'cik':1, 'file':1, '_id':0}):
-        return []
+        collection = self.db[FORM4_INDEX_COLLECTIONS_PREFIX+str(year)]
+        if self.force is True:
+            # Unlock all entries being processed
+            collection.update({}, {"$unset": {"processing": 1}}, multi=True)
+
+        waits = 0
+        while True:
+            if self._record_start(year=year) is not True:
+                waits = waits + 1
+                if waits >= self.INIT_WAIT:
+                    if self.verbose:
+                        print('Initialization running; exceeded maximum wait time.')
+                        return []
+                if self.verbose:
+                    print('Initialization conflict; waiting '+str(self.INIT_SLEEP)+' seconds.')
+                time.sleep(self.INIT_SLEEP)
+            else:
+                break
+
+        # Go through records where 'cik_owner'/'processing' keys are missing
+        # Lock PROCESSING_BLOCK_SIZE entries in main index. 
+        
+        bulk = collection.initialize_ordered_bulk_op()
+        record_count = 0
+        records = []
+        for record in collection.find({'cik_owner':{'$exists':False},'processing':{'$exists':False}}).limit(self.PROCESSING_BLOCK_SIZE):
+            records.append(record)
+            bulk.find({ '_id': record['_id'] }).update({ '$set': { 'processing': int(time.time()) } })
+        if len(records) > 0:
+            bulk.execute()
+        self._record_end(year=year)
+        return records
