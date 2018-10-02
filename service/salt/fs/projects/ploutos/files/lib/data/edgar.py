@@ -1,4 +1,4 @@
-import datetime, fcntl, json, re, shutil, sys, time
+import datetime, fcntl, json, os, re, shutil, sys, time
 import edgar as form4_index_downloader
 
 from bson.json_util import dumps, loads
@@ -9,7 +9,6 @@ from olympus.projects.ploutos import *
 from olympus.projects.ploutos.data import *
 
 FORM4_INDEX_COLLECTIONS_PREFIX = 'form4_index_'
-FORM4_INIT_TYPE = 'form4_indices'
 QUARTERLY_FIRST_YEAR = 2004
 QUARTERLY_ORIGINAL_YEAR = 1993
 QUARTERLY_YEAR_LIST = range(QUARTERLY_FIRST_YEAR,datetime.datetime.now().year+1)
@@ -17,7 +16,7 @@ QUARTERLY_YEAR_LIST = range(QUARTERLY_FIRST_YEAR,datetime.datetime.now().year+1)
 class InitForm4Indices(data.Connection):
 
     def __init__(self,**kwargs):
-        super(InitForm4Indices,self).__init__(FORM4_INIT_TYPE,**kwargs)
+        super(InitForm4Indices,self).__init__('form4_indices',**kwargs)
         self.LOCKFILE = LOCKFILE_DIR+self.init_type+'.pid'
         self.force = kwargs.get('force',False)
         self.graceful = kwargs.get('graceful',False)
@@ -42,7 +41,8 @@ class InitForm4Indices(data.Connection):
                 return
             else:
                 raise Exception('Initialization of EDGAR Form4 indices detected; exiting.')
-        if self._initialized() != socket.gethostname():
+        host, pid = self._initialized()
+        if host != socket.gethostname() or pid != os.getpid():
             raise Exception('Initialization record check failed; cannot record start of initialization.')
 
         # The edgar module retrieves based on a starting year. 
@@ -155,13 +155,15 @@ class Form4(data.Connection):
     PROCESSING_BLOCK_SIZE = 10
 
     def __init__(self,**kwargs):
-        super(Form4,self).__init__(FORM4_INIT_TYPE,**kwargs)
+        super(Form4,self).__init__('form4_data',**kwargs)
+        self.force = kwargs.get('force',False)
         self.verbose = kwargs.get('verbose',False)
 
     def populate_indexed_forms(self,**kwargs):
         # Gather detailed Form4 records based on downloaded EDGAR indices
         year = kwargs.get('year',None)
 
+        '''
         # Verify initialization not in progress; wait otherwise (with limit)
         wait = 0
         if self._init_running() is True:
@@ -171,6 +173,7 @@ class Form4(data.Connection):
             if self.verbose:
                 print('Main index initializing; waiting '+str(self.INIT_SLEEP)+' seconds.')
             time.sleep(self.INIT_SLEEP)
+        '''
 
         if year is not None:
             while True:
@@ -196,5 +199,8 @@ class Form4(data.Connection):
     
     def _select_lock_slice(self,year):
         collection_name = FORM4_INDEX_COLLECTIONS_PREFIX+str(year)
-        # Go through records where 'cik_owner'/'processing' == null, update locking of PROCESSING_BLOCK_SIZE entries in main index. Handle collisions (multiple processes)
+        # Go through records where 'cik_owner'/'processing' == null
+        # Update locking of PROCESSING_BLOCK_SIZE entries in main index. 
+        # Handle collisions (multiple processes)
+        #for entry in collection.find({}, {'cik':1, 'file':1, '_id':0}):
         return []

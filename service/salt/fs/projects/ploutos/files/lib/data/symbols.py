@@ -41,7 +41,8 @@ class InitSymbols(data.Connection):
                 return
             else:
                 raise Exception('Data initialization detected; exiting.')
-        if self._initialized() != socket.gethostname():
+        host, pid = self._initialized()
+        if host != socket.gethostname() or pid != os.getpid():
             raise Exception('Initialization record check failed; cannot record start of initialization.')
     
         # Download

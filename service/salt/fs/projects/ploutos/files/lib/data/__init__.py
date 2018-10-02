@@ -20,42 +20,32 @@ class Connection():
         except OSError:
             pass
     
-    def _init_running(self):
-        if self.init_type is None:
-            raise Exception('Initialization not known for this data type; exiting.')
-        dbnames = self.client.database_names()
-        if DATABASE not in dbnames:
-            return False
-        else:
-            cursor = self.init_collection.find({"datatype":self.init_type})
-            if cursor.count() == 0:
-                return False
-            return True
-
     def _initialized(self):
         if self.init_type is None:
             raise Exception('Initialization not available for this data type; exiting.')
         dbnames = self.client.database_names()
         if DATABASE not in dbnames:
-            return None
+            return None, None
         else:
             cursor = self.init_collection.find({"datatype":self.init_type})
             if cursor.count() == 0:
-                return None
+                return None, None
             start = None
             host = None
+            pid = None
             for init_entry in self.init_collection.find({"datatype":self.init_type}):
                 if 'start' in init_entry:
                     if start is None or init_entry['start'] < start:
-                        start = init_entry['start']
                         host = init_entry['host']
-            return host
+                        pid = init_entry['pid']
+                        start = init_entry['start']
+            return host, pid
 
     def _record_end(self):
         if self.init_type is None:
             raise Exception('Initialization not available for this data type; exiting.')
-        host = self._initialized()
-        if host == socket.gethostname():
+        host, pid = self._initialized()
+        if host == socket.gethostname() and pid == os.getpid():
             self.init_collection.delete_many({"datatype":self.init_type})
             return True
         raise Exception('Attempt to end initialization for data type without having recorded the beginning; exiting.')
@@ -67,23 +57,28 @@ class Connection():
         dbnames = self.client.database_names()
         if self.force is True:
             self.init_collection.delete_many({"datatype":self.init_type})
-        host = self._initialized()
+        host, pid = self._initialized()
         if host is None or self.force is True:
-            init_record = {"host":socket.gethostname(),"start":datetime.datetime.utcnow(),"datatype":self.init_type}
+            init_record = {"host":socket.gethostname(),"pid":os.getpid(),"start":datetime.datetime.utcnow(),"datatype":self.init_type}
             self.init_collection.insert_one(init_record)
         elif host != socket.gethostname():
             print('Already initialized by host '+host)
             return False
-        # Check for race condition: two or more servers initializing at same time
+        elif pid != os.getpid():
+            print('Already initialized by pid '+str(pid)+' on localhost')
+            return False
+        # Check for race condition: two or more servers/processes initializing at same time
         print('Checking for multiple init processes')
         start = None
         host = None
+        pid = None
         for init_entry in self.init_collection.find({"datatype":self.init_type}):
             if start is None or init_entry['start'] < start:
                 start = init_entry['start']
                 host = init_entry['host']
-        if host != socket.gethostname():
-            # Other host got there first. Remove entry, exit initialization.
-            self.db.init.delete_many({'hostname':socket.gethostname(),"datatype":self.init_type})
+                pid = init_entry['pid']
+        if host != socket.gethostname() or pid != os.getpid():
+            # Other host/pid got there first. Remove entry, exit initialization.
+            self.db.init.delete_many({'hostname':socket.gethostname(),"pid":os.getpid(),"datatype":self.init_type})
             return False
         return True
