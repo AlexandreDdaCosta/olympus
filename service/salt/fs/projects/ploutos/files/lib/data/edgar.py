@@ -215,6 +215,7 @@ class Form4(data.Connection):
                         elif re.match(r'\<XML\>',line):
                             xml_found = True
                 f.close()
+                xml_content = xml_content.replace("\n", "")
                 try:
                     data = xmltodict.parse(xml_content)
                 except Exception as e:
