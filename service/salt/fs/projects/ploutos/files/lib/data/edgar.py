@@ -1,4 +1,4 @@
-import datetime, fcntl, json, os, re, shutil, sys, time, wget, xmltodict
+import datetime, fcntl, json, os, re, shutil, sys, time, wget, xmlschema, xmltodict
 import edgar as form4_index_downloader
 
 from bson.json_util import dumps, loads
@@ -218,13 +218,13 @@ class Form4(data.Connection):
                 xml_content = xml_content.replace("\n", "")
                 try:
                     data = xmltodict.parse(xml_content)
+                    data = data['ownershipDocument']
+                    cik_owner = int(data['reportingOwner']['reportingOwnerId']['rptOwnerCik'])
                 except Exception as e:
                     print('https://www.sec.gov/Archives/edgar/data/'+str(record['cik'])+'/'+record['file']+'.txt')
                     print(str(xml_content))
                     self._revert_unlock_slice(records,year)
                     raise
-                data = data['ownershipDocument']
-                cik_owner = int(data['reportingOwner']['reportingOwnerId']['rptOwnerCik'])
                 collection.update({'cik':cik_owner},{'cik':cik_owner}, upsert=True);
         except KeyError:
             self._revert_unlock_slice(records,year)
