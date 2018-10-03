@@ -215,11 +215,16 @@ class Form4(data.Connection):
                         elif re.match(r'\<XML\>',line):
                             xml_found = True
                 f.close()
-                data = xmltodict.parse(xml_content)
+                try:
+                    data = xmltodict.parse(xml_content)
+                except Exception as e:
+                    print('https://www.sec.gov/Archives/edgar/data/'+str(record['cik'])+'/'+record['file']+'.txt')
+                    print(str(xml_content))
+                    self._revert_unlock_slice(records,year)
+                    raise
                 data = data['ownershipDocument']
                 cik_owner = int(data['reportingOwner']['reportingOwnerId']['rptOwnerCik'])
-                print('\nCIK Owner: '+str(cik_owner))
-                collection.update({'cik':cik_owner}, {}, upsert=True);
+                collection.update({'cik':cik_owner},{'cik':cik_owner}, upsert=True);
         except KeyError:
             self._revert_unlock_slice(records,year)
             raise Exception('Key error detected in parsing; check XML format of Form4 submissions for '+str(year))
