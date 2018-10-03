@@ -217,9 +217,9 @@ class Form4(data.Connection):
                 f.close()
                 data = xmltodict.parse(xml_content)
                 data = data['ownershipDocument']
-                cik_owner = data['reportingOwner']['reportingOwnerId']['rptOwnerCik']
+                cik_owner = int(data['reportingOwner']['reportingOwnerId']['rptOwnerCik'])
                 print('\nCIK Owner: '+str(cik_owner))
-                foo = bar() # ALEX, intentional error
+                collection.update({'cik':cik_owner}, {}, upsert=True);
         except KeyError:
             self._revert_unlock_slice(records,year)
             raise Exception('Key error detected in parsing; check XML format of Form4 submissions for '+str(year))
