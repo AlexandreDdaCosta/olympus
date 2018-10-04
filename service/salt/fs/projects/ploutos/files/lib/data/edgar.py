@@ -93,8 +93,9 @@ class InitForm4Indices(data.Connection):
                             row['cik'] = int(pieces[0])
                             row['file'] = pieces[4]
                             row['file'] = re.sub(r'^.*\/(.*)\.txt',r'\g<1>',pieces[4])
+                            row['form'] = str(pieces[2])
                             row['year'] = year
-                            downloaded_entries.append(str(row['cik']) + '_' + row['file'])
+                            downloaded_entries.append(str(row['cik']) + '_' + row['file'] + '_' + row['form'])
                             jsonstring = json.dumps(row)
                             json_data += '\n'+jsonstring+','
                     f.close()
@@ -118,8 +119,8 @@ class InitForm4Indices(data.Connection):
                 if self.verbose:
                     print('Differentating new download and existing collection for ' + str(year) + '.')
                 existing_entries = []
-                for entry in collection.find({'year': year}, {'cik':1, 'file':1, '_id':0}):
-                    existing_entries.append(str(entry['cik']) + '_' + entry['file'])
+                for entry in collection.find({'year': year}, {'cik':1, 'file':1, 'form':1, '_id':0}):
+                    existing_entries.append(str(entry['cik']) + '_' + entry['file'] + '_' + entry['form'])
                 missing_entries = set(downloaded_entries)-set(existing_entries)
                 if len(missing_entries) == 0:
                     if self.verbose:
@@ -129,8 +130,9 @@ class InitForm4Indices(data.Connection):
                         print('Adding missing entries for '+str(year)+'.')
                     for entry in missing_entries:
                         row = {}
-                        row['cik'], row['file'] = entry.split('_')
+                        row['cik'], row['file'], row['form'] = entry.split('_')
                         row['cik'] = int(row['cik'])
+                        row['form'] = str(row['form'])
                         row['year'] = year
                         collection.insert_one(row)
             else:
@@ -172,9 +174,10 @@ class Form4(data.Connection):
         # Gather detailed Form4 records based on downloaded EDGAR indices
         self.force = kwargs.get('force',False)
         self.epoch_time = int(time.time())
-        form4_schema_file = os.path.dirname(os.path.realpath(__file__))
-        form4_schema_file = re.sub(r'(.*\/).*?$',r'\1',form4_schema_file)+'schema/form4.xsd'
-        with open(form4_schema_file) as x: self.form4_schema = x.read()
+        schema_directory = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/'
+        self.form4_schema = xmlschema.XMLSchema(schema_directory + 'ownership4Document.xsd.xml')
+        self.form4a_schema = xmlschema.XMLSchema(schema_directory + 'ownership4aDocument.xsd.xml')
+
         year = kwargs.get('year',None)
 
         if year is not None:
@@ -220,8 +223,11 @@ class Form4(data.Connection):
                 f.close()
                 #xml_content = xml_content.replace("\n", "")
                 try:
+                    #self.form4_schema = xmlschema.XMLSchema(schema_directory + 'ownership4Document.xsd.xml')
+                    #self.form4a_schema = xmlschema.XMLSchema(schema_directory + 'ownership4aDocument.xsd.xml')
                     #print(xml_content)
                     #print(self.form4_schema)
+                    #xmlschema.validate(xml_content,schema='/usr/local/lib/python3.5/dist-packages/olympus/projects/ploutos/schema/ownership4Document.xsd.xml')
                     xmlschema.validate(xml_content,schema=self.form4_schema)
                     data = xmltodict.parse(xml_content)
                     data = data['ownershipDocument']
