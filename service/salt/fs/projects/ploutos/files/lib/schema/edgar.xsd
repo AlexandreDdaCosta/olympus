@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+
+<!-- Preserved header from EDGAR original: -->
+<!-- Filename: ownershipDocumentCommon.xsd.xml -->
+<!-- Purpose:  Defines the elements common to all Ownership primary documents. -->
+<!-- Version:  X0304 -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+</xs:schema>

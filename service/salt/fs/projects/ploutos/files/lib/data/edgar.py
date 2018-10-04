@@ -172,6 +172,9 @@ class Form4(data.Connection):
         # Gather detailed Form4 records based on downloaded EDGAR indices
         self.force = kwargs.get('force',False)
         self.epoch_time = int(time.time())
+        form4_schema_file = os.path.dirname(os.path.realpath(__file__))
+        form4_schema_file = re.sub(r'(.*\/).*?$',r'\1',form4_schema_file)+'schema/form4.xsd'
+        with open(form4_schema_file) as x: self.form4_schema = x.read()
         year = kwargs.get('year',None)
 
         if year is not None:
@@ -194,8 +197,8 @@ class Form4(data.Connection):
 
     def _get_write_forms(self,year,records):
         collection = self.db[self.FORM4_SUBMISSIONS_COLLECTION_NAME]
+        download_directory = '/tmp/form4_submissions_'+str(os.getpid())+'_'+str(self.epoch_time)+'/'
         try:
-            download_directory = '/tmp/form4_submissions_'+str(os.getpid())+'_'+str(self.epoch_time)+'/'
             if not os.path.isdir(download_directory):
                 os.mkdir(download_directory)
             for record in records:
@@ -215,14 +218,16 @@ class Form4(data.Connection):
                         elif re.match(r'\<XML\>',line):
                             xml_found = True
                 f.close()
-                xml_content = xml_content.replace("\n", "")
+                #xml_content = xml_content.replace("\n", "")
                 try:
+                    #print(xml_content)
+                    #print(self.form4_schema)
+                    xmlschema.validate(xml_content,schema=self.form4_schema)
                     data = xmltodict.parse(xml_content)
                     data = data['ownershipDocument']
                     cik_owner = int(data['reportingOwner']['reportingOwnerId']['rptOwnerCik'])
                 except Exception as e:
-                    print('https://www.sec.gov/Archives/edgar/data/'+str(record['cik'])+'/'+record['file']+'.txt')
-                    print(str(xml_content))
+                    print('\n\nhttps://www.sec.gov/Archives/edgar/data/'+str(record['cik'])+'/'+record['file']+'.txt\n')
                     self._revert_unlock_slice(records,year)
                     raise
                 collection.update({'cik':cik_owner},{'cik':cik_owner}, upsert=True);

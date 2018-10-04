@@ -1,4 +1,482 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="ownershipDocument">
+    <xs:complexType>
+      <xs:sequence>
 
+        <xs:element type="xs:string" name="schemaVersion"/>
+        <xs:element type="xs:string" name="documentType"/>
+        <xs:element type="xs:date" name="periodOfReport"/>
+        <xs:element type="xs:byte" name="notSubjectToSection16" minOccurs="0"/>
+        <xs:element type="xs:date" name="dateOfOriginalSubmission" minOccurs="0"/>
+
+        <xs:element name="issuer">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type="xs:int" name="issuerCik"/>
+              <xs:element type="xs:string" name="issuerName"/>
+              <xs:element type="xs:string" name="issuerTradingSymbol"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="reportingOwner">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="reportingOwnerId">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:int" name="rptOwnerCik"/>
+                    <xs:element type="xs:string" name="rptOwnerName"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="reportingOwnerAddress">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:string" name="rptOwnerStreet1"/>
+                    <xs:element type="xs:string" name="rptOwnerStreet2"/>
+                    <xs:element type="xs:string" name="rptOwnerCity"/>
+                    <xs:element type="xs:string" name="rptOwnerState"/>
+                    <xs:element type="xs:int" name="rptOwnerZipCode"/>
+                    <xs:element type="xs:string" name="rptOwnerStateDescription"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="reportingOwnerRelationship">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:byte" name="isDirector"/>
+                    <xs:element type="xs:byte" name="isOfficer"/>
+                    <xs:element type="xs:byte" name="isTenPercentOwner"/>
+                    <xs:element type="xs:byte" name="isOther"/>
+                    <xs:element type="xs:string" name="officerTitle" minOccurs="0"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="nonDerivativeTable" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+
+              <xs:element name="nonDerivativeTransaction" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="securityTitle">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element type="xs:string" name="value"/>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="transactionDate">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element type="xs:date" name="value"/>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="transactionCoding">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element type="xs:string" name="transactionFormType"/>
+                          <xs:element type="xs:string" name="transactionCode"/>
+                          <xs:element type="xs:byte" name="equitySwapInvolved"/>
+                          <xs:element name="footnoteId" maxOccurs="unbounded" minOccurs="0">
+                            <xs:complexType>
+                              <xs:simpleContent>
+                                <xs:extension base="xs:string">
+                                  <xs:attribute type="xs:string" name="id" use="optional"/>
+                                </xs:extension>
+                              </xs:simpleContent>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="transactionAmounts">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="transactionShares">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:short" name="value"/>
+                                <xs:element name="footnoteId" maxOccurs="unbounded" minOccurs="0">
+                                  <xs:complexType>
+                                    <xs:simpleContent>
+                                      <xs:extension base="xs:string">
+                                        <xs:attribute type="xs:string" name="id"/>
+                                      </xs:extension>
+                                    </xs:simpleContent>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="transactionPricePerShare">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:float" name="value"/>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="transactionAcquiredDisposedCode">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:string" name="value"/>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="postTransactionAmounts">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="sharesOwnedFollowingTransaction">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:int" name="value"/>
+                                <xs:element name="footnoteId" maxOccurs="unbounded" minOccurs="0">
+                                  <xs:complexType>
+                                    <xs:simpleContent>
+                                      <xs:extension base="xs:string">
+                                        <xs:attribute type="xs:string" name="id"/>
+                                      </xs:extension>
+                                    </xs:simpleContent>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+
+                    <xs:element name="ownershipNature">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="directOrIndirectOwnership">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:string" name="value"/>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="natureOfOwnership" minOccurs="0">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:string" name="value"/>
+                                <xs:element name="footnoteId" maxOccurs="unbounded" minOccurs="0">
+                                  <xs:complexType>
+                                    <xs:simpleContent>
+                                      <xs:extension base="xs:string">
+                                        <xs:attribute type="xs:string" name="id"/>
+                                      </xs:extension>
+                                    </xs:simpleContent>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+
+              <xs:element name="nonDerivativeHolding" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="securityTitle">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element type="xs:string" name="value"/>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="postTransactionAmounts">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="sharesOwnedFollowingTransaction">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:int" name="value"/>
+                                <xs:element name="footnoteId" maxOccurs="unbounded" minOccurs="0">
+                                  <xs:complexType>
+                                    <xs:simpleContent>
+                                      <xs:extension base="xs:string">
+                                        <xs:attribute type="xs:string" name="id"/>
+                                      </xs:extension>
+                                    </xs:simpleContent>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="ownershipNature">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="directOrIndirectOwnership">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:string" name="value"/>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="natureOfOwnership" minOccurs="0">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:string" name="value"/>
+                                <xs:element name="footnoteId" maxOccurs="unbounded" minOccurs="0">
+                                  <xs:complexType>
+                                    <xs:simpleContent>
+                                      <xs:extension base="xs:string">
+                                        <xs:attribute type="xs:string" name="id"/>
+                                      </xs:extension>
+                                    </xs:simpleContent>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="derivativeTable" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="derivativeTransaction" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="securityTitle">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element type="xs:string" name="value"/>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="conversionOrExercisePrice">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element type="xs:float" name="value"/>
+                          <xs:element name="footnoteId" maxOccurs="unbounded" minOccurs="0">
+                            <xs:complexType>
+                              <xs:simpleContent>
+                                <xs:extension base="xs:string">
+                                  <xs:attribute type="xs:string" name="id" use="optional"/>
+                                </xs:extension>
+                              </xs:simpleContent>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="transactionDate">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element type="xs:date" name="value"/>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="transactionCoding">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element type="xs:string" name="transactionFormType"/>
+                          <xs:element type="xs:string" name="transactionCode"/>
+                          <xs:element type="xs:byte" name="equitySwapInvolved"/>
+                          <xs:element name="footnoteId" maxOccurs="unbounded" minOccurs="0">
+                            <xs:complexType>
+                              <xs:simpleContent>
+                                <xs:extension base="xs:string">
+                                  <xs:attribute type="xs:string" name="id" use="optional"/>
+                                </xs:extension>
+                              </xs:simpleContent>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="transactionAmounts">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="transactionShares">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:short" name="value"/>
+                                <xs:element name="footnoteId" maxOccurs="unbounded" minOccurs="0">
+                                  <xs:complexType>
+                                    <xs:simpleContent>
+                                      <xs:extension base="xs:string">
+                                        <xs:attribute type="xs:string" name="id"/>
+                                      </xs:extension>
+                                    </xs:simpleContent>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="transactionPricePerShare">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:float" name="value"/>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="transactionAcquiredDisposedCode">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:string" name="value"/>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="exerciseDate">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element type="xs:date" name="value" minOccurs="0"/>
+                          <xs:element name="footnoteId" maxOccurs="unbounded" minOccurs="0">
+                            <xs:complexType>
+                              <xs:simpleContent>
+                                <xs:extension base="xs:string">
+                                  <xs:attribute type="xs:string" name="id" use="optional"/>
+                                </xs:extension>
+                              </xs:simpleContent>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="expirationDate">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element type="xs:date" name="value"/>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="underlyingSecurity">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="underlyingSecurityTitle">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:string" name="value"/>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="underlyingSecurityShares">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:short" name="value"/>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="postTransactionAmounts">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="sharesOwnedFollowingTransaction">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:int" name="value"/>
+                                <xs:element name="footnoteId" maxOccurs="unbounded" minOccurs="0">
+                                  <xs:complexType>
+                                    <xs:simpleContent>
+                                      <xs:extension base="xs:string">
+                                        <xs:attribute type="xs:string" name="id"/>
+                                      </xs:extension>
+                                    </xs:simpleContent>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="ownershipNature">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="directOrIndirectOwnership">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:string" name="value"/>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="natureOfOwnership" minOccurs="0">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:string" name="value"/>
+                                <xs:element name="footnoteId" maxOccurs="unbounded" minOccurs="0">
+                                  <xs:complexType>
+                                    <xs:simpleContent>
+                                      <xs:extension base="xs:string">
+                                        <xs:attribute type="xs:string" name="id"/>
+                                      </xs:extension>
+                                    </xs:simpleContent>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="footnotes">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="footnote" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute type="xs:string" name="id" use="optional"/>
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element type="xs:string" name="remarks" minOccurs="0"/>
+
+        <xs:element name="ownerSignature">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type="xs:string" name="signatureName"/>
+              <xs:element type="xs:date" name="signatureDate"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
 </xs:schema>
