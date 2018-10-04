@@ -87,7 +87,7 @@ class InitForm4Indices(data.Connection):
                     with open(filename) as f:
                         for line in f:
                             pieces = line.rstrip().split('|')
-                            if pieces[2] != '4' and pieces[2][:2] != '4/':
+                            if pieces[2] != '4' and pieces[2][:3] != '4/A':
                                 continue
                             row = {}
                             row['cik'] = int(pieces[0])
@@ -176,11 +176,24 @@ class Form4(data.Connection):
         self.epoch_time = int(time.time())
         schema_directory = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/'
         self.form4_schema = xmlschema.XMLSchema(schema_directory + 'ownership4Document.xsd.xml')
-        self.form4a_schema = xmlschema.XMLSchema(schema_directory + 'ownership4aDocument.xsd.xml')
+        self.form4a_schema = xmlschema.XMLSchema(schema_directory + 'ownership4ADocument.xsd.xml')
 
+        cik_file = kwargs.get('cik-file',None)
         year = kwargs.get('year',None)
 
-        if year is not None:
+        if cik_file is not None:
+            if self.verbose:
+                print('Running single Form4 update for '+ cik_file)
+            cik, filename = re.split(r'-', cik_file)
+            records = []
+            for record in collection.find({'cik': int(cik),'processing':{'$exists':False},'year':int(year)}):
+                records.append(record)
+            if len(records) == 0:
+                raise Exception('Specified cik/file combination not found in indices: ' + cik_file)
+            elif len(records) > 1:
+                raise Exception('Specified cik/file combination found ' + str(len(records)) + ' times in indices: ' + cik_file)
+            self._get_write_forms(year,records)
+        elif year is not None:
             while True:
                 records = self._select_lock_slice(year)
                 if len(records) == 0:
@@ -223,31 +236,30 @@ class Form4(data.Connection):
                 f.close()
                 #xml_content = xml_content.replace("\n", "")
                 try:
-                    #self.form4_schema = xmlschema.XMLSchema(schema_directory + 'ownership4Document.xsd.xml')
-                    #self.form4a_schema = xmlschema.XMLSchema(schema_directory + 'ownership4aDocument.xsd.xml')
-                    #print(xml_content)
-                    #print(self.form4_schema)
-                    #xmlschema.validate(xml_content,schema='/usr/local/lib/python3.5/dist-packages/olympus/projects/ploutos/schema/ownership4Document.xsd.xml')
-                    xmlschema.validate(xml_content,schema=self.form4_schema)
+                    if record['form'] == '4/A':
+                        xmlschema.validate(xml_content,schema=self.form4a_schema)
+                    else:
+                        xmlschema.validate(xml_content,schema=self.form4_schema)
                     data = xmltodict.parse(xml_content)
-                    data = data['ownershipDocument']
-                    cik_owner = int(data['reportingOwner']['reportingOwnerId']['rptOwnerCik'])
+                    cik_owner = int(data['ownershipDocument']['reportingOwner']['reportingOwnerId']['rptOwnerCik'])
                 except Exception as e:
+                    print(str(data))
                     print('\n\nhttps://www.sec.gov/Archives/edgar/data/'+str(record['cik'])+'/'+record['file']+'.txt\n')
-                    self._revert_unlock_slice(records,year)
+                    self._revert_unlock_slice(records)
                     raise
                 collection.update({'cik':cik_owner},{'cik':cik_owner}, upsert=True);
         except KeyError:
-            self._revert_unlock_slice(records,year)
+            self._revert_unlock_slice(records)
             raise Exception('Key error detected in parsing; check XML format of Form4 submissions for '+str(year))
         except Exception as e:
-            self._revert_unlock_slice(records,year)
+            self._revert_unlock_slice(records)
             raise
 
-    def _revert_unlock_slice(self,records,year):
+    def _revert_unlock_slice(self,records):
         collection = self.db[FORM4_INDEX_COLLECTION_NAME]
         bulk = collection.initialize_ordered_bulk_op()
         for record in records:
+            print('RECORD: '+ str(record['_id']))
             bulk.find({ '_id': record['_id'], 'processing': self.epoch_time, 'pid': os.getpid() }).update({ '$unset': { 'processing': 1, 'pid': 1 } })
         bulk.execute()
 
