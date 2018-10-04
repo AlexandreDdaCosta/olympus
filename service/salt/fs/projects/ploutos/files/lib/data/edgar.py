@@ -90,12 +90,12 @@ class InitForm4Indices(data.Connection):
                             if pieces[2] != '4' and pieces[2][:3] != '4/A':
                                 continue
                             row = {}
-                            row['cik'] = int(pieces[0])
+                            row['issuerCik'] = int(pieces[0])
                             row['file'] = pieces[4]
                             row['file'] = re.sub(r'^.*\/(.*)\.txt',r'\g<1>',pieces[4])
                             row['form'] = str(pieces[2])
                             row['year'] = year
-                            downloaded_entries.append(str(row['cik']) + '_' + row['file'] + '_' + row['form'])
+                            downloaded_entries.append(str(row['issuerCik']) + '_' + row['file'] + '_' + row['form'])
                             jsonstring = json.dumps(row)
                             json_data += '\n'+jsonstring+','
                     f.close()
@@ -119,8 +119,8 @@ class InitForm4Indices(data.Connection):
                 if self.verbose:
                     print('Differentating new download and existing collection for ' + str(year) + '.')
                 existing_entries = []
-                for entry in collection.find({'year': year}, {'cik':1, 'file':1, 'form':1, '_id':0}):
-                    existing_entries.append(str(entry['cik']) + '_' + entry['file'] + '_' + entry['form'])
+                for entry in collection.find({'year': year}, {'issuerCik':1, 'file':1, 'form':1, '_id':0}):
+                    existing_entries.append(str(entry['issuerCik']) + '_' + entry['file'] + '_' + entry['form'])
                 missing_entries = set(downloaded_entries)-set(existing_entries)
                 if len(missing_entries) == 0:
                     if self.verbose:
@@ -130,8 +130,8 @@ class InitForm4Indices(data.Connection):
                         print('Adding missing entries for '+str(year)+'.')
                     for entry in missing_entries:
                         row = {}
-                        row['cik'], row['file'], row['form'] = entry.split('_')
-                        row['cik'] = int(row['cik'])
+                        row['issuerCik'], row['file'], row['form'] = entry.split('_')
+                        row['issuerCik'] = int(row['issuerCik'])
                         row['form'] = str(row['form'])
                         row['year'] = year
                         collection.insert_one(row)
@@ -143,7 +143,7 @@ class InitForm4Indices(data.Connection):
             if create_indices is True:
                 if self.verbose:
                     print('Creating indices for ' + FORM4_INDEX_COLLECTION_NAME)
-                collection.create_index([('cik', pymongo.ASCENDING)], name=FORM4_INDEX_COLLECTION_NAME+'_cik_'+INDEX_SUFFIX, unique=False)
+                collection.create_index([('issuerCik', pymongo.ASCENDING)], name=FORM4_INDEX_COLLECTION_NAME+'_issuerCik_'+INDEX_SUFFIX, unique=False)
                 collection.create_index([('file', pymongo.ASCENDING)], name=FORM4_INDEX_COLLECTION_NAME+'_file_'+INDEX_SUFFIX, unique=False)
                 collection.create_index([('year', pymongo.ASCENDING)], name=FORM4_INDEX_COLLECTION_NAME+'_year_'+INDEX_SUFFIX, unique=False)
                 create_indices = False
@@ -178,15 +178,17 @@ class Form4(data.Connection):
         self.form4_schema = xmlschema.XMLSchema(schema_directory + 'ownership4Document.xsd.xml')
         self.form4a_schema = xmlschema.XMLSchema(schema_directory + 'ownership4ADocument.xsd.xml')
 
-        cik_file = kwargs.get('cik-file',None)
+        cik_file = kwargs.get('cik_file',None)
+        self.max_records = kwargs.get('max_records',0)
+        self.max_record_count = 0
         year = kwargs.get('year',None)
 
         if cik_file is not None:
             if self.verbose:
                 print('Running single Form4 update for '+ cik_file)
-            cik, filename = re.split(r'-', cik_file)
+            issuerCik, filename = re.split(r'-', cik_file)
             records = []
-            for record in collection.find({'cik': int(cik),'processing':{'$exists':False},'year':int(year)}):
+            for record in collection.find({'issuerCik': int(issuerCik),'processing':{'$exists':False},'year':int(year)}):
                 records.append(record)
             if len(records) == 0:
                 raise Exception('Specified cik/file combination not found in indices: ' + cik_file)
@@ -213,15 +215,17 @@ class Form4(data.Connection):
 
     def _get_write_forms(self,year,records):
         collection = self.db[self.FORM4_SUBMISSIONS_COLLECTION_NAME]
+        collection_index = self.db[FORM4_INDEX_COLLECTION_NAME]
         download_directory = '/tmp/form4_submissions_'+str(os.getpid())+'_'+str(self.epoch_time)+'/'
         try:
             if not os.path.isdir(download_directory):
                 os.mkdir(download_directory)
             for record in records:
-                url = 'https://www.sec.gov/Archives/edgar/data/'+str(record['cik'])+'/'+record['file']+'.txt'
-                filename = wget.download(url, out=download_directory+str(record['cik'])+'_'+record['file']+'.txt')
-            for record in records:
-                filename = download_directory+str(record['cik'])+'_'+record['file']+'.txt'
+                url = 'https://www.sec.gov/Archives/edgar/data/'+str(record['issuerCik'])+'/'+record['file']+'.txt'
+                filename = wget.download(url, out=download_directory+str(record['issuerCik'])+'_'+record['file']+'.txt')
+                if self.verbose:
+                    print('\n')
+                filename = download_directory+str(record['issuerCik'])+'_'+record['file']+'.txt'
                 xml_content = ''
                 xml_found = False
                 with open(filename,'r') as f:
@@ -235,19 +239,30 @@ class Form4(data.Connection):
                             xml_found = True
                 f.close()
                 #xml_content = xml_content.replace("\n", "")
+                data = None
                 try:
                     if record['form'] == '4/A':
                         xmlschema.validate(xml_content,schema=self.form4a_schema)
                     else:
                         xmlschema.validate(xml_content,schema=self.form4_schema)
                     data = xmltodict.parse(xml_content)
-                    cik_owner = int(data['ownershipDocument']['reportingOwner']['reportingOwnerId']['rptOwnerCik'])
+                    rptOwnerCik = int(data['ownershipDocument']['reportingOwner']['reportingOwnerId']['rptOwnerCik'])
                 except Exception as e:
                     print(str(data))
-                    print('\n\nhttps://www.sec.gov/Archives/edgar/data/'+str(record['cik'])+'/'+record['file']+'.txt\n')
+                    print('\n\nhttps://www.sec.gov/Archives/edgar/data/'+str(record['issuerCik'])+'/'+record['file']+'.txt\n')
                     self._revert_unlock_slice(records)
                     raise
-                collection.update({'cik':cik_owner},{'cik':cik_owner}, upsert=True);
+
+                collection.update({'rptOwnerCik':rptOwnerCik},{'rptOwnerCik':rptOwnerCik}, upsert=True)
+                if self.verbose:
+                    print('ADDED CIK OWNER: '+ str(rptOwnerCik))
+
+                owner_cik = []
+                owner_cik.append(rptOwnerCik)
+                collection_index.update({'issuerCik':record['issuerCik'], 'file':record['file']}, {'$set': { 'rptOwnerCik': owner_cik }, '$unset': { 'processing': 1, 'pid': 1 }} )
+                if self.verbose:
+                    print('UPDATED INDEX: '+ str(record['issuerCik']) + ' ' + str(record['file']))
+
         except KeyError:
             self._revert_unlock_slice(records)
             raise Exception('Key error detected in parsing; check XML format of Form4 submissions for '+str(year))
@@ -259,7 +274,8 @@ class Form4(data.Connection):
         collection = self.db[FORM4_INDEX_COLLECTION_NAME]
         bulk = collection.initialize_ordered_bulk_op()
         for record in records:
-            print('RECORD: '+ str(record['_id']))
+            if self.verbose:
+                print('REVERTING INDEX: '+ str(record['_id']))
             bulk.find({ '_id': record['_id'], 'processing': self.epoch_time, 'pid': os.getpid() }).update({ '$unset': { 'processing': 1, 'pid': 1 } })
         bulk.execute()
 
@@ -282,13 +298,22 @@ class Form4(data.Connection):
             else:
                 break
 
-        # Go through records where 'cik_owner'/'processing' keys are missing
+        # Go through records where 'rptOwnerCik'/'processing' keys are missing
         # Lock PROCESSING_BLOCK_SIZE entries in main index. 
         
-        bulk = collection.initialize_ordered_bulk_op()
         records = []
-        print('RECORD finding '+str(year))
-        for record in collection.find({'cik_owner':{'$exists':False},'processing':{'$exists':False},'year':int(year)}).limit(self.PROCESSING_BLOCK_SIZE):
+        block_size = self.PROCESSING_BLOCK_SIZE
+        if self.max_records > 0:
+            if self.max_record_count >= self.max_records:
+                print('Reached maximum number [' + str(self.max_records) + '] of records to process; ending')
+                self._record_end(year=year)
+                return records
+            elif self.max_records - self.max_record_count < block_size:
+                block_size = self.max_records - self.max_record_count
+        print('RECORD finding ['+str(block_size)+'] '+str(year))
+        bulk = collection.initialize_ordered_bulk_op()
+        for record in collection.find({'rptOwnerCik':{'$exists':False},'processing':{'$exists':False},'year':int(year)}).limit(block_size):
+            self.max_record_count += 1
             records.append(record)
             bulk.find({ '_id': record['_id'] }).update({ '$set': { 'processing': self.epoch_time, 'pid': os.getpid() } })
         if len(records) > 0:
