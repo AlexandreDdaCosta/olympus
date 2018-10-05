@@ -161,10 +161,11 @@ class InitForm4Indices(data.Connection):
 class Form4(data.Connection):
 
     FORM4_SUBMISSIONS_COLLECTION_NAME = 'form4_submissions'
+    ISSUER_COLLECTION_NAME = 'issuer'
+    REPORTING_OWNER_COLLECTION_NAME = 'reporting_owner'
     INIT_SLEEP = 5
     INIT_WAIT = 20
-    #PROCESSING_BLOCK_SIZE = 100
-    PROCESSING_BLOCK_SIZE = 5
+    PROCESSING_BLOCK_SIZE = 100
 
     def __init__(self,**kwargs):
         super(Form4,self).__init__('form4_submissions',**kwargs)
@@ -182,15 +183,20 @@ class Form4(data.Connection):
         self.max_records = kwargs.get('max_records',0)
         self.max_record_count = 0
         year = kwargs.get('year',None)
-        collection = self.db[self.FORM4_SUBMISSIONS_COLLECTION_NAME]
-        collection.create_index([('rptOwnerCik', pymongo.ASCENDING)], name=self.FORM4_SUBMISSIONS_COLLECTION_NAME+'_rptOwnerCik_'+INDEX_SUFFIX, unique=True)
+        self.collection_index = self.db[FORM4_INDEX_COLLECTION_NAME]
+        self.collection_issuer = self.db[ISSUER_COLLECTION_NAME]
+        self.collection_issuer.create_index([('issuerCik', pymongo.ASCENDING)], name=self.ISSUER_COLLECTION_NAME+'_issuerCik_'+INDEX_SUFFIX, unique=True)
+        self.collection_reporting_owner = self.db[REPORTING_OWNER_COLLECTION_NAME]
+        self.collection_reporting_owner.create_index([('rptOwnerCik', pymongo.ASCENDING)], name=self.REPORTING_OWNER_COLLECTION_NAME+'_rptOwnerCik_'+INDEX_SUFFIX, unique=True)
+        self.collection_submissions = self.db[self.FORM4_SUBMISSIONS_COLLECTION_NAME]
+        self.collection_submissions.create_index([('rptOwnerCik', pymongo.ASCENDING)], name=self.FORM4_SUBMISSIONS_COLLECTION_NAME+'_rptOwnerCik_'+INDEX_SUFFIX, unique=True)
 
         if cik_file is not None:
             if self.verbose:
                 print('Running single Form4 update for '+ cik_file)
             issuerCik, filename = re.split(r'-', cik_file)
             records = []
-            for record in collection.find({'issuerCik': int(issuerCik),'processing':{'$exists':False},'year':int(year)}):
+            for record in self.collection_submissions.find({'issuerCik': int(issuerCik),'processing':{'$exists':False},'year':int(year)}):
                 records.append(record)
             if len(records) == 0:
                 raise Exception('Specified cik/file combination not found in indices: ' + cik_file)
@@ -216,8 +222,6 @@ class Form4(data.Connection):
                     self._get_write_forms(year,records)
 
     def _get_write_forms(self,year,records):
-        collection = self.db[self.FORM4_SUBMISSIONS_COLLECTION_NAME]
-        collection_index = self.db[FORM4_INDEX_COLLECTION_NAME]
         download_directory = '/tmp/form4_submissions_'+str(os.getpid())+'_'+str(self.epoch_time)+'/'
         try:
             if not os.path.isdir(download_directory):
@@ -248,29 +252,27 @@ class Form4(data.Connection):
                     else:
                         xmlschema.validate(xml_content,schema=self.form4_schema)
                     data = xmltodict.parse(xml_content)
-                    rptOwnerCik = int(data['ownershipDocument']['reportingOwner']['reportingOwnerId']['rptOwnerCik'])
                 except Exception as e:
                     print(str(data))
                     print('\n\nhttps://www.sec.gov/Archives/edgar/data/'+str(record['issuerCik'])+'/'+record['file']+'.txt\n')
                     self._revert_unlock_slice(records)
                     raise
 
-                collection.update({'rptOwnerCik':rptOwnerCik},{'rptOwnerCik':rptOwnerCik}, upsert=True)
-                if self.verbose:
-                    print('ADDED CIK OWNER: '+ str(rptOwnerCik))
-                if collection.find({'rptOwnerCik':rptOwnerCik, 'issuerCik': {'$exists': True}}).limit(1).count() == 0:
-                    collection.update({'rptOwnerCik':rptOwnerCik}, {'$set': {'issuerCik': {}}})
-                collection.update({'rptOwnerCik':rptOwnerCik}, {'$set': {'issuerCik.'+str(record['issuerCik'])+'.'+record['file']: { 'reportingOwner': {}, 'nonDerivativeTransaction': [], 'derivativeTransaction': [] }}})
-
-                '''
-                Create tables:
-                issuerCik data (symbols, name; from issuer, Form4)
-                reportingOwner data (from reportingOwner, Form4)
-                '''
-
+                print(json.dumps(data,indent=4))
+                # issuerCik document
+                if self.collection_issuer.find({'issuerCik': record['issuerCik']}).limit(1).count() == 0:
+                    self.collection_issuer.update({'issuerCik': record['issuerCik']},{'issuerCik': record['issuerCik']}, upsert=True)
+                    self.collection_issuer.update({'issuerCik': record['issuerCik']}, {'$set': {'issuer': {}, 'history': []}})
+                # reportingOwner document + submission data
                 owner_cik = []
-                owner_cik.append(rptOwnerCik)
-                collection_index.update({'issuerCik':record['issuerCik'], 'file':record['file']}, {'$set': { 'rptOwnerCik': owner_cik }, '$unset': { 'processing': 1, 'pid': 1 }} )
+                if type(data['ownershipDocument']['reportingOwner']) is list:
+                    rptOwnerCik = int(data['ownershipDocument']['reportingOwner']['reportingOwnerId']['rptOwnerCik'])
+                    owner_cik.append(rptOwnerCik)
+                else:
+                    rptOwnerCik = self._reporting_owner_handler(data['ownershipDocument']['reportingOwner'],record)
+                    owner_cik.append(rptOwnerCik)
+                # Form4 index
+                self.collection_index.update({'issuerCik':record['issuerCik'], 'file':record['file']}, {'$set': { 'rptOwnerCik': owner_cik }, '$unset': { 'processing': 1, 'pid': 1 }} )
                 if self.verbose:
                     print('UPDATED INDEX: '+ str(record['issuerCik']) + ' ' + str(record['file']))
 
@@ -281,9 +283,25 @@ class Form4(data.Connection):
             self._revert_unlock_slice(records)
             raise
 
+    def _reporting_owner_handler(self,data,record):
+        rptOwnerCik = int(data['reportingOwnerId']['rptOwnerCik'])
+        self.collection_submissions.update({'rptOwnerCik':rptOwnerCik},{'rptOwnerCik':rptOwnerCik}, upsert=True)
+        if self.verbose:
+            print('ADDED CIK OWNER: '+ str(rptOwnerCik))
+        # Core data structure for new submision
+        if self.collection_submissions.find({'rptOwnerCik':rptOwnerCik, 'issuerCik': {'$exists': True}}).limit(1).count() == 0:
+            self.collection_submissions.update({'rptOwnerCik':rptOwnerCik}, {'$set': {'issuerCik': {}}})
+        self.collection_submissions.update({'rptOwnerCik':rptOwnerCik}, {'$set': {'issuerCik.'+str(record['issuerCik'])+'.'+record['file']: { 'reportingOwner': {}, 'nonDerivativeTransaction': [], 'derivativeTransaction': [] }}})
+        # Populate submission data structures
+        # ALEX TBC
+        # Add/update reporting owner data
+        if self.collection_reporting_owner.find({'rptOwnerCik': rptOwnerCik}).limit(1).count() == 0:
+            self.collection_reporting_owner.update({'rptOwnerCik': rptOwnerCik},{'rptOwnerCik': rptOwnerCik}, upsert=True)
+            self.collection_reporting_owner.update({'rptOwnerCik': rptOwnerCik}, {'$set': {'reportingOwner': {}, 'history': []}})
+        return rptOwnerCik
+
     def _revert_unlock_slice(self,records):
-        collection = self.db[FORM4_INDEX_COLLECTION_NAME]
-        bulk = collection.initialize_ordered_bulk_op()
+        bulk = self,collection_index.initialize_ordered_bulk_op()
         for record in records:
             if self.verbose:
                 print('REVERTING INDEX: '+ str(record['_id']))
@@ -291,10 +309,9 @@ class Form4(data.Connection):
         bulk.execute()
 
     def _select_lock_slice(self,year):
-        collection = self.db[FORM4_INDEX_COLLECTION_NAME]
         if self.force is True:
             # Unlock all entries being processed
-            collection.update({'year':year}, { '$unset': {'processing': 1, 'pid': 1}}, multi=True)
+            self.collection_index.update({'year':year}, { '$unset': {'processing': 1, 'pid': 1}}, multi=True)
         waits = 0
         while True:
             if self._record_start(year=year) is not True:
@@ -322,8 +339,8 @@ class Form4(data.Connection):
             elif self.max_records - self.max_record_count < block_size:
                 block_size = self.max_records - self.max_record_count
         print('RECORD finding ['+str(block_size)+'] '+str(year))
-        bulk = collection.initialize_ordered_bulk_op()
-        for record in collection.find({'rptOwnerCik':{'$exists':False},'processing':{'$exists':False},'year':int(year)}).limit(block_size):
+        bulk = self.collection_index.initialize_ordered_bulk_op()
+        for record in self.collection_index.find({'rptOwnerCik':{'$exists':False},'processing':{'$exists':False},'year':int(year)}).limit(block_size):
             self.max_record_count += 1
             records.append(record)
             bulk.find({ '_id': record['_id'] }).update({ '$set': { 'processing': self.epoch_time, 'pid': os.getpid() } })
