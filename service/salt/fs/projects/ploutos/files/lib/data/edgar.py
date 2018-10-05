@@ -182,6 +182,8 @@ class Form4(data.Connection):
         self.max_records = kwargs.get('max_records',0)
         self.max_record_count = 0
         year = kwargs.get('year',None)
+        collection = self.db[self.FORM4_SUBMISSIONS_COLLECTION_NAME]
+        collection.create_index([('rptOwnerCik', pymongo.ASCENDING)], name=self.FORM4_SUBMISSIONS_COLLECTION_NAME+'_rptOwnerCik_'+INDEX_SUFFIX, unique=True)
 
         if cik_file is not None:
             if self.verbose:
@@ -256,6 +258,9 @@ class Form4(data.Connection):
                 collection.update({'rptOwnerCik':rptOwnerCik},{'rptOwnerCik':rptOwnerCik}, upsert=True)
                 if self.verbose:
                     print('ADDED CIK OWNER: '+ str(rptOwnerCik))
+                if collection.find({'rptOwnerCik':rptOwnerCik, 'issuerCik': {'$exists': True}}).limit(1).count() == 0:
+                    collection.update({'rptOwnerCik':rptOwnerCik}, {'$set': {'issuerCik': {}}})
+                collection.update({'rptOwnerCik':rptOwnerCik}, {'$set': {'issuerCik.'+str(record['issuerCik'])+'.'+record['file']: { 'reportingOwner': {}, 'nonDerivativeTransaction': [], 'derivativeTransaction': [] }}})
 
                 owner_cik = []
                 owner_cik.append(rptOwnerCik)

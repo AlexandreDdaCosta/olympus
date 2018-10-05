@@ -18,12 +18,10 @@ for opt, arg in opts:
 
 if verbose == True:
     start = time.time()
-'''
 print("Begin symbol import.")
 process = InitSymbols(graceful=True)
 process.populate_collections()
 print("Ended symbol import.")
-'''
 print("Begin options import.")
 process = InitOptions(graceful=True)
 process.populate_collections()
