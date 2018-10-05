@@ -262,6 +262,12 @@ class Form4(data.Connection):
                     collection.update({'rptOwnerCik':rptOwnerCik}, {'$set': {'issuerCik': {}}})
                 collection.update({'rptOwnerCik':rptOwnerCik}, {'$set': {'issuerCik.'+str(record['issuerCik'])+'.'+record['file']: { 'reportingOwner': {}, 'nonDerivativeTransaction': [], 'derivativeTransaction': [] }}})
 
+                '''
+                Create tables:
+                issuerCik data (symbols, name; from issuer, Form4)
+                reportingOwner data (from reportingOwner, Form4)
+                '''
+
                 owner_cik = []
                 owner_cik.append(rptOwnerCik)
                 collection_index.update({'issuerCik':record['issuerCik'], 'file':record['file']}, {'$set': { 'rptOwnerCik': owner_cik }, '$unset': { 'processing': 1, 'pid': 1 }} )
