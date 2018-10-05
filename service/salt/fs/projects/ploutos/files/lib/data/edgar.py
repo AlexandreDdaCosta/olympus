@@ -184,9 +184,9 @@ class Form4(data.Connection):
         self.max_record_count = 0
         year = kwargs.get('year',None)
         self.collection_index = self.db[FORM4_INDEX_COLLECTION_NAME]
-        self.collection_issuer = self.db[ISSUER_COLLECTION_NAME]
+        self.collection_issuer = self.db[self.ISSUER_COLLECTION_NAME]
         self.collection_issuer.create_index([('issuerCik', pymongo.ASCENDING)], name=self.ISSUER_COLLECTION_NAME+'_issuerCik_'+INDEX_SUFFIX, unique=True)
-        self.collection_reporting_owner = self.db[REPORTING_OWNER_COLLECTION_NAME]
+        self.collection_reporting_owner = self.db[self.REPORTING_OWNER_COLLECTION_NAME]
         self.collection_reporting_owner.create_index([('rptOwnerCik', pymongo.ASCENDING)], name=self.REPORTING_OWNER_COLLECTION_NAME+'_rptOwnerCik_'+INDEX_SUFFIX, unique=True)
         self.collection_submissions = self.db[self.FORM4_SUBMISSIONS_COLLECTION_NAME]
         self.collection_submissions.create_index([('rptOwnerCik', pymongo.ASCENDING)], name=self.FORM4_SUBMISSIONS_COLLECTION_NAME+'_rptOwnerCik_'+INDEX_SUFFIX, unique=True)
@@ -262,7 +262,7 @@ class Form4(data.Connection):
                 # issuerCik document
                 if self.collection_issuer.find({'issuerCik': record['issuerCik']}).limit(1).count() == 0:
                     self.collection_issuer.update({'issuerCik': record['issuerCik']},{'issuerCik': record['issuerCik']}, upsert=True)
-                    self.collection_issuer.update({'issuerCik': record['issuerCik']}, {'$set': {'issuer': {}, 'history': []}})
+                    self.collection_issuer.update({'issuerCik': record['issuerCik']}, {'$set': {'issuer': {}, 'history': {}}})
                 # reportingOwner document + submission data
                 owner_cik = []
                 if type(data['ownershipDocument']['reportingOwner']) is list:
@@ -297,7 +297,7 @@ class Form4(data.Connection):
         # Add/update reporting owner data
         if self.collection_reporting_owner.find({'rptOwnerCik': rptOwnerCik}).limit(1).count() == 0:
             self.collection_reporting_owner.update({'rptOwnerCik': rptOwnerCik},{'rptOwnerCik': rptOwnerCik}, upsert=True)
-            self.collection_reporting_owner.update({'rptOwnerCik': rptOwnerCik}, {'$set': {'reportingOwner': {}, 'history': []}})
+            self.collection_reporting_owner.update({'rptOwnerCik': rptOwnerCik}, {'$set': {'reportingOwner': {}, 'history': {}}})
         return rptOwnerCik
 
     def _revert_unlock_slice(self,records):
