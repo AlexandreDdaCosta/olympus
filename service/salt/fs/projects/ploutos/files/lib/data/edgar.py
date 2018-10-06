@@ -236,7 +236,7 @@ class Form4(data.Connection):
                 filename = wget.download(url, out=download_directory+str(record['issuerCik'])+'_'+record['file']+'.txt')
                 if self.verbose:
                     print('\n')
-               filename = download_directory+str(record['issuerCik'])+'_'+record['file']+'.txt'
+                filename = download_directory+str(record['issuerCik'])+'_'+record['file']+'.txt'
                 xml_content = ''
                 xml_found = False
                 with open(filename,'r') as f:
@@ -279,8 +279,7 @@ class Form4(data.Connection):
                 if len(issuer_record['issuer']) == 0: 
                     self.collection_issuer.update({'_id': issuer_record['_id']}, {'$set': {'issuer': new_dict}})
                 elif issuer_record['issuer']['periodOfReport'] < submission_date:
-                    if issuer_record['issuer']['issuerName'] != new_dict['issuerName'] or
-                            issuer_record['issuer']['issuerTradingSymbol'] != new_dict['issuerTradingSymbol']:
+                    if issuer_record['issuer']['issuerName'] != new_dict['issuerName'] or issuer_record['issuer']['issuerTradingSymbol'] != new_dict['issuerTradingSymbol']:
                         historic_dict = {}
                         historic_dict['issuerName'] = issuer_record['issuer']['issuerName']
                         historic_dict['issuerTradingSymbol'] = issuer_record['issuer']['issuerTradingSymbol']
@@ -340,8 +339,7 @@ class Form4(data.Connection):
         if len(reporting_owner_record['reportingOwner']) == 0: 
             self.collection_reporting_owner.update({'_id': reporting_owner_record['_id']}, {'$set': {'reportingOwner': new_dict}})
         elif reporting_owner_record['reportingOwner']['periodOfReport'] < submission_date:
-            if reporting_owner_record['reportingOwner']['rptOwnerName'] != new_dict['rptOwnerName'] or
-                    reporting_owner_record['reportingOwner']['reportingOwnerAddress'] != new_dict['reportingOwnerAddress']:
+            if reporting_owner_record['reportingOwner']['rptOwnerName'] != new_dict['rptOwnerName'] or reporting_owner_record['reportingOwner']['reportingOwnerAddress'] != new_dict['reportingOwnerAddress']:
                 historic_dict = {}
                 historic_dict['rptOwnerName'] = reporting_owner_record['reportingOwner']['rptOwnerName']
                 historic_dict['reportingOwnerAddress'] = reporting_owner_record['reportingOwner']['reportingOwnerAddress']
