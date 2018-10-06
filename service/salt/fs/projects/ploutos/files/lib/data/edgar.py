@@ -207,7 +207,7 @@ class Form4(data.Connection):
             while True:
                 records = self._select_lock_slice(year)
                 if len(records) == 0:
-                    if self.verbose:
+                    if self.verbose and self.done:
                         print('No unprocessed index entries found for '+str(year)+'; ending.')
                     break
                 self._get_write_forms(year,records)
@@ -223,8 +223,8 @@ class Form4(data.Connection):
 
     def _convert_period_of_report(self, submission_date):
         year, month, day = str(submission_date).split('-')
-        t = datetime.datetime(year, month, day, 0, 0)
-        return time.mktime(t.timetuple())
+        t = datetime.datetime(int(year), int(month), int(day), 0, 0)
+        return int(time.mktime(t.timetuple()))
 
     def _get_write_forms(self,year,records):
         download_directory = '/tmp/form4_submissions_'+str(os.getpid())+'_'+str(self.epoch_time)+'/'
@@ -283,7 +283,7 @@ class Form4(data.Connection):
                         historic_dict = {}
                         historic_dict['issuerName'] = issuer_record['issuer']['issuerName']
                         historic_dict['issuerTradingSymbol'] = issuer_record['issuer']['issuerTradingSymbol']
-                        self.collection_issuer.update({'_id': issuer_record['_id']}, {'$set': {'issuer': new_dict, 'history.'+issuer_record['issuer']['periodOfReport']: historic_dict }})
+                        self.collection_issuer.update({'_id': issuer_record['_id']}, {'$set': {'issuer': new_dict, 'history.'+str(issuer_record['issuer']['periodOfReport']): historic_dict }})
 
                 # reportingOwner document + submission data
                 owner_cik = []
@@ -298,26 +298,23 @@ class Form4(data.Connection):
                 if self.verbose:
                     print('UPDATED INDEX: '+ str(record['issuerCik']) + ' ' + str(record['file']))
 
-        except KeyError:
-            self._revert_unlock_slice(records)
-            raise Exception('Key error detected in parsing; check XML format of Form4 submissions for '+str(year))
         except Exception as e:
             self._revert_unlock_slice(records)
             raise
 
     def _reporting_owner_handler(self,data,record):
         rptOwnerCik = int(data['ownershipDocument']['reportingOwner']['reportingOwnerId']['rptOwnerCik'])
-        self.collection_submissions.update({'rptOwnerCik':rptOwnerCik},{'rptOwnerCik':rptOwnerCik}, upsert=True)
+        if self.collection_submissions.find({'rptOwnerCik': rptOwnerCik}).limit(1).count() == 0:
+            self.collection_submissions.update({'rptOwnerCik':rptOwnerCik},{'rptOwnerCik':rptOwnerCik, 'issuerCik':{}}, upsert=True)
+            #self.collection_submissions.update({'rptOwnerCik':rptOwnerCik},{'rptOwnerCik':rptOwnerCik, '$set': {'issuerCik': {}}}, upsert=True)
+        #if self.collection_submissions.find({'rptOwnerCik':rptOwnerCik, 'issuerCik': {'$exists': True}}).limit(1).count() == 0:
+        #    self.collection_submissions.update({'rptOwnerCik':rptOwnerCik}, {'$set': {'issuerCik': {}}})
+        self.collection_submissions.update({'rptOwnerCik':rptOwnerCik}, {'$set': {'issuerCik.'+str(record['issuerCik'])+'.'+record['file']: { 'reportingOwner': {}, 'nonDerivativeTransaction': [], 'derivativeTransaction': [] }}})
         if self.verbose:
             print('VERIFIED CIK OWNER: '+ str(rptOwnerCik))
 
-        # Core data structure for new submission
-        if self.collection_submissions.find({'rptOwnerCik':rptOwnerCik, 'issuerCik': {'$exists': True}}).limit(1).count() == 0:
-            self.collection_submissions.update({'rptOwnerCik':rptOwnerCik}, {'$set': {'issuerCik': {}}})
-        self.collection_submissions.update({'rptOwnerCik':rptOwnerCik}, {'$set': {'issuerCik.'+str(record['issuerCik'])+'.'+record['file']: { 'reportingOwner': {}, 'nonDerivativeTransaction': [], 'derivativeTransaction': [] }}})
-
         # Populate submission data structures
-        # ALEX TBC
+        # ALEX TBC  
 
         # Add/update reporting owner data
         if self.collection_reporting_owner.find({'rptOwnerCik': rptOwnerCik}).limit(1).count() == 0:
@@ -325,7 +322,7 @@ class Form4(data.Connection):
             self.collection_reporting_owner.update({'rptOwnerCik': rptOwnerCik}, {'$set': {'reportingOwner': {}, 'history': {}}})
         submission_date = self._convert_period_of_report(data['ownershipDocument']['periodOfReport'])
         reporting_owner_record = {}
-        for reporting_owner_record in self.collection_issuer.find({'rptOwnerCik': rptOwnerCik}):
+        for reporting_owner_record in self.collection_reporting_owner.find({'rptOwnerCik': rptOwnerCik}):
             break
         new_dict = {}
         new_dict['periodOfReport'] = submission_date
@@ -343,12 +340,12 @@ class Form4(data.Connection):
                 historic_dict = {}
                 historic_dict['rptOwnerName'] = reporting_owner_record['reportingOwner']['rptOwnerName']
                 historic_dict['reportingOwnerAddress'] = reporting_owner_record['reportingOwner']['reportingOwnerAddress']
-                self.collection_issuer.update({'_id': issuer_record['_id']}, {'$set': {'issuer': new_dict, 'history.'+reporting_owner_record['reportingOwner']['periodOfReport']: historic_dict }})
+                self.collection_reporting_owner.update({'_id': reporting_owner_record['_id']}, {'$set': {'reportingOwner': new_dict, 'history.'+str(reporting_owner_record['reportingOwner']['periodOfReport']): historic_dict }})
 
         return rptOwnerCik
 
     def _revert_unlock_slice(self,records):
-        bulk = self,collection_index.initialize_ordered_bulk_op()
+        bulk = self.collection_index.initialize_ordered_bulk_op()
         for record in records:
             if self.verbose:
                 print('REVERTING INDEX: '+ str(record['_id']))
@@ -356,6 +353,7 @@ class Form4(data.Connection):
         bulk.execute()
 
     def _select_lock_slice(self,year):
+        self.done = False
         if self.force is True:
             # Unlock all entries being processed
             self.collection_index.update({'year':year}, { '$unset': {'processing': 1, 'pid': 1}}, multi=True)
@@ -382,6 +380,7 @@ class Form4(data.Connection):
             if self.max_record_count >= self.max_records:
                 print('Reached maximum number [' + str(self.max_records) + '] of records to process; ending')
                 self._record_end(year=year)
+                self.done = True
                 return records
             elif self.max_records - self.max_record_count < block_size:
                 block_size = self.max_records - self.max_record_count
