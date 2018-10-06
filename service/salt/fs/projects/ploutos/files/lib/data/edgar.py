@@ -221,6 +221,11 @@ class Form4(data.Connection):
                         break
                     self._get_write_forms(year,records)
 
+    def _convert_period_of_report(self, submission_date):
+        year, month, day = str(submission_date).split('-')
+        t = datetime.datetime(year, month, day, 0, 0)
+        return time.mktime(t.timetuple())
+
     def _get_write_forms(self,year,records):
         download_directory = '/tmp/form4_submissions_'+str(os.getpid())+'_'+str(self.epoch_time)+'/'
         try:
@@ -231,7 +236,7 @@ class Form4(data.Connection):
                 filename = wget.download(url, out=download_directory+str(record['issuerCik'])+'_'+record['file']+'.txt')
                 if self.verbose:
                     print('\n')
-                filename = download_directory+str(record['issuerCik'])+'_'+record['file']+'.txt'
+               filename = download_directory+str(record['issuerCik'])+'_'+record['file']+'.txt'
                 xml_content = ''
                 xml_found = False
                 with open(filename,'r') as f:
@@ -245,7 +250,7 @@ class Form4(data.Connection):
                             xml_found = True
                 f.close()
                 #xml_content = xml_content.replace("\n", "")
-                data = None
+                data = {}
                 try:
                     if record['form'] == '4/A':
                         xmlschema.validate(xml_content,schema=self.form4a_schema)
@@ -253,23 +258,41 @@ class Form4(data.Connection):
                         xmlschema.validate(xml_content,schema=self.form4_schema)
                     data = xmltodict.parse(xml_content)
                 except Exception as e:
-                    print(str(data))
-                    print('\n\nhttps://www.sec.gov/Archives/edgar/data/'+str(record['issuerCik'])+'/'+record['file']+'.txt\n')
+                    if self.verbose:
+                        print(json.dumps(data,indent=4))
+                        print('\n\nhttps://www.sec.gov/Archives/edgar/data/'+str(record['issuerCik'])+'/'+record['file']+'.txt\n')
                     self._revert_unlock_slice(records)
                     raise
 
-                print(json.dumps(data,indent=4))
                 # issuerCik document
                 if self.collection_issuer.find({'issuerCik': record['issuerCik']}).limit(1).count() == 0:
                     self.collection_issuer.update({'issuerCik': record['issuerCik']},{'issuerCik': record['issuerCik']}, upsert=True)
                     self.collection_issuer.update({'issuerCik': record['issuerCik']}, {'$set': {'issuer': {}, 'history': {}}})
+                submission_date = self._convert_period_of_report(data['ownershipDocument']['periodOfReport'])
+                issuer_record = {}
+                for issuer_record in self.collection_issuer.find({'issuerCik': record['issuerCik']}):
+                    break
+                new_dict = {}
+                new_dict['periodOfReport'] = submission_date
+                new_dict['issuerName'] = data['ownershipDocument']['issuer']['issuerName'].upper()
+                new_dict['issuerTradingSymbol'] = data['ownershipDocument']['issuer']['issuerTradingSymbol'].upper()
+                if len(issuer_record['issuer']) == 0: 
+                    self.collection_issuer.update({'_id': issuer_record['_id']}, {'$set': {'issuer': new_dict}})
+                elif issuer_record['issuer']['periodOfReport'] < submission_date:
+                    if issuer_record['issuer']['issuerName'] != new_dict['issuerName'] or
+                            issuer_record['issuer']['issuerTradingSymbol'] != new_dict['issuerTradingSymbol']:
+                        historic_dict = {}
+                        historic_dict['issuerName'] = issuer_record['issuer']['issuerName']
+                        historic_dict['issuerTradingSymbol'] = issuer_record['issuer']['issuerTradingSymbol']
+                        self.collection_issuer.update({'_id': issuer_record['_id']}, {'$set': {'issuer': new_dict, 'history.'+issuer_record['issuer']['periodOfReport']: historic_dict }})
+
                 # reportingOwner document + submission data
                 owner_cik = []
                 if type(data['ownershipDocument']['reportingOwner']) is list:
                     rptOwnerCik = int(data['ownershipDocument']['reportingOwner']['reportingOwnerId']['rptOwnerCik'])
                     owner_cik.append(rptOwnerCik)
                 else:
-                    rptOwnerCik = self._reporting_owner_handler(data['ownershipDocument']['reportingOwner'],record)
+                    rptOwnerCik = self._reporting_owner_handler(data,record)
                     owner_cik.append(rptOwnerCik)
                 # Form4 index
                 self.collection_index.update({'issuerCik':record['issuerCik'], 'file':record['file']}, {'$set': { 'rptOwnerCik': owner_cik }, '$unset': { 'processing': 1, 'pid': 1 }} )
@@ -284,20 +307,46 @@ class Form4(data.Connection):
             raise
 
     def _reporting_owner_handler(self,data,record):
-        rptOwnerCik = int(data['reportingOwnerId']['rptOwnerCik'])
+        rptOwnerCik = int(data['ownershipDocument']['reportingOwner']['reportingOwnerId']['rptOwnerCik'])
         self.collection_submissions.update({'rptOwnerCik':rptOwnerCik},{'rptOwnerCik':rptOwnerCik}, upsert=True)
         if self.verbose:
-            print('ADDED CIK OWNER: '+ str(rptOwnerCik))
-        # Core data structure for new submision
+            print('VERIFIED CIK OWNER: '+ str(rptOwnerCik))
+
+        # Core data structure for new submission
         if self.collection_submissions.find({'rptOwnerCik':rptOwnerCik, 'issuerCik': {'$exists': True}}).limit(1).count() == 0:
             self.collection_submissions.update({'rptOwnerCik':rptOwnerCik}, {'$set': {'issuerCik': {}}})
         self.collection_submissions.update({'rptOwnerCik':rptOwnerCik}, {'$set': {'issuerCik.'+str(record['issuerCik'])+'.'+record['file']: { 'reportingOwner': {}, 'nonDerivativeTransaction': [], 'derivativeTransaction': [] }}})
+
         # Populate submission data structures
         # ALEX TBC
+
         # Add/update reporting owner data
         if self.collection_reporting_owner.find({'rptOwnerCik': rptOwnerCik}).limit(1).count() == 0:
             self.collection_reporting_owner.update({'rptOwnerCik': rptOwnerCik},{'rptOwnerCik': rptOwnerCik}, upsert=True)
             self.collection_reporting_owner.update({'rptOwnerCik': rptOwnerCik}, {'$set': {'reportingOwner': {}, 'history': {}}})
+        submission_date = self._convert_period_of_report(data['ownershipDocument']['periodOfReport'])
+        reporting_owner_record = {}
+        for reporting_owner_record in self.collection_issuer.find({'rptOwnerCik': rptOwnerCik}):
+            break
+        new_dict = {}
+        new_dict['periodOfReport'] = submission_date
+        new_dict['rptOwnerName'] = data['ownershipDocument']['reportingOwner']['reportingOwnerId']['rptOwnerName'].upper()
+        new_dict['reportingOwnerAddress'] = '' 
+        address_keys = ('rptOwnerStreet1', 'rptOwnerStreet2', 'rptOwnerCity', 'rptOwnerState', 'rptOwnerZipCode')
+        for address_key in address_keys:
+            if data['ownershipDocument']['reportingOwner']['reportingOwnerAddress'][address_key]:
+                new_dict['reportingOwnerAddress'] += data['ownershipDocument']['reportingOwner']['reportingOwnerAddress'][address_key].strip() + ' '
+        new_dict['reportingOwnerAddress'] = new_dict['reportingOwnerAddress'].rstrip()
+        if len(reporting_owner_record['reportingOwner']) == 0: 
+            self.collection_reporting_owner.update({'_id': reporting_owner_record['_id']}, {'$set': {'reportingOwner': new_dict}})
+        elif reporting_owner_record['reportingOwner']['periodOfReport'] < submission_date:
+            if reporting_owner_record['reportingOwner']['rptOwnerName'] != new_dict['rptOwnerName'] or
+                    reporting_owner_record['reportingOwner']['reportingOwnerAddress'] != new_dict['reportingOwnerAddress']:
+                historic_dict = {}
+                historic_dict['rptOwnerName'] = reporting_owner_record['reportingOwner']['rptOwnerName']
+                historic_dict['reportingOwnerAddress'] = reporting_owner_record['reportingOwner']['reportingOwnerAddress']
+                self.collection_issuer.update({'_id': issuer_record['_id']}, {'$set': {'issuer': new_dict, 'history.'+reporting_owner_record['reportingOwner']['periodOfReport']: historic_dict }})
+
         return rptOwnerCik
 
     def _revert_unlock_slice(self,records):
