@@ -34,7 +34,7 @@ class InitForm4Indices(data.Connection):
         os.chdir(WORKING_DIR)
        
         if self._record_start() is not True:
-            if self.graceful is True:
+            if self.graceful:
                 lockfilehandle.write('')
                 fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
                 lockfilehandle.close()
@@ -172,9 +172,11 @@ class Form4(data.Connection):
         self.verbose = kwargs.get('verbose',False)
 
     def populate_indexed_forms(self,**kwargs):
+
         # Gather detailed Form4 records based on downloaded EDGAR indices
-        self.force = kwargs.get('force',False)
         self.epoch_time = int(time.time())
+        self.force = kwargs.get('force',False)
+        self.graceful = kwargs.get('graceful',False)
         schema_directory = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/'
         self.form4_schema = xmlschema.XMLSchema(schema_directory + 'ownership4Document.xsd.xml')
         self.form4a_schema = xmlschema.XMLSchema(schema_directory + 'ownership4ADocument.xsd.xml')
@@ -190,8 +192,9 @@ class Form4(data.Connection):
         self.collection_reporting_owner.create_index([('rptOwnerCik', pymongo.ASCENDING)], name=self.REPORTING_OWNER_COLLECTION_NAME+'_rptOwnerCik_'+INDEX_SUFFIX, unique=True)
         self.collection_submissions = self.db[self.FORM4_SUBMISSIONS_COLLECTION_NAME]
         self.collection_submissions.create_index([('rptOwnerCik', pymongo.ASCENDING)], name=self.FORM4_SUBMISSIONS_COLLECTION_NAME+'_rptOwnerCik_'+INDEX_SUFFIX, unique=True)
-        
+  
         self.done = False
+        self.force_unlocked = False
 
         if cik_file is not None:
             if self.verbose:
@@ -236,10 +239,10 @@ class Form4(data.Connection):
 
     def _get_write_forms(self,year,records):
         download_directory = '/tmp/form4_submissions_'+str(os.getpid())+'_'+str(self.epoch_time)+'/'
-        try:
-            if not os.path.isdir(download_directory):
-                os.mkdir(download_directory)
-            for record in records:
+        if not os.path.isdir(download_directory):
+            os.mkdir(download_directory)
+        for record in records:
+            try:
                 url = 'https://www.sec.gov/Archives/edgar/data/'+str(record['issuerCik'])+'/'+record['file']+'.txt'
                 filename = wget.download(url, out=download_directory+str(record['issuerCik'])+'_'+record['file']+'.txt')
                 if self.verbose:
@@ -267,10 +270,15 @@ class Form4(data.Connection):
                     data = xmltodict.parse(xml_content)
                 except Exception as e:
                     if self.verbose:
-                        print(json.dumps(data,indent=4))
                         print('\n\nhttps://www.sec.gov/Archives/edgar/data/'+str(record['issuerCik'])+'/'+record['file']+'.txt\n')
-                    self._revert_unlock_slice(records)
-                    raise
+                        print('Gracefully bypassing record ' + str(record['_id']) + ' for failed validation:\n'+str(e))
+                    if self.graceful:
+                        self._revert_unlock_record(record['_id'],str(e))
+                        continue
+                    else:
+                        shutil.rmtree(download_directory)
+                        self._revert_unlock_slice(records,record['_id'],str(e))
+                        raise
 
                 # issuerCik document
                 if self.collection_issuer.find({'issuerCik': record['issuerCik']}).limit(1).count() == 0:
@@ -303,13 +311,21 @@ class Form4(data.Connection):
                     rptOwnerCik = self._reporting_owner_handler(data,record)
                     owner_cik.append(rptOwnerCik)
                 # Form4 index
-                self.collection_index.update({'issuerCik':record['issuerCik'], 'file':record['file']}, {'$set': { 'rptOwnerCik': owner_cik }, '$unset': { 'processing': 1, 'pid': 1 }} )
+                self.collection_index.update({'issuerCik':record['issuerCik'], 'file':record['file']}, {'$set': { 'rptOwnerCik': owner_cik }, '$unset': { 'failure': 1, 'processing': 1, 'pid': 1 }} )
                 if self.verbose:
                     print('UPDATED INDEX: '+ str(record['issuerCik']) + ' ' + str(record['file']))
 
-        except Exception as e:
-            self._revert_unlock_slice(records)
-            raise
+            except Exception as e:
+                if self.graceful:
+                    if self.verbose:
+                        print('Gracefully bypassing failed record ' + str(record['_id']) + ':\n'+str(e))
+                    self._revert_unlock_record(record['_id'],str(e))
+                    continue
+                else:
+                    shutil.rmtree(download_directory)
+                    self._revert_unlock_slice(records,record['_id'],str(e))
+                    raise
+        shutil.rmtree(download_directory)
 
     def _reporting_owner_handler(self,data,record,reporting_owner=None):
         if reporting_owner is not None:
@@ -325,7 +341,7 @@ class Form4(data.Connection):
         # Populate submission data structures
         # ALEX TBC  
 
-        # Add/update reporting owner data
+        # Parse/add/update reporting owner data
         if self.collection_reporting_owner.find({'rptOwnerCik': rptOwnerCik}).limit(1).count() == 0:
             self.collection_reporting_owner.update({'rptOwnerCik': rptOwnerCik},{'rptOwnerCik': rptOwnerCik}, upsert=True)
             self.collection_reporting_owner.update({'rptOwnerCik': rptOwnerCik}, {'$set': {'reportingOwner': {}, 'history': {}}})
@@ -360,20 +376,31 @@ class Form4(data.Connection):
 
         return rptOwnerCik
 
-    def _revert_unlock_slice(self,records):
+    def _revert_unlock_record(self,id,error):
+        self.collection_index.update({'_id': id}, { '$set': { 'failure': error }, '$unset': {'processing': 1, 'pid': 1}})
+        if self.verbose:
+            print('UNLOCK CHECK FOR SINGLE INDEX ENTRY: '+ str(id))
+        self.max_record_count -= 1
+        self.done = False
+
+    def _revert_unlock_slice(self,records,id,error):
         bulk = self.collection_index.initialize_ordered_bulk_op()
         for record in records:
-            bulk.find({ '_id': record['_id'], 'processing': self.epoch_time, 'pid': os.getpid() }).update({ '$unset': { 'processing': 1, 'pid': 1 } })
+            bulk.find({ '_id': record['_id'], 'processing': self.epoch_time, 'pid': os.getpid() }).update({ '$unset': { 'failure': 1, 'processing': 1, 'pid': 1 }})
             if self.verbose:
                 print('UNLOCK CHECK FOR INDEX ENTRY: '+ str(record['_id']))
         bulk.execute()
+        self.collection_index.update({'_id': id}, { '$set': { 'failure': error }})
 
     def _select_lock_slice(self,year):
         if self.done is True:
             return []
-        if self.force is True:
-            # Unlock all entries being processed
-            self.collection_index.update({'year':year}, { '$unset': {'processing': 1, 'pid': 1}}, multi=True)
+        if self.force is True and not self.force_unlocked:
+            # Unlock all entries being processed and all failed entries
+            print('FORCING '+str(year))
+            self.collection_index.update({ 'failure': { '$exists': True }, 'year': int(year)}, {'$unset': {'failure': 1}}, multi=True)
+            self.collection_index.update({ 'pid': { '$exists': True }, 'year': int(year)}, {'$unset': {'pid': 1, 'processing': 1}}, multi=True)
+            self.force_unlocked = True
         waits = 0
         while True:
             if self._record_start(year=year) is not True:
@@ -404,7 +431,7 @@ class Form4(data.Connection):
                 self.done = True
         print('RECORD finding ['+str(block_size)+'] '+str(year))
         bulk = self.collection_index.initialize_ordered_bulk_op()
-        for record in self.collection_index.find({'rptOwnerCik':{'$exists':False},'processing':{'$exists':False},'year':int(year)}).limit(block_size):
+        for record in self.collection_index.find({'rptOwnerCik':{'$exists':False},'failure':{'$exists':False},'processing':{'$exists':False},'year':int(year)}).limit(block_size):
             self.max_record_count += 1
             records.append(record)
             bulk.find({ '_id': record['_id'] }).update({ '$set': { 'processing': self.epoch_time, 'pid': os.getpid() } })
