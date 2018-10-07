@@ -15,7 +15,6 @@ parser.add_argument("-v","--verbose",action="store_true",help="Chatty output")
 parser.add_argument("-y","--year",help="Perform action only for records for the specified year")
 args = parser.parse_args()
 
-print(str(args.year))
 if args.verbose is True:
     start = time.time()
 process = Form4(verbose=args.verbose)

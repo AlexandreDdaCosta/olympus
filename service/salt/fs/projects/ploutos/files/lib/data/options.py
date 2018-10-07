@@ -31,10 +31,9 @@ class InitOptions(data.Connection):
         os.chdir(WORKING_DIR)
        
         if self._record_start() is not True:
+            self._clean_up(lockfilehandle,False)
             if self.graceful is True:
-                lockfilehandle.write('')
-                fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
-                lockfilehandle.close()
+                print('Initialization record check failed; cannot record start of initialization.')
                 return
             else:
                 raise Exception('Initialization record check failed; cannot record start of initialization.')
@@ -46,7 +45,14 @@ class InitOptions(data.Connection):
             os.remove(option_file)
         except OSError:
             pass
-        filename = wget.download(OPTIONS_DATA_URL,out=DOWNLOAD_DIR)
+        try:
+            filename = wget.download(OPTIONS_DATA_URL,out=DOWNLOAD_DIR)
+        except Exception as e:
+            self._clean_up(lockfilehandle)
+            if self.graceful is True:
+                print('WARNING: Bypassing initialization due to download error: '+str(e))
+                return
+            raise
         os.rename(filename,option_file)
 
         # Clean up received data
@@ -93,9 +99,12 @@ class InitOptions(data.Connection):
         collection.insert_many(json_data)
         collection.create_index("Symbol")
 		
-        # Clean-up
-		
-        self._record_end()
+        self._clean_up(lockfilehandle)
+	
+    def _clean_up(self,lockfilehandle,end_it=True):
+        if end_it is True:
+            self._record_end()
         lockfilehandle.write('')
         fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
         lockfilehandle.close()
+

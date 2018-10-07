@@ -22,7 +22,7 @@ class InitSymbols(data.Connection):
     def __init__(self,**kwargs):
         super(InitSymbols,self).__init__(INIT_TYPE,**kwargs)
         self.force = kwargs.get('force',False)
-        self.graceful = kwargs.get('force',False)
+        self.graceful = kwargs.get('graceful',False)
 
     def populate_collections(self):
 
@@ -34,10 +34,9 @@ class InitSymbols(data.Connection):
         os.chdir(WORKING_DIR)
        
         if self._record_start() is not True:
+            self._clean_up(lockfilehandle,False)
             if self.graceful is True:
-                lockfilehandle.write('')
-                fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
-                lockfilehandle.close()
+                print('Initialization record check failed; cannot record start of initialization.')
                 return
             else:
                 raise Exception('Initialization record check failed; cannot record start of initialization.')
@@ -53,7 +52,14 @@ class InitSymbols(data.Connection):
                 os.remove(target_file)
             except OSError:
                 pass
-            filename = wget.download(urlconf['url'],out=DOWNLOAD_DIR)
+            try:
+                filename = wget.download(urlconf['url'],out=DOWNLOAD_DIR)
+            except Exception as e:
+                self._clean_up(lockfilehandle)
+                if self.graceful is True:
+                    print('WARNING: Bypassing initialization due to download error: '+str(e))
+                    return
+                raise
             os.rename(filename,target_file)
 
         # Clean up received data
@@ -64,6 +70,7 @@ class InitSymbols(data.Connection):
             csvfile = open(DOWNLOAD_DIR+company_file,'r')
             first_line = csvfile.readline().rstrip(',\n')
             if first_line != FIRST_LINE_STRING:
+                self._clean_up(lockfilehandle)
                 raise Exception('First line does not match expected format; exiting.')
             for line in csvfile:
                 symbol = line.split(',')[0]
@@ -75,7 +82,7 @@ class InitSymbols(data.Connection):
                     continue
                 # Strip and convert capitalization figures
                 matchobj = re.match(r'^\".*?\",\".*?\",\".*?\",\"(.*?)\"',line)
-                market_cap = self.__normalize_market_capitalization(matchobj.group(1))
+                market_cap = self._normalize_market_capitalization(matchobj.group(1))
                 line = re.sub(r'^(\".*?\",\".*?\",\".*?\",)(\".*?\")',r'\g<1>'+market_cap,line)
                 # Strip ending commas
                 line = line[:-2] + '\n'
@@ -120,14 +127,16 @@ class InitSymbols(data.Connection):
             collection.insert_many(json_data)
             collection.create_index("Symbol")
 	
-        # Clean-up
+        self._clean_up(lockfilehandle)
 	
-        self._record_end()
+    def _clean_up(self,lockfilehandle,end_it=True):
+        if end_it is True:
+            self._record_end()
         lockfilehandle.write('')
         fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
         lockfilehandle.close()
 
-    def __normalize_market_capitalization(self,c):
+    def _normalize_market_capitalization(self,c):
         multiplier = 1
         if re.match(r'.*?B',c):
             multiplier = 1000000000

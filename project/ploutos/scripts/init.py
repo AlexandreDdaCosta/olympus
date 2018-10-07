@@ -1,35 +1,32 @@
 #!/usr/bin/env python3
 
-import getopt, sys, time
+import sys, time
+
+from argparse import ArgumentParser
 
 from olympus.projects.ploutos.data.edgar import InitForm4Indices
 from olympus.projects.ploutos.data.options import InitOptions
 from olympus.projects.ploutos.data.symbols import InitSymbols
 
-verbose = False
-try:
-    opts, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
-except getopt.GetoptError:
-    print('init.py --verbose')
-    sys.exit(2)
-for opt, arg in opts:
-    if opt in ('-v', '--verbose'):
-        verbose = True
+parser = ArgumentParser(sys.argv)
+parser.add_argument("-g","--graceful",action="store_true",help="Nice crash and burn for permissible errors")
+parser.add_argument("-v","--verbose",action="store_true",help="Chatty output")
+args = parser.parse_args()
 
-if verbose == True:
+if args.verbose == True:
     start = time.time()
 print("Begin symbol import.")
-process = InitSymbols(graceful=True)
+process = InitSymbols(graceful=args.graceful,verbose=args.verbose)
 process.populate_collections()
 print("Ended symbol import.")
 print("Begin options import.")
-process = InitOptions(graceful=True)
+process = InitOptions(graceful=args.graceful,verbose=args.verbose)
 process.populate_collections()
 print("Ended options import.")
 print("Begin import of EDGAR quarterly indices.")
-process = InitForm4Indices(graceful=True,verbose=verbose)
+process = InitForm4Indices(graceful=args.graceful,verbose=args.verbose)
 process.populate_collections()
 print("Ended import of EDGAR quarterly indices.")
-if verbose == True:
+if args.verbose == True:
     end = time.time()
     print('Elapsed seconds: ' + str(end - start))
