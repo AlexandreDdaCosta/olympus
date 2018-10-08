@@ -1,7 +1,9 @@
 import datetime, fcntl, json, os, re, shutil, sys, time, wget, xmlschema, xmltodict
 import edgar as form4_index_downloader
+import xml.etree.ElementTree as ET
 
 from bson.json_util import dumps, loads
+from xmlschema.validators.exceptions import XMLSchemaValidationError
 
 import olympus.projects.ploutos.data as data
 
@@ -237,6 +239,19 @@ class Form4(data.Connection):
         t = datetime.datetime(int(year), int(month), int(day), 0, 0)
         return int(time.mktime(t.timetuple()))
 
+    def _fix_xml_content(self,xml_content,e):
+        XML = ET.fromstring(xml_content)
+        if e.reason == "invalid datetime for formats ('%Y-%m-%d', '-%Y-%m-%d').":
+            path = e.path
+            path = re.sub(r'^(\/.*?)(\/.*)$',r'\g<2>',e.path)
+            for i in XML.findall('.'+path):
+                text = re.sub(r"[\s\-]", "", i.text, flags=re.UNICODE)
+                text = text[:4] + '-' + text[4:6] + '-' + text[6:8]
+                i.text = text
+        else:
+            return None
+        return ET.tostring(XML)
+
     def _get_write_forms(self,year,records):
         download_directory = '/tmp/form4_submissions_'+str(os.getpid())+'_'+str(self.epoch_time)+'/'
         if not os.path.isdir(download_directory):
@@ -260,25 +275,41 @@ class Form4(data.Connection):
                         elif re.match(r'\<XML\>',line):
                             xml_found = True
                 f.close()
+                
+                # Fix CRLF problems due to run-on lines
                 xml_content = xml_content.replace("\n", "")
-                data = {}
-                try:
-                    if record['form'] == '4/A':
-                        xmlschema.validate(xml_content,schema=self.form4a_schema)
-                    else:
-                        xmlschema.validate(xml_content,schema=self.form4_schema)
-                    data = xmltodict.parse(xml_content)
-                except Exception as e:
-                    if self.verbose:
-                        print('\n\nhttps://www.sec.gov/Archives/edgar/data/'+str(record['issuerCik'])+'/'+record['file']+'.txt\n')
-                        print('Gracefully bypassing record ' + str(record['_id']) + ' for failed validation:\n'+str(e))
-                    if self.graceful:
-                        self._revert_unlock_record(record['_id'],str(e))
-                        continue
-                    else:
-                        shutil.rmtree(download_directory)
-                        self._revert_unlock_slice(records,record['_id'],str(e))
+               
+                xml_validate = True 
+                for_continue = False
+                repair_attempts = 0
+                while xml_validate is True:
+                    try:
+                        if record['form'] == '4/A':
+                            xmlschema.validate(xml_content,schema=self.form4a_schema)
+                        else:
+                            xmlschema.validate(xml_content,schema=self.form4_schema)
+                    except XMLSchemaValidationError as e:
+                        repair_attempts += 1
+                        if repair_attempts <= 10:
+                            xml_content = self._fix_xml_content(xml_content,e)
+                        else:
+                            xml_content = None
+                        if xml_content is None:
+                            if self.verbose:
+                                print('\n\nhttps://www.sec.gov/Archives/edgar/data/'+str(record['issuerCik'])+'/'+record['file']+'.txt\n')
+                                print('Gracefully bypassing record ' + str(record['_id']) + ' for failed validation:\n'+str(e))
+                            if self.graceful:
+                                self._revert_unlock_record(record['_id'],str(e))
+                                for_continue = True
+                            else:
+                                raise
+                    except Exception:
                         raise
+                    xml_validate = False
+                if for_continue:
+                    continue
+                data = {}
+                data = xmltodict.parse(xml_content)
 
                 # issuerCik document
                 if self.collection_issuer.find({'issuerCik': record['issuerCik']}).limit(1).count() == 0:
@@ -322,10 +353,12 @@ class Form4(data.Connection):
                     self._revert_unlock_record(record['_id'],str(e))
                     continue
                 else:
-                    shutil.rmtree(download_directory)
+                    if os.path.isdir(download_directory):
+                        shutil.rmtree(download_directory)
                     self._revert_unlock_slice(records,record['_id'],str(e))
                     raise
-        shutil.rmtree(download_directory)
+        if os.path.isdir(download_directory):
+            shutil.rmtree(download_directory)
 
     def _reporting_owner_handler(self,data,record,reporting_owner=None):
         if reporting_owner is not None:
@@ -358,20 +391,31 @@ class Form4(data.Connection):
         new_dict['reportingOwnerAddress'] = '' 
         address_keys = ('rptOwnerStreet1', 'rptOwnerStreet2', 'rptOwnerCity', 'rptOwnerState', 'rptOwnerZipCode')
         for address_key in address_keys:
-            if reporting_owner is not None:
-                if reporting_owner['reportingOwnerAddress'][address_key]:
+            if reporting_owner is not None and 'reportingOwnerAddress' in reporting_owner:
+                if (
+                       address_key in reporting_owner['reportingOwnerAddress'] 
+                       and reporting_owner['reportingOwnerAddress'][address_key] is not None
+                   ):
                     new_dict['reportingOwnerAddress'] += reporting_owner['reportingOwnerAddress'][address_key].strip() + ' '
-            else:
-                if data['ownershipDocument']['reportingOwner']['reportingOwnerAddress'][address_key]:
+            elif 'reportingOwnerAddress' in data['ownershipDocument']['reportingOwner']:
+                if (
+                       address_key in data['ownershipDocument']['reportingOwner']['reportingOwnerAddress'] 
+                       and data['ownershipDocument']['reportingOwner']['reportingOwnerAddress'][address_key] is not None
+                   ):
                     new_dict['reportingOwnerAddress'] += data['ownershipDocument']['reportingOwner']['reportingOwnerAddress'][address_key].strip() + ' '
         new_dict['reportingOwnerAddress'] = new_dict['reportingOwnerAddress'].rstrip()
         if len(reporting_owner_record['reportingOwner']) == 0: 
             self.collection_reporting_owner.update({'_id': reporting_owner_record['_id']}, {'$set': {'reportingOwner': new_dict}})
         elif reporting_owner_record['reportingOwner']['periodOfReport'] < submission_date:
-            if reporting_owner_record['reportingOwner']['rptOwnerName'] != new_dict['rptOwnerName'] or reporting_owner_record['reportingOwner']['reportingOwnerAddress'] != new_dict['reportingOwnerAddress']:
+            if (
+                   reporting_owner_record['reportingOwner']['rptOwnerName'] != new_dict['rptOwnerName']
+                   or ('reportingOwnerAddress' in reporting_owner_record['reportingOwner'] and reporting_owner_record['reportingOwner']['reportingOwnerAddress'] != new_dict['reportingOwnerAddress'])
+                   or 'reportingOwnerAddress' not in reporting_owner_record['reportingOwner']
+               ):
                 historic_dict = {}
                 historic_dict['rptOwnerName'] = reporting_owner_record['reportingOwner']['rptOwnerName']
-                historic_dict['reportingOwnerAddress'] = reporting_owner_record['reportingOwner']['reportingOwnerAddress']
+                if 'reportingOwnerAddress' in reporting_owner_record['reportingOwner']:
+                    historic_dict['reportingOwnerAddress'] = reporting_owner_record['reportingOwner']['reportingOwnerAddress']
                 self.collection_reporting_owner.update({'_id': reporting_owner_record['_id']}, {'$set': {'reportingOwner': new_dict, 'history.'+str(reporting_owner_record['reportingOwner']['periodOfReport']): historic_dict }})
 
         return rptOwnerCik
