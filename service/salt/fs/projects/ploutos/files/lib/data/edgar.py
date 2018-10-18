@@ -259,6 +259,8 @@ class Form4(data.Connection):
         for record in records:
             try:
                 url = 'https://www.sec.gov/Archives/edgar/data/'+str(record['issuerCik'])+'/'+record['file']+'.txt'
+                if self.verbose:
+                    print(url)
                 filename = wget.download(url, out=download_directory+str(record['issuerCik'])+'_'+record['file']+'.txt')
                 if self.verbose:
                     print('\n')
@@ -362,17 +364,42 @@ class Form4(data.Connection):
 
     def _reporting_owner_handler(self,data,record,reporting_owner=None):
         if reporting_owner is not None:
-            rptOwnerCik = int(reporting_owner['reportingOwnerId']['rptOwnerCik'])
+            reporting_owner_dict = reporting_owner
         else:
-            rptOwnerCik = int(data['ownershipDocument']['reportingOwner']['reportingOwnerId']['rptOwnerCik'])
+            reporting_owner_dict = data['ownershipDocument']['reportingOwner']
+        rptOwnerCik = int(reporting_owner_dict['reportingOwnerId']['rptOwnerCik'])
         if self.collection_submissions.find({'rptOwnerCik': rptOwnerCik}).limit(1).count() == 0:
             self.collection_submissions.update({'rptOwnerCik':rptOwnerCik},{'rptOwnerCik':rptOwnerCik, 'issuerCik':{}}, upsert=True)
-        self.collection_submissions.update({'rptOwnerCik':rptOwnerCik}, {'$set': {'issuerCik.'+str(record['issuerCik'])+'.'+record['file']: { 'reportingOwner': {}, 'nonDerivativeTransaction': [], 'derivativeTransaction': [] }}})
-        if self.verbose:
-            print('VERIFIED CIK OWNER: '+ str(rptOwnerCik))
 
         # Populate submission data structures
-        # ALEX TBC  
+
+        # ALEX PRE
+        reportingOwner = {}
+        if 'reportingOwnerRelationship' in reporting_owner_dict:
+            relationship_keys = ('isDirector','isOfficer','isTenPercentOwner')
+            for key in relationship_keys:
+                if key in reporting_owner_dict['reportingOwnerRelationship'] and str(reporting_owner_dict['reportingOwnerRelationship'][key].strip()) == '1':
+                    reportingOwner[key] = True
+            if 'officerTitle' in reporting_owner_dict['reportingOwnerRelationship']:
+                officer_title = reporting_owner_dict['reportingOwnerRelationship']['officerTitle'].strip()
+                if officer_title:
+                    reportingOwner['officerTitle'] = officer_title
+
+        nonDerivativeTransaction = []
+        if 'nonDerivativeTable' in data['ownershipDocument'] and 'nonDerivativeTransaction' in data['ownershipDocument']['nonDerivativeTable'] and data['ownershipDocument']['nonDerivativeTable']['nonDerivativeTransaction']:
+            for transaction in data['ownershipDocument']['nonDerivativeTable']['nonDerivativeTransaction']:
+                print(str(transaction))
+
+        derivativeTransaction = []
+        if 'derivativeTable' in data['ownershipDocument'] and 'derivativeTransaction' in data['ownershipDocument']['derivativeTable'] and data['ownershipDocument']['derivativeTable']['derivativeTransaction']:
+            for transaction in data['ownershipDocument']['derivativeTable']['derivativeTransaction']:
+                print(str(transaction))
+
+        # ALEX POST
+
+        self.collection_submissions.update({'rptOwnerCik':rptOwnerCik}, {'$set': {'issuerCik.'+str(record['issuerCik'])+'.'+record['file']: { 'reportingOwner': reportingOwner, 'nonDerivativeTransaction': nonDerivativeTransaction, 'derivativeTransaction': derivativeTransaction }}})
+        if self.verbose:
+            print('VERIFIED CIK OWNER: '+ str(rptOwnerCik))
 
         # Parse/add/update reporting owner data
         if self.collection_reporting_owner.find({'rptOwnerCik': rptOwnerCik}).limit(1).count() == 0:
