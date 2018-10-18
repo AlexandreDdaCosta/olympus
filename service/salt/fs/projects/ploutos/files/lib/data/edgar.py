@@ -239,6 +239,63 @@ class Form4(data.Connection):
         t = datetime.datetime(int(year), int(month), int(day), 0, 0)
         return int(time.mktime(t.timetuple()))
 
+    def _extract_transaction(self,transaction):
+        #ALEX
+        '''
+        <derivativeTransaction>
+            <securityTitle>
+                <value>Incentive Stock Option (right to buy)</value>
+            </securityTitle>
+            <conversionOrExercisePrice>
+                <value>1.9</value>
+            </conversionOrExercisePrice>
+            <transactionDate>
+                <value>2004-01-05</value>
+            </transactionDate>
+            <transactionCoding>
+                <transactionFormType>4</transactionFormType>
+                <transactionCode>M</transactionCode>
+                <equitySwapInvolved>0</equitySwapInvolved>
+            </transactionCoding>
+            <transactionAmounts>
+                <transactionShares>
+                    <value>2000</value>
+                </transactionShares>
+                <transactionPricePerShare>
+                    <value>0</value>
+                </transactionPricePerShare>
+                <transactionAcquiredDisposedCode>
+                    <value>D</value>
+                </transactionAcquiredDisposedCode>
+            </transactionAmounts>
+            <exerciseDate>
+                <footnoteId id="F1"/>
+            </exerciseDate>
+            <expirationDate>
+                <value>2011-09-24</value>
+            </expirationDate>
+            <underlyingSecurity>
+                <underlyingSecurityTitle>
+                    <value>Common Stock</value>
+                </underlyingSecurityTitle>
+                <underlyingSecurityShares>
+                    <value>2000</value>
+                </underlyingSecurityShares>
+            </underlyingSecurity>
+            <postTransactionAmounts>
+                <sharesOwnedFollowingTransaction>
+                    <value>2000</value>
+                </sharesOwnedFollowingTransaction>
+            </postTransactionAmounts>
+            <ownershipNature>
+                <directOrIndirectOwnership>
+                    <value>D</value>
+                </directOrIndirectOwnership>
+            </ownershipNature>
+        </derivativeTransaction>
+        '''
+        return 1
+
     def _fix_xml_content(self,xml_content,e):
         XML = ET.fromstring(xml_content)
         if e.reason == "invalid datetime for formats ('%Y-%m-%d', '-%Y-%m-%d').":
@@ -373,7 +430,6 @@ class Form4(data.Connection):
 
         # Populate submission data structures
 
-        # ALEX PRE
         reportingOwner = {}
         if 'reportingOwnerRelationship' in reporting_owner_dict:
             relationship_keys = ('isDirector','isOfficer','isTenPercentOwner')
@@ -387,15 +443,22 @@ class Form4(data.Connection):
 
         nonDerivativeTransaction = []
         if 'nonDerivativeTable' in data['ownershipDocument'] and 'nonDerivativeTransaction' in data['ownershipDocument']['nonDerivativeTable'] and data['ownershipDocument']['nonDerivativeTable']['nonDerivativeTransaction']:
-            for transaction in data['ownershipDocument']['nonDerivativeTable']['nonDerivativeTransaction']:
-                print(str(transaction))
+            print('nonDerivativeTransaction')
+            if type(data['ownershipDocument']['nonDerivativeTable']['nonDerivativeTransaction']) is not list:
+                nonDerivativeTransaction.append(self._extract_transaction(data['ownershipDocument']['nonDerivativeTable']['nonDerivativeTransaction']))
+            else:
+                print('LIST')
+                for transaction in data['ownershipDocument']['nonDerivativeTable']['nonDerivativeTransaction']:
+                    nonDerivativeTransaction.append(self._extract_transaction(transaction))
 
         derivativeTransaction = []
         if 'derivativeTable' in data['ownershipDocument'] and 'derivativeTransaction' in data['ownershipDocument']['derivativeTable'] and data['ownershipDocument']['derivativeTable']['derivativeTransaction']:
-            for transaction in data['ownershipDocument']['derivativeTable']['derivativeTransaction']:
-                print(str(transaction))
-
-        # ALEX POST
+            print('derivativeTransaction')
+            if type(data['ownershipDocument']['derivativeTable']['derivativeTransaction']) is not list:
+                derivativeTransaction.append(self._extract_transaction(data['ownershipDocument']['derivativeTable']['derivativeTransaction']))
+            else:
+                for transaction in data['ownershipDocument']['derivativeTable']['derivativeTransaction']:
+                    derivativeTransaction.append(self._extract_transaction(transaction))
 
         self.collection_submissions.update({'rptOwnerCik':rptOwnerCik}, {'$set': {'issuerCik.'+str(record['issuerCik'])+'.'+record['file']: { 'reportingOwner': reportingOwner, 'nonDerivativeTransaction': nonDerivativeTransaction, 'derivativeTransaction': derivativeTransaction }}})
         if self.verbose:
