@@ -24,7 +24,7 @@ olympus-package-path: /usr/local/lib/python{{ python3 }}/dist-packages/olympus
 
 repo-packages:
   apt-transport-https:
-    version: 1.4.8
+    version: 1.4.9
 
 packages:
   at:
