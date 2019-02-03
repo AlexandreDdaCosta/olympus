@@ -32,7 +32,7 @@ packages:
   build-essential:
     version: 12.3
   curl:
-    version: 7.52.1-5+deb9u7
+    version: 7.52.1-5+deb9u8
   fail2ban:
     version: 0.9.6-2
   ntp:
