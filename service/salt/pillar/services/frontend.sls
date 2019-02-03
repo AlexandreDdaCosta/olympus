@@ -1,6 +1,6 @@
 frontend-packages:
   libpq-dev:
-    version: 10.5-1.pgdg90+1
+    version: 11.1-3.pgdg90+1
   python3-dev:
     version: 3.5.3-1
   ruby-sass:
@@ -8,15 +8,15 @@ frontend-packages:
 
 frontend-pip3-packages:
   django:
-    version: == 2.1.1
+    version: == 2.1.5
   psycopg2:
-    version: == 2.7.5
+    version: == 2.7.7
   psycopg2-binary:
-    version: == 2.7.5
+    version: == 2.7.7
   uwsgi:
     version: == 2.0.17.1
   virtualenv:
-    version: == 16.0.0
+    version: == 16.3.0
   yolk3k:
     version: == 0.9
 

@@ -21,29 +21,29 @@ bigdata-pip3-packages:
   wget:
     version: == 3.2
   pymongo:
-    version: == 3.7.1
+    version: == 3.7.2
   numpy:
-    version: == 1.15.1
+    version: == 1.16.1
   freetype-py:
     version: == 2.0.0.post6
   ipython:
-    version: == 6.5.0
+    version: == 7.2.0
   nose:
     version: == 1.3.7
   pandas:
-    version: == 0.23.4
+    version: == 0.24.0
   sympy:
-    version: == 1.2
+    version: == 1.3
   jupyter:
     version: == 1.0.0
   matplotlib:
-    version: == 2.2.3
+    version: == 3.0.2
   scipy:
-    version: == 1.1.0
+    version: == 1.2.0
 
 web-packages:
   certbot:
     repo: {{ release_name }}-backports
-    version: 0.10.2-1
+    version: 0.28.0-1~bpo9+1
   nginx:
-    version: 1.14.0-1~stretch
+    version: 1.14.2-1~stretch
