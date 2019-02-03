@@ -1,3 +1,0 @@
-Included here are collections that are used to initialize the project when first created.  Data does not get read from these archives if the specific collection already exists. However, during the course of the project, the data in the active collections may be extended and then used to update the archives via git check-ins.
-
-For example, accurate historical pricing data will not change, so as the system grows more such data is gathered and added to the active database. Periodically, a process exports the updated pricing data back to git.

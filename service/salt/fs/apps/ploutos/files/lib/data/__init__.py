@@ -1,7 +1,7 @@
 import datetime, pymongo, os, socket
 
 from olympus import CAFILE, CERTFILE, KEYFILE, MONGO_URL
-from olympus.projects.ploutos import DOWNLOAD_DIR, USER
+from olympus.apps.ploutos import DOWNLOAD_DIR, USER
 
 DATABASE = USER
 INDEX_SUFFIX = '_idx'

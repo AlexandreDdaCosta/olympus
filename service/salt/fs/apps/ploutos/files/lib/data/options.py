@@ -1,9 +1,9 @@
 import ast, csv, datetime, fcntl, json, os, re, socket, wget
 
-import olympus.projects.ploutos.data as data
+import olympus.apps.ploutos.data as data
 
-from olympus.projects.ploutos import *
-from olympus.projects.ploutos.data import *
+from olympus.apps.ploutos import *
+from olympus.apps.ploutos.data import *
 
 INIT_TYPE = 'options'
 LOCKFILE = LOCKFILE_DIR+INIT_TYPE+'.pid'

@@ -3,7 +3,7 @@ base:
     - core
     - distribution
     - hardware
-    - projects
+    - apps
     - random_key
     - security
     - server

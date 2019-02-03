@@ -1,7 +1,7 @@
 import json, re, urllib.request, wget
 
-from olympus.projects.ploutos import *
-import olympus.projects.ploutos.data as data
+from olympus.apps.ploutos import *
+import olympus.apps.ploutos.data as data
 
 ALPHAVANTAGE_API_KEY = 'CHLVRDAEA445JOCB'
 ALPHAVANTAGE_URL = 'https://www.alphavantage.co/query?apikey=' + ALPHAVANTAGE_API_KEY

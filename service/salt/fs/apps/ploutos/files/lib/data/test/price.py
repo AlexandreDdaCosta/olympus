@@ -2,10 +2,10 @@
 
 import json, unittest
 
-import olympus.projects.ploutos.data.price as price
+import olympus.apps.ploutos.data.price as price
 import olympus.testing as testing
 
-from olympus.projects.ploutos import *
+from olympus.apps.ploutos import *
 
 class TestPrice(testing.Test):
 

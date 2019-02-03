@@ -5,10 +5,10 @@ import xml.etree.ElementTree as ET
 from bson.json_util import dumps, loads
 from xmlschema.validators.exceptions import XMLSchemaValidationError
 
-import olympus.projects.ploutos.data as data
+import olympus.apps.ploutos.data as data
 
-from olympus.projects.ploutos import *
-from olympus.projects.ploutos.data import *
+from olympus.apps.ploutos import *
+from olympus.apps.ploutos.data import *
 
 FORM4_INDEX_COLLECTION_NAME = 'form4_indices'
 QUARTERLY_FIRST_YEAR = 2004

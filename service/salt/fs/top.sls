@@ -15,9 +15,9 @@ base:
     - services/{{ service }}
     {% endfor %}
     {% endif %}
-    {% if grains.get('projects') %}
-    {% for project in grains.get('projects') %}
-    - projects/{{ project }}
+    {% if grains.get('apps') %}
+    {% for app in grains.get('apps') %}
+    - apps/{{ app }}
     {% endfor %}
     {% endif %}
     {% if grains.get('stage') %}

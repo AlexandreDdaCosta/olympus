@@ -4,7 +4,7 @@ import sys, time
 
 from argparse import ArgumentParser
 
-from olympus.projects.ploutos.data.edgar import Form4
+from olympus.apps.ploutos.data.edgar import Form4
 
 parser = ArgumentParser(sys.argv)
 parser.add_argument("-a","--action",choices=['get_indexed_forms'],help="Action for this script to perform",required=True)

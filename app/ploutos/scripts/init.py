@@ -4,9 +4,9 @@ import sys, time
 
 from argparse import ArgumentParser
 
-from olympus.projects.ploutos.data.edgar import InitForm4Indices
-from olympus.projects.ploutos.data.options import InitOptions
-from olympus.projects.ploutos.data.symbols import InitSymbols
+from olympus.apps.ploutos.data.edgar import InitForm4Indices
+from olympus.apps.ploutos.data.options import InitOptions
+from olympus.apps.ploutos.data.symbols import InitSymbols
 
 parser = ArgumentParser(sys.argv)
 parser.add_argument("-g","--graceful",action="store_true",help="Nice crash and burn for permissible errors")

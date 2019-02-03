@@ -1,6 +1,6 @@
-projects_path: /srv/projects
+apps_path: /srv/apps
 
-ploutos-pip3-packages:
+widgets-pip3-packages:
   python-edgar:
     version: == 2.5
   xmlschema:
