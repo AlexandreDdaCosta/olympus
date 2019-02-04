@@ -36,7 +36,7 @@ salt-master-service:
 salt-minion:
   pkg.latest
 
-/etc/salt/minion.d/core.conf
+/etc/salt/minion.d/core.conf:
   file.managed:
     - group: root
     - makedirs: False
@@ -46,7 +46,7 @@ salt-minion:
 
 {% if grains.get('server') %}
 {% set server_conf_file=grains.get('server') %}
-/etc/salt/minion.d/{{ server_conf_file }}.conf
+/etc/salt/minion.d/{{ server_conf_file }}.conf:
   file.managed:
     - group: root
     - makedirs: False
