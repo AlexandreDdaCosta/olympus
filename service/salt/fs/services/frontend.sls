@@ -72,14 +72,14 @@ frontend-user:
       - {{ pillar['frontend-user'] }}
 
 /etc/uwsgi/vassals:
-    file.directory:
+  file.directory:
     - group: root
     - makedirs: True
     - mode: 0755
     - user: root
 
 /etc/uwsgi.ini:
-    file.managed:
+  file.managed:
     - group: root
     - makedirs: False
     - mode: 0755

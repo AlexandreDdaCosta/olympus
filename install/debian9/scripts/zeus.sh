@@ -129,6 +129,8 @@ then
     echo 'Error extracting core.conf; terminating...'
     exit 1
 fi
+chown root:root *
+chmod 0644 *
 cd /etc/salt/minion.d
 echo 'Extracting /etc/salt/minion.d/core.conf from git'
 git archive --remote=file://$GIT_PATH/$GIT_REPO HEAD:service/salt/fs/saltstack/files/minion.d core.conf | tar -x
@@ -145,6 +147,8 @@ else
     echo 'Standalone server installation configuration...'
     git archive --remote=file://$GIT_PATH/$GIT_REPO HEAD:service/salt/fs/saltstack/files/minion.d supervisor.conf | tar -x
 fi
+chown root:root *
+chmod 0644 *
 
 service salt-minion restart
 service salt-master restart
