@@ -116,14 +116,14 @@ chgrp -R $GIT_OWNER $GIT_PATH/$GIT_REPO
 echo 'Updating salt configuration...'
 cd /etc/salt/master.d
 echo 'Extracting /etc/salt/master.d/core.conf from git'
-git archive --remote=file://$GIT_PATH/$GIT_REPO HEAD:service/salt/conf/master.d core.conf | tar -x
+git archive --remote=file://$GIT_PATH/$GIT_REPO HEAD:service/salt/fs/saltstack/files/master.d core.conf | tar -x
 if [ "$?" != '0' ]
 then
     echo 'Error extracting core.conf; terminating...'
     exit 1
 fi
 echo 'Extracting /etc/salt/master.d/reactor.conf from git'
-git archive --remote=file://$GIT_PATH/$GIT_REPO HEAD:service/salt/conf/master.d reactor.conf | tar -x
+git archive --remote=file://$GIT_PATH/$GIT_REPO HEAD:service/salt/fs/saltstack/files/master.d reactor.conf | tar -x
 if [ "$?" != '0' ]
 then
     echo 'Error extracting core.conf; terminating...'
@@ -131,7 +131,7 @@ then
 fi
 cd /etc/salt/minion.d
 echo 'Extracting /etc/salt/minion.d/core.conf from git'
-git archive --remote=file://$GIT_PATH/$GIT_REPO HEAD:service/salt/conf/minion.d core.conf | tar -x
+git archive --remote=file://$GIT_PATH/$GIT_REPO HEAD:service/salt/fs/saltstack/files/minion.d core.conf | tar -x
 if [ "$?" != '0' ]
 then
     echo 'Error extracting core.conf; terminating...'
@@ -140,10 +140,10 @@ fi
 if [ "$installation_type" = 'U' ] || [ "$installation_type" = 'u' ]
 then
     echo 'Unified server installation configuration...'
-    git archive --remote=file://$GIT_PATH/$GIT_REPO HEAD:service/salt/conf/minion.d unified.conf | tar -x
+    git archive --remote=file://$GIT_PATH/$GIT_REPO HEAD:service/salt/fs/saltstack/files/minion.d unified.conf | tar -x
 else
     echo 'Standalone server installation configuration...'
-    git archive --remote=file://$GIT_PATH/$GIT_REPO HEAD:service/salt/conf/minion.d supervisor.conf | tar -x
+    git archive --remote=file://$GIT_PATH/$GIT_REPO HEAD:service/salt/fs/saltstack/files/minion.d supervisor.conf | tar -x
 fi
 
 service salt-minion restart
