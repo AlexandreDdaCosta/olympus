@@ -1,8 +1,28 @@
 {%- if grains.get('server') %}
 {%- if grains.get('server') == 'supervisor' or grains.get('server') == 'unified' %}
 
+Disable starting services:
+  file.managed:
+    - name: /usr/sbin/policy-rc.d
+    - user: root
+    - group: root
+    - mode: 0755
+    - contents:
+      - '#!/bin/sh'
+      - exit 101
+    # do not touch if already exists
+    - replace: False
+    - prereq:
+      - pkg: salt-master
+
 salt-master:
   pkg.latest
+
+Enable starting services:
+  file.absent:
+    - name: /usr/sbin/policy-rc.d
+    - onchanges:
+      - pkg: salt-master
 
 /etc/salt/master.d/core.conf:
   file.managed:
@@ -20,49 +40,14 @@ salt-master:
     - source: salt://saltstack/files/master.d/reactor.conf
     - user: root
 
-salt-master-service:
-  service.running:
-    - enable: True
-    - name: salt-master
-    - restart: True
-    - watch:
+salt-master-service-restart:
+  cmd.run:
+    - bg: True
+    - name: 'salt-call service.restart salt-master'
+    - onchanges:
         - file: /etc/salt/master.d/core.conf
         - file: /etc/salt/master.d/reactor.conf
         - pkg: salt-master
 
 {% endif %}
 {% endif %}
-
-salt-minion:
-  pkg.latest
-
-/etc/salt/minion.d/core.conf:
-  file.managed:
-    - group: root
-    - makedirs: False
-    - mode: 0644
-    - source: salt://saltstack/files/minion.d/core.conf
-    - user: root
-
-{% if grains.get('server') %}
-{% set server_conf_file=grains.get('server') %}
-/etc/salt/minion.d/{{ server_conf_file }}.conf:
-  file.managed:
-    - group: root
-    - makedirs: False
-    - mode: 0644
-    - source: salt://saltstack/files/minion.d/{{ server_conf_file }}.conf
-    - user: root
-{% endif %}
-
-salt-minion-service-restart:
-  cmd.run:
-    - bg: True
-      - pkg: Upgrade Salt Minion
-    - name: 'salt-call service.restart salt-minion'
-    - onchanges:
-        - file: /etc/salt/minion.d/core.conf
-{% if grains.get('server') %}
-        - file: /etc/salt/minion.d/{{ server_conf_file  }}.conf
-{% endif %}
-        - pkg: salt-minion
