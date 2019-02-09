@@ -10,7 +10,7 @@ Disable starting services:
     # do not touch if already exists
     - replace: False
     - prereq:
-      - pkg: Upgrade Salt Minion
+      - pkg: salt-minion
 
 salt-minion:
   pkg.latest
@@ -19,7 +19,7 @@ Enable starting services:
   file.absent:
     - name: /usr/sbin/policy-rc.d
     - onchanges:
-      - pkg: Upgrade Salt Minion
+      - pkg: salt-minion
 
 /etc/salt/minion.d/core.conf:
   file.managed:
