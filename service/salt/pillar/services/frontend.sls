@@ -14,9 +14,9 @@ frontend-pip3-packages:
   psycopg2-binary:
     version: == 2.7.7
   uwsgi:
-    version: == 2.0.17.1
+    version: == 2.0.18
   virtualenv:
-    version: == 16.3.0
+    version: == 16.4.0
   yolk3k:
     version: == 0.9
 

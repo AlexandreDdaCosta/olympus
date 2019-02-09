@@ -11,7 +11,7 @@ backend-packages:
     version: 10.15.1-1nodesource1
   pgadmin3:
     repo: {{ release_name }}-pgdg
-    version: 1.22.2-4.pgdg90+1
+    version: 1.22.2-5.pgdg90+1
   postgresql-9.6:
     repo: {{ release_name }}-pgdg
     version: 9.6.11-1.pgdg90+1

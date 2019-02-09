@@ -31,7 +31,7 @@ bigdata-pip3-packages:
   nose:
     version: == 1.3.7
   pandas:
-    version: == 0.24.0
+    version: == 0.24.1
   sympy:
     version: == 1.3
   jupyter:
@@ -39,7 +39,7 @@ bigdata-pip3-packages:
   matplotlib:
     version: == 3.0.2
   scipy:
-    version: == 1.2.0
+    version: == 1.2.1
 
 web-packages:
   certbot:

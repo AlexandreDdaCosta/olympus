@@ -15,8 +15,10 @@ Disable starting services:
     - prereq:
       - pkg: salt-master
 
+{% if pillar.pkg_latest is defined and pillar.pkg_latest %}
 salt-master:
   pkg.latest
+{% endif %}
 
 Enable starting services:
   file.absent:

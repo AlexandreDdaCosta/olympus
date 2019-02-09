@@ -12,8 +12,10 @@ Disable starting services:
     - prereq:
       - pkg: salt-minion
 
+{% if pillar.pkg_latest is defined and pillar.pkg_latest %}
 salt-minion:
   pkg.latest
+{% endif %}
 
 Enable starting services:
   file.absent:
