@@ -33,6 +33,12 @@
     - source: salt://apps/files/tmpfiles.d/olympus.conf
     - user: root
 
+manage_tmpfiles:
+  cmd.run:
+    - name: 'systemd-tmpfiles --create --remove'
+    - onchanges:
+        - file: /usr/lib/tmpfiles.d/olympus.conf
+
 {{ pillar['olympus-package-path']  }}/apps:
   file.directory:
     - group: root
