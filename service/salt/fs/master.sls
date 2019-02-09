@@ -55,12 +55,12 @@ salt-minion:
     - user: root
 {% endif %}
 
-salt-minion-service:
-  service.running:
-    - enable: True
-    - name: salt-minion
-    - restart: True
-    - watch:
+salt-minion-service-restart:
+  cmd.run:
+    - bg: True
+      - pkg: Upgrade Salt Minion
+    - name: 'salt-call service.restart salt-minion'
+    - onchanges:
         - file: /etc/salt/minion.d/core.conf
 {% if grains.get('server') %}
         - file: /etc/salt/minion.d/{{ server_conf_file  }}.conf
