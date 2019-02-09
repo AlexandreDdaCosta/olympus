@@ -40,9 +40,9 @@ packages:
   ntpdate:
     version: 1:4.2.8p10+dfsg-3+deb9u2
   openssh-client:
-    version: 1:7.4p1-10+deb9u4
+    version: 1:7.4p1-10+deb9u5
   openssh-server:
-    version: 1:7.4p1-10+deb9u4
+    version: 1:7.4p1-10+deb9u5
   python-pip:
     version: 9.0.1-2
   python3-dev:
