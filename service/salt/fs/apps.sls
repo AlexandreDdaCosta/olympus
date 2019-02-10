@@ -1,4 +1,4 @@
-{% for packagename, package in pillar.get('widgets-pip3-packages', {}).items() %}
+{% for packagename, package in pillar.get('app-pip3-packages', {}).items() %}
 {{ packagename }}:
   pip.installed:
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
@@ -38,10 +38,3 @@ manage_tmpfiles:
     - name: 'systemd-tmpfiles --create --remove'
     - onchanges:
         - file: /usr/lib/tmpfiles.d/olympus.conf
-
-{{ pillar['olympus-package-path']  }}/apps:
-  file.directory:
-    - group: root
-    - makedirs: False
-    - mode: 0755
-    - user: root

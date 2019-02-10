@@ -1,6 +1,6 @@
 apps_path: /srv/apps
 
-widgets-pip3-packages:
+app-pip3-packages:
   python-edgar:
     version: == 2.5
   xmlschema:
