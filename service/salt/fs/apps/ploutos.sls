@@ -32,21 +32,12 @@ include:
     - dir_mode: 0755
     - file_mode: 0644
     - group: {{ ploutos_user }}
-    - source: salt://app/ploutos
+    - source: salt://apps/ploutos
     - require:
       - sls: apps
     - user: {{ ploutos_user }}
   cmd.run:
     - name: 'chmod -R 0755 {{ ploutos_app_path }}/scripts'
-
-{{ pillar['olympus-package-path']  }}/apps/ploutos:
-  file.recurse:
-    - clean: True
-    - dir_mode: 0755
-    - file_mode: 0644
-    - group: root
-    - source: salt://apps/ploutos/files/lib
-    - user: root
 
 initialize_ploutos:
   cmd.run:
