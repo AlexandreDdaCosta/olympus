@@ -57,7 +57,9 @@ salt-2018.3.2+ds-1-pip3-bug-hack:
     - source: salt://core/bin
     - user: root
 
+{# TEMPORARY REMOVAL for testing
 initialize_olympus:
   cmd.run:
     - name: "su -s /bin/bash -c '/usr/local/bin/olympus/init.py --graceful' {{ ploutos_user }}"
     - user: root
+#}
