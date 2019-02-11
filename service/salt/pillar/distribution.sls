@@ -6,21 +6,9 @@ release: {{ release_name }}
 release-version: 9
 {% set python3 = 3.5 %}
 
-{#
-
-Debian 8 backup
-
-{% set release_name = 'jessie' %}
-distribution: debian
-mongo-repo: 3.4
-nodejs-repo: node_6.x
-release: {{ release_name }}
-release-version: 8
-{% set python3 = 3.4 %}
-#}
-
 python3-version: {{ python3 }}
 olympus-package-path: /usr/local/lib/python{{ python3 }}/dist-packages/olympus
+olympus-scripts-path: /usr/local/bin/olympus
 
 repo-packages:
   apt-transport-https:

@@ -1,6 +1,4 @@
-apps_path: /srv/apps
-
-app-pip3-packages:
+apps-pip3-packages:
   python-edgar:
     version: == 2.5
   xmlschema:

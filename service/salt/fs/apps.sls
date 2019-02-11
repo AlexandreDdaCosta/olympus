@@ -1,4 +1,7 @@
-{% for packagename, package in pillar.get('app-pip3-packages', {}).items() %}
+include:
+  - base: services.bigdata
+
+{% for packagename, package in pillar.get('apps-pip3-packages', {}).items() %}
 {{ packagename }}:
   pip.installed:
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
@@ -16,21 +19,13 @@
     - bin_env: '/usr/bin/pip3'
 {% endfor %}
 
-{{ pillar.apps_path }}:
-  file.directory:
-    - group: root
-    - makedirs: False
-    - mode: 0755
-    - require:
-      - sls: services.bigdata
-    - user: root
-
 /usr/lib/tmpfiles.d/olympus.conf:
   file.managed:
     - group: root
     - makedirs: False
     - mode: 0644
-    - source: salt://apps/files/tmpfiles.d/olympus.conf
+    - source: salt://apps/olympus.conf.jinja
+    - template: jinja
     - user: root
 
 manage_tmpfiles:
@@ -38,3 +33,43 @@ manage_tmpfiles:
     - name: 'systemd-tmpfiles --create --remove'
     - onchanges:
         - file: /usr/lib/tmpfiles.d/olympus.conf
+
+{% if 'apps' in pillar[grains.get('server')] %}
+{% for app in pillar[grains.get('server')]['apps'] %}
+
+app_user_{{ app }}:
+  group:
+    - name: {{ app }}
+    - present
+  user:
+    - createhome: True
+    - fullname: {{ app }}
+    - home: /home/{{ app }}
+    - name: {{ app }}
+    - present
+    - shell: /bin/false
+    - groups:
+      - {{ app }}
+
+/home/{{ app }}/Downloads:
+  file.directory:
+    - group: {{ app }}
+    - makedirs: False
+    - mode: 0750
+    - user: {{ app }}
+
+/home/{{ app }}/app:
+  file.recurse:
+    - clean: True
+    - dir_mode: 0755
+    - file_mode: 0644
+    - group: {{ app }}
+    - require:
+      - sls: services.bigdata
+    - source: salt://apps/{{ app }}
+    - user: {{ app }}
+  cmd.run:
+    - name: 'if [ -d "/home/{{ app }}/app/scripts" ]; then chmod -R 0750 /home/{{ app }}/app/scripts; fi''
+
+{% endfor %}
+{% endif %}
