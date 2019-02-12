@@ -15,11 +15,6 @@ base:
     - services/{{ service }}
     {% endfor %}
     {% endif %}
-    {% if grains.get('apps') %}
-    {% for app in grains.get('apps') %}
-    - apps/{{ app }}
-    {% endfor %}
-    {% endif %}
     {% if grains.get('stage') %}
     {% for service in pillar[grains.get('stage')]['services'] %}
     - stage/{{ grains.get('stage') }}/services/{{ service }}
