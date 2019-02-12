@@ -53,7 +53,7 @@ app_user_{{ app }}:
     - source: salt://apps/{{ app }}
     - user: {{ app }}
   cmd.run:
-    - name: 'if [ -d "/home/{{ app }}/app/scripts" ]; then chmod -R 0750 /home/{{ app }}/app/scripts; fi''
+    - name: 'if [ -d "/home/{{ app }}/app/scripts" ]; then chmod -R 0750 /home/{{ app }}/app/scripts; fi'
 
 {% endfor %}
 {% endif %}
