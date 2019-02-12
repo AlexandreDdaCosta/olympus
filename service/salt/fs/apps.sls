@@ -19,7 +19,8 @@ include:
     - bin_env: '/usr/bin/pip3'
 {% endfor %}
 
-{% for app in pillar[grains.get('apps')] %}
+{% if grains.get('apps') %}
+{% for app in grains.get('apps') %}
 app_user_{{ app }}:
   group:
     - name: {{ app }}
@@ -55,3 +56,4 @@ app_user_{{ app }}:
     - name: 'if [ -d "/home/{{ app }}/app/scripts" ]; then chmod -R 0750 /home/{{ app }}/app/scripts; fi''
 
 {% endfor %}
+{% endif %}
