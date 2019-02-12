@@ -58,8 +58,10 @@ salt-2018.3.2+ds-1-pip3-bug-hack:
     - user: root
 
 {# TEMPORARY REMOVAL for testing
+{% if grains.get('server') == 'supervisor' or grains.get('server') == 'unified' %}
 initialize_olympus:
   cmd.run:
     - name: "su -s /bin/bash -c '/usr/local/bin/olympus/init.py --graceful' {{ ploutos_user }}"
     - user: root
+{% endif %}
 #}
