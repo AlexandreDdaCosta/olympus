@@ -34,9 +34,7 @@ manage_tmpfiles:
     - onchanges:
         - file: /usr/lib/tmpfiles.d/olympus.conf
 
-{% if 'apps' in pillar[grains.get('server')] %}
 {% for app in pillar[grains.get('server')]['apps'] %}
-
 app_user_{{ app }}:
   group:
     - name: {{ app }}
@@ -72,4 +70,3 @@ app_user_{{ app }}:
     - name: 'if [ -d "/home/{{ app }}/app/scripts" ]; then chmod -R 0750 /home/{{ app }}/app/scripts; fi''
 
 {% endfor %}
-{% endif %}
