@@ -11,10 +11,10 @@ d /run/olympus/apps 0755 root root -
 
 d /run/olympus/init 0755 root root -
 
-{% if 'apps' in pillar[grains.get('server')] %}
+{% if grains.get('apps') -%}
 # Applications
 
-{% for app in pillar[grains.get('server')]['apps'] %}
+{% for app in grains.get('apps') %}
 d /run/olympus/apps/{{ app }} 0755 {{ app }} {{ app }} -
 {% endfor %}
 {% endif %}
