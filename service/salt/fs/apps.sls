@@ -19,3 +19,39 @@ include:
     - bin_env: '/usr/bin/pip3'
 {% endfor %}
 
+{% for app in pillar[grains.get('apps')] %}
+app_user_{{ app }}:
+  group:
+    - name: {{ app }}
+    - present
+  user:
+    - createhome: True
+    - fullname: {{ app }}
+    - home: /home/{{ app }}
+    - name: {{ app }}
+    - present
+    - shell: /bin/false
+    - groups:
+      - {{ app }}
+
+/home/{{ app }}/Downloads:
+  file.directory:
+    - group: {{ app }}
+    - makedirs: False
+    - mode: 0750
+    - user: {{ app }}
+
+/home/{{ app }}/app:
+  file.recurse:
+    - clean: True
+    - dir_mode: 0755
+    - file_mode: 0644
+    - group: {{ app }}
+    - require:
+      - sls: services.bigdata
+    - source: salt://apps/{{ app }}
+    - user: {{ app }}
+  cmd.run:
+    - name: 'if [ -d "/home/{{ app }}/app/scripts" ]; then chmod -R 0750 /home/{{ app }}/app/scripts; fi''
+
+{% endfor %}
