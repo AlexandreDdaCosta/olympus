@@ -19,15 +19,6 @@ include:
     - bin_env: '/usr/bin/pip3'
 {% endfor %}
 
-/usr/lib/tmpfiles.d/olympus.conf:
-  file.managed:
-    - group: root
-    - makedirs: False
-    - mode: 0644
-    - source: salt://apps/olympus.conf.jinja
-    - template: jinja
-    - user: root
-
 manage_tmpfiles:
   cmd.run:
     - name: 'systemd-tmpfiles --create --remove'
