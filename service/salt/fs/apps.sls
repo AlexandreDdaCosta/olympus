@@ -58,11 +58,8 @@ app_user_{{ app }}:
     - mode: 0750
     - user: {{ app }}
 
+{% if app != pillar['core-app-user'] %}
 /home/{{ app }}/app:
-  file.directory:
-    - group: {{ app }}
-    - mode: 0755
-    - user: {{ app }}
   file.recurse:
     - clean: True
     - dir_mode: 0755
@@ -74,6 +71,7 @@ app_user_{{ app }}:
     - user: {{ app }}
   cmd.run:
     - name: 'if [ -d "/home/{{ app }}/app/scripts" ]; then chmod -R 0750 /home/{{ app }}/app/scripts; fi'
+{% endif %}
 
 {% endfor %}
 {% endif %}
