@@ -10,6 +10,7 @@ d /run/olympus/apps 0755 root root -
 # Init
 
 d /run/olympus/init 0755 root root -
+d /run/olympus/apps/olympus 0755 olympus olympus -
 
 {% if grains.get('apps') -%}
 # Applications
