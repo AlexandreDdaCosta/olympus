@@ -35,7 +35,7 @@ manage_tmpfiles:
         - file: /usr/lib/tmpfiles.d/olympus.conf
 
 {% if grains.get('apps') %}
-{% for app in grains.get('apps') %}
+{% for app in grains.get('apps').append('olympus') %}
 app_user_{{ app }}:
   group:
     - name: {{ app }}

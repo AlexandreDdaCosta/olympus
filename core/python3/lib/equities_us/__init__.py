@@ -1,6 +1,7 @@
-# Core application constants
+# Core application constants and functions
 
-USER = 'ploutos'
+USER = 'olympus'
+
 USER_HOME = '/home/' + USER + '/'
 
 DOWNLOAD_DIR = USER_HOME + 'Downloads/'

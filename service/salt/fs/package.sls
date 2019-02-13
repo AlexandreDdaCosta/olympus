@@ -57,11 +57,11 @@ salt-2018.3.2+ds-1-pip3-bug-hack:
     - source: salt://core/bin
     - user: root
 
-{# TEMPORARY REMOVAL for testing
+{#
 {% if grains.get('server') == 'supervisor' or grains.get('server') == 'unified' %}
 initialize_olympus:
   cmd.run:
-    - name: "su -s /bin/bash -c '/usr/local/bin/olympus/init.py --graceful' {{ ploutos_user }}"
+    - name: "su -s /bin/bash -c '/usr/local/bin/olympus/init.py --graceful' {{ pillar['core-app-user'] }}"
     - user: root
-{% endif %}
+{% endif %}a
 #}

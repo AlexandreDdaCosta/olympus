@@ -1,5 +1,6 @@
 {% set systemname = 'olympus' %}
 core-user: root
+core-app-user: {{ systemname }}
 core-email: alex_investor@yahoo.com
 core-staff-user: alex
 system-name: {{ systemname }}

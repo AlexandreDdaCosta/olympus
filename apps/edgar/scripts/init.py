@@ -4,8 +4,7 @@ import sys, time
 
 from argparse import ArgumentParser
 
-from olympus.equities_us.data.options import InitOptions
-from olympus.equities_us.data.symbols import InitSymbols
+from olympus.equities_us.data.edgar import InitForm4Indices
 
 parser = ArgumentParser(sys.argv)
 parser.add_argument("-g","--graceful",action="store_true",help="Nice crash and burn for permissible errors")
@@ -14,14 +13,10 @@ args = parser.parse_args()
 
 if args.verbose == True:
     start = time.time()
-print("Begin symbol import.")
-process = InitSymbols(graceful=args.graceful,verbose=args.verbose)
+print("Begin import of EDGAR quarterly indices.")
+process = InitForm4Indices(graceful=args.graceful,verbose=args.verbose)
 process.populate_collections()
-print("Ended symbol import.")
-print("Begin options import.")
-process = InitOptions(graceful=args.graceful,verbose=args.verbose)
-process.populate_collections()
-print("Ended options import.")
+print("Ended import of EDGAR quarterly indices.")
 if args.verbose == True:
     end = time.time()
     print('Elapsed seconds: ' + str(end - start))
