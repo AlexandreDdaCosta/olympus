@@ -35,7 +35,7 @@ manage_tmpfiles:
         - file: /usr/lib/tmpfiles.d/olympus.conf
 
 {% if grains.get('apps') %}
-{% set apps = grains.get('apps') + [ 'olympus' ] %}
+{% set apps = grains.get('apps') + [ pillar['core-app-user'] ] %}
 {% for app in apps %}
 app_user_{{ app }}:
   group:
@@ -59,6 +59,10 @@ app_user_{{ app }}:
     - user: {{ app }}
 
 /home/{{ app }}/app:
+  file.directory:
+    - group: {{ app }}
+    - mode: 0755
+    - user: {{ app }}
   file.recurse:
     - clean: True
     - dir_mode: 0755
