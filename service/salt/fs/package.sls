@@ -57,11 +57,9 @@ salt-2018.3.2+ds-1-pip3-bug-hack:
     - source: salt://core/bin
     - user: root
 
-{#
 {% if grains.get('server') == 'supervisor' or grains.get('server') == 'unified' %}
 initialize_olympus:
   cmd.run:
     - name: "su -s /bin/bash -c '/usr/local/bin/olympus/init.py --graceful' {{ pillar['core-app-user'] }}"
     - user: root
 {% endif %}a
-#}
