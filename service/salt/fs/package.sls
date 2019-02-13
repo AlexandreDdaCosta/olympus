@@ -62,4 +62,4 @@ initialize_olympus:
   cmd.run:
     - name: "su -s /bin/bash -c '/usr/local/bin/olympus/init.py --graceful' {{ pillar['core-app-user'] }}"
     - user: root
-{% endif %}a
+{% endif %}
