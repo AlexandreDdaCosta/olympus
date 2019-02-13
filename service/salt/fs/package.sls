@@ -52,7 +52,7 @@ salt-2018.3.2+ds-1-pip3-bug-hack:
 {{ pillar['olympus-scripts-path'] }}:
   file.recurse:
     - dir_mode: 0755
-    - file_mode: 0644
+    - file_mode: 0755
     - group: root
     - source: salt://core/bin
     - user: root
