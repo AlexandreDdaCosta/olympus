@@ -2,6 +2,7 @@ import datetime, pymongo, os, socket
 
 from olympus import CAFILE, CERTFILE, KEYFILE, MONGO_URL, USER, DOWNLOAD_DIR
 
+DATABASE = 'equities_us'
 INDEX_SUFFIX = '_idx'
 
 # Collections
@@ -10,7 +11,7 @@ class Connection():
 
     def __init__(self,user=USER,init_type=None,**kwargs):
         self.user = user
-        self.database = user
+        self.database = DATABASE
         self.init_type = init_type
         self.client = pymongo.MongoClient(MONGO_URL,ssl=True,ssl_ca_certs=CAFILE,ssl_certfile=CERTFILE,ssl_keyfile=KEYFILE,ssl_match_hostname=False)
         self.db = self.client.equities_us

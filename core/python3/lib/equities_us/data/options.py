@@ -17,7 +17,7 @@ class InitOptions(data.Connection):
     def __init__(self,user=USER,**kwargs):
         super(InitOptions,self).__init__(user,INIT_TYPE,**kwargs)
         self.force = kwargs.get('force',False)
-        self.graceful = kwargs.get('force',False)
+        self.graceful = kwargs.get('graceful',False)
         self.working_dir = WORKING_DIR(self.user)
 
     def populate_collections(self):
