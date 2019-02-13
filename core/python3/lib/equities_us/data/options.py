@@ -1,12 +1,10 @@
 import ast, csv, datetime, fcntl, json, os, re, socket, wget
 
-import olympus.apps.ploutos.data as data
+import olympus.equities_us.data as data
 
-from olympus.apps.ploutos import *
-from olympus.apps.ploutos.data import *
+from olympus import USER, DOWNLOAD_DIR, LOCKFILE_DIR, WORKING_DIR
 
 INIT_TYPE = 'options'
-LOCKFILE = LOCKFILE_DIR+INIT_TYPE+'.pid'
 OPTIONS_COLLECTIONS_PREFIX = 'options_'
 OPTIONS_DATA_URL = 'http://www.cboe.com/publish/scheduledtask/mktdata/cboesymboldir2.csv'
 WORKING_FILE = 'cboesymboldir.csv'
@@ -16,19 +14,21 @@ SECOND_ROW_STRING = "{'2018': 'LEAPS 2019', '2019': 'LEAPS 2020', '2020': 'LEAPS
 
 class InitOptions(data.Connection):
 
-    def __init__(self,**kwargs):
-        super(InitOptions,self).__init__(INIT_TYPE,**kwargs)
+    def __init__(self,user=USER,**kwargs):
+        super(InitOptions,self).__init__(user,INIT_TYPE,**kwargs)
         self.force = kwargs.get('force',False)
         self.graceful = kwargs.get('force',False)
+        self.working_dir = WORKING_DIR(self.user)
 
     def populate_collections(self):
 
         # Set up environment
 
+        LOCKFILE = LOCKFILE_DIR(self.user)+INIT_TYPE+'.pid'
         lockfilehandle = open(LOCKFILE,'w')
         fcntl.flock(lockfilehandle,fcntl.LOCK_EX|fcntl.LOCK_NB)
         lockfilehandle.write(str(os.getpid()))
-        os.chdir(WORKING_DIR)
+        os.chdir(self.working_dir)
        
         if self._record_start() is not True:
             self._clean_up(lockfilehandle,False)
@@ -40,13 +40,13 @@ class InitOptions(data.Connection):
     
 		# Download
 
-        option_file = DOWNLOAD_DIR+WORKING_FILE
+        option_file = DOWNLOAD_DIR(self.user)+WORKING_FILE
         try:
             os.remove(option_file)
         except OSError:
             pass
         try:
-            filename = wget.download(OPTIONS_DATA_URL,out=DOWNLOAD_DIR)
+            filename = wget.download(OPTIONS_DATA_URL,out=DOWNLOAD_DIR(self.user))
         except Exception as e:
             self._clean_up(lockfilehandle)
             if self.graceful is True:
@@ -58,8 +58,8 @@ class InitOptions(data.Connection):
         # Clean up received data
 
         fieldnames = ["Name","Symbol","Primary Market","Cycle","Traded on C2","2018","2019","2020","Product Types","Post/Station"]
-        csvfile = open(DOWNLOAD_DIR+WORKING_FILE,'r')
-        jsonfile = open(WORKING_DIR+WORKING_FILE+'.json','w')
+        csvfile = open(DOWNLOAD_DIR(self.user)+WORKING_FILE,'r')
+        jsonfile = open(self.working_dir+WORKING_FILE+'.json','w')
         jsonfile.write('[')
         reader = csv.DictReader(csvfile,fieldnames)
         rowcount = 0
@@ -79,7 +79,7 @@ class InitOptions(data.Connection):
                 jsonstring = json.dumps(row)
                 jsonfile.write('\n'+jsonstring+',')
         jsonfile.close()
-        with open(WORKING_DIR+WORKING_FILE+'.json','rb+') as f:
+        with open(self.working_dir+WORKING_FILE+'.json','rb+') as f:
             f.seek(0,2)
             size=f.tell()
             f.truncate(size-1)
@@ -89,8 +89,8 @@ class InitOptions(data.Connection):
         
         # Create collection
        
-        json_import_file = WORKING_DIR+WORKING_FILE+'.json'
-        option_file = DOWNLOAD_DIR+WORKING_FILE
+        json_import_file = self.working_dir+WORKING_FILE+'.json'
+        option_file = DOWNLOAD_DIR(self.user)+WORKING_FILE
         collection = self.db[OPTIONS_COLLECTIONS_PREFIX+'cboe']
         collection.drop()
         jsonfile = open(json_import_file,'r')

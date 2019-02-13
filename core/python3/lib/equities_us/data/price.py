@@ -1,7 +1,8 @@
 import json, re, urllib.request, wget
 
-from olympus.apps.ploutos import *
-import olympus.apps.ploutos.data as data
+from olympus import USER
+
+import olympus.equities_us.data as data
 
 ALPHAVANTAGE_API_KEY = 'CHLVRDAEA445JOCB'
 ALPHAVANTAGE_URL = 'https://www.alphavantage.co/query?apikey=' + ALPHAVANTAGE_API_KEY
@@ -10,8 +11,8 @@ GOOGLE_REALTIME_URL = 'https://www.google.com/finance/info?infotype=infoquoteall
 
 class Quote(data.Connection):
 
-    def __init__(self,**kwargs):
-        super(Quote,self).__init__('quote',**kwargs)
+    def __init__(self,user=USER**kwargs):
+        super(Quote,self).__init__(user,'quote',**kwargs)
 
     def Daily(self,symbol,**kwargs):
         # Adjusted daily price quote series

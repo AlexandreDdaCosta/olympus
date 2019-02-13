@@ -3,7 +3,6 @@ import ast, csv, datetime, fcntl, json, os, re, socket, wget
 import olympus.equities_us.data as data
 
 from olympus import USER, DOWNLOAD_DIR, LOCKFILE_DIR, WORKING_DIR
-from olympus.equities_us.data import *
 
 INIT_TYPE = 'symbols'
 NORMALIZE_CAP_REGEX = re.compile('[^0-9\.]')
