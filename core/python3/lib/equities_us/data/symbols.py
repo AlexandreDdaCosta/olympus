@@ -1,12 +1,11 @@
 import ast, csv, datetime, fcntl, json, os, re, socket, wget
 
-import olympus.apps.ploutos.data as data
+import olympus.equities_us.data as data
 
-from olympus.apps.ploutos import *
-from olympus.apps.ploutos.data import *
+from olympus import USER, DOWNLOAD_DIR, LOCKFILE_DIR, WORKING_DIR
+from olympus.equities_us.data import *
 
 INIT_TYPE = 'symbols'
-LOCKFILE = LOCKFILE_DIR+INIT_TYPE+'.pid'
 NORMALIZE_CAP_REGEX = re.compile('[^0-9\.]')
 SYMBOL_COLLECTIONS_PREFIX = 'symbols_'
 SYMBOL_DATA_URLS = [
@@ -19,19 +18,21 @@ FIRST_LINE_STRING = '"Symbol","Name","LastSale","MarketCap","IPOyear","Sector","
 
 class InitSymbols(data.Connection):
 
-    def __init__(self,**kwargs):
-        super(InitSymbols,self).__init__(INIT_TYPE,**kwargs)
+    def __init__(self,user=USER,**kwargs):
+        super(InitSymbols,self).__init__(user,INIT_TYPE,**kwargs)
         self.force = kwargs.get('force',False)
         self.graceful = kwargs.get('graceful',False)
+        self.working_dir = WORKING_DIR(self.user)
 
     def populate_collections(self):
 
         # Set up environment
 
+        LOCKFILE = LOCKFILE_DIR(self.user)+INIT_TYPE+'.pid'
         lockfilehandle = open(LOCKFILE,'w')
         fcntl.flock(lockfilehandle,fcntl.LOCK_EX|fcntl.LOCK_NB)
         lockfilehandle.write(str(os.getpid()))
-        os.chdir(WORKING_DIR)
+        os.chdir(self.working_dir)
        
         if self._record_start() is not True:
             self._clean_up(lockfilehandle,False)
@@ -47,13 +48,13 @@ class InitSymbols(data.Connection):
         for urlconf in SYMBOL_DATA_URLS:
             target_file = urlconf['exchange']+'-companylist.csv'
             company_files.insert(0,target_file)
-            target_file = DOWNLOAD_DIR+target_file
+            target_file = DOWNLOAD_DIR(self.user)+target_file
             try:
                 os.remove(target_file)
             except OSError:
                 pass
             try:
-                filename = wget.download(urlconf['url'],out=DOWNLOAD_DIR)
+                filename = wget.download(urlconf['url'],out=DOWNLOAD_DIR(self.user))
             except Exception as e:
                 self._clean_up(lockfilehandle)
                 if self.graceful is True:
@@ -66,8 +67,8 @@ class InitSymbols(data.Connection):
 
         fieldnames = ["Symbol","Name","Last","Capitalization","IPO Year","Sector","Industry","Summary"]
         for company_file in company_files:
-            repaired_csvfile = open(WORKING_DIR+company_file+'.import','w+')
-            csvfile = open(DOWNLOAD_DIR+company_file,'r')
+            repaired_csvfile = open(self.working_dir+company_file+'.import','w+')
+            csvfile = open(DOWNLOAD_DIR(self.user)+company_file,'r')
             first_line = csvfile.readline().rstrip(',\n')
             if first_line != FIRST_LINE_STRING:
                 self._clean_up(lockfilehandle)
@@ -93,8 +94,8 @@ class InitSymbols(data.Connection):
                 repaired_csvfile.write(line)
             csvfile.close()
             repaired_csvfile.close()
-            csvfile = open(WORKING_DIR+company_file+'.import','r')
-            jsonfile = open(WORKING_DIR+company_file+'.json','w')
+            csvfile = open(self.working_dir+company_file+'.import','r')
+            jsonfile = open(self.working_dir+company_file+'.json','w')
             jsonfile.write('[')
             reader = csv.DictReader(csvfile,fieldnames)
             for row in reader:
@@ -104,20 +105,20 @@ class InitSymbols(data.Connection):
                 jsonstring = json.dumps(row)
                 jsonfile.write('\n'+jsonstring+',')
             jsonfile.close()
-            os.remove(WORKING_DIR+company_file+'.import')
-            with open(WORKING_DIR+company_file+'.json','rb+') as f:
+            os.remove(self.working_dir+company_file+'.import')
+            with open(self.working_dir+company_file+'.json','rb+') as f:
                 f.seek(0,2)
                 size=f.tell()
                 f.truncate(size-1)
                 f.close()
-            jsonfile = open(WORKING_DIR+company_file+'.json','a')
+            jsonfile = open(self.working_dir+company_file+'.json','a')
             jsonfile.write('\n]')
             jsonfile.close()
         
         # Create collections
         
         for urlconf in SYMBOL_DATA_URLS:
-            json_import_file = WORKING_DIR+urlconf['exchange']+'-companylist.csv.json'
+            json_import_file = self.working_dir+urlconf['exchange']+'-companylist.csv.json'
             collection_name = SYMBOL_COLLECTIONS_PREFIX + urlconf['exchange']
             collection = self.db[collection_name]
             collection.drop()
