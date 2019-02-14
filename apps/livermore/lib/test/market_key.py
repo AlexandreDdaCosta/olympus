@@ -3,6 +3,7 @@
 import unittest
 
 import olympus.testing as testing
+import livermore.market_key as market_key
 
 class TestSomething(testing.Test):
 
