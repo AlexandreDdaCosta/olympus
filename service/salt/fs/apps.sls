@@ -59,7 +59,7 @@ app_user_{{ app }}:
     - user: {{ app }}
 
 {% if app != pillar['core-app-user'] %}
-/home/{{ app }}/app:
+/home/{{ app }}:
   file.recurse:
     - clean: True
     - dir_mode: 0755
