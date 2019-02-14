@@ -13,17 +13,17 @@ class Quote(data.Connection):
     def __init__(self,user=USER,**kwargs):
         super(Quote,self).__init__(user,'quote',**kwargs)
 
-    def Daily(self,symbol,**kwargs):
+    def daily(self,symbol,**kwargs):
         # Adjusted daily price quote series
         url = ALPHAVANTAGE_URL + '&function=TIME_SERIES_DAILY_ADJUSTED&outputsize=full&symbol=' + str(symbol)
         request = urllib.request.urlopen(url)
         json_reply = re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8"))
         return json.loads(json_reply)
 
-    def DailyUnadjusted(self,symbol,**kwargs):
+    def daily_unadjusted(self,symbol,**kwargs):
         pass
 
-    def IntraDay(self,symbol,interval=1,**kwargs):
+    def intraday(self,symbol,interval=1,**kwargs):
         # Interval results:
         # 
         # 1: 2 weeks
@@ -36,7 +36,7 @@ class Quote(data.Connection):
         json_reply = re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8"))
         return json.loads(json_reply)
 
-    def RealTime(self,symbols,**kwargs):
+    def real_time(self,symbols,**kwargs):
         # "symbols" can be a list or a string
         if isinstance(symbols,list):
             url_symbols = ",".join(symbols)
