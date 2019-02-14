@@ -5,10 +5,9 @@ import xml.etree.ElementTree as ET
 from bson.json_util import dumps, loads
 from xmlschema.validators.exceptions import XMLSchemaValidationError
 
-import olympus.apps.ploutos.data as data
+import olympus.equities_us.data as data
 
-from olympus.apps.ploutos import *
-from olympus.apps.ploutos.data import *
+from olympus import USER, LOCKFILE_DIR, WORKING_DIR
 
 FORM4_INDEX_COLLECTION_NAME = 'form4_indices'
 QUARTERLY_FIRST_YEAR = 2004
@@ -17,12 +16,12 @@ QUARTERLY_YEAR_LIST = range(QUARTERLY_FIRST_YEAR,datetime.datetime.now().year+1)
 
 class InitForm4Indices(data.Connection):
 
-    def __init__(self,**kwargs):
-        super(InitForm4Indices,self).__init__('form4_indices',**kwargs)
-        self.LOCKFILE = LOCKFILE_DIR+self.init_type+'.pid'
+    def __init__(self,user=USER,**kwargs):
+        super(InitForm4Indices,self).__init__(user,'form4_indices',**kwargs)
         self.force = kwargs.get('force',False)
         self.graceful = kwargs.get('graceful',False)
         self.verbose = kwargs.get('verbose',False)
+        self.working_dir = WORKING_DIR(self.user)
 
     def populate_collections(self):
 
@@ -30,10 +29,11 @@ class InitForm4Indices(data.Connection):
 
         if self.verbose:
             print('Initializing Form4 collection procedure.')
-        lockfilehandle = open(self.LOCKFILE,'w')
+        LOCKFILE = LOCKFILE_DIR(self.user)+self.init_type+'.pid'
+        lockfilehandle = open(LOCKFILE,'w')
         fcntl.flock(lockfilehandle,fcntl.LOCK_EX|fcntl.LOCK_NB)
         lockfilehandle.write(str(os.getpid()))
-        os.chdir(WORKING_DIR)
+        os.chdir(self.working_dir)
        
         if self._record_start() is not True:
             if self.graceful:

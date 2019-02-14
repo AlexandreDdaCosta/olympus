@@ -6,8 +6,7 @@ import olympus.equities_us.data as data
 
 ALPHAVANTAGE_API_KEY = 'CHLVRDAEA445JOCB'
 ALPHAVANTAGE_URL = 'https://www.alphavantage.co/query?apikey=' + ALPHAVANTAGE_API_KEY
-GOOGLE_HISTORICAL_URL = 'https://www.google.com/finance/historical?startdate=Jan 01, 1970&output=csv&q='
-GOOGLE_REALTIME_URL = 'https://www.google.com/finance/info?infotype=infoquoteall&q='
+ALTERNATE_URL = 'https://api.iextrading.com'
 
 class Quote(data.Connection):
 
