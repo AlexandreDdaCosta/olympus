@@ -8,7 +8,7 @@ release-version: 9
 
 python3-version: {{ python3 }}
 olympus-app-package-path: /usr/local/lib/python{{ python3 }}/dist-packages
-olympus-package-path: {{ olympus-app-package-path }}/olympus
+olympus-package-path: /usr/local/lib/python{{ python3 }}/dist-packages/olympus
 olympus-scripts-path: /usr/local/bin/olympus
 
 repo-packages:
