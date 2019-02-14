@@ -43,6 +43,7 @@ salt-2018.3.2+ds-1-pip3-bug-hack:
 
 {{ pillar['olympus-package-path'] }}:
   file.recurse:
+    - clean: True
     - dir_mode: 0755
     - file_mode: 0644
     - group: root
@@ -51,6 +52,7 @@ salt-2018.3.2+ds-1-pip3-bug-hack:
 
 {{ pillar['olympus-scripts-path'] }}:
   file.recurse:
+    - clean: True
     - dir_mode: 0755
     - file_mode: 0755
     - group: root

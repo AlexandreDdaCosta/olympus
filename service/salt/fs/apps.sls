@@ -61,7 +61,6 @@ app_user_{{ app }}:
 {% if app != pillar['core-app-user'] %}
 /home/{{ app }}:
   file.recurse:
-    - clean: True
     - dir_mode: 0755
     - exclude_pat: lib/* 
     - file_mode: 0644
@@ -75,6 +74,7 @@ app_user_{{ app }}:
 
 {{ pillar['olympus-app-package-path'] }}/{{ app }}:
   file.recurse:
+    - clean: True
     - dir_mode: 0755
     - file_mode: 0644
     - group: root
