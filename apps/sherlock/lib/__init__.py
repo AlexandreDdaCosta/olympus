@@ -1,3 +1,3 @@
 # Core application constants
 
-USER = 'edgar'
+USER = 'sherlock'

@@ -63,6 +63,7 @@ app_user_{{ app }}:
   file.recurse:
     - clean: True
     - dir_mode: 0755
+    - exclude_pat: lib/* 
     - file_mode: 0644
     - group: {{ app }}
     - require:
@@ -70,7 +71,16 @@ app_user_{{ app }}:
     - source: salt://apps/{{ app }}
     - user: {{ app }}
   cmd.run:
-    - name: 'if [ -d "/home/{{ app }}/app/scripts" ]; then chmod -R 0750 /home/{{ app }}/app/scripts; fi'
+    - name: 'if [ -d "/home/{{ app }}/bin" ]; then chmod -R 0750 /home/{{ app }}/bin; fi'
+
+{{ pillar['olympus-app-package-path'] }}/{{ app }}:
+  file.recurse:
+    - dir_mode: 0755
+    - file_mode: 0644
+    - group: root
+    - source: salt://apps/{{ app }}/lib
+    - user: root
+
 {% endif %}
 
 {% endfor %}

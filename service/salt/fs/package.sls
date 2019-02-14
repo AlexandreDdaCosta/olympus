@@ -46,7 +46,7 @@ salt-2018.3.2+ds-1-pip3-bug-hack:
     - dir_mode: 0755
     - file_mode: 0644
     - group: root
-    - source: salt://core/python3/lib
+    - source: salt://core/lib
     - user: root
 
 {{ pillar['olympus-scripts-path'] }}:

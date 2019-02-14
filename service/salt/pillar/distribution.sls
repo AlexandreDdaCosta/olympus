@@ -7,7 +7,8 @@ release-version: 9
 {% set python3 = 3.5 %}
 
 python3-version: {{ python3 }}
-olympus-package-path: /usr/local/lib/python{{ python3 }}/dist-packages/olympus
+olympus-app-package-path: /usr/local/lib/python{{ python3 }}/dist-packages
+olympus-package-path: {{ olympus-app-package-path }}/olympus
 olympus-scripts-path: /usr/local/bin/olympus
 
 repo-packages:
