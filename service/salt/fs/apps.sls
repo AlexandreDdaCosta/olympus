@@ -81,7 +81,7 @@ app_user_{{ app }}:
     - source: salt://apps/{{ app }}/lib
     - user: root
   cmd.run:
-    - name: "find {{ pillar['olympus-app-package-path'] }}/{{ app }} -type f | grep -E 'test/.*?\\.py$' | xargs chmod 0755"
+    - name: "find {{ pillar['olympus-app-package-path'] }}/{{ app }} -type f | grep -E 'test/.*?\\.py$' | xargs -r chmod 0755"
 
 {% endif %}
 
