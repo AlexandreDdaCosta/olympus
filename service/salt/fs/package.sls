@@ -49,6 +49,8 @@ salt-2018.3.2+ds-1-pip3-bug-hack:
     - group: root
     - source: salt://core/lib
     - user: root
+  cmd.run:
+    - name: "find {{ pillar['olympus-package-path'] }} -type f | grep -E 'test/.*?\.py$' | xargs chmod 0755"
 
 {{ pillar['olympus-scripts-path'] }}:
   file.recurse:
