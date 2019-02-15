@@ -16,11 +16,11 @@ args = parser.parse_args()
 if args.verbose == True:
     start = time.time()
 print("Begin symbol import.")
-process = InitSymbols(graceful=args.graceful,verbose=args.verbose)
+process = InitSymbols(force=args.force,graceful=args.graceful,verbose=args.verbose)
 process.populate_collections()
 print("Ended symbol import.")
 print("Begin options import.")
-process = InitOptions(graceful=args.graceful,verbose=args.verbose)
+process = InitOptions(force=args.force,graceful=args.graceful,verbose=args.verbose)
 process.populate_collections()
 print("Ended options import.")
 if args.verbose == True:

@@ -103,7 +103,7 @@ class InitSymbols(data.Connection):
                 for name in fieldnames:
                     if row[name] == 'null':
                         del(row[name])
-                row[exchange] == exchange
+                row['Exchange'] = exchange
                 jsonstring = json.dumps(row)
                 jsonfile.write('\n'+jsonstring+',')
             jsonfile.close()
