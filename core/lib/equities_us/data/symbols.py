@@ -6,7 +6,7 @@ from olympus import USER, DOWNLOAD_DIR, LOCKFILE_DIR, WORKING_DIR
 
 INIT_TYPE = 'symbols'
 NORMALIZE_CAP_REGEX = re.compile('[^0-9\.]')
-SYMBOL_COLLECTIONS_PREFIX = 'symbols_'
+SYMBOL_COLLECTION = 'symbols'
 SYMBOL_DATA_URLS = [
 {'exchange':'amex','url':'http://www.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=amex&render=download'},
 {'exchange':'nasdaq','url':'http://www.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=nasdaq&render=download'},
@@ -117,21 +117,21 @@ class InitSymbols(data.Connection):
             jsonfile.write('\n]')
             jsonfile.close()
         
-        # Create collections
+        # Create final collection
         
+        collection_name = SYMBOL_COLLECTION
+        collection = self.db[collection_name]
+        collection.drop()
         for urlconf in SYMBOL_DATA_URLS:
             json_import_file = self.working_dir+urlconf['exchange']+'-companylist.csv.json'
-            collection_name = SYMBOL_COLLECTIONS_PREFIX + urlconf['exchange']
-            collection = self.db[collection_name]
-            collection.drop()
             jsonfile = open(json_import_file,'r')
             json_data = json.loads(jsonfile.read())
             jsonfile.close()
             collection.insert_many(json_data)
-            collection.create_index("Symbol")
-            collection.create_index("Sector")
-            collection.create_index("Industry")
-            collection.create_index("Capitalization")
+        collection.create_index("Symbol")
+        collection.create_index("Sector")
+        collection.create_index("Industry")
+        collection.create_index("Capitalization")
 	
         self._clean_up(lockfilehandle)
 	
