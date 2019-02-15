@@ -8,6 +8,7 @@ from olympus.equities_us.data.options import InitOptions
 from olympus.equities_us.data.symbols import InitSymbols
 
 parser = ArgumentParser(sys.argv)
+parser.add_argument("-f","--force",action="store_true",help="Force reinitialization")
 parser.add_argument("-g","--graceful",action="store_true",help="Nice crash and burn for permissible errors")
 parser.add_argument("-v","--verbose",action="store_true",help="Chatty output")
 args = parser.parse_args()
