@@ -44,8 +44,9 @@ class InitSymbols(data.Connection):
         # Download
 
         company_files = []
+        FILE_SUFFIX = '-companylist.csv'
         for urlconf in SYMBOL_DATA_URLS:
-            target_file = urlconf['exchange']+'-companylist.csv'
+            target_file = urlconf['exchange']+FILE_SUFFIX
             company_files.insert(0,target_file)
             target_file = DOWNLOAD_DIR(self.user)+target_file
             try:
@@ -66,6 +67,7 @@ class InitSymbols(data.Connection):
 
         fieldnames = ["Symbol","Name","Last","Capitalization","IPO Year","Sector","Industry","Summary"]
         for company_file in company_files:
+            exchange = company_file.rstrip(FILE_SUFFIX)
             repaired_csvfile = open(self.working_dir+company_file+'.import','w+')
             csvfile = open(DOWNLOAD_DIR(self.user)+company_file,'r')
             first_line = csvfile.readline().rstrip(',\n')
@@ -101,6 +103,7 @@ class InitSymbols(data.Connection):
                 for name in fieldnames:
                     if row[name] == 'null':
                         del(row[name])
+                row[exchange] == exchange
                 jsonstring = json.dumps(row)
                 jsonfile.write('\n'+jsonstring+',')
             jsonfile.close()
@@ -126,6 +129,9 @@ class InitSymbols(data.Connection):
             jsonfile.close()
             collection.insert_many(json_data)
             collection.create_index("Symbol")
+            collection.create_index("Sector")
+            collection.create_index("Industry")
+            collection.create_index("Capitalization")
 	
         self._clean_up(lockfilehandle)
 	
