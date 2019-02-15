@@ -17,7 +17,7 @@ class TestPrice(testing.Test):
         print(json.dumps(quotes,indent=4,sort_keys=True))
 
     def test_intra_day(self):
-        quote = self.quote.intraDay(TEST_SYMBOL_ONE)
+        quote = self.quote.intraday(TEST_SYMBOL_ONE)
         print(json.dumps(quote,indent=4,sort_keys=True))
 
     def test_real_time(self):
