@@ -22,11 +22,11 @@ class Chart():
 		# 
         return 
 
-class Simulator(market_key.Chart):
+class Simulator(Chart):
     # Trading simulations for the Livermore Market Key.
 
     def __init__(self,user=USER,**kwargs):
-        super(Chart,self).__init__(user,**kwargs)
+        Chart.__init__(user,**kwargs)
         pass
 
     def backtest(self,symbol=SYMBOL,**kwargs):
