@@ -8,7 +8,7 @@ class Chart():
     # Jesse L. Livermore, "How to Trade in Stocks, First Edition, pp. 102-133
 
     def __init__(self,user=USER,**kwargs):
-        self.user = USER
+        self.user = user
 
     def chartpoints(self,symbol=SYMBOL,**kwargs):
         # Given an equity symbol, will generate chart points based on the Livermore Market key
