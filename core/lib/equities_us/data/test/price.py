@@ -16,6 +16,7 @@ class TestPrice(testing.Test):
         quotes = self.quote.daily(TEST_SYMBOL_ONE)
         print(json.dumps(quotes,indent=4,sort_keys=True))
 
+'''
     def test_intra_day(self):
         quote = self.quote.intraday(TEST_SYMBOL_ONE)
         print(json.dumps(quote,indent=4,sort_keys=True))
@@ -34,6 +35,7 @@ class TestPrice(testing.Test):
         self.assertEqual(quotes['Stock Quotes'][1]['1. symbol'].upper(),TEST_SYMBOL_TWO.upper(),'Second returned symbol should match requested.')
         self.assertTrue(quotes['Stock Quotes'][1]['3. volume'].isdigit,'Volume is not indicated by an integer, second quote of two')
         self.assertIsFloat(quotes['Stock Quotes'][1]['2. price'],'Second security price has an invalid format')
+'''
 
 if __name__ == '__main__':
 	unittest.main()

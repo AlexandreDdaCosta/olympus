@@ -3,6 +3,8 @@ import json, re, urllib.request, wget
 import datetime
 
 from datetime import datetime as dt
+from datetime import timedelta
+from dateutil.parser import parse
 from pytz import timezone
 
 from olympus import USER
@@ -23,31 +25,45 @@ class Quote(data.Connection):
     def daily(self,symbol,**kwargs):
         # Daily price quote series
         symbol = symbol.upper()
+        regen = kwargs.get('regen',False)
         tz = timezone('EST')
         now = dt.now(tz)
         # First we check/update stored data to save on bandwidth
         collection = self.db[DAILY_PRICE_COLLECTION]
         symbol_db_data = collection.find_one({"Symbol":symbol})
-        if symbol_db_data is not None:
+        if regen is False and symbol_db_data is not None:
             refresh_date = symbol_db_data['Time']
+            refresh_date_object = parse(refresh_date)
+            regenerate = False
             # Regenerate:
             # If now is a weekday and before 4:00 PM, generated before today
             # If now is a weekday and after 4:00 PM, generated before 4:00 PM today
             # If now is a weekend day, generated before 4:00 last Friday
-            # ALEX
             weekday_no = now.weekday()
             if weekday_no < 5:
                 # weekday
-                pass
+                midnight = "%d-%02d-%02d 00:00:00.000000-05:00" % (now.year,now.month,now.day)
+                midnight_object = parse(midnight)
+                four_pm = "%d-%02d-%02d 16:00:00.000000-05:00" % (now.year,now.month,now.day)
+                four_pm_object = parse(four_pm)
+                if now <= four_pm_object and refresh_date_object < midnight_object:
+                    regenerate = True
+                elif now > four_pm_object and refresh_date_object < four_pm_object:
+                    regenerate = True
             else:
                 # weekend
-                pass
-            die
-            return symbol_db_data['Quote']['Time Series (Daily)']
+                last_friday = now - timedelta(days=(weekday_no-4))
+                last_friday_string = "%d-%02d-%02d 16:00:00.000000-05:00" % (last_friday.year,last_friday.month,last_friday.day)
+                last_friday_object = parse(last_friday_string)
+                if refresh_date_object < last_friday_object:
+                    regenerate = True
+            if regenerate is False:
+                return symbol_db_data['Quote']['Time Series (Daily)']
         # Query API once past stored data date check
         url = ALPHAVANTAGE_URL + '&function=TIME_SERIES_DAILY_ADJUSTED&outputsize=full&symbol=' + str(symbol)
         request = urllib.request.urlopen(url)
         raw_json_reply = re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8"))
+        json.loads(raw_json_reply) # Test for valid json
         # Clean up returned result
         json_reply = ''
         for line in raw_json_reply.splitlines():
