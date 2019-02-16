@@ -9,13 +9,14 @@ class TestSomething(testing.Test):
 
     def setUp(self):
         self.chart = market_key.Chart()
-        self.backtest = market_key.Backtest()
+        self.simulator = market_key.Simulator()
 
     def test_chart(self):
         chart = self.chart.chartpoints()
         print(chart)
 
-    def test_backtest(self):
+    def test_simulator(self):
+        simulation = self.simulator.backtest()
         pass
 
 if __name__ == '__main__':
