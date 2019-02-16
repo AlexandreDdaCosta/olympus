@@ -8,10 +8,12 @@ import livermore.market_key as market_key
 class TestSomething(testing.Test):
 
     def setUp(self):
-        pass
+        self.chart = market_key.Chart()
+        self.backtest = market_key.Backtest()
 
     def test_chart(self):
-        pass
+        chart = self.chart.chartpoints()
+        print(chart)
 
     def test_backtest(self):
         pass

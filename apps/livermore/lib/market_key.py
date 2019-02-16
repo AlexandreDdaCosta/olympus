@@ -9,22 +9,26 @@ class Chart():
 
     def __init__(self,user=USER,**kwargs):
         #super(Quote,self).__init__(user,'quote',**kwargs)
+        self.user = USER
         pass
 
-    def chart(self,symbol=SYMBOL,**kwargs):
+    def chartpoints(self,symbol=SYMBOL,**kwargs):
         # Given an equity symbol, will generate chart points based on the Livermore Market key
         # kwargs:
         # continuation: Threshold for CONTINUATION
-        # reversal: Threshold for reversal
-        # 
-        # 
-        # 
-        pass
+        # reversal: Threshold for REVERSAL
+		
+        
+		# Get symbol data
+		# Get symbol price data
+		# 
+        return 
 
-class Backtest(Chart):
+class Simulator(Chart):
+    # Trading simulations for the Livermore Market Key.
 
     def __init__(self,user=USER,**kwargs):
-        #super(Quote,self).__init__(user,'quote',**kwargs)
+        super(Chart,self).__init__(user,**kwargs)
         pass
 
     def backtest(self,symbol=SYMBOL,**kwargs):
