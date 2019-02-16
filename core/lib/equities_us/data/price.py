@@ -44,6 +44,7 @@ class Quote(data.Connection):
                 pass
             die
             return symbol_db_data['Quote']['Time Series (Daily)']
+        # Query API once past stored data date check
         url = ALPHAVANTAGE_URL + '&function=TIME_SERIES_DAILY_ADJUSTED&outputsize=full&symbol=' + str(symbol)
         request = urllib.request.urlopen(url)
         raw_json_reply = re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8"))
