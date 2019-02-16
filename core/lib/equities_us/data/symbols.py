@@ -6,7 +6,7 @@ from olympus import USER, DOWNLOAD_DIR, LOCKFILE_DIR, WORKING_DIR
 
 INIT_TYPE = 'symbols'
 NORMALIZE_CAP_REGEX = re.compile('[^0-9\.]')
-SYMBOL_COLLECTION = 'symbols'
+SYMBOL_COLLECTION = INIT_TYPE
 SYMBOL_DATA_URLS = [
 {'exchange':'amex','url':'http://www.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=amex&render=download'},
 {'exchange':'nasdaq','url':'http://www.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=nasdaq&render=download'},

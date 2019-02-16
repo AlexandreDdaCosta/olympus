@@ -31,7 +31,7 @@ include:
 manage_tmpfiles:
   cmd.run:
     - name: 'systemd-tmpfiles --create --remove'
-    - onchanges:
+    - watch:
         - file: /usr/lib/tmpfiles.d/olympus.conf
 
 {% if grains.get('apps') %}
