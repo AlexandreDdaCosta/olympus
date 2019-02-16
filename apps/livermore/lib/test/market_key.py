@@ -10,7 +10,10 @@ class TestSomething(testing.Test):
     def setUp(self):
         pass
 
-    def test_foo(self):
+    def test_chart(self):
+        pass
+
+    def test_backtest(self):
         pass
 
 if __name__ == '__main__':
