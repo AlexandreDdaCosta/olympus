@@ -2,7 +2,7 @@ from livermore import *
 
 import olympus.equities_us.data.price as price
 
-class Chart():
+class Chart(object):
     # Manage charts associated with the Livermore Market Key.
     # For an example of the original Livermore paper charts, see 
     # Jesse L. Livermore, "How to Trade in Stocks, First Edition, pp. 102-133
@@ -16,22 +16,16 @@ class Chart():
         # continuation: Threshold for CONTINUATION
         # reversal: Threshold for REVERSAL
 		
-        
 		# Get symbol data
 		# Get symbol price data
 		# 
-        return 
+        pass
 
 class Simulator(Chart):
     # Trading simulations for the Livermore Market Key.
 
     def __init__(self,user=USER,**kwargs):
-        Chart.__init__(user,**kwargs)
-        pass
+        super(Simulator,self).__init__(user,**kwargs)
 
     def backtest(self,symbol=SYMBOL,**kwargs):
-        # 
-        # 
-        # 
         pass
-
