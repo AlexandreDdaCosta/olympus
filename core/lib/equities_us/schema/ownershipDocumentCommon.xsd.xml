@@ -229,7 +229,7 @@
                 <xs:element name="transactionTotalValue"       type="NUMBER_WITH_FOOTNOTE"/>
             </xs:choice>
             <xs:element name="transactionPricePerShare"        type="OPT_NUMBER_WITH_FOOTNOTE"/>
-            <!-- ploutos
+            <!-- olympus
             Found with a footnote in some submissions
             <xs:element name="transactionAcquiredDisposedCode" type="ACQ_DISP_NO_FOOT"/>
             -->
