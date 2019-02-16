@@ -8,9 +8,7 @@ class Chart():
     # Jesse L. Livermore, "How to Trade in Stocks, First Edition, pp. 102-133
 
     def __init__(self,user=USER,**kwargs):
-        #super(Quote,self).__init__(user,'quote',**kwargs)
         self.user = USER
-        pass
 
     def chartpoints(self,symbol=SYMBOL,**kwargs):
         # Given an equity symbol, will generate chart points based on the Livermore Market key
@@ -24,7 +22,7 @@ class Chart():
 		# 
         return 
 
-class Simulator(Chart):
+class Simulator(market_key.Chart):
     # Trading simulations for the Livermore Market Key.
 
     def __init__(self,user=USER,**kwargs):
