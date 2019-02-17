@@ -1,3 +1,5 @@
+import json
+
 from larry import *
 
 import olympus.equities_us.data.price as price
@@ -13,23 +15,23 @@ class Chart(object):
 
     def chartpoints(self,symbol=SYMBOL,**kwargs):
         # Given an equity symbol, will generate chart points based on the Livermore Market key
-        # kwargs:
-        # continuation: Threshold for CONTINUATION
-        # reversal: Threshold for REVERSAL
         regen = kwargs.get('regen',False)
-
+        start_date = kwargs.get('start_date',None)
+        end_date = kwargs.get('end_date',None)
 		# Get symbol/price data
         symbol_object = symbols.Read()
         symbol_record = symbol_object.get_symbol(symbol)
         if symbol_record is None:
             raise Exception('Symbol ' + symbol + ' not located.')
         price_object = price.Quote()
-        daily_price_series = price_object.daily(symbol,regen=regen)
+        daily_price_series = price_object.daily(symbol,regen=regen,start_date=start_date,end_date=end_date)
         if daily_price_series is None:
             raise Exception('Daily price series for ' + symbol + ' not located for date range.')
-        print(daily_price_series)
-        # Next: Pass date range
-        # Will need to change price storage (Date, Quote)
+        # Create chartpoints record
+
+
+
+        print(json.dumps(daily_price_series,indent=4,sort_keys=True))
 
 class Simulator(Chart):
     # Trading simulations for the Livermore Market Key.

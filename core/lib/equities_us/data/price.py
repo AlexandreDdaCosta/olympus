@@ -1,6 +1,4 @@
-import json, re, urllib.request, wget
-
-import datetime
+import collections, datetime, json, re, urllib.request, wget
 
 from datetime import datetime as dt
 from datetime import timedelta
@@ -26,15 +24,18 @@ class Quote(data.Connection):
         # Daily price quote series
         symbol = symbol.upper()
         regen = kwargs.get('regen',False)
+        start_date = kwargs.get('start_date',None)
+        end_date = kwargs.get('end_date',None)
+        regen = kwargs.get('regen',False)
         tz = timezone('EST')
         now = dt.now(tz)
         # First we check/update stored data to save on bandwidth
         collection = self.db[DAILY_PRICE_COLLECTION]
         symbol_db_data = collection.find_one({"Symbol":symbol})
+        regenerate = False
         if regen is False and symbol_db_data is not None:
             refresh_date = symbol_db_data['Time']
             refresh_date_object = parse(refresh_date)
-            regenerate = False
             # Regenerate:
             # If now is a weekday and before 4:00 PM, generated before today
             # If now is a weekday and after 4:00 PM, generated before 4:00 PM today
@@ -57,31 +58,36 @@ class Quote(data.Connection):
                 last_friday_object = parse(last_friday_string)
                 if refresh_date_object < last_friday_object:
                     regenerate = True
-            if regenerate is False:
-                return symbol_db_data['Quote']['Time Series (Daily)']
-        # Query API once past stored data date check
-        url = ALPHAVANTAGE_URL + '&function=TIME_SERIES_DAILY_ADJUSTED&outputsize=full&symbol=' + str(symbol)
-        request = urllib.request.urlopen(url)
-        raw_json_reply = re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8"))
-        json.loads(raw_json_reply) # Test for valid json
-        # Clean up returned result
-        json_reply = ''
-        for line in raw_json_reply.splitlines():
-            line = line.rstrip()
-            if 'dividend amount\": \"0.0000' in line:
-                continue
-            if 'split coefficient' in line:
-                json_reply = json_reply[:-2]
-                json_reply = json_reply + '\n'
-                continue
-            line = re.sub(r'^(\s*?\")([0-9]*\.\s+)(.*)$',r'\1\3',line)
-            json_reply += line + '\n'
-        write_reply = '{"Symbol":"'+symbol+'","Time":"'+str(now)+'","Quote":'+json_reply + '}'
-        if symbol_db_data is not None:
-            collection.delete_one({ "Symbol":symbol })
-        collection.insert_one(json.loads(write_reply))
-        symbol_db_data = collection.find_one({"Symbol":symbol})
-        return symbol_db_data['Quote']['Time Series (Daily)']
+        if regen is True or regenerate is True:
+            url = ALPHAVANTAGE_URL + '&function=TIME_SERIES_DAILY_ADJUSTED&outputsize=full&symbol=' + str(symbol)
+            request = urllib.request.urlopen(url)
+            raw_json_reply = re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8"))
+            json.loads(raw_json_reply) # Test for valid json
+            # Clean up returned result
+            json_reply = ''
+            for line in raw_json_reply.splitlines():
+                line = line.rstrip()
+                if 'dividend amount\": \"0.0000' in line:
+                    continue
+                if 'split coefficient' in line:
+                    json_reply = json_reply[:-2]
+                    json_reply = json_reply + '\n'
+                    continue
+                line = re.sub(r'^\s*?(\")([0-9]*\.\s+)(.*)$',r'\1\3',line)
+                json_reply += line + '\n'
+            write_reply = '{"Symbol":"'+symbol+'","Time":"'+str(now)+'","Quote":'+json_reply + '}'
+            if regen is True or symbol_db_data is not None:
+                collection.delete_many({ "Symbol":symbol })
+            collection.insert_one(json.loads(write_reply))
+            symbol_db_data = collection.find_one({"Symbol":symbol})
+        returndata = collections.OrderedDict(sorted(symbol_db_data['Quote']['Time Series (Daily)'].items()))
+        if start_date is not None:
+            start_date = dt.strptime(start_date,"%Y-%m-%d")
+            returndata = {key: value for key, value in returndata.items() if dt.strptime(key,"%Y-%m-%d") > start_date}
+        if end_date is not None:
+            end_date = dt.strptime(end_date,"%Y-%m-%d")
+            returndata = {key: value for key, value in returndata.items() if dt.strptime(key,"%Y-%m-%d") < end_date}
+        return returndata
 
     def intraday(self,symbol,interval=1,**kwargs):
         # Interval results:
