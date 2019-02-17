@@ -7,7 +7,7 @@ from dateutil.relativedelta import relativedelta
 from olympus import DOWNLOAD_DIR
 
 SYMBOL = 'ba'
-USER = 'livermore'
+USER = 'larry'
 
 CONTINUATION = 3 # An integer that defines the minimum point move required to recognize price continuation
 REVERSAL = 6 # An integer that defines the minimum point move required to recognize price reversal
