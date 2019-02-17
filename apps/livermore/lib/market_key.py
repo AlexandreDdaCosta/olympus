@@ -1,6 +1,7 @@
 from livermore import *
 
 import olympus.equities_us.data.price as price
+import olympus.equities_us.data.symbols as symbols
 
 class Chart(object):
     # Manage charts associated with the Livermore Market Key.
@@ -15,11 +16,20 @@ class Chart(object):
         # kwargs:
         # continuation: Threshold for CONTINUATION
         # reversal: Threshold for REVERSAL
-		
-		# Get symbol data
-		# Get symbol price data
-		# 
-        pass
+        regen = kwargs.get('regen',False)
+
+		# Get symbol/price data
+        symbol_object = symbols.Read()
+        symbol_record = symbol_object.get_symbol(symbol)
+        if symbol_record is None:
+            raise Exception('Symbol ' + symbol + ' not located.')
+        price_object = price.Quote()
+        daily_price_series = price_object.daily(symbol,regen=regen)
+        if daily_price_series is None:
+            raise Exception('Daily price series for ' + symbol + ' not located for date range.')
+        print(daily_price_series)
+        # Next: Pass date range
+        # Will need to change price storage (Date, Quote)
 
 class Simulator(Chart):
     # Trading simulations for the Livermore Market Key.

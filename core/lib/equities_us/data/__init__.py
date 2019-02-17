@@ -12,18 +12,19 @@ class Connection():
     def __init__(self,user=USER,init_type=None,**kwargs):
         self.user = user
         self.database = DATABASE
-        self.init_type = init_type
         self.client = pymongo.MongoClient(MONGO_URL,ssl=True,ssl_ca_certs=CAFILE,ssl_certfile=CERTFILE,ssl_keyfile=KEYFILE,ssl_match_hostname=False)
         self.db = self.client.equities_us
-        self.init_collection = self.db.init
-        try:
-            os.makedirs(DOWNLOAD_DIR(self.user))
-        except OSError:
-            pass
+        self.init_type = init_type
+        if self.init_type is not None:
+            self.init_collection = self.db.init
+            try:
+                os.makedirs(DOWNLOAD_DIR(self.user))
+            except OSError:
+                pass
     
     def _initialized(self,**kwargs):
         if self.init_type is None:
-            raise Exception('Initialization not available for this data type; exiting.')
+            raise Exception('Initialization not available; exiting.')
         dbnames = self.client.database_names()
         if self.database not in dbnames:
             return None, None
@@ -47,7 +48,7 @@ class Connection():
 
     def _record_end(self,**kwargs):
         if self.init_type is None:
-            raise Exception('Initialization not available for this data type; exiting.')
+            raise Exception('Initialization not available; exiting.')
         host, pid = self._initialized(**kwargs)
         if host == socket.gethostname() and pid == os.getpid():
             deletedict = {"datatype":self.init_type}
@@ -59,7 +60,7 @@ class Connection():
 
     def _record_start(self,**kwargs):
         if self.init_type is None:
-            raise Exception('Initialization not available for this data type; exiting.')
+            raise Exception('Initialization not available; exiting.')
         print('Creating document to record initialization.')
         dbnames = self.client.database_names()
         if self.force is True:

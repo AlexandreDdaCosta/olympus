@@ -5,7 +5,7 @@ import sys, time
 from argparse import ArgumentParser
 
 from olympus.equities_us.data.options import InitOptions
-from olympus.equities_us.data.symbols import InitSymbols
+from olympus.equities_us.data.symbols import Init
 
 parser = ArgumentParser(sys.argv)
 parser.add_argument("-f","--force",action="store_true",help="Force reinitialization")
@@ -16,7 +16,7 @@ args = parser.parse_args()
 if args.verbose == True:
     start = time.time()
 print("Begin symbol import.")
-process = InitSymbols(force=args.force,graceful=args.graceful,verbose=args.verbose)
+process = Init(force=args.force,graceful=args.graceful,verbose=args.verbose)
 process.populate_collections()
 print("Ended symbol import.")
 print("Begin options import.")

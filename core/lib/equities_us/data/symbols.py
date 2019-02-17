@@ -15,10 +15,10 @@ SYMBOL_DATA_URLS = [
 
 FIRST_LINE_STRING = '"Symbol","Name","LastSale","MarketCap","IPOyear","Sector","industry","Summary Quote"'
 
-class InitSymbols(data.Connection):
+class Init(data.Connection):
 
     def __init__(self,user=USER,**kwargs):
-        super(InitSymbols,self).__init__(user,INIT_TYPE,**kwargs)
+        super(Init,self).__init__(user,INIT_TYPE,**kwargs)
         self.force = kwargs.get('force',False)
         self.graceful = kwargs.get('graceful',False)
         self.working_dir = WORKING_DIR(self.user)
@@ -155,3 +155,15 @@ class InitSymbols(data.Connection):
         c = re.sub(NORMALIZE_CAP_REGEX,r'',c)
         c = int(float(c) * multiplier)
         return '"'+str(c)+'"'
+
+class Read(data.Connection):
+
+    def __init__(self,**kwargs):
+        super(Read,self).__init__(**kwargs)
+        if SYMBOL_COLLECTION not in self.db.list_collection_names():
+            raise Exception(SYMBOL_COLLECTION + ' not located in ' + self.database)
+        self.collection = self.db[SYMBOL_COLLECTION]
+
+    def get_symbol(self,symbol,**kwargs):
+        symbol = symbol.upper()
+        return self.collection.find_one({"Symbol":symbol})
