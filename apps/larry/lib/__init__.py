@@ -16,4 +16,4 @@ KEY_REVERSAL = 12 # REVERSAL for paired analysis
 KEY_THRESHOLD = 250 # Price level at which the analysis uses key price in place of CONTINUATION and REVERSAL
 
 END_CHART = datetime.datetime.now()
-START_CHART = datetime.datetime.now() - relativedelta(years=5)
+START_CHART = datetime.datetime.now() - relativedelta(years=10)
