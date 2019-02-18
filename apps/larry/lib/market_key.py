@@ -1,9 +1,11 @@
 import json
 
-from larry import *
+from datetime import datetime as dt
 
 import olympus.equities_us.data.price as price
 import olympus.equities_us.data.symbols as symbols
+
+from larry import *
 
 class Chart(object):
     # Manage charts associated with the Livermore Market Key.
@@ -28,10 +30,11 @@ class Chart(object):
         if daily_price_series is None:
             raise Exception('Daily price series for ' + symbol + ' not located for date range.')
         # Create chartpoints dict
+        meta = { 'Date': dt.now().strftime('%Y-%m-%d %H:%M:%S.%f'), 'Start Date': start_date, 'End Date': end_date }
+        chart = {}        
 
-
-        print(json.dumps(daily_price_series,indent=4,sort_keys=True))
-
+        output = { 'Meta': meta, 'Chart': {} }
+        print(json.dumps(output,indent=4,sort_keys=True))
 
 class Simulator(Chart):
     # Trading simulations for the Livermore Market Key.
