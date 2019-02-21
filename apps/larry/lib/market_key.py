@@ -1,6 +1,7 @@
 import json
 
 from datetime import datetime as dt
+from operator import itemgetter
 
 import olympus.equities_us.data.price as price
 import olympus.equities_us.data.symbols as symbols
@@ -15,9 +16,11 @@ class Chart(object):
     def __init__(self,user=USER,**kwargs):
         self.user = user
 
+        self.regen = kwargs.get('regen',False)
+        self.thresholds = kwargs.get('thresholds',THRESHOLDS)
+
     def chartpoints(self,symbol=SYMBOL,**kwargs):
         # Given an equity symbol, will generate chart points based on the Livermore Market key
-        regen = kwargs.get('regen',False)
         start_date = kwargs.get('start_date',START_CHART.strftime('%Y-%m-%d'))
         end_date = kwargs.get('end_date',END_CHART.strftime('%Y-%m-%d'))
 		# Get symbol/price data
@@ -26,11 +29,11 @@ class Chart(object):
         if symbol_record is None:
             raise Exception('Symbol ' + symbol + ' not located.')
         price_object = price.Quote()
-        daily_price_series = price_object.daily(symbol,regen=regen,start_date=start_date,end_date=end_date)
+        daily_price_series = price_object.daily(symbol,regen=self.regen,start_date=start_date,end_date=end_date)
         if daily_price_series is None:
             raise Exception('Daily price series for ' + symbol + ' not located for date range.')
         # Create chartpoints dict
-        meta = { 'Date': dt.now().strftime('%Y-%m-%d %H:%M:%S.%f'), 'Start Date': start_date, 'End Date': end_date }
+        meta = { 'Date': dt.now().strftime('%Y-%m-%d %H:%M:%S.%f'), 'Start Date': start_date, 'End Date': end_date, 'Thresholds': self.thresholds }
         # Read daily price series and populate chartpoints
         dates = []
         data = { 'Last Highs': [], 'Last Lows': [] }
@@ -38,6 +41,7 @@ class Chart(object):
             if not dates:
                 # Starting price (use closing price, but only to INITIATE records)
                 recorded_date = { 'Date': date, 'Trend': None, 'Price': datapoint['close'] }
+                continuation, reversal = self._key_levels(datapoint,data)
                 dates.append(recorded_date)
             else:
                 last_date = dates[-1]
@@ -54,13 +58,13 @@ class Chart(object):
 
                 if 'Price' in recorded_date:
                     dates.append(recorded_date)
-                data['Continuation'] = continuation
-                data['Reversal'] = reversal
+            data['Last Continuation'] = continuation
+            data['Last Reversal'] = reversal
             data['Last Highs'].append(datapoint['high'])
             data['Last Lows'].append(datapoint['low'])
-            if len(data['Last Highs']) > 3:
+            if len(data['Last Highs']) > THRESHOLD_PRICE_MAX_HISTORY:
                 data['Last Highs'].pop(0)
-            if len(data['Last Lows']) > 3:
+            if len(data['Last Lows']) > THRESHOLD_PRICE_MAX_HISTORY:
                 data['Last Lows'].pop(0)
         output = { 'Meta': meta, 'Chart': { 'Dates': dates, 'Data': data } }
         # Save for potential reuse
@@ -71,10 +75,11 @@ class Chart(object):
 
     def _key_levels(self,datapoint,data):
         # Calculates continuation and reversal amounts based on pricing
-        continuation = 1
-        reversal = 2
-        if float(datapoint['high']) > 20:
-            pass
+        continuation = CONTINUATION
+        reversal = REVERSAL
+        for scheme in sorted(self.thresholds, key=itemgetter('Continuation')) :
+            if 'Maximum' in scheme:
+                pass
         return continuation, reversal
 
 class Simulator(Chart):
@@ -84,4 +89,4 @@ class Simulator(Chart):
         super(Simulator,self).__init__(user,**kwargs)
 
     def backtest(self,symbol=SYMBOL,**kwargs):
-        pass
+        purchase_size = kwargs.get('purchase_size',PURCHASE_SIZE)
