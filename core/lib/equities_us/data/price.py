@@ -80,14 +80,14 @@ class Quote(data.Connection):
                 collection.delete_many({ "Symbol":symbol })
             collection.insert_one(json.loads(write_reply))
             symbol_db_data = collection.find_one({"Symbol":symbol})
-        returndata = collections.OrderedDict(sorted(symbol_db_data['Quote']['Time Series (Daily)'].items()))
+        returndata = symbol_db_data['Quote']['Time Series (Daily)']
         if start_date is not None:
             start_date = dt.strptime(start_date,"%Y-%m-%d")
             returndata = {key: value for key, value in returndata.items() if dt.strptime(key,"%Y-%m-%d") > start_date}
         if end_date is not None:
             end_date = dt.strptime(end_date,"%Y-%m-%d")
             returndata = {key: value for key, value in returndata.items() if dt.strptime(key,"%Y-%m-%d") < end_date}
-        return returndata
+        return collections.OrderedDict(sorted(returndata.items()))
 
     def intraday(self,symbol,interval=1,**kwargs):
         # Interval results:
