@@ -12,6 +12,7 @@ class Chart(object):
     # Manage charts associated with the Livermore Market Key.
     # For an example of the original Livermore paper charts, see 
     # Jesse L. Livermore, "How to Trade in Stocks", First Edition, pp. 102-133
+    # Numbered rules referred to below are from Chapter 10, "Explanatory Rules", pp. 91-101
 
     def __init__(self,user=USER,**kwargs):
         self.user = user
@@ -60,9 +61,11 @@ class Chart(object):
                 else:
                     if last_date['Trend'] == 'DOWNWARD TREND':
                         if low < last_date['Price']:
+                            # Rule 2
                             recorded_date['Trend'] = 'DOWNWARD TREND'
                             recorded_date['Price'] = low
                         elif high >= last_date['Price'] + reversal:
+                            # Rule 4.(c)
                             recorded_date['Trend'] = 'NATURAL RALLY'
                             recorded_date['Price'] = high
                             downward_pivot = {}
