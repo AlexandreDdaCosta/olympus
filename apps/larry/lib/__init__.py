@@ -18,12 +18,9 @@ KEY_REVERSAL = 12 # REVERSAL for paired analysis
 END_CHART = datetime.datetime.now()
 START_CHART = datetime.datetime.now() - relativedelta(years=5)
 
-THRESHOLD_PRICE_HISTORY = 3 # in days
-THRESHOLD_PRICE_MAX_HISTORY = 10 # in days
 THRESHOLDS = [
     {
         'Continuation' : 1,
-        'Price History' : 5,
         'Maximum' : 20,
         'Reversal' : 2
     },
@@ -35,7 +32,6 @@ THRESHOLDS = [
     {
         'Continuation' : CONTINUATION,
         'Maximum' : 250,
-        'Price History' : 5,
         'Reversal' : REVERSAL
     },
     {
@@ -55,7 +51,12 @@ THRESHOLDS = [
     },
     {
         'Continuation' : 500,
+        'Maximum' : 100000,
         'Reversal' : 1000
+    },
+    {
+        'Continuation' : 5000,
+        'Reversal' : 10000
     }
 ]
 

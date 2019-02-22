@@ -15,7 +15,6 @@ class Chart(object):
 
     def __init__(self,user=USER,**kwargs):
         self.user = user
-
         self.regen = kwargs.get('regen',False)
         self.thresholds = kwargs.get('thresholds',THRESHOLDS)
 
@@ -36,51 +35,72 @@ class Chart(object):
         meta = { 'Date': dt.now().strftime('%Y-%m-%d %H:%M:%S.%f'), 'Start Date': start_date, 'End Date': end_date, 'Thresholds': self.thresholds }
         # Read daily price series and populate chartpoints
         dates = []
-        data = { 'Last Highs': [], 'Last Lows': [] }
+        pivots = { 'Upward': [], 'Downward': [], 'Rally': [], 'Reaction': [] }
         for date, datapoint in daily_price_series.items():
+            close = float(datapoint['close'])
+            high = float(datapoint['high'])
+            low = float(datapoint['low'])
             if not dates:
                 # Starting price (use closing price, but only to INITIATE records)
-                recorded_date = { 'Date': date, 'Trend': None, 'Price': datapoint['close'] }
-                continuation, reversal = self._key_levels(datapoint,data)
+                recorded_date = { 'Date': date, 'Trend': None, 'Price': close }
+                continuation, reversal = self._key_levels(datapoint)
                 dates.append(recorded_date)
             else:
                 last_date = dates[-1]
-                continuation, reversal = self._key_levels(datapoint,data)
+                continuation, reversal = self._key_levels(datapoint)
                 recorded_date = { 'Date': date }
                 if len(dates) == 1:
                     # Starting trend
-                    if datapoint['close'] > last_date['Price']:
-                        recorded_date['Trend'] = 'UPWARD_TREND'
-                        recorded_date['Price'] = datapoint['high']
-                    elif datapoint['close'] < last_date['Price']:
-                        recorded_date['Trend'] = 'DOWNWARD_TREND'
-                        recorded_date['Price'] = datapoint['low']
+                    if close > last_date['Price']:
+                        recorded_date['Trend'] = 'UPWARD TREND'
+                        recorded_date['Price'] = high
+                    elif close < last_date['Price']:
+                        recorded_date['Trend'] = 'DOWNWARD TREND'
+                        recorded_date['Price'] = low
+                else:
+                    if last_date['Trend'] == 'DOWNWARD TREND':
+                        if low < last_date['Price']:
+                            recorded_date['Trend'] = 'DOWNWARD TREND'
+                            recorded_date['Price'] = low
+                        elif high >= last_date['Price'] + reversal:
+                            recorded_date['Trend'] = 'NATURAL RALLY'
+                            recorded_date['Price'] = high
+                            downward_pivot = {}
+                            downward_pivot['Date'] = last_date['Date']
+                            downward_pivot['Price'] = last_date['Price']
+                            pivots['Downward'].append(downward_pivot)
+                    elif last_date['Trend'] == 'UPWARD TREND':
+                        pass
+                    elif last_date['Trend'] == 'NATURAL RALLY':
+                        pass
+                    elif last_date['Trend'] == 'NATURAL REACTION':
+                        pass
+                    elif last_date['Trend'] == 'SECONDARY RALLY':
+                        pass
+                    elif last_date['Trend'] == 'SECONDARY REACTION':
+                        pass
 
                 if 'Price' in recorded_date:
                     dates.append(recorded_date)
-            data['Last Continuation'] = continuation
-            data['Last Reversal'] = reversal
-            data['Last Highs'].append(datapoint['high'])
-            data['Last Lows'].append(datapoint['low'])
-            if len(data['Last Highs']) > THRESHOLD_PRICE_MAX_HISTORY:
-                data['Last Highs'].pop(0)
-            if len(data['Last Lows']) > THRESHOLD_PRICE_MAX_HISTORY:
-                data['Last Lows'].pop(0)
-        output = { 'Meta': meta, 'Chart': { 'Dates': dates, 'Data': data } }
+        output = { 'Meta': meta, 'Chart': { 'Dates': dates, 'Pivots': pivots } }
         # Save for potential reuse
-
-
+        print(continuation)
+        print(reversal)
         print(json.dumps(output,indent=4,sort_keys=True))
         #return output
 
-    def _key_levels(self,datapoint,data):
+    def _key_levels(self,datapoint):
         # Calculates continuation and reversal amounts based on pricing
-        continuation = CONTINUATION
-        reversal = REVERSAL
+        matching_scheme = None
+        minimum = 0
         for scheme in sorted(self.thresholds, key=itemgetter('Continuation')) :
-            if 'Maximum' in scheme:
-                pass
-        return continuation, reversal
+            if float(datapoint['close']) > minimum and ('Maximum' not in scheme or float(datapoint['close']) <= float(scheme['Maximum'])):
+                matching_scheme = scheme
+                break
+            minimum = scheme['Maximum']
+        if matching_scheme is None:
+            return CONTINUATION, REVERSAL
+        return float(matching_scheme['Continuation']), float(matching_scheme['Reversal'])
 
 class Simulator(Chart):
     # Trading simulations for the Livermore Market Key.
