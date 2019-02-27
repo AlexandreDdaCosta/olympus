@@ -164,7 +164,7 @@ class Chart(object):
                                     signal['Price'] = pivots['Upward'][-1]['Price'] + continuation
                                     signal['Type'] = 'Continuation'
                                     signals['Buy'].append(signal)
-                            elif pivots['Upward'] and high > pivots['Upward'][-1]['Price'] - short_distance:
+                            elif pivots['Upward'] and high >= pivots['Upward'][-1]['Price'] - short_distance:
                                 # Rule 6.(c)/10.(e)
                                 recorded_date['Trend'] = 'NATURAL RALLY'
                                 recorded_date['Unconfirmed'] = 'True'
@@ -181,11 +181,6 @@ class Chart(object):
                                 signal['Type'] = 'Failed Confirmation'
                                 signals['Sell'].append(signal)
                                 del dates[-1]['Unconfirmed']
-
-
-
-'''
-
                             if pivots['Downward'] and low < pivots['Downward'][-1]['Price']:
                                 # Rule 6.(b)
                                 recorded_date['Price'] = low
@@ -194,26 +189,79 @@ class Chart(object):
                                 pivot['Date'] = last_date['Date']
                                 pivot['Price'] = last_date['Price']
                                 pivots['Rally'].append(pivot)
+                                if low <= pivots['Downward'][-1]['Price'] - continuation:
+                                    # Rule 10.(c)
+                                    signal = {}
+                                    signal['Date'] = date
+                                    signal['Price'] = pivots['Downward'][-1]['Price'] - continuation
+                                    signal['Type'] = 'Continuation'
+                                    signals['Sell'].append(signal)
+                                else:
+                                    recorded_date['Unconfirmed'] = 'True'
+                            # Rule 4.(d)
+                            elif low < last_date['Price'] - reversal:
+                                if pivots['Reaction'] and low > pivots['Reaction'][-1]['Price']:
+                                    # Rule 6.(h)
+                                    recorded_date['Trend'] = 'SECONDARY REACTION'
+                                    last_rally = {}
+                                    last_rally['Date'] = date
+                                    last_rally['Price'] = high
+                                else:
+                                    recorded_date['Trend'] = 'NATURAL REACTION'
+                                    pivot = {}
+                                    pivot['Date'] = last_date['Date']
+                                    pivot['Price'] = last_date['Price']
+                                    pivots['Rally'].append(pivot)
+                                recorded_date['Price'] = low
 
-                        # Rule 4.(d)
-                        elif low < last_date['Price'] - reversal:
-                            elif pivots['Reaction'] and low > pivots['Reaction'][-1]['Price']:
-                                # Rule 6.(h)
-                                recorded_date['Trend'] = 'SECONDARY REACTION'
-                                last_rally = {}
-                                last_rally['Date'] = date
-                                last_rally['Price'] = high
+                    elif last_date['Trend'] == 'NATURAL REACTION':
+                        if low < last_date['Price']:
+                            pass
+                        else:
+                            pass
+
+'''
+                        if low < last_date['Price']:
+                            if pivots['Reaction'] and low <= pivots['Reaction'][-1]['Price'] - continuation or pivots['Downward'] and low <= pivots['Downward'][-1]['Price']:
+                                # Rule 5.(b)/6.(e)
+                                recorded_date['Trend'] = 'DOWNWARD TREND'
+                                recorded_date['Price'] = low
+                                signal = {}
+                                signal['Date'] = date
+                                signal['Price'] = pivots['Rally'][-1]['Price'] + continuation
+                                signal['Type'] = 'Continuation'
+                                signals['Sell'].append(signal)
                             else:
+                                # Rule 6.(a)
                                 recorded_date['Trend'] = 'NATURAL REACTION'
+                                recorded_date['Price'] = low
+
+                        # Rule 4.(b)
+                        elif high >= last_date['Price'] + reversal:
+                            # Rule 6.(d)
+                            if pivots['Upward'] and high >= pivots['Upward'][-1]['Price']:
+                                recorded_date['Trend'] = 'UPWARD TREND'
+                                signal = {}
+                                signal['Date'] = date
+                                signal['Price'] = pivots['Upward'][-1]['Price']
+                                signal['Type'] = 'Reversal'
+                                signals['Buy'].append(signal)
+                            # Rule 6.(g)
+                            elif pivots['Rally'] and high <= pivots['Rally'][-1]['Price']:
+                                recorded_date['Trend'] = 'SECONDARY RALLY'
+                                last_reaction = {}
+                                last_reaction['Date'] = date
+                                last_reaction['Price'] = low
+                            else:
+                                recorded_date['Trend'] = 'NATURAL RALLY'
                                 pivot = {}
                                 pivot['Date'] = last_date['Date']
                                 pivot['Price'] = last_date['Price']
-                                pivots['Rally'].append(pivot)
-                            recorded_date['Price'] = low
+                                pivots['Reaction'].append(pivot)
+                            recorded_date['Price'] = high
 '''
 
-                    elif last_date['Trend'] == 'NATURAL REACTION':
-                        pass
+
                     elif last_date['Trend'] == 'SECONDARY RALLY':
                         pass
                     elif last_date['Trend'] == 'SECONDARY REACTION':
