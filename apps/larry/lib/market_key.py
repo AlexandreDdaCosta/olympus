@@ -8,59 +8,120 @@ import olympus.equities_us.data.symbols as symbols
 
 from larry import *
 
+class ChartDate(object):
+
+    def __init__(self,date,price,trend):
+        self.date = date
+        self.price = price
+        self.trend = trend
+
 class Chart(object):
-    # Manage charts associated with the Livermore Market Key.
+
+    def __init__(self,start_date,end_date,**kwargs):
+        self.meta = { 'Date': dt.now().strftime('%Y-%m-%d %H:%M:%S.%f'), 'Start Date': start_date, 'End Date': end_date }
+        self.dates = []
+        self.pivots = { 'Upward': [], 'Downward': [], 'Rally': [], 'Reaction': [] }
+        self.signals = { 'Buy': [], 'Sell': [] }
+    
+    def add_date(self,date,price,trend=None):
+        date = ChartDate(date,price,trend)
+        self.dates.append(date)
+    
+    def add_meta(self,key,data):
+        self.meta[key] = data
+    
+    def empty(self):
+        if self.dates:
+            return False
+        return True
+
+    def last_entry(self):
+        if self.dates:
+            return self.dates[-1]
+        return None
+
+    def last_trend(self):
+        if self.dates:
+            return self.dates[-1].trend
+        return None
+
+class Datapoint(object):
+
+    def __init__(self,datapoint,thresholds,**kwargs):
+        self.close = float(datapoint['close'])
+        self.high = float(datapoint['high'])
+        self.low = float(datapoint['low'])
+        self.pivot = None
+        self.signal = None
+        matching_scheme = None
+        minimum = 0.0
+        for scheme in sorted(thresholds, key=itemgetter('Continuation')) :
+            if self.close > minimum and ('Maximum' not in scheme or self.close' <= float(scheme['Maximum'])):
+                matching_scheme = scheme
+                break
+            minimum = scheme['Maximum']
+        if matching_scheme is None:
+            self.continuation = CONTINUATION
+            self.reversal = REVERSAL
+            self.short_distance = SHORT_DISTANCE
+        else
+            self.continuation = float(matching_scheme['Continuation'])
+            self.reversal = float(matching_scheme['Reversal'])
+            self.short_distance = float(matching_scheme['Short Distance'])
+
+    def chart(self,chart,**kwargs):
+        pass
+
+class Calculate(object):
+    # Generate summary associated with the Livermore Market Key.
     # For an example of the original Livermore paper charts, see 
     # Jesse L. Livermore, "How to Trade in Stocks", First Edition, pp. 102-133
     # Numbered rules referred to below are from Chapter 10, "Explanatory Rules", pp. 91-101
 
-    def __init__(self,user=USER,**kwargs):
+    def __init__(self,symbol=SYMBOL,user=USER,**kwargs):
         self.user = user
         self.regen = kwargs.get('regen',False)
-        self.thresholds = kwargs.get('thresholds',THRESHOLDS)
-
-    def chartpoints(self,symbol=SYMBOL,**kwargs):
-        # Given an equity symbol, will generate chart points based on the Livermore Market key
-        start_date = kwargs.get('start_date',START_CHART.strftime('%Y-%m-%d'))
-        end_date = kwargs.get('end_date',END_CHART.strftime('%Y-%m-%d'))
-		# Get symbol/price data
+        self.symbol = symbol
         symbol_object = symbols.Read()
-        symbol_record = symbol_object.get_symbol(symbol)
+        self.symbol_record = symbol_object.get_symbol(symbol)
         if symbol_record is None:
             raise Exception('Symbol ' + symbol + ' not located.')
+
+    def chartpoints(self,**kwargs):
+        # Given an equity symbol, will generate chart points based on the Livermore Market key
+        thresholds = kwargs.get('thresholds',THRESHOLDS)
+        start_date = kwargs.get('start_date',START_CHART.strftime('%Y-%m-%d'))
+        end_date = kwargs.get('end_date',END_CHART.strftime('%Y-%m-%d'))
+
+        # Create storage
+        self.chart = Chart(start_date,end_date) 
+        self.chart.add_meta('Thresholds',thresholds)
+
+		# Get symbol/price data
         price_object = price.Quote()
-        daily_price_series = price_object.daily(symbol,regen=self.regen,start_date=start_date,end_date=end_date)
+        daily_price_series = price_object.daily(self.symbol,regen=self.regen,start_date=start_date,end_date=end_date)
         if daily_price_series is None:
-            raise Exception('Daily price series for ' + symbol + ' not located for date range.')
-        # Create chartpoints dict
-        meta = { 'Date': dt.now().strftime('%Y-%m-%d %H:%M:%S.%f'), 'Start Date': start_date, 'End Date': end_date, 'Thresholds': self.thresholds }
-        # Read daily price series and populate chartpoints
-        dates = []
-        pivots = { 'Upward': [], 'Downward': [], 'Rally': [], 'Reaction': [] }
-        signals = { 'Buy': [], 'Sell': [] }
-        last_rally = {}
-        last_reaction = {}
-        for date, datapoint in daily_price_series.items():
-            close = float(datapoint['close'])
-            high = float(datapoint['high'])
-            low = float(datapoint['low'])
-            if not dates:
+            raise Exception('Daily price series for ' + self.symbol + ' not located for date range.')
+
+        # Evaluate
+        for date, price in daily_price_series.items():
+            datapoint = Datapoint(price,thresholds)
+            if self.chart.empty():
                 # Starting price (use closing price, but only to INITIATE records)
-                recorded_date = { 'Date': date, 'Trend': None, 'Price': close }
-                continuation, reversal, short_distance = self._key_levels(datapoint)
-                dates.append(recorded_date)
+                self.chart.add_date(date,datapoint.close)
+            elif self.chart.last_trend() is None:
+                # Starting trend
+                last_entry = self.chart.last_entry()
+                if datapoint.close > last_entry.price:
+                    self.chart.add_date(date,datapoint.high,UPWARD_TREND)
+                elif datapoint.close < last_entry.price:
+                    self.chart.add_date(date,datapoint.low,DOWNWARD_TREND)
             else:
-                last_date = dates[-1]
-                continuation, reversal = self._key_levels(datapoint)
-                recorded_date = { 'Date': date }
-                if len(dates) == 1:
-                    # Starting trend
-                    if close > last_date['Price']:
-                        recorded_date['Trend'] = UPWARD_TREND
-                        recorded_date['Price'] = high
-                    elif close < last_date['Price']:
-                        recorded_date['Trend'] = DOWNWARD_TREND
-                        recorded_date['Price'] = low
+                datapoint.chart(self.chart)
+
+
+
+'''
                 else:
                     if last_date['Trend'] == UPWARD_TREND:
                         if high > last_date['Price']:
@@ -146,9 +207,6 @@ class Chart(object):
                                 if pivots['Reaction'] and low > pivots['Reaction'][-1]['Price']:
                                     # Rule 6.(h)
                                     recorded_date['Trend'] = SECONDARY_REACTION
-                                    last_rally = {}
-                                    last_rally['Date'] = date
-                                    last_rally['Price'] = high
                                 else:
                                     recorded_date['Trend'] = NATURAL_REACTION
                                     pivots = self._add_pivot(pivots,last_date['Date'],last_date['Price'],'Rally','6h')
@@ -176,20 +234,18 @@ class Chart(object):
                                 recorded_date['Trend'] = DOWNWARD_TREND
                                 signals = self._add_signal(signals,date,pivots['Downward'][-1]['Price'],'Sell','Secondary Rally to Downward','6b')
                                 last_reaction = {}
-                            elif 'Price' in last_reaction and low < last_reaction['Price']:
+                            elif pivots['Reaction'] and low <= pivots['Reaction'][-1]['Price']:
                                 recorded_date['Trend'] = NATURAL_REACTION
                                 recorded_date['Price'] = low
-                                last_reaction = {}
                     elif last_date['Trend'] == SECONDARY_REACTION:
                         pass
 
                 if 'Price' in recorded_date and 'Trend' in recorded_date:
                     dates.append(recorded_date)
-        output = { 'Meta': meta, 'Chart': { 'Dates': dates, 'Pivots': pivots, 'Signals': signals } }
+'''
         # Save for potential reuse
-        print(continuation)
-        print(reversal)
-        print(json.dumps(output,indent=4,sort_keys=True))
+        #output = { 'Meta': meta, 'Chart': { 'Dates': dates, 'Pivots': pivots, 'Signals': signals } }
+        #print(json.dumps(output,indent=4,sort_keys=True))
         #return output
 
     def _add_pivot(self,pivots,date,price,type,rule=None):
@@ -222,11 +278,11 @@ class Chart(object):
             return CONTINUATION, REVERSAL, SHORT_DISTANCE
         return float(matching_scheme['Continuation']), float(matching_scheme['Reversal']), float(matching_scheme['Short Distance'])
 
-class Simulator(Chart):
-    # Trading simulations for the Livermore Market Key.
+class Trade(object):
+    # Trading the Livermore Market Key.
 
-    def __init__(self,user=USER,**kwargs):
+    def __init__(self,symbol=SYMBOL,user=USER,**kwargs):
         super(Simulator,self).__init__(user,**kwargs)
 
-    def backtest(self,symbol=SYMBOL,**kwargs):
+    def simulate(self,**kwargs):
         purchase_size = kwargs.get('purchase_size',PURCHASE_SIZE)
