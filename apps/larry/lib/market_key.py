@@ -8,7 +8,7 @@ import olympus.equities_us.data.symbols as symbols
 
 from larry import *
 
-class ChartDate(object):
+class Date(object):
 
     def __init__(self,date,price,trend):
         self.date = date
@@ -16,13 +16,33 @@ class ChartDate(object):
         self.trend = trend
         self.warning = None
 
+    def reset_warning(self):
+        self.warning = None
+
+class Pivot(object):
+
+    def __init__(self,date,price,type,rule=None):
+        self.date = date
+        self.price = price
+        self.type = type
+        self.rule = rule
+
+class Signal(object):
+
+    def __init__(self,date,price,type,memo,rule=None)
+        self.date = date
+        self.price = price
+        self.type = type
+        self.memo = memo
+        self.rule = rule
+
 class Chart(object):
 
     def __init__(self,start_date,end_date,**kwargs):
         self.meta = { 'Date': dt.now().strftime('%Y-%m-%d %H:%M:%S.%f'), 'Start Date': start_date, 'End Date': end_date }
         self.dates = []
-        self.pivots = { 'Upward': [], 'Downward': [], 'Rally': [], 'Reaction': [] }
-        self.signals = { 'Buy': [], 'Sell': [] }
+        self.pivots = { UPWARD_TREND: [], DOWNWARD_TREND: [], NATURAL_RALLY: [], NATURAL_REACTION: [] }
+        self.signals = { BUY: [], SELL: [] }
     
     def active_warning(self):
         entry = self.last_entry()
@@ -31,11 +51,18 @@ class Chart(object):
         return None
     
     def add_date(self,date,price,trend=None,warning=None):
-        date = ChartDate(date,price,trend,warning)
+        date = Date(date,price,trend,warning)
         self.dates.append(date)
     
     def add_meta(self,key,data):
         self.meta[key] = data
+    
+    def buy_signal(self,date,price,memo,rule=None):
+        return self._add_signal(date,price,BUY,memo,rule):
+
+    def cancel_warning(self):
+        if self.dates:
+            self.dates[-1].reset_warning()
     
     def empty(self):
         if self.dates:
@@ -62,9 +89,17 @@ class Chart(object):
             return self.dates[-1].trend
         return None
 
+    def sell_signal(self,date,price,memo,rule=None):
+        return self._add_signal(date,price,SELL,memo,rule):
+
+    def _add_signal(self,date,price,type,memo,rule):
+        signal = Signal(date,price,type,trend,rule)
+        self.signals[type].append(date)
+    
 class Datapoint(object):
 
-    def __init__(self,datapoint,thresholds,**kwargs):
+    def __init__(self,date,datapoint,thresholds,**kwargs):
+        self.date = date
         self.close = float(datapoint['close'])
         self.high = float(datapoint['high'])
         self.low = float(datapoint['low'])
@@ -87,38 +122,81 @@ class Datapoint(object):
             self.short_distance = float(matching_scheme['Short Distance'])
 
     def chart(self,chart,**kwargs):
+        # Three major categories of price trend, each with two trends of similar logic but with logical comparisons reversed
         if chart.last_trend() == UPWARD_TREND or chart.last_trend() == DOWNWARD_TREND:
-            self._trend(chart)
+            trend = self._trend
         elif chart.last_trend() == NATURAL_RALLY or chart.last_trend() == NATURAL_REACTION:
-            self._countertrend(chart)
+            trend = self._countertrend
         elif chart.last_trend() == SECONDARY_RALLY or chart.last_trend() == SECONDARY_REACTION:
-            self._secondary(chart)
+            trend = self._secondary
+        price, trend, warning = trend(chart)
+        if trend is not None:
+            chart.add_date(self.date,price,trend,warning)
 
     def _trend(self,chart):
-        price = None
-        trend = None
+        price, trend, warning = (None, None, None)
+        # Defaults are for trend continuation, "reversal" for trend reversal or opposite action
         if chart.last_trend() == UPWARD_TREND:
-            comp = _gt
-            comp_reverse = _lt
+            comparison = _gt
+            reversal_comparison = _lt
             level = self.high
+            reversal_level = self.low
+            memo = 'Reaction to Upward'
+            rule = '10a'
+            reversal_rule = '10b'
+            signal = chart.buy_signal
+            reversal_signal = chart.sell_signal
+            continuing = _add
+            reversing = _subtract
+            countertrend = DOWNWARD_TREND
+            natural_countertrend = NATURAL_REACTION
         else: # DOWNWARD_TREND
-            comp = _lt
-            comp_reverse = _gt
+            comparison = _lt
+            reversal_comparison = _gt
             level = self.low
-        if comp(level,chart.last_price()):
+            reversal_level = self.high
+            memo = 'Rally to Downward'
+            rule = '10c'
+            reversal_rule = '10d'
+            signal = chart.sell_signal
+            reversal_signal = chart.buy_signal
+            continuing = _subtract
+            reversing = _add
+            countertrend = UPWARD_TREND
+            natural_countertrend = NATURAL_RALLY
+        reversal_memo = memo + ' Failure'
+        if comparison(level,chart.last_price()):
             # Rule 1; Rule 2
-            trend = chart.last_trend()
             price = level
-            warning = chart.active_warning()
-            if warning is not None and warning == chart.last_trend():
+            trend = chart.last_trend()
+            if chart.active_warning() is not None and chart.active_warning() == chart.last_trend():
                 # Rule 10b; Rule 10c
-                if comp_reverse(
+                if reverse_comparison(price,continuing(chart.last_pivot(chart.last_trend()),self.continuation)):
+                    warning = chart.last_trend()
+                else:
+                    signal(self.date,continuing(chart.last_pivot(chart.last_trend()),self.continuation),memo,rule)
+        else:
+            price = reversal_level
+            if chart.active_warning() is not None and chart.active_warning() == chart.last_trend() and reverse_comparison(price,reversing(chart.last_pivot(chart.last_trend()),self.continuation)):
+                chart.cancel_warning()
+                reversal_signal(self.date,reversing(chart.last_pivot(chart.last_trend()),self.continuation),reversal_memo,reversal_rule)
+            if chart.last_pivot(chart.last_trend()) is not None and :
 
+            elif price :
+
+            #ALEX
+        
     def _countertrend(self,chart):
         pass
 
     def _secondary_trend(self,chart):
         pass
+
+    def _add(self,val1,val2):
+        return (val1 + val2)
+
+    def _subtract(self,val1,val2):
+        return (val1 - val2)
 
     def _gt(self,val1,val2):
         return (val1 > val2)
@@ -159,7 +237,7 @@ class Calculate(object):
 
         # Evaluate
         for date, price in daily_price_series.items():
-            datapoint = Datapoint(price,thresholds)
+            datapoint = Datapoint(date,price,thresholds)
             if self.chart.empty():
                 # Starting price (use closing price, but only to INITIATE records)
                 self.chart.add_date(date,datapoint.close)
@@ -173,23 +251,6 @@ class Calculate(object):
             else:
                 datapoint.chart(self.chart)
         return self.chart
-
-    def _add_pivot(self,pivots,date,price,type,rule=None):
-        pivot = {}
-        pivot['Date'] = date
-        pivot['Price'] = price
-        signal['Rule'] = rule
-        pivots[type].append(pivot)
-        return pivots
-
-    def _add_signal(self,signals,date,price,type,memo,rule=None):
-        signal = {}
-        signal['Date'] = date
-        signal['Price'] = price
-        signal['Memo'] = memo
-        signal['Rule'] = rule
-        signals[type].append(signal)
-        return signals
 
 class Trade(object):
     # Trading the Livermore Market Key.

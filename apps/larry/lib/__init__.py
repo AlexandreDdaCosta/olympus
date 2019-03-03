@@ -73,12 +73,19 @@ THRESHOLDS = [
 
 # Text constants
 
+# Trends
+
 DOWNWARD_TREND = 'Downward Trend'
 UPWARD_TREND = 'Upward Trend'
 NATURAL_RALLY = 'Natural Rally'
 NATURAL_REACTION = 'Natural Reaction'
 SECONDARY_RALLY = 'Secondary Rally'
 SECONDARY_REACTION = 'Secondary Reaction'
+
+# Signals
+
+BUY = 'Buy'
+SELL = 'Sell'
 
 # Trade backtesting defaults
 
