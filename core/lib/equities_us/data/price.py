@@ -51,6 +51,7 @@ class Quote(data.Connection):
                     regenerate = True
                 elif now > four_pm_object and refresh_date_object < four_pm_object:
                     regenerate = True
+                regenerate = True
             else:
                 # weekend
                 last_friday = now - timedelta(days=(weekday_no-4))

@@ -16,6 +16,11 @@ class Date(object):
         self.trend = trend
         self.warning = warning
 
+    def __repr__(self):
+        if self.warning is not None:
+            return "Date(date=%r,price=%r,trend=%r,warning=%r)" % (self.date,self.price,self.trend,self.warning)
+        return "Date(date=%r,price=%r,trend=%r)" % (self.date,self.price,self.trend)
+
     def reset_warning(self):
         self.warning = None
 
@@ -27,6 +32,11 @@ class Pivot(object):
         self.subtype = subtype
         self.rule = rule
 
+    def __repr__(self):
+        if self.rule is not None:
+            return "Pivot(date=%r,price=%r,type=%r,rule=%r)" % (self.date,self.price,self.subtype,self.rule)
+        return "Pivot(date=%r,price=%r,type=%r)" % (self.date,self.price,self.subtype)
+
 class Signal(object):
 
     def __init__(self,date,price,subtype,memo,rule=None):
@@ -35,6 +45,11 @@ class Signal(object):
         self.subtype = subtype
         self.memo = memo
         self.rule = rule
+
+    def __repr__(self):
+        if self.rule is not None:
+            return "Signal(date=%r,price=%r,type=%r,memo=%r,rule=%r)" % (self.date,self.price,self.subtype,self.memo,self.rule)
+        return "Signal(date=%r,price=%r,type=%r,memo=%r)" % (self.date,self.price,self.subtype,self.memo)
 
 class Chart(object):
 
@@ -73,15 +88,16 @@ class Chart(object):
             return False
         return True
 
-    def last_buy_signal(self):
-        if self.signals[BUY]:
-            return self.signals[BUY][-1]
-        return None
+    def last_buy_signal(self,quantity=1,**kwargs):
+        return self._last_signal(BUY,quantity,**kwargs)
 
     def last_date(self):
         if self.dates:
             return self.last_entry().date
         return None
+
+    def last_downward_pivot(self,quantity=1,**kwargs):
+        return self._last_pivot(DOWNWARD_TREND,quantity,**kwargs)
 
     def last_entry(self):
         if self.dates:
@@ -98,20 +114,22 @@ class Chart(object):
             return self.last_entry().price
         return None
 
-    def last_sell_signal(self):
-        if self.signals[SELL]:
-            return self.signals[SELL][-1]
-        return None
+    def last_rally_pivot(self,quantity=1,**kwargs):
+        return self._last_pivot(NATURAL_RALLY,quantity,**kwargs)
 
-    def last_signal(self,subtype,quantity=1):
-        if self.signals[subtype]:
-            return self.signals[subtype][-quantity:]
-        return None
+    def last_reaction_pivot(self,quantity=1,**kwargs):
+        return self._last_pivot(NATURAL_REACTION,quantity,**kwargs)
+
+    def last_sell_signal(self,quantity=1,**kwargs):
+        return self._last_signal(SELL,quantity,**kwargs)
 
     def last_trend(self):
         if self.dates:
             return self.dates[-1].trend
         return None
+
+    def last_upward_pivot(self,quantity=1,**kwargs):
+        return self._last_pivot(UPWARD_TREND,quantity,**kwargs)
 
     def sell_signal(self,date,price,memo,rule=None):
         return self._add_signal(date,price,SELL,memo,rule)
@@ -120,6 +138,24 @@ class Chart(object):
         signal = Signal(date,price,subtype,memo,rule)
         self.signals[subtype].append(signal)
     
+    def _last_pivot(self,subtype,quantity,**kwargs):
+        all = kwargs.get('all',False)
+        if self.pivots[subtype]:
+            if all is True:
+                return self.pivots[subtype]
+            else:
+                return self.pivots[subtype][-quantity:]
+        return None
+    
+    def _last_signal(self,subtype,quantity,**kwargs):
+        all = kwargs.get('all',False)
+        if self.signals[subtype]:
+            if all is True:
+                return self.signals[subtype]
+            else:
+                return self.signals[subtype][-quantity:]
+        return None
+
 class Datapoint(object):
     # Jesse L. Livermore, "How to Trade in Stocks", First Edition
     # Numbered rules referred to below are from Chapter 10, "Explanatory Rules", pp. 91-101
@@ -285,6 +321,8 @@ class Datapoint(object):
                 trend = continue_trend
                 signal(self.date,chart.last_pivot(continue_trend).price,memo,rule)
             elif (chart.last_pivot(chart.last_trend()) is not None and 
+                chart.last_pivot(opposing_trend) is not None and 
+                opposite_comparison(chart.last_pivot(opposing_trend).price,chart.last_pivot(chart.last_trend()).price) and
                 comparison_eq(price,opposite_operator(chart.last_pivot(chart.last_trend()).price,self.continuation))):
                 # Rule 5.(a)/5.(b)
                 trend = continue_trend
@@ -436,13 +474,14 @@ class Calculate(object):
             else:
                 datapoint.chart(self.chart)
         print('ALEX')
-        print(self.chart.last_price())
-        print(self.chart.last_trend())
-        print(self.chart.last_buy_signal())
-        print(self.chart.last_buy_signal().date)
-        print(self.chart.last_buy_signal().price)
-        print(self.chart.last_buy_signal().memo)
-        print(self.chart.last_buy_signal().rule)
+        print(self.chart.last_entry())
+        print(self.chart.last_upward_pivot())
+        print(self.chart.last_downward_pivot())
+        print(self.chart.last_rally_pivot())
+        print(self.chart.last_reaction_pivot())
+        print(self.chart.last_sell_signal())
+        for signal in self.chart.last_buy_signal(all=True):
+            print(signal)
         return self.chart
 
 class Trade(object):
