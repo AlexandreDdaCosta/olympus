@@ -473,15 +473,6 @@ class Calculate(object):
                     self.chart.add_date(date,datapoint.low,DOWNWARD_TREND)
             else:
                 datapoint.chart(self.chart)
-        print('ALEX')
-        print(self.chart.last_entry())
-        print(self.chart.last_upward_pivot())
-        print(self.chart.last_downward_pivot())
-        print(self.chart.last_rally_pivot())
-        print(self.chart.last_reaction_pivot())
-        print(self.chart.last_sell_signal())
-        for signal in self.chart.last_buy_signal(all=True):
-            print(signal)
         return self.chart
 
 class Trade(object):

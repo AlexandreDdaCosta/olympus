@@ -4,9 +4,9 @@ import sys, time
 
 from argparse import ArgumentParser
 
-from olympus.apps.larry.market_key import Calculate
+from larry.market_key import Calculate
 
-from olympus.apps.larry import *
+from larry import *
 
 parser = ArgumentParser(sys.argv)
 parser.add_argument("-s","--symbol",default=SYMBOL,help="US equity symbol")
@@ -15,9 +15,18 @@ args = parser.parse_args()
 
 if args.verbose is True:
     start = time.time()
-    calculator = Calculate(args.symbol)
-    chart = calculator.chartpoints() 
-    print(chart)
+calculator = Calculate(args.symbol)
+chart = calculator.chartpoints() 
+
+print(chart.last_entry())
+print(chart.last_upward_pivot())
+print(chart.last_downward_pivot())
+print(chart.last_rally_pivot())
+print(chart.last_reaction_pivot())
+print(chart.last_sell_signal())
+for signal in chart.last_buy_signal(all=True):
+    print(signal)
+
 if args.verbose is True:
     end = time.time()
     print('Elapsed seconds: ' + str(end - start))

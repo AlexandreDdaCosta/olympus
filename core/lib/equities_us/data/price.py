@@ -51,7 +51,6 @@ class Quote(data.Connection):
                     regenerate = True
                 elif now > four_pm_object and refresh_date_object < four_pm_object:
                     regenerate = True
-                regenerate = True
             else:
                 # weekend
                 last_friday = now - timedelta(days=(weekday_no-4))
@@ -59,6 +58,8 @@ class Quote(data.Connection):
                 last_friday_object = parse(last_friday_string)
                 if refresh_date_object < last_friday_object:
                     regenerate = True
+        elif symbol_db_data is None:
+            regenerate  = True
         if regen is True or regenerate is True:
             url = ALPHAVANTAGE_URL + '&function=TIME_SERIES_DAILY_ADJUSTED&outputsize=full&symbol=' + str(symbol)
             request = urllib.request.urlopen(url)
