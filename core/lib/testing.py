@@ -1,6 +1,4 @@
-from optparse import OptionParser
-
-import inspect, random, re, string, sys, unittest
+import argparse, inspect, random, re, string, sys, unittest
 
 DEFAULT_STRING_LENGTH = 60
 GREP_TEXT = 'Search string located in file.'
@@ -71,18 +69,6 @@ class Test(unittest.TestCase):
     
     # Utilities
 
-    def add_option(self,*args,**kwargs):
-        if not hasattr(self,'parser'):
-            self.parser = OptionParser()
-        self.parser.add_option(*args,**kwargs)
-
-    def arguments(self):
-        if not hasattr(self,'parser'):
-            self.parser = OptionParser()
-        if not self._is_opt_defined(self.parser,'env'):
-            self.parser.add_option("-e","--env",default=TEST_ENVIRONMENT,help="Environment under which test is running")
-        self.args, command_string = self.parser.parse_args()
-
     def file(self):
         caller = inspect.stack()[1]
         return caller[1]
@@ -97,9 +83,3 @@ class Test(unittest.TestCase):
 
     def random_string(self,length=DEFAULT_STRING_LENGTH):
         return ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(length))
-
-    def _is_opt_defined(self,parser,dest):
-        for option in parser._get_all_options():
-            if option.dest == dest:
-                return True
-        return False      
