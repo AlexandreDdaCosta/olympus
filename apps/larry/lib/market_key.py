@@ -446,6 +446,7 @@ class Calculate(object):
     def chartpoints(self,**kwargs):
         # Given an equity symbol, will generate chart points based on the Livermore Market key
         thresholds = kwargs.get('thresholds',THRESHOLDS)
+        real_time = kwargs.get('real_time',False)
         start_date = kwargs.get('start_date',START_CHART.strftime('%Y-%m-%d'))
         end_date = kwargs.get('end_date',END_CHART.strftime('%Y-%m-%d'))
 
@@ -457,6 +458,12 @@ class Calculate(object):
         daily_price_series = self.price_object.daily(self.symbol,regen=self.regen,start_date=start_date,end_date=end_date)
         if daily_price_series is None:
             raise Exception('Daily price series for ' + self.symbol + ' not located for date range.')
+
+        # Add realtime data point if requested
+        real_time_added = False
+        if real_time is True:
+            real_time_quote = self.price_object.real_time(self.symbol)
+            print(real_time_quote)
 
         # Evaluate
         for date, price in daily_price_series.items():
