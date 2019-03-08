@@ -104,6 +104,26 @@ class Quote(data.Connection):
         json_reply = re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8"))
         return json.loads(json_reply)
 
+    def latest(self,symbol,**kwargs):
+        # Complete price quote for latest trading day
+        url = ALPHAVANTAGE_URL + '&function=GLOBAL_QUOTE&symbol=' + symbol
+        request = urllib.request.urlopen(url)
+        quote = json.loads(re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8")))
+        quote = quote['Global Quote']
+        latest = {}
+        latest['change'] = quote['09. change']
+        latest['change percent'] = quote['10. change percent']
+        latest['close'] = quote['05. price']
+        latest['date'] = quote['07. latest trading day']
+        latest['last'] = quote['05. price']
+        latest['low'] = quote['04. low']
+        latest['high'] = quote['03. high']
+        latest['open'] = quote['02. open']
+        latest['previous'] = quote['08. previous close']
+        latest['symbol'] = symbol
+        latest['volume'] = quote['06. volume']
+        return latest
+
     def real_time(self,symbols,**kwargs):
         # "symbols" can be a list or a string
         if isinstance(symbols,list):
@@ -114,5 +134,20 @@ class Quote(data.Connection):
         else:
             raise Exception("Variable 'symbols' must be a list or string.")
         request = urllib.request.urlopen(url)
-        json_reply = re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8"))
-        return json.loads(json_reply)
+        reply = json.loads(re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8")))
+        real_time_quotes = {}
+        if isinstance(symbols,list):
+            for quote in reply['Stock Quotes']:
+                real_time_quote = []
+                real_time_quote['date'] = re.sub(r'\s+.*$',r'',quote['4. timestamp'])
+                real_time_quote['symbol'] = quote['1. symbol']
+                real_time_quote['timestamp'] = quote['4. timestamp']
+                real_time_quote['volume'] = quote['3. volume']
+                real_time_quotes[quote['1. symbol']] = real_time_quote
+        else:
+            real_time_quotes['date'] = re.sub(r'\s+.*$',r'',reply['Stock Quotes'][0]['4. timestamp'])
+            real_time_quotes['price'] = reply['Stock Quotes'][0]['2. price']
+            real_time_quotes['symbol'] = reply['Stock Quotes'][0]['1. symbol']
+            real_time_quotes['timestamp'] = reply['Stock Quotes'][0]['4. timestamp']
+            real_time_quotes['volume'] = reply['Stock Quotes'][0]['3. volume']
+        return real_time_quotes

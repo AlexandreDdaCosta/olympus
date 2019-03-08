@@ -39,7 +39,7 @@ class Pivot(object):
 
 class Signal(object):
 
-    def __init__(self,date,price,subtype,memo,rule=None):
+    def __init__(self,date,price,subtype,memo,rule):
         self.date = date
         self.price = price
         self.subtype = subtype
@@ -47,9 +47,7 @@ class Signal(object):
         self.rule = rule
 
     def __repr__(self):
-        if self.rule is not None:
-            return "Signal(date=%r,price=%r,type=%r,memo=%r,rule=%r)" % (self.date,self.price,self.subtype,self.memo,self.rule)
-        return "Signal(date=%r,price=%r,type=%r,memo=%r)" % (self.date,self.price,self.subtype,self.memo)
+        return "Signal(date=%r,price=%r,type=%r,memo=%r,rule=%r)" % (self.date,self.price,self.subtype,self.memo,self.rule)
 
 class Chart(object):
 
@@ -158,7 +156,17 @@ class Chart(object):
 
 class Datapoint(object):
     # Jesse L. Livermore, "How to Trade in Stocks", First Edition
-    # Numbered rules referred to below are from Chapter 10, "Explanatory Rules", pp. 91-101
+    # 
+    # Numbered rules:
+    # 
+    # 1-10: See Chapter 10, "Explanatory Rules", pp. 91-101
+    # 11.
+    #     11.a When recording in the Upward Trend column and a price is reached that is less than the last price
+    #          recorded in the Downward Trend column (with black lines underneath), then that price should be entered 
+    #          in black ink in the Downward Trend column.
+    #     11.b When recording in the Downward Trend column and a price is reached that is greater than the last price
+    #          recorded in the Upward Trend column (with black lines underneath), then that price should be entered 
+    #          in black ink in the Upward Trend column.
 
     def __init__(self,date,datapoint,thresholds,**kwargs):
         self.date = date
@@ -212,6 +220,7 @@ class Datapoint(object):
             opposite_signal = chart.sell_signal
             countertrend = DOWNWARD_TREND
             countertrend_memo = 'Upward to Downward'
+            countertrend_rule = '11a'
             natural_countertrend = NATURAL_REACTION
             natural_countertrend_rule = '6a'
             reversal_comparison = self._lteq
@@ -229,6 +238,7 @@ class Datapoint(object):
             opposite_signal = chart.buy_signal
             countertrend = UPWARD_TREND
             countertrend_memo = 'Downward to Upward'
+            countertrend_rule = '11b'
             natural_countertrend = NATURAL_RALLY
             natural_countertrend_rule = '6c'
             reversal_comparison = self._gteq
@@ -252,9 +262,9 @@ class Datapoint(object):
                 chart.cancel_warning()
                 opposite_signal(self.date,opposite_operator(chart.last_pivot(chart.last_trend()).price,self.continuation),opposite_memo,opposite_rule)
             if chart.last_pivot(countertrend) is not None and opposite_comparison(price,chart.last_pivot(countertrend).price):
-                # Added rule specifies what happens if a trend reverses past the nearest pivot of the opposite trend
+                # Rule 11.(q)/11.(b)
                 trend = countertrend
-                opposite_signal(self.date,chart.last_pivot(countertrend).price,countertrend_memo)
+                opposite_signal(self.date,chart.last_pivot(countertrend).price,countertrend_memo,countertrend_rule)
             elif reversal_comparison(price,opposite_operator(chart.last_price(),self.reversal)):
                 # Rule 6.(a)/6.(c)
                 trend = natural_countertrend
@@ -445,10 +455,10 @@ class Calculate(object):
 
     def chartpoints(self,**kwargs):
         # Given an equity symbol, will generate chart points based on the Livermore Market key
-        thresholds = kwargs.get('thresholds',THRESHOLDS)
-        real_time = kwargs.get('real_time',False)
+        latest = kwargs.get('latest',False)
         start_date = kwargs.get('start_date',START_CHART.strftime('%Y-%m-%d'))
         end_date = kwargs.get('end_date',END_CHART.strftime('%Y-%m-%d'))
+        thresholds = kwargs.get('thresholds',THRESHOLDS)
 
         # Create storage
         self.chart = Chart(start_date,end_date) 
@@ -460,14 +470,21 @@ class Calculate(object):
             raise Exception('Daily price series for ' + self.symbol + ' not located for date range.')
 
         # Add realtime data point if requested
-        real_time_added = False
-        if real_time is True:
-            real_time_quote = self.price_object.real_time(self.symbol)
-            print(real_time_quote)
+        latest_added = False
+        if latest is True:
+            latest_quote = self.price_object.latest(self.symbol)
+            latest_date = dt.strptime(latest_quote['date'], "%Y-%m-%d")
 
         # Evaluate
         for date, price in daily_price_series.items():
-            datapoint = Datapoint(date,price,thresholds)
+            if latest is True:
+                if latest_date == dt.strptime(date, "%Y-%m-%d"):
+                    datapoint = Datapoint(date,latest_quote,thresholds)
+                    latest_added = True
+                else:
+                    datapoint = Datapoint(date,price,thresholds)
+            else:
+                datapoint = Datapoint(date,price,thresholds)
             if self.chart.empty():
                 # Starting price (use closing price, but only to INITIATE records)
                 self.chart.add_date(date,datapoint.close)
@@ -480,6 +497,9 @@ class Calculate(object):
                     self.chart.add_date(date,datapoint.low,DOWNWARD_TREND)
             else:
                 datapoint.chart(self.chart)
+        if latest is True and latest_added is False:
+            datapoint = Datapoint(latest_quote['date'],latest_quote,thresholds)
+            datapoint.chart(self.chart)
         return self.chart
 
 class Trade(object):
