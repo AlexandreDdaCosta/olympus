@@ -280,9 +280,11 @@ class Datapoint(object):
                 chart.cancel_warning()
                 opposite_signal(self.date,opposite_operator(chart.last_pivot(chart.last_trend()).price,self.continuation),opposite_memo,opposite_rule)
             if chart.last_pivot(countertrend) is not None and opposite_comparison(price,chart.last_pivot(countertrend).price):
-                # Rule 11.(q)/11.(b)
+                # Rule 12.(a)/12.(b)
+                print('ALEX' + str(chart.last_pivot(countertrend)))
                 trend = countertrend
                 opposite_signal(self.date,chart.last_pivot(countertrend).price,countertrend_memo,countertrend_rule)
+                chart.add_pivot(chart.last_date(),chart.last_price(),chart.last_trend(),countertrend_rule)
             elif reversal_comparison(price,opposite_operator(chart.last_price(),self.reversal)):
                 # Rule 6.(a)/6.(c)
                 trend = natural_countertrend
