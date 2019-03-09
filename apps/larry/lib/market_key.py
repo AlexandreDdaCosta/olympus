@@ -51,8 +51,8 @@ class Signal(object):
 
 class Chart(object):
 
-    def __init__(self,start_date,end_date,**kwargs):
-        self.meta = { 'Date': dt.now().strftime('%Y-%m-%d %H:%M:%S.%f'), 'Start Date': start_date, 'End Date': end_date }
+    def __init__(self,**kwargs):
+        self.meta = { 'Date': dt.now().strftime('%Y-%m-%d %H:%M:%S.%f') }
         self.dates = []
         self.pivots = { UPWARD_TREND: [], DOWNWARD_TREND: [], NATURAL_RALLY: [], NATURAL_REACTION: [] }
         self.signals = { BUY: [], SELL: [] }
@@ -86,6 +86,16 @@ class Chart(object):
             return False
         return True
 
+    def has_pivot(self,subtype):
+        if self.pivots[subtype]:
+            return True
+        return False
+    
+    def has_signal(self,subtype):
+        if self.signals[subtype]:
+            return True
+        return False
+    
     def last_buy_signal(self,quantity=1,**kwargs):
         return self._last_signal(BUY,quantity,**kwargs)
 
@@ -160,11 +170,19 @@ class Datapoint(object):
     # Numbered rules:
     # 
     # 1-10: See Chapter 10, "Explanatory Rules", pp. 91-101
-    # 11.
-    #     11.a When recording in the Upward Trend column and a price is reached that is less than the last price
+    # 11. 
+    #     11.a To initialize empty records, use closing prices on the first two days to establish trend.
+    #     11.b When recording the second day, a closing price higher than that of the first day will be recorded
+    #          in the Upward Trend column. The low price will be entered in the Downward Trend column with a red 
+    #          line drawn underneath to signify a pivotal point.
+    #     11.c When recording the second day, a closing price lower than that of the first day will be recorded
+    #          in the Downward Trend column. The high price will be entered in the Upward Trend column with a red 
+    #          line drawn underneath to signify a pivotal point.
+    # 12.
+    #     12.a When recording in the Upward Trend column and a price is reached that is less than the last price
     #          recorded in the Downward Trend column (with black lines underneath), then that price should be entered 
     #          in black ink in the Downward Trend column.
-    #     11.b When recording in the Downward Trend column and a price is reached that is greater than the last price
+    #     12.b When recording in the Downward Trend column and a price is reached that is greater than the last price
     #          recorded in the Upward Trend column (with black lines underneath), then that price should be entered 
     #          in black ink in the Upward Trend column.
 
@@ -220,7 +238,7 @@ class Datapoint(object):
             opposite_signal = chart.sell_signal
             countertrend = DOWNWARD_TREND
             countertrend_memo = 'Upward to Downward'
-            countertrend_rule = '11a'
+            countertrend_rule = '12a'
             natural_countertrend = NATURAL_REACTION
             natural_countertrend_rule = '6a'
             reversal_comparison = self._lteq
@@ -238,7 +256,7 @@ class Datapoint(object):
             opposite_signal = chart.buy_signal
             countertrend = UPWARD_TREND
             countertrend_memo = 'Downward to Upward'
-            countertrend_rule = '11b'
+            countertrend_rule = '12b'
             natural_countertrend = NATURAL_RALLY
             natural_countertrend_rule = '6c'
             reversal_comparison = self._gteq
@@ -456,16 +474,14 @@ class Calculate(object):
     def chartpoints(self,**kwargs):
         # Given an equity symbol, will generate chart points based on the Livermore Market key
         latest = kwargs.get('latest',False)
-        start_date = kwargs.get('start_date',START_CHART.strftime('%Y-%m-%d'))
-        end_date = kwargs.get('end_date',END_CHART.strftime('%Y-%m-%d'))
         thresholds = kwargs.get('thresholds',THRESHOLDS)
 
         # Create storage
-        self.chart = Chart(start_date,end_date) 
+        self.chart = Chart() 
         self.chart.add_meta('Thresholds',thresholds)
 
 		# Get symbol/price data
-        daily_price_series = self.price_object.daily(self.symbol,regen=self.regen,start_date=start_date,end_date=end_date)
+        daily_price_series = self.price_object.daily(self.symbol,regen=self.regen)
         if daily_price_series is None:
             raise Exception('Daily price series for ' + self.symbol + ' not located for date range.')
 
@@ -493,8 +509,10 @@ class Calculate(object):
                 last_entry = self.chart.last_entry()
                 if datapoint.close > last_entry.price:
                     self.chart.add_date(date,datapoint.high,UPWARD_TREND)
+                    self.chart.add_pivot(date,datapoint.low,DOWNWARD_TREND,'11b')
                 elif datapoint.close < last_entry.price:
                     self.chart.add_date(date,datapoint.low,DOWNWARD_TREND)
+                    self.chart.add_pivot(date,datapoint.high,UPWARD_TREND,'11c')
             else:
                 datapoint.chart(self.chart)
         if latest is True and latest_added is False:

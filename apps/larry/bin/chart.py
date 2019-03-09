@@ -9,7 +9,6 @@ from larry.market_key import Calculate
 from larry import *
 
 parser = ArgumentParser(sys.argv)
-parser.add_argument("-d","--date",default=START_CHART.strftime('%Y-%m-%d'),help="Start date for calculating chart, in format YYYY-mm-dd (e.g., 2001-01-31)")
 parser.add_argument("-l","--latest",action='store_true',default=False,help="Include latest data in evaluation")
 parser.add_argument("-s","--symbol",default=SYMBOL,help="US equity symbol")
 parser.add_argument("-t","--thresholds",help="Overides for CONTINUATION/REVERSAL/SHORT_DISTANCE, express as an ordered list",nargs=3)
@@ -27,34 +26,40 @@ if args.thresholds:
     thresholds = [threshold]
 else:
     thresholds = THRESHOLDS
-chart = calculator.chartpoints(latest=args.latest,thresholds=thresholds,start_date=args.date) 
+chart = calculator.chartpoints(latest=args.latest,thresholds=thresholds) 
 
-print('CHART DATES')
-for chartpoint in chart.dates:
-    print(chartpoint.date + ' ' + str(chartpoint.price) + ' ' + str(chartpoint.trend))
-print('UPWARD PIVOTS')
-for pivot in chart.last_upward_pivot(5):
-    print(pivot)
-print('DOWNWARD PIVOTS')
-for pivot in chart.last_downward_pivot(5):
-    print(pivot)
-print('RALLY PIVOTS')
-for pivot in chart.last_rally_pivot(5):
-    print(pivot)
-print('REACTION PIVOTS')
-for pivot in chart.last_reaction_pivot(5):
-    print(pivot)
-print('BUY SIGNALS')
-for signal in chart.last_buy_signal(5):
-    print(signal)
-print('SELL SIGNALS')
-for signal in chart.last_sell_signal(5):
-    print(signal)
-print('LAST ENTRY')
-print(chart.last_entry())
-'''
-'''
-
+if chart.last_entry():
+    print('CHART DATES')
+    for chartpoint in chart.dates:
+        print(chartpoint.date + ' ' + str(chartpoint.price) + ' ' + str(chartpoint.trend))
+    print('UPWARD PIVOTS')
+    if chart.has_pivot(UPWARD_TREND) is True:
+        for pivot in chart.last_upward_pivot(all=True):
+            print(pivot)
+    print('DOWNWARD PIVOTS')
+    if chart.has_pivot(DOWNWARD_TREND) is True:
+        for pivot in chart.last_downward_pivot(all=True):
+            print(pivot)
+    print('RALLY PIVOTS')
+    if chart.has_pivot(NATURAL_RALLY) is True:
+        for pivot in chart.last_rally_pivot(all=True):
+            print(pivot)
+    print('REACTION PIVOTS')
+    if chart.has_pivot(NATURAL_REACTION) is True:
+        for pivot in chart.last_reaction_pivot(all=True):
+            print(pivot)
+    print('BUY SIGNALS')
+    if chart.has_signal(BUY) is True:
+        for signal in chart.last_buy_signal(all=True):
+            print(signal)
+    print('SELL SIGNALS')
+    if chart.has_signal(SELL) is True:
+        for signal in chart.last_sell_signal(all=True):
+            print(signal)
+    print('LAST ENTRY')
+    print(chart.last_entry())
+else:
+    raise Exception('Empty chart')
 if args.verbose is True:
     end = time.time()
     print('Elapsed seconds: ' + str(end - start))
