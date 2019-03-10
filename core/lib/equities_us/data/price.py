@@ -60,6 +60,7 @@ class Quote(data.Connection):
                     regenerate = True
         elif symbol_db_data is None:
             regenerate  = True
+        regenerate  = True
         if regen is True or regenerate is True:
             url = ALPHAVANTAGE_URL + '&function=TIME_SERIES_DAILY_ADJUSTED&outputsize=full&symbol=' + str(symbol)
             request = urllib.request.urlopen(url)
@@ -67,6 +68,11 @@ class Quote(data.Connection):
             json.loads(raw_json_reply) # Test for valid json
             # Clean up returned result
             json_reply = ''
+            adjusted_close = None
+            open = None
+            close = None
+            high = None
+            low = None
             for line in raw_json_reply.splitlines():
                 line = line.rstrip()
                 if 'dividend amount\": \"0.0000' in line:
@@ -76,6 +82,26 @@ class Quote(data.Connection):
                     json_reply = json_reply + '\n'
                     continue
                 line = re.sub(r'^\s*?(\")([0-9]*\.\s+)(.*)$',r'\1\3',line)
+                if 'adjusted close' in line:
+                    adjusted_close = float(re.sub(r'[^0-9.]',r'',line))
+                elif 'open' in line:
+                    open = float(re.sub(r'[^0-9.]',r'',line))
+                elif 'close' in line:
+                    close = float(re.sub(r'[^0-9.]',r'',line))
+                elif 'high' in line:
+                    high = float(re.sub(r'[^0-9.]',r'',line))
+                elif 'low' in line:
+                    low = float(re.sub(r'[^0-9.]',r'',line))
+                if adjusted_close is not None and open is not None and close is not None and high is not None and low is not None:
+                    adjustment = adjusted_close / close
+                    json_reply += '"adjusted open": "'+str("%.2f" % (open * adjustment) ) + '",\n'
+                    json_reply += '"adjusted high": "'+str("%.2f" % (high * adjustment) ) + '",\n'
+                    json_reply += '"adjusted low": "'+str("%.2f" % (low * adjustment) ) + '",\n'
+                    adjusted_close = None
+                    open = None
+                    close = None
+                    high = None
+                    low = None
                 json_reply += line + '\n'
             write_reply = '{"Symbol":"'+symbol+'","Time":"'+str(now)+'","Quote":'+json_reply + '}'
             if regen is True or symbol_db_data is not None:
@@ -135,11 +161,14 @@ class Quote(data.Connection):
             raise Exception("Variable 'symbols' must be a list or string.")
         request = urllib.request.urlopen(url)
         reply = json.loads(re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8")))
+        if 'Stock Quotes' not in reply:
+            raise Exception("Reply format failure: "+str(reply))
         real_time_quotes = {}
         if isinstance(symbols,list):
             for quote in reply['Stock Quotes']:
-                real_time_quote = []
+                real_time_quote = {}
                 real_time_quote['date'] = re.sub(r'\s+.*$',r'',quote['4. timestamp'])
+                real_time_quote['price'] = quote['2. price']
                 real_time_quote['symbol'] = quote['1. symbol']
                 real_time_quote['timestamp'] = quote['4. timestamp']
                 real_time_quote['volume'] = quote['3. volume']

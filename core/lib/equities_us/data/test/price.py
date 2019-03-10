@@ -16,7 +16,6 @@ class TestPrice(testing.Test):
         quotes = self.quote.daily(TEST_SYMBOL_ONE)
         print(json.dumps(quotes,indent=4,sort_keys=True))
 
-'''
     def test_intra_day(self):
         quote = self.quote.intraday(TEST_SYMBOL_ONE)
         print(json.dumps(quote,indent=4,sort_keys=True))
@@ -24,18 +23,17 @@ class TestPrice(testing.Test):
     def test_real_time(self):
         quote = self.quote.real_time(TEST_SYMBOL_ONE)
         print(json.dumps(quote,indent=4,sort_keys=True))
-        self.assertEqual(quote['Stock Quotes'][0]['1. symbol'].upper(),TEST_SYMBOL_ONE.upper(),'Returned symbol should match requested.')
-        self.assertTrue(quote['Stock Quotes'][0]['3. volume'].isdigit,'Volume is not indicated by an integer, single quote')
-        self.assertIsFloat(quote['Stock Quotes'][0]['2. price'],'Price in single quote has an invalid format')
+        self.assertEqual(quote['symbol'].upper(),TEST_SYMBOL_ONE.upper(),'Returned symbol should match requested.')
+        self.assertTrue(quote['volume'].isdigit,'Volume is not indicated by an integer, single quote')
+        self.assertIsFloat(quote['price'],'Price in single quote has an invalid format')
         quotes = self.quote.real_time([TEST_SYMBOL_ONE,TEST_SYMBOL_TWO])
         print(json.dumps(quotes,indent=4,sort_keys=True))
-        self.assertEqual(quotes['Stock Quotes'][0]['1. symbol'].upper(),TEST_SYMBOL_ONE.upper(),'First returned symbol should match requested.')
-        self.assertTrue(quotes['Stock Quotes'][0]['3. volume'].isdigit,'Volume is not indicated by an integer, first quote of two')
-        self.assertIsFloat(quotes['Stock Quotes'][0]['2. price'],'First security price has an invalid format')
-        self.assertEqual(quotes['Stock Quotes'][1]['1. symbol'].upper(),TEST_SYMBOL_TWO.upper(),'Second returned symbol should match requested.')
-        self.assertTrue(quotes['Stock Quotes'][1]['3. volume'].isdigit,'Volume is not indicated by an integer, second quote of two')
-        self.assertIsFloat(quotes['Stock Quotes'][1]['2. price'],'Second security price has an invalid format')
-'''
+        self.assertEqual(quotes[TEST_SYMBOL_ONE.upper()]['symbol'].upper(),TEST_SYMBOL_ONE.upper(),'First returned symbol should match requested.')
+        self.assertTrue(quotes[TEST_SYMBOL_ONE.upper()]['volume'].isdigit,'Volume is not indicated by an integer, first quote of two')
+        self.assertIsFloat(quotes[TEST_SYMBOL_ONE.upper()]['price'],'First security price has an invalid format')
+        self.assertEqual(quotes[TEST_SYMBOL_TWO.upper()]['symbol'].upper(),TEST_SYMBOL_TWO.upper(),'Second returned symbol should match requested.')
+        self.assertTrue(quotes[TEST_SYMBOL_TWO.upper()]['volume'].isdigit,'Volume is not indicated by an integer, second quote of two')
+        self.assertIsFloat(quotes[TEST_SYMBOL_TWO.upper()]['price'],'Second security price has an invalid format')
 
 if __name__ == '__main__':
 	unittest.main()
