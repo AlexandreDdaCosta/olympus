@@ -31,7 +31,7 @@ chart = calculator.chartpoints(latest=args.latest,thresholds=thresholds)
 if chart.last_entry():
     print('CHART DATES')
     for chartpoint in chart.dates:
-        print(chartpoint.date + ' ' + str(chartpoint.price) + ' ' + str(chartpoint.trend))
+        print(chartpoint)
     print('UPWARD PIVOTS')
     if chart.has_pivot(UPWARD_TREND) is True:
         for pivot in chart.last_upward_pivot(all=True):

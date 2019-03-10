@@ -60,7 +60,6 @@ class Quote(data.Connection):
                     regenerate = True
         elif symbol_db_data is None:
             regenerate  = True
-        regenerate  = True
         if regen is True or regenerate is True:
             url = ALPHAVANTAGE_URL + '&function=TIME_SERIES_DAILY_ADJUSTED&outputsize=full&symbol=' + str(symbol)
             request = urllib.request.urlopen(url)
