@@ -191,8 +191,9 @@ class Datapoint(object):
         self.close = float(datapoint['close'])
         self.high = float(datapoint['high'])
         self.low = float(datapoint['low'])
-        self.pivot = None
-        self.signal = None
+        self.adjusted_close = float(datapoint['adjusted close'])
+        self.adjusted_high = float(datapoint['adjusted high'])
+        self.adjusted_low = float(datapoint['adjusted low'])
         matching_scheme = None
         minimum = 0.0
         for scheme in sorted(thresholds, key=itemgetter('Continuation')) :
