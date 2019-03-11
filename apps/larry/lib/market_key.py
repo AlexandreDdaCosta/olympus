@@ -8,6 +8,16 @@ import olympus.equities_us.data.symbols as symbols
 
 from larry import *
 
+class Alert(object):
+
+    def __init__(self,price,subtype,rule):
+        self.price = price
+        self.subtype = subtype
+        self.rule = rule
+
+    def __repr__(self):
+        return "Alert(price=%.2f,type=%r,rule=%r)" % (self.price,self.subtype,self.rule)
+
 class Date(object):
 
     def __init__(self,date,price,adjusted_price,trend,warning=None):
@@ -53,6 +63,7 @@ class Chart(object):
 
     def __init__(self,**kwargs):
         self.meta = { 'Date': dt.now().strftime('%Y-%m-%d %H:%M:%S.%f') }
+        self.alerts = { BUY: [], SELL: [] }
         self.dates = []
         self.pivots = { UPWARD_TREND: [], DOWNWARD_TREND: [], NATURAL_RALLY: [], NATURAL_REACTION: [] }
         self.signals = { BUY: [], SELL: [] }
@@ -62,6 +73,10 @@ class Chart(object):
         if entry is not None and entry.warning is not None:
             return entry.warning
         return None
+    
+    def add_alert(self,price,subtype,rule):
+        alert = Alert(price,subtype,rule)
+        self.alerts[subtype].append(alert)
     
     def add_date(self,date,price,adjusted_price,trend=None,warning=None):
         date = Date(date,price,adjusted_price,trend,warning)
@@ -74,6 +89,11 @@ class Chart(object):
         pivot = Pivot(date,price,subtype,rule,adjusted_price)
         self.pivots[subtype].append(pivot)
     
+    def buy_alerts(self):
+        if self.alerts[BUY]:
+            return self.alerts[BUY]
+        return None
+
     def buy_signal(self,date,price,memo,rule=None):
         return self._add_signal(date,price,BUY,memo,rule)
 
@@ -144,6 +164,11 @@ class Chart(object):
     def last_upward_pivot(self,quantity=1,**kwargs):
         return self._last_pivot(UPWARD_TREND,quantity,**kwargs)
 
+    def sell_alerts(self):
+        if self.alerts[SELL]:
+            return self.alerts[SELL]
+        return None
+
     def sell_signal(self,date,price,memo,rule=None):
         return self._add_signal(date,price,SELL,memo,rule)
 
@@ -198,12 +223,18 @@ class Datapoint(object):
 
     def __init__(self,date,datapoint,thresholds,**kwargs):
         self.date = date
+        print(datapoint)
         self.close = float(datapoint['close'])
         self.high = float(datapoint['high'])
         self.low = float(datapoint['low'])
-        self.adjusted_close = float(datapoint['adjusted close'])
-        self.adjusted_high = float(datapoint['adjusted high'])
-        self.adjusted_low = float(datapoint['adjusted low'])
+        if 'adjusted close' in datapoint:
+            self.adjusted_close = float(datapoint['adjusted close'])
+            self.adjusted_high = float(datapoint['adjusted high'])
+            self.adjusted_low = float(datapoint['adjusted low'])
+        else:
+            self.adjusted_close = self.close
+            self.adjusted_high = self.high
+            self.adjusted_low = self.low
         matching_scheme = None
         minimum = 0.0
         for scheme in sorted(thresholds, key=itemgetter('Continuation')) :
@@ -220,6 +251,10 @@ class Datapoint(object):
             self.reversal = float(matching_scheme['Reversal'])
             self.short_distance = float(matching_scheme['Short Distance'])
 
+    def alerts(self,chart):
+        #ALEX
+        return None
+
     def chart(self,chart,**kwargs):
         # Three major categories of price trend, each with two trends of similar logic but with logical comparisons reversed
         if chart.last_trend() == UPWARD_TREND or chart.last_trend() == DOWNWARD_TREND:
@@ -231,6 +266,11 @@ class Datapoint(object):
         price, adjusted_price, trend, warning = trend(chart)
         if trend is not None:
             chart.add_date(self.date,price,adjusted_price,trend,warning)
+        self._added_signals(self.date,chart)
+
+    def _added_signals(self,date,chart):
+        #ALEX
+        return None
 
     def _trend(self,chart):
         adjusted_price, price, trend, warning = (None, None, None, None)
@@ -501,6 +541,7 @@ class Calculate(object):
     def __init__(self,symbol=SYMBOL,user=USER,**kwargs):
         self.user = user
         self.regen = kwargs.get('regen',False)
+        self.regen = True
         self.symbol = symbol
         symbol_object = symbols.Read()
         self.symbol_record = symbol_object.get_symbol(symbol)
@@ -529,6 +570,7 @@ class Calculate(object):
             latest_date = dt.strptime(latest_quote['date'], "%Y-%m-%d")
 
         # Evaluate
+        datapoint = None
         for date, price in daily_price_series.items():
             if latest is True:
                 if latest_date == dt.strptime(date, "%Y-%m-%d"):
@@ -555,13 +597,7 @@ class Calculate(object):
         if latest is True and latest_added is False:
             datapoint = Datapoint(latest_quote['date'],latest_quote,thresholds)
             datapoint.chart(self.chart)
+        if datapoint is not None:
+            datapoint.alerts(self.chart)
         return self.chart
 
-class Trade(object):
-    # Trading the Livermore Market Key.
-
-    def __init__(self,symbol=SYMBOL,user=USER,**kwargs):
-        self.symbol = symbol
-
-    def simulate(self,**kwargs):
-        purchase_size = kwargs.get('purchase_size',PURCHASE_SIZE)
