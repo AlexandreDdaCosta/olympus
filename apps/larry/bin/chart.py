@@ -30,6 +30,7 @@ chart = calculator.chartpoints(latest=args.latest,thresholds=thresholds)
 
 if chart.last_entry():
     print('CHART DATES')
+    '''
     for chartpoint in chart.dates:
         print(chartpoint)
     print('UPWARD PIVOTS')
@@ -58,6 +59,7 @@ if chart.last_entry():
             print(signal)
     print('LAST ENTRY')
     print(chart.last_entry())
+    '''
 else:
     raise Exception('Empty chart')
 if args.verbose is True:
