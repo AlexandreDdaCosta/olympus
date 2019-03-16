@@ -19,8 +19,11 @@ KEY_REVERSAL = 12 # REVERSAL for paired analysis
 
 SHORT_DISTANCE = .50 # Quantifies Livermore's "short distance" when identifying a pivot point failure
 
+# Key settings
+
 END_CHART = datetime.datetime.now()
 START_CHART = datetime.datetime.now() - relativedelta(years=2)
+OLDEST_PIVOT = 5 # In years
 THRESHOLDS = [
     {
         'Continuation' : 1,
