@@ -78,17 +78,36 @@ THRESHOLDS = [
 
 # Trends
 
-DOWNWARD_TREND = 'Downward Trend'
 UPWARD_TREND = 'Upward Trend'
+DOWNWARD_TREND = 'Downward Trend'
 NATURAL_RALLY = 'Natural Rally'
 NATURAL_REACTION = 'Natural Reaction'
 SECONDARY_RALLY = 'Secondary Rally'
 SECONDARY_REACTION = 'Secondary Reaction'
+UPWARD_TRENDS = [UPWARD_TREND, NATURAL_RALLY, SECONDARY_RALLY]
+DOWNWARD_TRENDS = [DOWNWARD_TREND, NATURAL_REACTION, SECONDARY_REACTION]
 
 # Signals
 
 BUY = 'Buy'
 SELL = 'Sell'
+
+# Evaluating pivots
+
+# Logic for handling pivots within the CONTINUATION range
+
+PIVOT_LOGIC_DISTINCT = 'Treat pivots as individual data points'
+PIVOT_LOGIC_INNER = 'Use only first inlying pivot on trend'
+PIVOT_LOGIC_OUTER = 'Use only last outlying pivot on trend'
+PIVOT_LOGIC_DEFAULT = PIVOT_LOGIC_OUTER
+PIVOT_LOGIC = [PIVOT_LOGIC_DISTINCT,PIVOT_LOGIC_INNER,PIVOT_LOGIC_OUTER]
+
+# Pivot price logic
+
+PIVOT_PRICE_ORIGINAL = 'Use original pivot price'
+PIVOT_PRICE_ADJUSTED = 'Use adjusted pivot price'
+PIVOT_PRICE_LOGIC_DEFAULT = PIVOT_PRICE_ORIGINAL
+PIVOT_PRICE_LOGIC = [PIVOT_PRICE_ORIGINAL,PIVOT_PRICE_ADJUSTED]
 
 # Trade backtesting defaults
 

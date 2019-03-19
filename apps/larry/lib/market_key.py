@@ -266,14 +266,21 @@ class Datapoint(object):
             self.continuation = float(matching_scheme['Continuation'])
             self.reversal = float(matching_scheme['Reversal'])
             self.short_distance = float(matching_scheme['Short Distance'])
+        # Used to configure evaluation of historic pivots beyond the original market key specification
         oldest_pivot = kwargs.get('oldest_pivot',OLDEST_PIVOT)
         self.oldest_pivot = dt.strptime(self.date, "%Y-%m-%d") - relativedelta(years=oldest_pivot)
+        self.pivot_logic = kwargs.get('pivot_logic',PIVOT_LOGIC_DEFAULT)
+        if self.pivot_logic not in PIVOT_LOGIC:
+            raise Exception('Invalid setting for pivot_logic')
+        self.pivot_price_logic = kwargs.get('pivot_price_logic',PIVOT_PRICE_LOGIC_DEFAULT)
+        if self.pivot_price_logic not in PIVOT_PRICE_LOGIC:
+            raise Exception('Invalid setting for pivot_price_logic')
 
     def alerts(self,chart):
         #ALEX
         return None
 
-    def chart(self,chart,**kwargs):
+    def chart(self,chart):
         # Three major categories of price trend, each with two trends of similar logic but with logical comparisons reversed
         last_entry = chart.last_entry()
         last_trend = last_entry.trend
@@ -533,90 +540,52 @@ class Datapoint(object):
 
     def _added_signals(self,chart,previous_entry):
         previous_trend = previous_entry.trend
-        if previous_trend == UPWARD_TREND or previous_trend == DOWNWARD_TREND:
-            trend = self._trend_signals
-        elif previous_trend == NATURAL_RALLY or previous_trend == NATURAL_REACTION:
-            trend = self._countertrend_signals
-        elif previous_trend == SECONDARY_RALLY or previous_trend == SECONDARY_REACTION:
-            trend = self._secondary_trend_signals
-        trend(chart,previous_entry)
-
-    def _trend_signals(self,chart,previous_entry):
-        previous_trend = previous_entry.trend
         last_entry = chart.last_entry()
-        if previous_trend == UPWARD_TREND:
+        if previous_trend in UPWARD_TRENDS:
             comparison = self._gt
             opposite_comparison = self._lt
             trend_pivots = chart.last_upward_pivot
             natural_pivots = chart.last_rally_pivot
             price = self.high
             opposite_price = self.low
-        else: # DOWNWARD_TREND
+        else:
             comparison = self._lt
             opposite_comparison = self._gt
             trend_pivots = chart.last_downward_pivot
             natural_pivots = chart.last_reaction_pivot
             price = self.low
             opposite_price = self.high
-        for pivot_class in (trend_pivots, natural_pivots):
-            print(pivot_class)
-        die
-        pivots = trend_pivots(all=True)
-        if len(pivots) > 1:
+        for function in (trend_pivots, natural_pivots):
+            pivots = self._evaluate_pivots(function(all=True))
+            if len(pivots) > 1:
+                for pivot in pivots:
+                    if comparison(price,previous_entry.price):
+                        if (previous_entry.pivot_warning is not None and 
+                            previous_entry.pivot_warning.trend == previous_trend and
+                            previous_entry.pivot_warning.pivot is pivot):
+                            if opposite_comparison(price,operator(chart.last_pivot(chart.last_trend()).price,self.continuation)):
+                                warning = Warning(chart.last_trend(),chart.last_pivot(chart.last_trend()))
+                            else:
+                                signal(self.date,operator(chart.last_pivot(chart.last_trend()).price,self.continuation),memo,rule)
+                    else:
+                        pass
+                print(pivots)
+                die
+        #ALEX1
+
+    def _evaluate_pivots(self,pivots):
+        return_pivots = []
+        if pivots and len(pivots) > 1:
             for pivot in pivots[::-2]:
                 if dt.strptime(pivot.date, "%Y-%m-%d") < self.oldest_pivot:
-                    # Pivot out of date range; reverse order so break
+                    # Pivot out of date range
                     break
-                if comparison(price,previous_entry.price):
-                    if (previous_entry.pivot_warning is not None and 
-                        previous_entry.pivot_warning.trend == previous_trend and
-                        previous_entry.pivot_warning.pivot is pivot):
-                        if opposite_comparison(price,operator(chart.last_pivot(chart.last_trend()).price,self.continuation)):
-                            warning = Warning(chart.last_trend(),chart.last_pivot(chart.last_trend()))
-                        else:
-                            signal(self.date,operator(chart.last_pivot(chart.last_trend()).price,self.continuation),memo,rule)
-                else:
-                    pass
-
-        #ALEX1
-        '''
-        if comparison(level,chart.last_price()):
-            # Rule 1/2
-            price = level
-            adjusted_price = adjusted_level
-            trend = chart.last_trend()
-            if chart.active_warning() is not None and chart.active_warning().trend == chart.last_trend():
-                # Rule 10.(a)/10.(c)
-                if opposite_comparison(price,operator(chart.last_pivot(chart.last_trend()).price,self.continuation)):
-                    warning = Warning(chart.last_trend(),chart.last_pivot(chart.last_trend()))
-                else:
-                    signal(self.date,operator(chart.last_pivot(chart.last_trend()).price,self.continuation),memo,rule)
-        else:
-            price = opposite_level
-            adjusted_price = adjusted_opposite_level
-            if (chart.active_warning() is not None and 
-                chart.active_warning().trend == chart.last_trend() and 
-                opposite_comparison(price,opposite_operator(chart.last_pivot(chart.last_trend()).price,self.continuation))):
-                # Rule 10.(b)/10.(d)
-                chart.cancel_warning()
-                opposite_signal(self.date,opposite_operator(chart.last_pivot(chart.last_trend()).price,self.continuation),opposite_memo,opposite_rule)
-            if chart.last_pivot(countertrend) is not None and opposite_comparison(price,chart.last_pivot(countertrend).price):
-                # Rule 12.(a)/12.(b)
-                trend = countertrend
-                opposite_signal(self.date,chart.last_pivot(countertrend).price,countertrend_memo,countertrend_rule)
-                chart.add_pivot(chart.last_date(),chart.last_price(),chart.last_trend(),countertrend_rule,chart.last_adjusted_price())
-            elif reversal_comparison(price,opposite_operator(chart.last_price(),self.reversal)):
-                # Rule 6.(a)/6.(c)
-                trend = natural_countertrend
-                chart.add_pivot(chart.last_date(),chart.last_price(),chart.last_trend(),natural_countertrend_rule,chart.last_adjusted_price())
-        '''
-        #ALEX
-
-    def _countertrend_signals(self,chart,previous_entry):
-        pass
-
-    def _secondary_trend_signals(self,chart,previous_entry):
-        pass
+                return_pivots.append(pivot)
+                print(pivot)
+                print(pivot.date)
+                print(self.oldest_pivot)
+                print(self.date)
+        return return_pivots
 
     def _add(self,val1,val2):
         return (val1 + val2)
@@ -644,7 +613,6 @@ class Calculate(object):
     def __init__(self,symbol=SYMBOL,user=USER,**kwargs):
         self.user = user
         self.regen = kwargs.get('regen',False)
-        self.regen = True
         self.symbol = symbol
         symbol_object = symbols.Read()
         self.symbol_record = symbol_object.get_symbol(symbol)
