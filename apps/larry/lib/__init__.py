@@ -96,11 +96,10 @@ SELL = 'Sell'
 
 # Logic for handling pivots within the CONTINUATION range
 
-PIVOT_LOGIC_DISTINCT = 'Treat pivots as individual data points'
-PIVOT_LOGIC_INNER = 'Use only first inlying pivot on trend'
 PIVOT_LOGIC_OUTER = 'Use only last outlying pivot on trend'
-PIVOT_LOGIC_DEFAULT = PIVOT_LOGIC_OUTER
-PIVOT_LOGIC = [PIVOT_LOGIC_DISTINCT,PIVOT_LOGIC_INNER,PIVOT_LOGIC_OUTER]
+PIVOT_LOGIC_RECENT = 'Use only most recent pivot'
+PIVOT_LOGIC_DEFAULT = PIVOT_LOGIC_RECENT
+PIVOT_LOGIC = [PIVOT_LOGIC_OUTER,PIVOT_LOGIC_RECENT]
 
 # Pivot price logic
 

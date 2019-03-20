@@ -25,7 +25,7 @@ class Warning(object):
         self.pivot = pivot
 
     def __repr__(self):
-        return "Warning(trend=%.2f,pivot=%r)" % (self.trend,self.pivot)
+        return "Warning(trend=%r,pivot=%r)" % (self.trend,self.pivot)
 
 class Date(object):
 
@@ -555,36 +555,74 @@ class Datapoint(object):
             natural_pivots = chart.last_reaction_pivot
             price = self.low
             opposite_price = self.high
-        for function in (trend_pivots, natural_pivots):
-            pivots = self._evaluate_pivots(function(all=True))
-            if len(pivots) > 1:
-                for pivot in pivots:
-                    if comparison(price,previous_entry.price):
-                        if (previous_entry.pivot_warning is not None and 
-                            previous_entry.pivot_warning.trend == previous_trend and
-                            previous_entry.pivot_warning.pivot is pivot):
-                            if opposite_comparison(price,operator(chart.last_pivot(chart.last_trend()).price,self.continuation)):
-                                warning = Warning(chart.last_trend(),chart.last_pivot(chart.last_trend()))
-                            else:
-                                signal(self.date,operator(chart.last_pivot(chart.last_trend()).price,self.continuation),memo,rule)
+        pivots = self._evaluate_pivots(trend_pivots,natural_pivots,comparison)
+        for pivot in pivots:
+            if comparison(price,previous_entry.price):
+                if (previous_entry.pivot_warning is not None and 
+                    previous_entry.pivot_warning.trend == previous_trend and
+                    previous_entry.pivot_warning.pivot is pivot):
+                    if opposite_comparison(price,operator(chart.last_pivot(chart.last_trend()).price,self.continuation)):
+                        warning = Warning(chart.last_trend(),chart.last_pivot(chart.last_trend()))
                     else:
-                        pass
-                print(pivots)
-                die
+                        signal(self.date,operator(chart.last_pivot(chart.last_trend()).price,self.continuation),memo,rule)
+            else:
+                pass
         #ALEX1
 
-    def _evaluate_pivots(self,pivots):
+    def _evaluate_pivots(self,trend_object,natural_object,comparison):
+        self.pivot_logic = PIVOT_LOGIC_OUTER
+        pivots = []
+        trend_pivots = trend_object(all=True)
+        if trend_pivots is not None:
+            pivots = pivots + trend_pivots[1:]
+        natural_pivots = natural_object(all=True)
+        if natural_pivots is not None:
+            pivots = pivots + natural_pivots[1:]
         return_pivots = []
         if pivots and len(pivots) > 1:
-            for pivot in pivots[::-2]:
+            pivots.sort(key=lambda x: x.date, reverse=True)
+            for pivot in pivots:
                 if dt.strptime(pivot.date, "%Y-%m-%d") < self.oldest_pivot:
                     # Pivot out of date range
                     break
-                return_pivots.append(pivot)
-                print(pivot)
-                print(pivot.date)
-                print(self.oldest_pivot)
-                print(self.date)
+                if return_pivots:
+                    length = len(return_pivots)
+                    excluded = False
+                    for i in range(0, length):
+                        diff = 0
+                        if self.pivot_price_logic == PIVOT_PRICE_ADJUSTED:
+                            diff = abs(pivot.adjusted_price - return_pivots[i].adjusted_price)
+                        else: # PIVOT_PRICE_ORIGINAL
+                            diff = abs(pivot.price - return_pivots[i].price)
+                        if diff <= self.continuation:
+                            if self.pivot_logic == PIVOT_LOGIC_OUTER:
+                                if self.pivot_price_logic == PIVOT_PRICE_ADJUSTED:
+                                    if comparison(pivot.adjusted_price, return_pivots[i].adjusted_price):
+                                        excluded = True
+                                        return_pivots.pop(i)
+                                        return_pivots.append(pivot)
+                                        break
+                                    else:
+                                        excluded = True
+                                        break
+                                else: # PIVOT_PRICE_ORIGINAL
+                                    if comparison(pivot.price, return_pivots[i].price):
+                                        excluded = True
+                                        return_pivots.pop(i)
+                                        return_pivots.append(pivot)
+                                        break
+                                    else:
+                                        excluded = True
+                                        break
+                            else: # PIVOT_LOGIC_RECENT:
+                                excluded = True
+                                break
+                        else: # price of pivot outside continuation range
+                            continue
+                    if not excluded:
+                        return_pivots.append(pivot)
+                else:
+                    return_pivots.append(pivot)
         return return_pivots
 
     def _add(self,val1,val2):
