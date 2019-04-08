@@ -2,6 +2,7 @@
 distribution: debian
 mongo-repo: 4.0
 nodejs-repo: node_10.x
+previous-release: jessie
 release: {{ release_name }}
 release-version: 9
 {% set python3 = 3.5 %}

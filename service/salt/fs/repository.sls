@@ -23,6 +23,9 @@ include:
     - name: {{ packagename }}
 {% endfor %}
 
+{{ pillar['previous-release'] }}_backports_repo:
+  pkgrepo.absent
+
 {{ pillar['release'] }}_backports_repo:
   pkgrepo.managed:
     - dist: {{ pillar['release'] }}-backports
