@@ -8,43 +8,42 @@ import olympus.equities_us.data.symbols as symbols
 
 from larry import *
 
-class Alert(object):
-
-    def __init__(self,price,subtype,rule):
-        self.price = price
-        self.subtype = subtype
-        self.rule = rule
-
-    def __repr__(self):
-        return "Alert(price=%.2f,type=%r,rule=%r)" % (self.price,self.subtype,self.rule)
-
 class Warning(object):
 
-    def __init__(self,trend,pivot):
+    def __init__(self,trend,pivot,subtype):
         self.trend = trend
         self.pivot = pivot
+        self.subtype = subtype
 
     def __repr__(self):
-        return "Warning(trend=%r,pivot=%r)" % (self.trend,self.pivot)
+        return "Warning(trend=%r,pivot=%r,subtype=%r)" % (self.trend,self.pivot,self.subtype)
 
 class Date(object):
 
-    def __init__(self,date,price,adjusted_price,trend,warning=None,pivot_warning=None):
+    def __init__(self,date,price,adjusted_price,trend,warning=None,pivot_warning=None,counterpivot_warning=None):
         self.date = date
         self.price = price
         self.adjusted_price = adjusted_price
         self.trend = trend
         self.warning = warning
         self.pivot_warning = pivot_warning
+        self.counterpivot_warning = counterpivot_warning
 
     def __repr__(self):
         if self.warning is not None:
             return "Date(date=%r,price=%.2f,adjusted_price=%.2f,trend=%r,warning=%r)" % (self.date,self.price,self.adjusted_price,self.trend,self.warning)
         return "Date(date=%r,price=%.2f,adjusted_price=%.2f,trend=%r)" % (self.date,self.price,self.adjusted_price,self.trend)
 
-    def set_pivot_warning(self,trend,pivot):
-        warning = Warning(trend,pivot)
+    def set_counterpivot_warning(self,trend,pivot,subtype):
+        warning = Warning(trend,pivot,subtype)
+        self.counterpivot_warning = warning
+
+    def set_pivot_warning(self,trend,pivot,subtype):
+        warning = Warning(trend,pivot,subtype)
         self.pivot_warning = warning
+
+    def reset_counterpivot_warning(self):
+        self.counterpivot_warning = None
 
     def reset_pivot_warning(self):
         self.pivot_warning = None
@@ -54,15 +53,15 @@ class Date(object):
 
 class Pivot(object):
 
-    def __init__(self,date,price,subtype,rule,adjusted_price):
+    def __init__(self,date,price,trend,rule,adjusted_price):
         self.date = date
         self.price = price
-        self.subtype = subtype
+        self.trend = trend
         self.rule = rule
         self.adjusted_price = adjusted_price
 
     def __repr__(self):
-        return "Pivot(date=%r,price=%.2f,type=%r,rule=%r,adjusted_price=%.2f)" % (self.date,self.price,self.subtype,self.rule,self.adjusted_price)
+        return "Pivot(date=%r,price=%.2f,trend=%r,rule=%r,adjusted_price=%.2f)" % (self.date,self.price,self.trend,self.rule,self.adjusted_price)
 
 class Signal(object):
 
@@ -76,14 +75,24 @@ class Signal(object):
     def __repr__(self):
         return "Signal(date=%r,price=%.2f,type=%r,memo=%r,rule=%r)" % (self.date,self.price,self.subtype,self.memo,self.rule)
 
+class Watch(object):
+
+    def __init__(self,price,signal,rule):
+        self.price = price
+        self.signal = signal
+        self.rule = rule
+
+    def __repr__(self):
+        return "Watch(price=%.2f,signal=%r,rule=%r)" % (self.price,self.signal,self.rule)
+
 class Chart(object):
 
     def __init__(self,**kwargs):
         self.meta = { 'Date': dt.now().strftime('%Y-%m-%d %H:%M:%S.%f') }
-        self.alerts = { BUY: [], SELL: [] }
         self.dates = []
         self.pivots = { UPWARD_TREND: [], DOWNWARD_TREND: [], NATURAL_RALLY: [], NATURAL_REACTION: [] }
         self.signals = { BUY: [], SELL: [] }
+        self.watch = { BUY: [], SELL: [] }
     
     def active_warning(self):
         entry = self.last_entry()
@@ -91,9 +100,9 @@ class Chart(object):
             return entry.warning
         return None
     
-    def add_alert(self,price,subtype,rule):
-        alert = Alert(price,subtype,rule)
-        self.alerts[subtype].append(alert)
+    def add_watch(self,price,signal,rule):
+        watch = Watch(price,signal,rule)
+        self.watch[signal].append(alert)
     
     def add_date(self,date,price,adjusted_price,trend=None,warning=None):
         date = Date(date,price,adjusted_price,trend,warning)
@@ -102,18 +111,21 @@ class Chart(object):
     def add_meta(self,key,data):
         self.meta[key] = data
     
-    def add_pivot(self,date,price,subtype,rule,adjusted_price):
-        pivot = Pivot(date,price,subtype,rule,adjusted_price)
-        self.pivots[subtype].append(pivot)
+    def add_pivot(self,date,price,trend,rule,adjusted_price):
+        pivot = Pivot(date,price,trend,rule,adjusted_price)
+        self.pivots[trend].append(pivot)
     
-    def buy_alerts(self):
-        if self.alerts[BUY]:
-            return self.alerts[BUY]
+    def buy_watch(self):
+        if self.watch[BUY]:
+            return self.watch[BUY]
         return None
 
     def buy_signal(self,date,price,memo,rule=None):
         return self._add_signal(date,price,BUY,memo,rule)
 
+    def cancel_watch(self):
+        self.watch = { BUY: [], SELL: [] }
+    
     def cancel_warning(self):
         if self.dates:
             self.dates[-1].reset_warning()
@@ -123,8 +135,8 @@ class Chart(object):
             return False
         return True
 
-    def has_pivot(self,subtype):
-        if self.pivots[subtype]:
+    def has_pivot(self,trend):
+        if self.pivots[trend]:
             return True
         return False
     
@@ -154,10 +166,17 @@ class Chart(object):
             return self.dates[-1]
         return None
 
-    def last_pivot(self,subtype):
-        if self.pivots[subtype]:
-            return self.pivots[subtype][-1]
+    def last_pivot(self,trend):
+        if self.pivots[trend]:
+            return self.pivots[trend][-1]
         return None
+
+    def last_pivots(self):
+        last_pivots = {}
+        for trend in [UPWARD_TREND, DOWNWARD_TREND, NATURAL_RALLY, NATURAL_REACTION]:
+            if self.pivots[trend]:
+                last_pivots[trend] = self.pivots[trend][-1]
+        return last_pivots
 
     def last_price(self):
         if self.dates:
@@ -181,9 +200,9 @@ class Chart(object):
     def last_upward_pivot(self,quantity=1,**kwargs):
         return self._last_pivot(UPWARD_TREND,quantity,**kwargs)
 
-    def sell_alerts(self):
-        if self.alerts[SELL]:
-            return self.alerts[SELL]
+    def sell_watch(self):
+        if self.watch[SELL]:
+            return self.watch[SELL]
         return None
 
     def sell_signal(self,date,price,memo,rule=None):
@@ -193,13 +212,13 @@ class Chart(object):
         signal = Signal(date,price,subtype,memo,rule)
         self.signals[subtype].append(signal)
     
-    def _last_pivot(self,subtype,quantity,**kwargs):
+    def _last_pivot(self,trend,quantity,**kwargs):
         all = kwargs.get('all',False)
-        if self.pivots[subtype]:
+        if self.pivots[trend]:
             if all is True:
-                return self.pivots[subtype]
+                return self.pivots[trend]
             else:
-                return self.pivots[subtype][-quantity:]
+                return self.pivots[trend][-quantity:]
         return None
     
     def _last_signal(self,subtype,quantity,**kwargs):
@@ -210,6 +229,238 @@ class Chart(object):
             else:
                 return self.signals[subtype][-quantity:]
         return None
+
+class DatapointVariables(object):
+
+    def pivot(self,trend,chart,direction):
+        if trend in UPWARD_TRENDS:
+            self.comparison = self.gt
+            self.comparison_eq = self.gteq
+            self.opposite_comparison = self.lt
+            self.opposite_comparison_eq = self.lteq
+            self.signal = chart.buy_signal
+            self.opposite_signal = chart.sell_signal
+            self.operator = self.add
+            self.opposite_operator = self.subtract
+        else:
+            self.comparison = self.lt
+            self.comparison_eq = self.lteq
+            self.opposite_comparison = self.gt
+            self.opposite_comparison_eq = self.gteq
+            self.signal = chart.sell_signal
+            self.opposite_signal = chart.buy_signal
+            self.operator = self.subtract
+            self.opposite_operator = self.add
+        if direction == 'trend':
+            if trend in UPWARD_TRENDS:
+                self.trend_pivots = chart.last_upward_pivot
+                self.natural_pivots = chart.last_rally_pivot
+                if trend == UPWARD_TREND:
+                    self.breakout_rule = '14a'
+                    self.reversal_continuation_rule = '14g'
+                    self.reversal_short_distance_rule = '14m'
+                elif trend == NATURAL_RALLY:
+                    self.breakout_rule = '14b'
+                    self.reversal_continuation_rule = '14h'
+                    self.reversal_short_distance_rule = '14n'
+                else: # SECONDARY_RALLY
+                    self.breakout_rule = '14c'
+                    self.reversal_continuation_rule = '14i'
+                    self.reversal_short_distance_rule = '14o'
+            else:
+                self.trend_pivots = chart.last_downward_pivot
+                self.natural_pivots = chart.last_reaction_pivot
+                if trend == DOWNWARD_TREND:
+                    self.breakout_rule = '14d'
+                    self.reversal_continuation_rule = '14j'
+                    self.reversal_short_distance_rule = '14p'
+                elif trend == NATURAL_REACTION:
+                    self.breakout_rule = '14e'
+                    self.reversal_continuation_rule = '14k'
+                    self.reversal_short_distance_rule = '16q'
+                else: # SECONDARY_REACTION
+                    self.breakout_rule = '14f'
+                    self.reversal_continuation_rule = '14l'
+                    self.reversal_short_distance_rule = '14r'
+            self.breakout_memo = trend + ' pivot breakout'
+            self.reversal_continuation_memo = trend = ' continuation failure'
+            self.reversal_memo = trend + ' pivot reversal'
+            self.reversal_short_distance_memo = trend = ' short distance failure'
+        elif direction == 'countertrend':
+            if trend in UPWARD_TRENDS:
+                self.trend_pivots = chart.last_downward_pivot
+                self.natural_pivots = chart.last_reaction_pivot
+                if trend == UPWARD_TREND:
+                    self.breakout_rule = '15a'
+                    self.reversal_continuation_rule = '15g'
+                    self.reversal_short_distance_rule = '15m'
+                elif trend == NATURAL_RALLY:
+                    self.breakout_rule = '15b'
+                    self.reversal_continuation_rule = '15h'
+                    self.reversal_short_distance_rule = '15n'
+                else: # SECONDARY_RALLY
+                    self.breakout_rule = '15c'
+                    self.reversal_continuation_rule = '15i'
+                    self.reversal_short_distance_rule = '15o'
+            else:
+                self.trend_pivots = chart.last_upward_pivot
+                self.natural_pivots = chart.last_rally_pivot
+                if trend == DOWNWARD_TREND:
+                    self.breakout_rule = '15d'
+                    self.reversal_continuation_rule = '15j'
+                    self.reversal_short_distance_rule = '15p'
+                elif trend == NATURAL_REACTION:
+                    self.breakout_rule = '15e'
+                    self.reversal_continuation_rule = '15k'
+                    self.reversal_short_distance_rule = '15q'
+                else: # SECONDARY_REACTION
+                    self.breakout_rule = '15f'
+                    self.reversal_continuation_rule = '15l'
+                    self.reversal_short_distance_rule = '15r'
+            self.breakout_memo = trend + ' counterpivot breakout'
+            self.reversal_continuation_memo = trend = ' counter continuation failure'
+            self.reversal_memo = trend + ' counterpivot reversal'
+            self.reversal_short_distance_memo = trend = ' counter short distance failure'
+        else:
+            raise Exception('Logic error in trend type for datapoint variable assignment')
+
+    def trend(self,trend,chart):
+        # Defaults are for trend continuation, "opposite" for opposing trend or action
+        if trend == UPWARD_TREND or trend == DOWNWARD_TREND:
+            if trend == UPWARD_TREND:
+                self.comparison = self.gt
+                self.opposite_comparison = self.lt
+                self.reversal_comparison = self.lteq
+                self.countertrend = DOWNWARD_TREND
+                self.natural_countertrend = NATURAL_REACTION
+                self.natural_trend = NATURAL_RALLY
+                self.operator = self.add
+                self.opposite_operator = self.subtract
+                self.signal = chart.buy_signal
+                self.opposite_signal = chart.sell_signal
+                self.rule = '10a'
+                self.countertrend_rule = '12a'
+                self.natural_countertrend_rule = '6a'
+                self.natural_rule = '10g'
+                self.natural_trend_rule = '10h'
+                self.opposite_rule = '10b'
+                self.memo = 'Reaction to Upward'
+                self.natural_memo = 'Rally to Upward'
+                self.countertrend_memo = 'Upward to Downward'
+            elif trend == DOWNWARD_TREND:
+                self.comparison = self.lt
+                self.opposite_comparison = self.gt
+                self.reversal_comparison = self.gteq
+                self.countertrend = UPWARD_TREND
+                self.natural_countertrend = NATURAL_RALLY
+                self.natural_trend = NATURAL_REACTION
+                self.operator = self.subtract
+                self.opposite_operator = self.add
+                self.signal = chart.sell_signal
+                self.opposite_signal = chart.buy_signal
+                self.rule = '10c'
+                self.countertrend_rule = '12b'
+                self.natural_countertrend_rule = '6c'
+                self.natural_rule = '10i'
+                self.natural_trend_rule = '10j'
+                self.opposite_rule = '10d'
+                self.memo = 'Rally to Downward'
+                self.natural_memo = 'Reaction to Downward'
+                self.countertrend_memo = 'Downward to Upward'
+            self.opposite_memo = self.memo + ' Failure'
+            self.natural_trend_memo = self.natural_memo + ' Failure'
+        elif trend == NATURAL_RALLY:
+            self.comparison = self.gt
+            self.comparison_eq = self.gteq
+            self.opposite_comparison = self.lt
+            self.opposite_comparison_eq = self.lteq
+            self.continue_trend = UPWARD_TREND
+            self.opposing_trend = NATURAL_REACTION
+            self.reversal_trend = DOWNWARD_TREND
+            self.secondary_trend = SECONDARY_REACTION
+            self.operator = self.subtract
+            self.opposite_operator = self.add
+            self.signal = chart.buy_signal
+            self.opposite_signal = chart.sell_signal
+            self.rule = '6f'
+            self.rule_continue = '5a'
+            self.rule_followthrough = '6d'
+            self.rule_pivot = '4d'
+            self.rule_pivot_secondary = '13b'
+            self.rule_warning = '10e'
+            self.memo = 'Rally to Upward'
+            self.memo_continue = 'Rally Continuation to Upward'
+            self.memo_warning = 'Rally to Upward Failure'
+        elif trend == NATURAL_REACTION:
+            self.comparison = self.lt
+            self.comparison_eq = self.lteq
+            self.opposite_comparison = self.gt
+            self.opposite_comparison_eq = self.gteq
+            self.continue_trend = DOWNWARD_TREND
+            self.opposing_trend = NATURAL_RALLY
+            self.reversal_trend = UPWARD_TREND
+            self.secondary_trend = SECONDARY_RALLY
+            self.operator = self.add
+            self.opposite_operator = self.subtract
+            self.signal = chart.sell_signal
+            self.opposite_signal = chart.buy_signal
+            self.rule = '6e'
+            self.rule_continue = '5b'
+            self.rule_followthrough = '6b'
+            self.rule_pivot = '4b'
+            self.rule_pivot_secondary = '13a'
+            self.rule_warning = '10f'
+            self.memo = 'Reaction to Downward'
+            self.memo_continue = 'Reaction Continuation to Downward'
+            self.memo_warning = 'Reaction to Downward Failure'
+        elif trend == SECONDARY_RALLY:
+            self.comparison = self.gt
+            self.opposite_comparison = self.lt
+            self.opposite_comparison_eq = self.lteq
+            self.confirmation_trend = NATURAL_RALLY
+            self.continue_trend = UPWARD_TREND
+            self.countertrend = NATURAL_REACTION
+            self.reversal_trend = DOWNWARD_TREND
+            self.signal = chart.buy_signal
+            self.opposite_signal = chart.sell_signal
+            self.rule = '6d'
+            self.rule_pivot = '13d'
+            self.rule_reversal = '6h'
+            self.memo = 'Secondary Rally to Upward'
+            self.memo_reversal = 'Secondary Rally to Downward'
+        elif trend == SECONDARY_REACTION:
+            self.comparison = self.lt
+            self.opposite_comparison = self.gt
+            self.opposite_comparison_eq = self.gteq
+            self.confirmation_trend = NATURAL_REACTION
+            self.continue_trend = DOWNWARD_TREND
+            self.countertrend = NATURAL_RALLY
+            self.reversal_trend = UPWARD_TREND
+            self.signal = chart.sell_signal
+            self.opposite_signal = chart.buy_signal
+            self.rule = '6b'
+            self.rule_pivot = '13c'
+            self.rule_reversal = '6g'
+            self.memo = 'Secondary Reaction to Downward'
+            self.memo_reversal = 'Secondary Reaction to Upward'
+
+    def add(self,val1,val2):
+        return (val1 + val2)
+
+    def subtract(self,val1,val2):
+        return (val1 - val2)
+
+    def gt(self,val1,val2):
+        return (val1 > val2)
+
+    def gteq(self,val1,val2):
+        return (val1 >= val2)
+
+    def lt(self,val1,val2):
+        return (val1 < val2)
+
+    def lteq(self,val1,val2):
+        return (val1 <= val2)
 
 class Datapoint(object):
     # Jesse L. Livermore, "How to Trade in Stocks", First Edition
@@ -256,6 +507,51 @@ class Datapoint(object):
     #     13.b Extend pivot rule 4.a for Natural Rally to Secondary Reaction
     #     13.c Extend pivot rule 4.b for Secondary Reaction to Natural Rally or Upward Trend
     #     13.d Extend pivot rule 4.a for Secondary Rally to Natural Reaction or Downward Trend
+    # 14. Rules in this section describe continuation, short distance, and reversal rules for
+    #     historic pivots.
+    #     10a/10c: Pivot breakout (continuation)
+    #     10b/10d: Reversal from continuation failure
+    #     10e/10f: Reversal from short distance
+    #     14a. Apply 10a/10c to Upward Trend
+    #     14b. Apply 10a/10c to Natural Rally
+    #     14c. Apply 10a/10c to Secondary Rally
+    #     14d. Apply 10a/10c to Downward Trend
+    #     14e. Apply 10a/10c to Natural Reaction
+    #     14f. Apply 10a/10c to Secondary Reaction
+    #     14g. Apply 10b/10d to Upward Trend
+    #     14h. Apply 10b/10d to Natural Rally
+    #     14i. Apply 10b/10d to Secondary Rally
+    #     14j. Apply 10b/10d to Downward Trend
+    #     14k. Apply 10b/10d to Natural Reaction
+    #     14l. Apply 10b/10d to Secondary Reaction
+    #     14m. Apply 10e/10f to Upward Trend
+    #     14n. Apply 10e/10f to Natural Rally
+    #     14o. Apply 10e/10f to Secondary Rally
+    #     14p. Apply 10e/10f to Downward Trend
+    #     14q. Apply 10e/10f to Natural Reaction
+    #     14r. Apply 10e/10f to Secondary Reaction
+    # 15. Rules in this section describe continuation, short distance, and reversal rules for
+    #     historic countertrend pivots. Countertrend pivots are those in a class opposite to
+    #     the trend at breakout. An example would be breaking through a Downward Trend pivot
+    #     during an Upward Trend.
+    #     15a. Apply 10a/10c to Upward Trend
+    #     15b. Apply 10a/10c to Natural Rally
+    #     15c. Apply 10a/10c to Secondary Rally
+    #     15d. Apply 10a/10c to Downward Trend
+    #     15e. Apply 10a/10c to Natural Reaction
+    #     15f. Apply 10a/10c to Secondary Reaction
+    #     15g. Apply 10b/10d to Upward Trend
+    #     15h. Apply 10b/10d to Natural Rally
+    #     15i. Apply 10b/10d to Secondary Rally
+    #     15j. Apply 10b/10d to Downward Trend
+    #     15k. Apply 10b/10d to Natural Reaction
+    #     15l. Apply 10b/10d to Secondary Reaction
+    #     15m. Apply 10e/10f to Upward Trend
+    #     15n. Apply 10e/10f to Natural Rally
+    #     15o. Apply 10e/10f to Secondary Rally
+    #     15p. Apply 10e/10f to Downward Trend
+    #     15q. Apply 10e/10f to Natural Reaction
+    #     15r. Apply 10e/10f to Secondary Reaction
 
     def __init__(self,date,datapoint,thresholds,**kwargs):
         self.date = date
@@ -295,10 +591,6 @@ class Datapoint(object):
         if self.pivot_price_logic not in PIVOT_PRICE_LOGIC:
             raise Exception('Invalid setting for pivot_price_logic')
 
-    def alerts(self,chart):
-        #ALEX
-        return None
-
     def chart(self,chart):
         # Three major categories of price trend, each with two trends of similar logic but with logical comparisons reversed
         last_entry = chart.last_entry()
@@ -314,60 +606,76 @@ class Datapoint(object):
             chart.add_date(self.date,price,adjusted_price,trend,warning)
             self._added_signals(chart,last_entry)
 
+    def watch(self,chart):
+        chart.cancel_watch()
+        price = chart.last_entry().price
+        trend = chart.last_entry().trend
+        warning = chart.active_warning()
+        v = DatapointVariables()
+        v.trend(trend,chart)
+        if trend == UPWARD_TREND or trend == DOWNWARD_TREND:
+            if warning is not None:
+                pivot = chart.last_pivot(trend)
+                if warning.trend == trend:
+                    chart.add_watch(v.operator(pivot.price,self.continuation),v.signal,v.rule)
+                    chart.add_watch(v.opposite_operator(pivot.price,self.continuation),v.opposite_signal,v.opposite_rule)
+                elif warning.trend == v.natural_trend:
+                    chart.add_watch(v.operator(pivot.price,self.continuation),v.signal,v.natural_rule)
+                    chart.add_watch(v.opposite_operator(pivot.price,self.continuation),v.opposite_signal,v.natural_trend_rule)
+            if chart.last_pivot(v.countertrend) is not None:
+                chart.add_watch(chart.last_pivot(v.countertrend).price,v.opposite_signal,v.countertrend_rule)
+        elif trend == NATURAL_RALLY or trend == NATURAL_REACTION:
+            if warning is not None and warning.trend == v.continue_trend:
+                chart.add_watch(v.operator(chart.last_pivot(v.continue_trend).price,self.continuation),v.opposite_signal,v.rule_warning)
+            if chart.last_pivot(v.continue_trend) is not None:
+                chart.add_watch(chart.last_pivot(v.continue_trend).price,v.signal,v.rule)
+            if (chart.last_pivot(trend) is not None and 
+                chart.last_pivot(v.opposing_trend) is not None and 
+                v.opposite_comparison(chart.last_pivot(v.opposing_trend).price,chart.last_pivot(trend).price)):
+                chart.add_watch(v.opposite_operator(chart.last_pivot(trend).price,self.continuation),v.signal,v.rule_continue)
+        else: # SECONDARY_RALLY/SECONDARY_REACTION
+            if chart.last_pivot(v.continue_trend) is not None:
+                chart.add_watch(chart.last_pivot(v.continue_trend).price,v.signal,v.rule)
+            if chart.last_pivot(v.reversal_trend) is not None:
+                chart.add_watch(chart.last_pivot(v.reversal_trend).price,v.opposite_signal,v.rule_reversal)
+        extended_pivots = self._nearest_extended_pivots(chart,price)
+        for pivot_direction in ['upward','downward']:
+            for pivot in extended_pivots[pivot_direction]:
+                if direction == 'upward':
+                    if trend in UPWARD_TRENDS:
+                        v.pivot(trend,chart,'trend'):
+                    else:
+                        v.pivot(trend,chart,'countertrend'):
+                    warning = chart.last_entry().pivot_warning
+                else:
+                    if trend in DOWNWARD_TRENDS:
+                        v.pivot(trend,chart,'trend'):
+                    else:
+                        v.pivot(trend,chart,'countertrend'):
+                    warning = chart.last_entry().counterpivot_warning
+                chart.add_watch(v.operator(pivot.price,self.continuation),v.signal,v.breakout_rule)
+                if warning is not None and warning.pivot is pivot:
+                    if warning.subtype == 'short distance':
+                        rule = v.reversal_short_distance_rule
+                    else:
+                        rule = v.reversal_continuation_rule
+                    chart.add_watch(v.opposite_operator(pivot.price,self.continuation),v.opposite_signal,rule)
+
     def _trend(self,chart):
         adjusted_price, price, trend, warning = (None, None, None, None)
-        # Defaults are for trend continuation, "opposite" for opposing trend or action
+        v = DatapointVariables()
+        v.trend(chart.last_trend(),chart)
         if chart.last_trend() == UPWARD_TREND:
-            comparison = self._gt
-            opposite_comparison = self._lt
             level = self.high
             adjusted_level = self.adjusted_high
             opposite_level = self.low
             adjusted_opposite_level = self.adjusted_low
-            memo = 'Reaction to Upward'
-            operator = self._add
-            opposite_operator = self._subtract
-            rule = '10a'
-            natural_memo = 'Rally to Upward'
-            natural_rule = '10g'
-            opposite_rule = '10b'
-            signal = chart.buy_signal
-            opposite_signal = chart.sell_signal
-            countertrend = DOWNWARD_TREND
-            countertrend_memo = 'Upward to Downward'
-            countertrend_rule = '12a'
-            natural_countertrend = NATURAL_REACTION
-            natural_countertrend_rule = '6a'
-            natural_trend = NATURAL_RALLY
-            natural_trend_rule = '10h'
-            reversal_comparison = self._lteq
         else: # DOWNWARD_TREND
-            comparison = self._lt
-            opposite_comparison = self._gt
             level = self.low
             adjusted_level = self.adjusted_low
             opposite_level = self.high
             adjusted_opposite_level = self.adjusted_high
-            memo = 'Rally to Downward'
-            operator = self._subtract
-            opposite_operator = self._add
-            rule = '10c'
-            natural_memo = 'Reaction to Downward'
-            natural_rule = '10i'
-            opposite_rule = '10d'
-            signal = chart.sell_signal
-            opposite_signal = chart.buy_signal
-            countertrend = UPWARD_TREND
-            countertrend_memo = 'Downward to Upward'
-            countertrend_rule = '12b'
-            natural_countertrend = NATURAL_RALLY
-            natural_countertrend_rule = '6c'
-            natural_trend = NATURAL_REACTION
-            natural_trend_rule = '10j'
-            reversal_comparison = self._gteq
-        opposite_memo = memo + ' Failure'
-        natural_trend_memo = natural_memo + ' Failure'
-        if comparison(level,chart.last_price()):
+        if v.comparison(level,chart.last_price()):
             # Rule 1/2
             price = level
             adjusted_price = adjusted_level
@@ -375,120 +683,80 @@ class Datapoint(object):
             if chart.active_warning() is not None:
                 if chart.active_warning().trend == chart.last_trend():
                     # Rule 10.(a)/10.(c)
-                    if opposite_comparison(price,operator(chart.last_pivot(chart.last_trend()).price,self.continuation)):
-                        warning = Warning(chart.last_trend(),chart.last_pivot(chart.last_trend()))
+                    if v.opposite_comparison(price,v.operator(chart.last_pivot(chart.last_trend()).price,self.continuation)):
+                        warning = Warning(chart.last_trend(),chart.last_pivot(chart.last_trend()),'continuation')
                     else:
-                        signal(self.date,operator(chart.last_pivot(chart.last_trend()).price,self.continuation),memo,rule)
-                elif chart.active_warning().trend == natural_trend:
+                        v.signal(self.date,v.operator(chart.last_pivot(chart.last_trend()).price,self.continuation),v.memo,v.rule)
+                elif chart.active_warning().trend == v.natural_trend:
                     # Rule 10.(g)/10.(i)
-                    if opposite_comparison(price,operator(chart.last_pivot(chart.last_trend()).price,self.continuation)):
-                        warning = Warning(natural_trend,chart.last_pivot(chart.last_trend()))
+                    if v.opposite_comparison(price,v.operator(chart.last_pivot(chart.last_trend()).price,self.continuation)):
+                        warning = Warning(v.natural_trend,chart.last_pivot(chart.last_trend()),'continuation')
                     else:
-                        signal(self.date,operator(chart.last_pivot(chart.last_trend()).price,self.continuation),natural_memo,natural_rule)
+                        v.signal(self.date,v.operator(chart.last_pivot(chart.last_trend()).price,self.continuation),v.natural_memo,v.natural_rule)
                 else:
                     raise Exception('Programming error in warning logic for trend')
         else:
             price = opposite_level
             adjusted_price = adjusted_opposite_level
             if (chart.active_warning() is not None and
-                opposite_comparison(price,opposite_operator(chart.last_pivot(chart.last_trend()).price,self.continuation))):
+                v.opposite_comparison(price,v.opposite_operator(chart.last_pivot(chart.last_trend()).price,self.continuation))):
                 if chart.active_warning().trend == chart.last_trend():
                     # Rule 10.(b)/10.(d)
                     chart.cancel_warning()
-                    opposite_signal(self.date,opposite_operator(chart.last_pivot(chart.last_trend()).price,self.continuation),opposite_memo,opposite_rule)
-                elif chart.active_warning().trend == natural_trend:
+                    v.opposite_signal(self.date,v.opposite_operator(chart.last_pivot(chart.last_trend()).price,self.continuation),v.opposite_memo,v.opposite_rule)
+                elif chart.active_warning().trend == v.natural_trend:
                     # Rule 10.(h)/10.(j)
                     chart.cancel_warning()
-                    opposite_signal(self.date,opposite_operator(chart.last_pivot(chart.last_trend()).price,self.continuation),natural_trend_memo,natural_trend_rule)
+                    v.opposite_signal(self.date,v.opposite_operator(chart.last_pivot(chart.last_trend()).price,self.continuation),v.natural_trend_memo,v.natural_trend_rule)
                 else:
                     raise Exception('Programming error in opposite warning logic for trend')
-            if chart.last_pivot(countertrend) is not None and opposite_comparison(price,chart.last_pivot(countertrend).price):
+            if chart.last_pivot(v.countertrend) is not None and v.opposite_comparison(price,chart.last_pivot(v.countertrend).price):
                 # Rule 12.(a)/12.(b)
-                trend = countertrend
-                opposite_signal(self.date,chart.last_pivot(countertrend).price,countertrend_memo,countertrend_rule)
-                chart.add_pivot(chart.last_date(),chart.last_price(),chart.last_trend(),countertrend_rule,chart.last_adjusted_price())
-            elif reversal_comparison(price,opposite_operator(chart.last_price(),self.reversal)):
+                trend = v.countertrend
+                v.opposite_signal(self.date,chart.last_pivot(countertrend).price,v.countertrend_memo,v.countertrend_rule)
+                chart.add_pivot(chart.last_date(),chart.last_price(),chart.last_trend(),v.countertrend_rule,chart.last_adjusted_price())
+            elif v.reversal_comparison(price,v.opposite_operator(chart.last_price(),self.reversal)):
                 # Rule 6.(a)/6.(c)
-                trend = natural_countertrend
-                chart.add_pivot(chart.last_date(),chart.last_price(),chart.last_trend(),natural_countertrend_rule,chart.last_adjusted_price())
+                trend = v.natural_countertrend
+                chart.add_pivot(chart.last_date(),chart.last_price(),chart.last_trend(),v.natural_countertrend_rule,chart.last_adjusted_price())
         return price, adjusted_price, trend, warning
 
     def _countertrend(self,chart):
         adjusted_price, price, trend, warning = (None, None, None, None)
+        v = DatapointVariables()
+        v.trend(chart.last_trend(),chart)
         if chart.last_trend() == NATURAL_RALLY:
-            comparison = self._gt
-            opposite_comparison = self._lt
-            comparison_eq = self._gteq
-            opposite_comparison_eq = self._lteq
             level = self.high
             adjusted_level = self.adjusted_high
             opposite_level = self.low
             adjusted_opposite_level = self.adjusted_low
-            operator = self._subtract
-            opposite_operator = self._add
-            signal = chart.buy_signal
-            opposite_signal = chart.sell_signal
-            memo = 'Rally to Upward'
-            rule = '6f'
-            memo_continue = 'Rally Continuation to Upward'
-            rule_continue = '5a'
-            memo_warning = 'Rally to Upward Failure'
-            rule_warning = '10e'
-            rule_followthrough = '6d'
-            rule_pivot = '4d'
-            rule_pivot_secondary = '13b'
-            continue_trend = UPWARD_TREND
-            reversal_trend = DOWNWARD_TREND
-            opposing_trend = NATURAL_REACTION
-            secondary_trend = SECONDARY_REACTION
         else: # NATURAL_REACTION
-            comparison = self._lt
-            opposite_comparison = self._gt
-            comparison_eq = self._lteq
-            opposite_comparison_eq = self._gteq
             level = self.low
             adjusted_level = self.adjusted_low
             opposite_level = self.high
             adjusted_opposite_level = self.adjusted_high
-            operator = self._add
-            opposite_operator = self._subtract
-            signal = chart.sell_signal
-            opposite_signal = chart.buy_signal
-            memo = 'Reaction to Downward'
-            rule = '6e'
-            memo_continue = 'Reaction Continuation to Downward'
-            rule_continue = '5b'
-            memo_warning = 'Reaction to Downward Failure'
-            rule_warning = '10f'
-            rule_followthrough = '6b'
-            rule_pivot = '4b'
-            rule_pivot_secondary = '13a'
-            continue_trend = DOWNWARD_TREND
-            reversal_trend = UPWARD_TREND
-            opposing_trend = NATURAL_RALLY
-            secondary_trend = SECONDARY_RALLY
-        if comparison(level,chart.last_price()):
+        if v.comparison(level,chart.last_price()):
             price = level
             adjusted_price = adjusted_level
-            if (chart.last_pivot(continue_trend) is not None and 
-                comparison_eq(price,operator(chart.last_pivot(continue_trend).price,self.short_distance)) and 
-                opposite_comparison(price,chart.last_pivot(continue_trend).price)):
+            if (chart.last_pivot(v.continue_trend) is not None and 
+                v.comparison_eq(price,v.operator(chart.last_pivot(v.continue_trend).price,self.short_distance)) and 
+                v.opposite_comparison(price,chart.last_pivot(v.continue_trend).price)):
                 # Rule 10.(e)/10.(f)
-                warning = Warning(continue_trend,chart.last_pivot(continue_trend))
-            if chart.last_pivot(continue_trend) is not None and comparison_eq(price,chart.last_pivot(continue_trend).price):
+                warning = Warning(v.continue_trend,chart.last_pivot(v.continue_trend),'short distance')
+            if chart.last_pivot(v.continue_trend) is not None and v.comparison_eq(price,chart.last_pivot(v.continue_trend).price):
                 # Rule 6.(e)/6.(f)
-                trend = continue_trend
-                if opposite_comparison(price,opposite_operator(chart.last_pivot(continue_trend).price,self.continuation)):
+                trend = v.continue_trend
+                if v.opposite_comparison(price,v.opposite_operator(chart.last_pivot(v.continue_trend).price,self.continuation)):
                     # Rule 10.(g)/10.(i)
-                    warning = Warning(chart.last_trend(),chart.last_pivot(continue_trend))
-                signal(self.date,chart.last_pivot(continue_trend).price,memo,rule)
+                    warning = Warning(chart.last_trend(),chart.last_pivot(v.continue_trend),'continuation')
+                v.signal(self.date,chart.last_pivot(v.continue_trend).price,v.memo,v.rule)
             elif (chart.last_pivot(chart.last_trend()) is not None and 
-                chart.last_pivot(opposing_trend) is not None and 
-                opposite_comparison(chart.last_pivot(opposing_trend).price,chart.last_pivot(chart.last_trend()).price) and
-                comparison_eq(price,opposite_operator(chart.last_pivot(chart.last_trend()).price,self.continuation))):
+                chart.last_pivot(v.opposing_trend) is not None and 
+                v.opposite_comparison(chart.last_pivot(v.opposing_trend).price,chart.last_pivot(chart.last_trend()).price) and
+                v.comparison_eq(price,v.opposite_operator(chart.last_pivot(chart.last_trend()).price,self.continuation))):
                 # Rule 5.(a)/5.(b)
-                trend = continue_trend
-                signal(self.date,opposite_operator(chart.last_pivot(chart.last_trend()).price,self.continuation),memo_continue,rule_continue)
+                trend = v.continue_trend
+                v.signal(self.date,v.opposite_operator(chart.last_pivot(chart.last_trend()).price,self.continuation),v.memo_continue,v.rule_continue)
             else:
                 # Rule 6.(a)/6.(c)
                 trend = chart.last_trend()
@@ -496,154 +764,157 @@ class Datapoint(object):
             price = opposite_level
             adjusted_price = adjusted_opposite_level
             if (chart.active_warning() is not None and 
-                chart.active_warning().trend == continue_trend and 
-                opposite_comparison_eq(price,operator(chart.last_pivot(continue_trend).price,self.continuation))):
+                chart.active_warning().trend == v.continue_trend and 
+                v.opposite_comparison_eq(price,v.operator(chart.last_pivot(v.continue_trend).price,self.continuation))):
                     # Rule 10.(e)/10.(f)
                     chart.cancel_warning()
-                    opposite_signal(self.date,operator(chart.last_pivot(continue_trend).price,self.continuation),memo_warning,rule_warning)
-            if chart.last_pivot(reversal_trend) is not None and opposite_comparison_eq(price,chart.last_pivot(reversal_trend).price):
-                trend = reversal_trend
-                if comparison(opposite_level,operator(chart.last_pivot(reversal_trend).price,self.continuation)):
+                    v.opposite_signal(self.date,v.operator(chart.last_pivot(v.continue_trend).price,self.continuation),v.memo_warning,v.rule_warning)
+            if chart.last_pivot(v.reversal_trend) is not None and v.opposite_comparison_eq(price,chart.last_pivot(v.reversal_trend).price):
+                trend = v.reversal_trend
+                if v.comparison(opposite_level,v.operator(chart.last_pivot(v.reversal_trend).price,self.continuation)):
                     # Rule 10.(e)/10.(f)
-                    warning = Warning(reversal_trend,chart.last_pivot(reversal_trend))
+                    warning = Warning(v.reversal_trend,chart.last_pivot(v.reversal_trend),'continuation')
                 # Rule 6.(b)/6.(d)
-                chart.add_pivot(chart.last_date(),chart.last_price(),chart.last_trend(),rule_followthrough,chart.last_adjusted_price())
-            elif opposite_comparison(price,operator(chart.last_price(),self.reversal)):
-                if chart.last_pivot(opposing_trend) is not None and comparison(price,chart.last_pivot(opposing_trend).price):
+                chart.add_pivot(chart.last_date(),chart.last_price(),chart.last_trend(),v.rule_followthrough,chart.last_adjusted_price())
+            elif v.opposite_comparison(price,v.operator(chart.last_price(),self.reversal)):
+                if chart.last_pivot(v.opposing_trend) is not None and v.comparison(price,chart.last_pivot(v.opposing_trend).price):
                     # Rule 6.(g)/6.(h)
-                    trend = secondary_trend
-                    chart.add_pivot(chart.last_date(),chart.last_price(),chart.last_trend(),rule_pivot_secondary,chart.last_adjusted_price())
+                    trend = v.secondary_trend
+                    chart.add_pivot(chart.last_date(),chart.last_price(),chart.last_trend(),v.rule_pivot_secondary,chart.last_adjusted_price())
                 else:
-                    trend = opposing_trend
-                    chart.add_pivot(chart.last_date(),chart.last_price(),chart.last_trend(),rule_pivot,chart.last_adjusted_price())
+                    trend = v.opposing_trend
+                    chart.add_pivot(chart.last_date(),chart.last_price(),chart.last_trend(),v.rule_pivot,chart.last_adjusted_price())
         return price, adjusted_price, trend, warning
 
     def _secondary_trend(self,chart):
         adjusted_price, price, trend = (None, None, None)
+        v = DatapointVariables()
+        v.trend(chart.last_trend(),chart)
         if chart.last_trend() == SECONDARY_RALLY:
-            comparison = self._gt
-            opposite_comparison = self._lt
-            opposite_comparison_eq = self._lteq
             level = self.high
             adjusted_level = self.adjusted_high
             opposite_level = self.low
             adjusted_opposite_level = self.adjusted_low
-            signal = chart.buy_signal
-            opposite_signal = chart.sell_signal
-            memo = 'Secondary Rally to Upward'
-            rule = '6d'
-            memo_reversal = 'Secondary Rally to Downward'
-            rule_reversal = '6h'
-            rule_pivot = '13d'
-            continue_trend = UPWARD_TREND
-            reversal_trend = DOWNWARD_TREND
-            confirmation_trend = NATURAL_RALLY
-            countertrend = NATURAL_REACTION
         else: # SECONDARY_REACTION
-            comparison = self._lt
-            opposite_comparison = self._gt
-            opposite_comparison_eq = self._gteq
             level = self.low
             adjusted_level = self.adjusted_low
             opposite_level = self.high
             adjusted_opposite_level = self.adjusted_high
-            signal = chart.sell_signal
-            opposite_signal = chart.buy_signal
-            memo = 'Secondary Reaction to Downward'
-            rule = '6b'
-            memo_reversal = 'Secondary Reaction to Upward'
-            rule_reversal = '6g'
-            rule_pivot = '13c'
-            continue_trend = DOWNWARD_TREND
-            reversal_trend = UPWARD_TREND
-            confirmation_trend = NATURAL_REACTION
-            countertrend = NATURAL_RALLY
-        if comparison(level,chart.last_price()):
+        if v.comparison(level,chart.last_price()):
             price = level
             adjusted_price = adjusted_level
-            if chart.last_pivot(continue_trend) is not None and comparison(price,chart.last_pivot(continue_trend).price):
+            if chart.last_pivot(v.continue_trend) is not None and v.comparison(price,chart.last_pivot(v.continue_trend).price):
                 # Rule 6.(b)/6.(d)
-                trend = continue_trend
-                signal(self.date,chart.last_pivot(continue_trend).price,memo,rule)
-            elif comparison(price,chart.last_pivot(confirmation_trend).price):
+                trend = v.continue_trend
+                v.signal(self.date,chart.last_pivot(v.continue_trend).price,v.memo,v.rule)
+            elif v.comparison(price,chart.last_pivot(v.confirmation_trend).price):
                 # Rule 6.(g)/6.(h)
-                trend = confirmation_trend
+                trend = v.confirmation_trend
             else:
                 # Rule 6.(g)/6.(h)
                 trend = chart.last_trend()
-        elif opposite_comparison_eq(opposite_level,chart.last_price()):
+        elif v.opposite_comparison_eq(opposite_level,chart.last_price()):
             price = opposite_level
             adjusted_price = adjusted_opposite_level
-            if chart.last_pivot(reversal_trend) is not None and opposite_comparison(price,chart.last_pivot(reversal_trend).price):
+            if chart.last_pivot(v.reversal_trend) is not None and v.opposite_comparison(price,chart.last_pivot(v.reversal_trend).price):
                 # Rule 6.(b)/6.(d)
-                trend = reversal_trend
-                opposite_signal(self.date,chart.last_pivot(reversal_trend).price,memo_reversal,rule_reversal)
-                chart.add_pivot(chart.last_date(),chart.last_price(),confirmation_trend,rule_pivot,chart.last_adjusted_price())
-            elif chart.last_pivot(countertrend) is not None and opposite_comparison_eq(price,chart.last_pivot(countertrend).price):
-                trend = countertrend
-                chart.add_pivot(chart.last_date(),chart.last_price(),confirmation_trend,rule_pivot,chart.last_adjusted_price())
+                trend = v.reversal_trend
+                v.opposite_signal(self.date,chart.last_pivot(v.reversal_trend).price,v.memo_reversal,v.rule_reversal)
+                chart.add_pivot(chart.last_date(),chart.last_price(),v.confirmation_trend,v.rule_pivot,chart.last_adjusted_price())
+            elif chart.last_pivot(v.countertrend) is not None and v.opposite_comparison_eq(price,chart.last_pivot(v.countertrend).price):
+                trend = v.countertrend
+                chart.add_pivot(chart.last_date(),chart.last_price(),v.confirmation_trend,v.rule_pivot,chart.last_adjusted_price())
         return price, adjusted_price, trend, None
 
     def _added_signals(self,chart,previous_entry):
         previous_trend = previous_entry.trend
         last_entry = chart.last_entry()
-        if previous_trend in UPWARD_TRENDS:
-            comparison = self._gt
-            comparison_eq = self._gteq
-            opposite_comparison = self._lt
-            opposite_comparison_eq = self._lteq
-            trend_pivots = chart.last_upward_pivot
-            natural_pivots = chart.last_rally_pivot
-            signal = chart.buy_signal
-            opposite_signal = chart.sell_signal
-            operator = self._add
-            opposite_operator = self._subtract
-        else:
-            comparison = self._lt
-            comparison_eq = self._lteq
-            opposite_comparison = self._gt
-            opposite_comparison_eq = self._gteq
-            trend_pivots = chart.last_downward_pivot
-            natural_pivots = chart.last_reaction_pivot
-            signal = chart.sell_signal
-            opposite_signal = chart.buy_signal
-            operator = self._subtract
-            opposite_operator = self._add
-        pivots = self._evaluate_pivots(trend_pivots,natural_pivots,comparison)
-        for pivot in pivots:
-            if comparison(last_entry.price,previous_entry.price):
-                if previous_entry.pivot_warning is not None:
-                    if previous_entry.pivot_warning.trend == previous_trend and previous_entry.pivot_warning.pivot is pivot:
-          
-
-
-
-                elif (comparison(pivot.price,last_entry.price) and
-                    comparison_eq(price,opposite_operator(pivot.price,self.short_distance)) and 
-                    opposite_comparison(price,pivot.price)):
-
-
-                elif comparison(pivot.price,previous_entry.price):
-
-
-                else:
-                    pass
-
-
+        v = DatapointVariables()
+        for i in range(2):
+            if i == 0: 
+                v.pivot(previous_trend,chart,'trend')
+                warning = previous_entry.pivot_warning
+                warning_set = last_entry.set_pivot_warning
             else:
-                pass
-        #ALEX1
+                v.pivot(previous_trend,chart,'countertrend')
+                warning = previous_entry.counterpivot_warning
+                warning_set = last_entry.set_counterpivot_warning
+            pivots = self._evaluate_pivots(v.comparison,v.trend_pivots,v.natural_pivots)
+            for pivot in pivots:
+                if v.comparison(last_entry.price,previous_entry.price):
+                    # Movement in same direction as previous trend
+                    if warning is not None:
+                        # Pivot warning in effect for previous trend
+                        if warning.trend == previous_trend and warning.pivot is pivot:
+                            # Pivot warning was for this pivot
+                            if (warning.subtype == 'short distance' and 
+                                v.comparison_eq(last_entry.price,v.opposite_operator(pivot.price,self.short_distance)) and 
+                                v.opposite_comparison(last_entry.price,pivot.price)):
+                                # "Short distance" warning still in effect
+                                warning_set(last_entry.trend,pivot,warning.subtype)
+                                break
+                            elif v.opposite_comparison(last_entry.price,v.operator(pivot.price,self.continuation)):
+                                # "Continuation" warning now/still in effect
+                                warning_set(last_entry.trend,pivot,'continuation')
+                                break
+                            else:
+                                # Pivot breakout; warning cancelled
+                                v.signal(self.date,v.operator(pivot.price,self.continuation),v.breakout_memo,v.breakout_rule)
+                                continue
+                    if v.comparison(pivot.price,last_entry.price):
+                        # Pivot price beyond last price
+                        if (v.comparison_eq(last_entry.price,v.opposite_operator(pivot.price,self.short_distance)) and 
+                            v.opposite_comparison(last_entry.price,pivot.price)):
+                            # Last price within "short distance", triggering pivot warning
+                            warning_set(last_entry.trend,pivot,'short_distance')
+                            break
+                    else:
+                        # Pivot price within last price
+                        if v.opposite_comparison(last_entry.price,v.operator(pivot.price,self.continuation)):
+                            # Last price within "continuation", triggering pivot warning
+                            warning_set(last_entry.trend,pivot,'continuation')
+                            break
+                        elif v.comparison(pivot.price,previous_entry.price):
+                            # Pivot breakout
+                            v.signal(self.date,v.operator(pivot.price,self.continuation),v.breakout_memo,v.breakout_rule)
+                else:
+                    # Movement in direction contrary to previous trend
+                    if warning is not None:
+                        # Pivot warning in effect for previous trend
+                        if warning.trend == previous_trend and warning.pivot is pivot:
+                            # Pivot warning was for this pivot
+                            if v.opposite_comparison(last_entry.price,v.opposite_operator(pivot.price,self.continuation)):
+                                # Reversal
+                                if warning.subtype == 'short distance':
+                                    memo = v.reversal_short_distance_memo
+                                    rule = v.reversal_short_distance_rule
+                                else:
+                                    memo = v.reversal_continuation_memo
+                                    rule = v.reversal_continuation_rule
+                                v.opposite_signal(self.date,v.opposite_operator(pivot.price,self.continuation),memo,rule)
+                                continue
+                            elif (warning.subtype == 'short distance' and
+                                v.comparison_eq(last_entry.price,v.opposite_operator(pivot.price,self.short_distance)) and 
+                                v.opposite_comparison(last_entry.price,pivot.price)):
+                                # Short distance warning still in effect
+                                warning_set(last_entry.trend,pivot,warning.subtype)
+                                break
+                            else:
+                                # Continuation warning
+                                warning_set(last_entry.trend,pivot,'continuation')
+                                break
 
-    def _evaluate_pivots(self,trend_object,natural_object,comparison):
-        self.pivot_logic = PIVOT_LOGIC_OUTER
+    def _evaluate_pivots(self,comparison,trend_object=None,natural_object=None):
         pivots = []
-        trend_pivots = trend_object(all=True)
-        if trend_pivots is not None:
-            pivots = pivots + trend_pivots[1:]
-        natural_pivots = natural_object(all=True)
-        if natural_pivots is not None:
-            pivots = pivots + natural_pivots[1:]
         return_pivots = []
+        if trend_object is not None:
+            trend_pivots = trend_object(all=True)
+            if trend_pivots is not None:
+                pivots = pivots + trend_pivots[1:]
+        if natural_object is not None:
+            natural_pivots = natural_object(all=True)
+            if natural_pivots is not None:
+                pivots = pivots + natural_pivots[1:]
         if pivots and len(pivots) > 1:
             pivots.sort(key=lambda x: x.date, reverse=True)
             for pivot in pivots:
@@ -690,23 +961,37 @@ class Datapoint(object):
                     return_pivots.append(pivot)
         return return_pivots
 
-    def _add(self,val1,val2):
-        return (val1 + val2)
-
-    def _subtract(self,val1,val2):
-        return (val1 - val2)
+    def _nearest_extended_pivots(self,chart,price):
+        nearest_pivot = {}
+        nearest_pivot['upward'] = {}
+        nearest_pivot['downward'] = {}
+        for pivot_type in ['upward','downward']:
+            if pivot_type == 'upward':
+                type_pivots = self._evaluate_pivots(self._gt,chart.last_upward_pivot,chart.last_rally_pivot)
+            else:
+                type_pivots = self._evaluate_pivots(self._lt,chart.last_downward_pivot,chart.last_reaction_pivot)
+            if type_pivots is not None:
+                type_pivots.sort(key=lambda x: x.price)
+                for pivot in type_pivots:
+                    if pivot.price < price: 
+                        if nearest_pivot['downward'] and nearest_pivot['downward'][pivot.trend]:
+                            if pivot.price > nearest_pivot['downward'][pivot.trend].price:
+                                nearest_pivot['downward'][pivot.trend] = pivot
+                        else:
+                            nearest_pivot['downward'][pivot.trend] = pivot
+                    elif pivot.price > price: 
+                        if nearest_pivot['upward'] and nearest_pivot['upward'][pivot.trend]:
+                            if pivot.price < nearest_pivot['upward'][pivot.trend].price:
+                                nearest_pivot['upward'][pivot.trend] = pivot
+                        else:
+                            nearest_pivot['upward'][pivot.trend] = pivot
+        return nearest_pivot
 
     def _gt(self,val1,val2):
         return (val1 > val2)
 
-    def _gteq(self,val1,val2):
-        return (val1 >= val2)
-
     def _lt(self,val1,val2):
         return (val1 < val2)
-
-    def _lteq(self,val1,val2):
-        return (val1 <= val2)
 
 class Calculate(object):
     # Generate summary associated with the Livermore Market Key.
@@ -732,7 +1017,7 @@ class Calculate(object):
         self.chart = Chart() 
         self.chart.add_meta('Thresholds',thresholds)
 
-		# Get symbol/price data
+	# Get symbol/price data
         daily_price_series = self.price_object.daily(self.symbol,regen=self.regen)
         if daily_price_series is None:
             raise Exception('Daily price series for ' + self.symbol + ' not located for date range.')
@@ -772,6 +1057,5 @@ class Calculate(object):
             datapoint = Datapoint(latest_quote['date'],latest_quote,thresholds)
             datapoint.chart(self.chart)
         if datapoint is not None:
-            datapoint.alerts(self.chart)
+            datapoint.watch(self.chart)
         return self.chart
-
