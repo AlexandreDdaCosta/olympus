@@ -23,8 +23,8 @@ include:
     - name: {{ packagename }}
 {% endfor %}
 
-{{ pillar['previous-release'] }}_backports_repo:
-  pkgrepo.absent
+/etc/apt/sources.list.d/{{ pillar['previous-release'] }}-backports.list:
+  file.absent
 
 {{ pillar['release'] }}_backports_repo:
   pkgrepo.managed:
