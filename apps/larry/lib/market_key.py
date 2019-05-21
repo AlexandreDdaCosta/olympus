@@ -318,9 +318,9 @@ class DatapointVariables(object):
                     self.reversal_continuation_rule = '15l'
                     self.reversal_short_distance_rule = '15r'
             self.breakout_memo = trend + ' counterpivot breakout'
-            self.reversal_continuation_memo = trend = ' counter continuation failure'
+            self.reversal_continuation_memo = trend + ' counter continuation failure'
             self.reversal_memo = trend + ' counterpivot reversal'
-            self.reversal_short_distance_memo = trend = ' counter short distance failure'
+            self.reversal_short_distance_memo = trend + ' counter short distance failure'
         else:
             raise Exception('Logic error in trend type for datapoint variable assignment')
 
