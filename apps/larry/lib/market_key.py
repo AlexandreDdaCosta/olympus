@@ -135,6 +135,12 @@ class Chart(object):
             return False
         return True
 
+    def first_buy_signal(self):
+        return self._first_signal(BUY)
+
+    def first_sell_signal(self):
+        return self._first_signal(SELL)
+
     def has_pivot(self,trend):
         if self.pivots[trend]:
             return True
@@ -211,6 +217,11 @@ class Chart(object):
     def _add_signal(self,date,price,subtype,memo,rule):
         signal = Signal(date,price,subtype,memo,rule)
         self.signals[subtype].append(signal)
+    
+    def _first_signal(self,subtype):
+        if self.signals[subtype]:
+            return self.signals[subtype][0]
+        return None
     
     def _last_pivot(self,trend,quantity,**kwargs):
         all = kwargs.get('all',False)
@@ -1030,7 +1041,7 @@ class Calculate(object):
         self.chart = Chart() 
         self.chart.add_meta('Thresholds',thresholds)
 
-	# Get symbol/price data
+        # Get symbol/price data
         daily_price_series = self.price_object.daily(self.symbol,regen=self.regen)
         if daily_price_series is None:
             raise Exception('Daily price series for ' + self.symbol + ' not located for date range.')
