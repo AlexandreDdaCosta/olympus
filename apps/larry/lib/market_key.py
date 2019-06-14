@@ -68,6 +68,7 @@ class Signal(object):
     def __init__(self,date,price,subtype,memo,rule):
         self.date = date
         self.price = price
+        self.signal = subtype
         self.subtype = subtype
         self.memo = memo
         self.rule = rule
@@ -134,12 +135,6 @@ class Chart(object):
         if self.dates:
             return False
         return True
-
-    def first_buy_signal(self):
-        return self._first_signal(BUY)
-
-    def first_sell_signal(self):
-        return self._first_signal(SELL)
 
     def has_pivot(self,trend):
         if self.pivots[trend]:
@@ -217,12 +212,7 @@ class Chart(object):
     def _add_signal(self,date,price,subtype,memo,rule):
         signal = Signal(date,price,subtype,memo,rule)
         self.signals[subtype].append(signal)
-    
-    def _first_signal(self,subtype):
-        if self.signals[subtype]:
-            return self.signals[subtype][0]
-        return None
-    
+
     def _last_pivot(self,trend,quantity,**kwargs):
         all = kwargs.get('all',False)
         if self.pivots[trend]:
@@ -231,7 +221,7 @@ class Chart(object):
             else:
                 return self.pivots[trend][-quantity:]
         return None
-    
+
     def _last_signal(self,subtype,quantity,**kwargs):
         all = kwargs.get('all',False)
         if self.signals[subtype]:
@@ -662,7 +652,6 @@ class Datapoint(object):
             if chart.last_pivot(v.reversal_trend) is not None:
                 chart.add_watch(chart.last_pivot(v.reversal_trend).price,v.opposite_signal_type,v.rule_reversal)
         extended_pivots = self._nearest_extended_pivots(chart,price)
-        print(extended_pivots)
         for pivot_direction in ['upward','downward']:
             for pivot_trend in extended_pivots[pivot_direction]:
                 if pivot_direction == 'upward':

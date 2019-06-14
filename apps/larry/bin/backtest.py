@@ -16,8 +16,7 @@ args = parser.parse_args()
 if args.verbose is True:
     start = time.time()
 backtest = Backtest(args.symbol)
-simulation = backtest.simulate(latest=args.latest,thresholds=thresholds) )
-print(simulation)
+simulation = backtest.simulate()
 
 if args.verbose is True:
     end = time.time()
