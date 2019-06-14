@@ -63,7 +63,7 @@ class Backtest(market_key.Calculate):
                     shares = self.purchase_size
                 else: # SELL
                     proceeds = proceeds + (self.purchase_size * price)
-                    shares = -1 * self.purchase_size
+                    shares = shares + (-1 * self.purchase_size)
             print('Shares: %d' % shares)
             print('Proceeds: %.2f' % proceeds)
             print('Cost: %.2f' % cost)
