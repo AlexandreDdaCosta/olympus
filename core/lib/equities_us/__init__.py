@@ -1,4 +1,4 @@
-# Core application constants
+# Core and default application constants
 
 # Symbols
 
