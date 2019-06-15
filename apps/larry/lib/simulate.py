@@ -2,7 +2,7 @@ import larry.market_key as market_key
 import olympus.equities_us.algo.trader as trader
 
 from larry import *
-from olympus.equities_us import PURCHASE_SIZE
+from olympus.equities_us.algo import PURCHASE_SIZE
 
 class BacktestResult(object):
 

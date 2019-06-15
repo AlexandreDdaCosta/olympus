@@ -7,3 +7,4 @@ class Trade(object):
 
     def signal(self,signal,**kwargs):
         # Trade BUY/SELL signals based on different algorithms
+        pass
