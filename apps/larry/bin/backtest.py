@@ -4,9 +4,9 @@ import sys, time
 
 from argparse import ArgumentParser
 
-from larry.simulate import Backtest
-
 from larry import *
+from larry.simulate import Backtest
+from olympus.equities_us import SYMBOL
 
 parser = ArgumentParser(sys.argv)
 parser.add_argument("-s","--symbol",default=SYMBOL,help="US equity symbol")
