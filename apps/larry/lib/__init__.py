@@ -1,11 +1,11 @@
 # Core application defaults and constants
 
 import datetime
+
 from dateutil.relativedelta import relativedelta
 
 from olympus import DOWNLOAD_DIR
 
-SYMBOL = 'ba'
 USER = 'larry'
 
 # The following four constants as defined by JLL
@@ -87,11 +87,6 @@ SECONDARY_REACTION = 'Secondary Reaction'
 UPWARD_TRENDS = [UPWARD_TREND, NATURAL_RALLY, SECONDARY_RALLY]
 DOWNWARD_TRENDS = [DOWNWARD_TREND, NATURAL_REACTION, SECONDARY_REACTION]
 
-# Signals and positioning
-
-BUY = 'Buy'
-SELL = 'Sell'
-
 # Evaluating pivots
 
 # Logic for handling pivots within the CONTINUATION range
@@ -107,9 +102,3 @@ PIVOT_PRICE_ORIGINAL = 'Use original pivot price'
 PIVOT_PRICE_ADJUSTED = 'Use adjusted pivot price'
 PIVOT_PRICE_LOGIC_DEFAULT = PIVOT_PRICE_ORIGINAL
 PIVOT_PRICE_LOGIC = [PIVOT_PRICE_ORIGINAL,PIVOT_PRICE_ADJUSTED]
-
-# Trade backtesting defaults
-
-COMMISSION = 8 # Dollars per trade
-STOP_LOSS = .94 # Six percent stop loss on buy/short sell
-PURCHASE_SIZE = 100 # Shares

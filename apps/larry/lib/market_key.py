@@ -7,6 +7,7 @@ import olympus.equities_us.data.price as price
 import olympus.equities_us.data.symbols as symbols
 
 from larry import *
+from olympus.equities_us import BUY, SELL, SYMBOL
 
 class Warning(object):
 
