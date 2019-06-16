@@ -1033,8 +1033,6 @@ class Calculate(object):
 
         # Get symbol/price data
         daily_price_series = self.price_object.daily(self.symbol,regen=self.regen)
-        print(daily_price_series)
-        die(ALEX)
         if daily_price_series is None:
             raise Exception('Daily price series for ' + self.symbol + ' not located for date range.')
 

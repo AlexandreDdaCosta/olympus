@@ -1,20 +1,18 @@
 import json
 
-class Date(object):
+# Chart intervals
 
-    def __init__(self,date,open,close,high,low,adjusted_close):
-        self.date = date
-        self.open = open
-        self.close = close
-        self.high = high
-        self.low = low
-        self.adjusted_close = adjusted_close
+INTERVALS = ('5min','daily','weekly','monthly')
 
-    def adjusted_high(self):
-        pass
+class Interval(object):
 
-    def adjusted_high(self):
-        pass
+    def __init__(self,start_datetime,quote):
+        price_attributes = ('open','close','high','low','adjusted_open','adjusted_close','adjusted_high','adjusted_low')
+        for attribute in price_attributes:
+            if attribute in quote:
+                setattr(self,attribute,quote[attribute])
 
-    def adjusted_open(self):
-        pass
+class Chart(object):
+
+    def __init__(self,interval):
+        if interval not in INTERVALS:
