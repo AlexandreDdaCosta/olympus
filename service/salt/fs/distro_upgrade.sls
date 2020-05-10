@@ -1,9 +1,11 @@
 {#
 
-Currently this shell encapsukates the steps used to complete a distro update. Right now
+Currently this shell encapsulates the steps used to complete a distro update. Right now
 it's a simple list with minimal details.
 
-See https://linuxconfig.org/how-to-upgrade-debian-8-jessie-to-debian-9-stretch
+See https://linuxconfig.org/how-to-upgrade-debian-9-stretch-to-debian-10-buster.
+
+Unless noted, run steps as a privileged user under "sudo -i".
 
 apt-get update
 apt-get upgrade
@@ -40,8 +42,9 @@ aptitude search '~o'
 cd
 olympus/service/salt/util/package_version_repo_updater.pl
 -- Check output files back into git repo
+-- Run as unprivileged
 
-salt '<server>' state.highstate
+salt '<server>' state.highstate -v
 -- Update all upgraded dependencies
 
 -- Check for available updates to major dependencies (Django)
