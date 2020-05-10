@@ -22,7 +22,7 @@ packages:
   build-essential:
     version: 12.3
   curl:
-    version: 7.52.1-5+deb9u9
+    version: 7.52.1-5+deb9u10
   fail2ban:
     version: 0.9.6-2
   ntp:
@@ -30,16 +30,16 @@ packages:
   ntpdate:
     version: 1:4.2.8p10+dfsg-3+deb9u2
   openssh-client:
-    version: 1:7.4p1-10+deb9u6
+    version: 1:7.4p1-10+deb9u7
   openssh-server:
-    version: 1:7.4p1-10+deb9u6
+    version: 1:7.4p1-10+deb9u7
   python-pip:
-    version: 9.0.1-2
+    version: 9.0.1-2+deb9u1
   python3-dev:
     version: 3.5.3-1
   python3-pip:
-    version: 9.0.1-2
+    version: 9.0.1-2+deb9u1
   sudo:
-    version: 1.8.19p1-2.1
+    version: 1.8.19p1-2.1+deb9u2
   vim:
-    version: 2:8.0.0197-4+deb9u1
+    version: 2:8.0.0197-4+deb9u3

@@ -11,7 +11,7 @@ bigdata-packages:
   libblas-dev:
     version: 3.7.0-2
   libfreetype6-dev:
-    version: 2.6.3-3.2
+    version: 2.6.3-3.2+deb9u1
   liblapack-dev:
     version: 3.7.0-2
   pkg-config:
@@ -21,29 +21,29 @@ bigdata-pip3-packages:
   wget:
     version: == 3.2
   pymongo:
-    version: == 3.7.2
+    version: == 3.10.1
   numpy:
-    version: == 1.16.1
+    version: == 1.18.4
   freetype-py:
-    version: == 2.0.0.post6
+    version: == 2.1.0.post1
   ipython:
-    version: == 7.2.0
+    version: == 7.9.0
   nose:
     version: == 1.3.7
   pandas:
-    version: == 0.24.1
+    version: == 0.25.3
   sympy:
-    version: == 1.3
+    version: == 1.5.1
   jupyter:
     version: == 1.0.0
   matplotlib:
-    version: == 3.0.2
+    version: == 3.0.3
   scipy:
-    version: == 1.2.1
+    version: == 1.4.1
 
 web-packages:
   certbot:
     repo: {{ release_name }}-backports
     version: 0.28.0-1~bpo9+1
   nginx:
-    version: 1.14.2-1~stretch
+    version: 1.18.0-1~stretch

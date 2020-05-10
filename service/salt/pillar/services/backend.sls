@@ -8,41 +8,41 @@ backend-packages:
   mongodb-org:
     repo: {{ release_name }}/mongodb-org
   nodejs:
-    version: 10.15.1-1nodesource1
+    version: 10.20.1-1nodesource1
   pgadmin3:
     repo: {{ release_name }}-pgdg
-    version: 1.22.2-5.pgdg90+1
+    version: 1.22.2-6.pgdg90+2
   postgresql-9.6:
     repo: {{ release_name }}-pgdg
-    version: 9.6.13-1.pgdg90+1
+    version: 9.6.17-2.pgdg90+1
 
 backend-npm-packages:
   body-parser:
-    version: 1.18.3
+    version: 1.19.0
   chai:
     version: 4.2.0
   express:
-    version: 4.16.4
+    version: 4.17.1
   express-generator:
-    version: 4.16.0
+    version: 4.16.1
   fs-extra:
-    version: 7.0.1
+    version: 9.0.0
   mocha:
-    version: 5.2.0
+    version: 7.1.2
   mongodb:
-    version: 3.1.13
+    version: 3.5.7
   pg:
-    version: 7.8.0
+    version: 8.1.0
   pg-hstore:
-    version: 2.3.2
+    version: 2.3.3
   pm2:
-    version: 3.2.9
+    version: 4.4.0
   request:
-    version: 2.88.0
+    version: 2.88.2
   sequelize:
-    version: 4.42.0
+    version: 5.21.7
   sequelize-cli:
-    version: 5.4.0
+    version: 5.5.1
   supervisor:
     version: 0.12.0
 
