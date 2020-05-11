@@ -12,8 +12,8 @@ Make note of and repair errors revealed by apt and salt.
 * ---------- *
 
 apt-get update
-apt-get upgrade
-apt-get dist-upgrade
+DEBIAN_FRONTEND=noninteractive apt-get -y upgrade
+DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
 -- May need to run wireless.sh from install (networking issues)
 
 dpkg -C
@@ -34,8 +34,8 @@ apt-get update
 apt list --upgradable
 -- Heads up of what's coming
 
-apt-get upgrade
-apt-get dist-upgrade
+DEBIAN_FRONTEND=noninteractive apt-get -y upgrade
+DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
 -- Upgrade complete
 
 apt-get autoremove

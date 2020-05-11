@@ -5,7 +5,7 @@ nodejs-repo: node_14.x
 previous-release: stretch
 release: {{ release_name }}
 release-version: 10
-{% set python3 = 3.8 %}
+{% set python3 = 3.7 %}
 
 python3-version: {{ python3 }}
 olympus-app-package-path: /usr/local/lib/python{{ python3 }}/dist-packages
