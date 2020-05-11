@@ -5,17 +5,17 @@ www_path: /srv/www
 
 bigdata-packages:
   gfortran:
-    version: 4:6.3.0-4
+    version: 4:8.3.0-1
   gfortran-multilib:
-    version: 4:6.3.0-4
+    version: 4:8.3.0-1
   libblas-dev:
-    version: 3.7.0-2
+    version: 3.8.0-2
   libfreetype6-dev:
-    version: 2.6.3-3.2+deb9u1
+    version: 2.9.1-3+deb10u1
   liblapack-dev:
-    version: 3.7.0-2
+    version: 3.8.0-2
   pkg-config:
-    version: 0.29-4+b1
+    version: 0.29-6
 
 bigdata-pip3-packages:
   wget:
@@ -44,6 +44,6 @@ bigdata-pip3-packages:
 web-packages:
   certbot:
     repo: {{ release_name }}-backports
-    version: 0.28.0-1~deb9u2
+    version: 0.31.0-1
   nginx:
     version: 1.18.0-1~stretch

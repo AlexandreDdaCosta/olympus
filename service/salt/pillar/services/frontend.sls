@@ -1,10 +1,10 @@
 frontend-packages:
   libpq-dev:
-    version: 12.2-2.pgdg90+1
+    version: 12.2-2.pgdg100+1
   python3-dev:
-    version: 3.5.3-1
+    version: 3.7.3-1
   ruby-sass:
-    version: 3.4.23-1
+    version: 3.5.6-1
 
 frontend-pip3-packages:
   django:
@@ -22,4 +22,4 @@ frontend-pip3-packages:
 
 frontend-gem-packages:
   sass:
-    version: 3.4.23
+    version: 3.5.6

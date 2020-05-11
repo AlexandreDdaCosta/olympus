@@ -14,32 +14,32 @@ olympus-scripts-path: /usr/local/bin/olympus
 
 repo-packages:
   apt-transport-https:
-    version: 1.4.9
+    version: 1.8.2
 
 packages:
   at:
-    version: 3.1.20-3
+    version: 3.1.23-1
   build-essential:
-    version: 12.3
+    version: 12.6
   curl:
-    version: 7.52.1-5+deb9u10
+    version: 7.64.0-4+deb10u1
   fail2ban:
-    version: 0.9.6-2
+    version: 0.10.2-2.1
   ntp:
-    version: 1:4.2.8p10+dfsg-3+deb9u2
+    version: 1:4.2.8p12+dfsg-4
   ntpdate:
-    version: 1:4.2.8p10+dfsg-3+deb9u2
+    version: 1:4.2.8p12+dfsg-4
   openssh-client:
-    version: 1:7.4p1-10+deb9u7
+    version: 1:7.9p1-10+deb10u2
   openssh-server:
-    version: 1:7.4p1-10+deb9u7
+    version: 1:7.9p1-10+deb10u2
   python-pip:
-    version: 9.0.1-2+deb9u1
+    version: 18.1-5
   python3-dev:
-    version: 3.5.3-1
+    version: 3.7.3-1
   python3-pip:
-    version: 9.0.1-2+deb9u1
+    version: 18.1-5
   sudo:
-    version: 1.8.19p1-2.1+deb9u2
+    version: 1.8.27-1+deb10u2
   vim:
-    version: 2:8.0.0197-4+deb9u3
+    version: 2:8.1.0875-5
