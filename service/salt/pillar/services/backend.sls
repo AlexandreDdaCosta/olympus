@@ -40,7 +40,7 @@ backend-npm-packages:
   request:
     version: 2.88.2
   sequelize:
-    version: 5.21.7
+    version: 5.21.8
   sequelize-cli:
     version: 5.5.1
   supervisor:
