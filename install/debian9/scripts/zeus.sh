@@ -51,7 +51,9 @@ cp $TMP_INSTALL/src/sources.list /etc/apt/sources.list
 
 echo 'Installing Saltstack...'
 echo 'Retrieving and installing Salt keys'
+
 wget -O - https://repo.saltstack.com/apt/debian/8/amd64/latest/SALTSTACK-GPG-KEY.pub | apt-key add -
+# Debian10: wget -O - https://repo.saltstack.com/py3/debian/10/amd64/latest/SALTSTACK-GPG-KEY.pub | sudo apt-key add -
 if [ "$?" != '0' ]
 then
     echo 'Error installing Salt keys; terminating...'
