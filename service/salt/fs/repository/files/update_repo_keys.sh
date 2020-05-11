@@ -1,16 +1,19 @@
 #!/bin/bash
 
-expired_list="$(apt-key list | grep expired)"
+expired_key=false
+apt_key_list="$(apt-key list)"
 while read -r line
 do
-  IFS=' '
-  read -ra expired_key <<< "$line"
-  IFS=/
-  read -ra key_id <<< "${expired_key[1]}"
-  if [ ! -z "$key_id" ]
+  if [ "$expired_key" = true ]
   then
-    echo "Updating ${key_id[1]}"
-    apt-key adv --keyserver keys.gnupg.net --recv-keys "${key_id[1]}"
+    IFS=' '
+    read -ra hex_quartets <<< "$line"
+    IFS=/
+    echo "Updating ${hex_quartets[-2]}${hex_quartets[-1]}"
+    apt-key adv --keyserver keys.gnupg.net --recv-keys "${hex_quartets[-2]}${hex_quartets[-1]}"
+    expired_key=false
+  else
+    (echo "$line" | grep -Eq "expired:") && expired_key=true
   fi
-done <<< "$expired_list"
+done <<< "$apt_key_list"
 exit 0
