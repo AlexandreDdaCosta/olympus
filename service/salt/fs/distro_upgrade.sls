@@ -25,9 +25,11 @@ Edit/push release and repo settings in distribution.sls pillar file (unprivilege
 
 salt '<server>' state.sls repository
 -- Rebuilds apt repository entries and keys
+-- May have run error the first time. Try running again.
 
 apt-get update
 -- Rebuild package index
+-- May have run error the first time. Try running again.
 
 apt list --upgradable
 -- Heads up of what's coming
