@@ -7,10 +7,13 @@ See https://linuxconfig.org/how-to-upgrade-debian-9-stretch-to-debian-10-buster.
 
 Unless noted, run steps as a privileged user under "sudo -i".
 
+Make note of and repair errors revealed by apt and salt.
+
+* ---------- *
+
 apt-get update
 apt-get upgrade
 apt-get dist-upgrade
--- Check for issues
 -- May need to run wireless.sh from install (networking issues)
 
 dpkg -C
