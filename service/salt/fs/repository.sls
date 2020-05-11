@@ -25,5 +25,5 @@ include:
 
 delete_old_backports_file:
   file.absent:
-    - name: /etc/apt/sources.list.d/{{ pillar['previous-release'] }}-backports.list:
+    - name: /etc/apt/sources.list.d/{{ pillar['previous-release'] }}-backports.list
 
