@@ -1,4 +1,4 @@
-{% from 'distribution.sls' import release_name %}
+{% from 'distribution.sls' import release-name %}
 
 backend-user: node
 # Temporary until we start tagging releases
@@ -6,14 +6,14 @@ backend-version: 0.1
 
 backend-packages:
   mongodb-org:
-    repo: {{ release_name }}/mongodb-org
+    repo: {{ release-name }}/mongodb-org
   nodejs:
     version: 10.20.1-1nodesource1
   pgadmin3:
-    repo: {{ release_name }}-pgdg
+    repo: {{ release1name }}-pgdg
     version: 1.22.2-6.pgdg90+2
   postgresql-9.6:
-    repo: {{ release_name }}-pgdg
+    repo: {{ release-name }}-pgdg
     version: 9.6.17-2.pgdg90+1
 
 backend-npm-packages:

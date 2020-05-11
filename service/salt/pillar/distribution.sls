@@ -1,11 +1,11 @@
-{% set release_name = 'stretch' %}
+{% set release-name = 'buster' %}
 distribution: debian
-mongo-repo: 4.0
-nodejs-repo: node_10.x
-previous-release: jessie
-release: {{ release_name }}
-release-version: 9
-{% set python3 = 3.5 %}
+mongo-repo: 4.2
+nodejs-repo: node_14.x
+previous-release: stretch
+release: {{ release-name }}
+release-version: 10
+{% set python3 = 3.8 %}
 
 python3-version: {{ python3 }}
 olympus-app-package-path: /usr/local/lib/python{{ python3 }}/dist-packages

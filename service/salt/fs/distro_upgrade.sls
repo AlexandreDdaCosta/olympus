@@ -12,13 +12,13 @@ apt-get upgrade
 apt-get dist-upgrade
 -- Check for issues
 -- May need to run wireless.sh from install (networking issues)
--- Verify latest available updates of all major applications: Django, mongodb
 
 dpkg -C
 apt-mark showhold
 -- Work through issues displayed
 
-Edit release/repo settings in distribution.sls pillar file
+Edit/push release and repo settings in distribution.sls pillar file (unprivileged)
+-- Verify latest releases and repositories with software sources beforehand
 
 salt '<server>' state.sls repository
 -- Rebuilds apt repository entries and keys
