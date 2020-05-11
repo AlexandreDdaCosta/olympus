@@ -10,7 +10,7 @@ backend-packages:
   nodejs:
     version: 10.20.1-1nodesource1
   pgadmin3:
-    repo: {{ release1name }}-pgdg
+    repo: {{ release_name }}-pgdg
     version: 1.22.2-6.pgdg90+2
   postgresql-9.6:
     repo: {{ release_name }}-pgdg
