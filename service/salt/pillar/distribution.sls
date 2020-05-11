@@ -1,9 +1,9 @@
-{% set release-name = 'buster' %}
+{% set release_name = 'buster' %}
 distribution: debian
 mongo-repo: 4.2
 nodejs-repo: node_14.x
 previous-release: stretch
-release: {{ release-name }}
+release: {{ release_name }}
 release-version: 10
 {% set python3 = 3.8 %}
 

@@ -1,4 +1,4 @@
-{% from 'distribution.sls' import release-name %}
+{% from 'distribution.sls' import release_name %}
 
 frontend-user: uwsgi
 www_path: /srv/www
@@ -43,7 +43,7 @@ bigdata-pip3-packages:
 
 web-packages:
   certbot:
-    repo: {{ release-name }}-backports
+    repo: {{ release_name }}-backports
     version: 0.28.0-1~deb9u2
   nginx:
     version: 1.18.0-1~stretch
