@@ -52,4 +52,10 @@ salt '<server>' state.highstate -v
 
 -- Check for available updates to major dependencies (Django)
 
+Useful salt commands for debugging:
+
+sudo -i salt-run fileserver.update
+sudo -i salt '*' saltutil.refresh_pillar -v
+sudo -i salt '*' saltutil.sync_all -v
+
 #}
