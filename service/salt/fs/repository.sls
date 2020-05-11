@@ -95,9 +95,6 @@ postgresql_repo:
     - name: 'wget -qO - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -'
     - unless: 'apt-key list | grep -i postgresql'
 
-{# NOTE: Saltstack key is installed during server initiation. This key is not known to expire. 
-#}
-
 /usr/local/bin/update_repo_keys.sh:
   file.managed:
     - group: root
