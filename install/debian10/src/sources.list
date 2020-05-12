@@ -1,0 +1,18 @@
+# Local repository
+
+deb file:/var/cache/apt-local/archives/ /
+
+# Remote repositories
+
+## debian
+
+deb http://ftp.us.debian.org/debian/ buster main contrib
+deb-src http://ftp.us.debian.org/debian/ buster main contrib
+deb http://ftp.us.debian.org/debian/ buster-updates main contrib
+deb-src http://ftp.us.debian.org/debian/ buster-updates main contrib
+deb http://security.debian.org/ buster/updates main contrib
+deb-src http://security.debian.org/ buster/updates main contrib
+
+## Saltstack
+
+deb http://repo.saltstack.com/py3/debian/10/amd64/latest buster main
