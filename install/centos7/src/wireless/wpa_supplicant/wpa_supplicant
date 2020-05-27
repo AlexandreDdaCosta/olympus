@@ -1,4 +1,0 @@
-# /etc/sysconfig/wpa_supplicant
-
-INTERFACES="-ira0"
-OTHER_ARGS="-u -f /var/log/wpa_supplicant.log -P /var/run/wpa_supplicant.pid"

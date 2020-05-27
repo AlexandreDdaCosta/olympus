@@ -1,6 +1,0 @@
-#!/bin/sh
-
-# /etc/init.d/wirelessusb
-
-killall dhclient >/dev/null 2>&1
-dhclient ra0
