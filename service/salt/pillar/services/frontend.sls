@@ -1,6 +1,6 @@
 frontend-packages:
   libpq-dev:
-    version: 12.2-2.pgdg100+1
+    version: 12.3-1.pgdg100+1
   python3-dev:
     version: 3.7.3-1
   ruby-sass:
