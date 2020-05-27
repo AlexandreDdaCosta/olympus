@@ -3,6 +3,10 @@
 frontend-user: uwsgi
 www_path: /srv/www
 
+pip3-packages:
+  pymongo:
+    version: == 3.10.1
+
 bigdata-packages:
   gfortran:
     version: 4:8.3.0-1
@@ -20,8 +24,6 @@ bigdata-packages:
 bigdata-pip3-packages:
   wget:
     version: == 3.2
-  pymongo:
-    version: == 3.10.1
   numpy:
     version: == 1.18.4
   freetype-py:
