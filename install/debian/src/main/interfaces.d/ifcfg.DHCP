@@ -1,0 +1,4 @@
+# olympus network interface
+
+${AUTO}iface $NETWORK_INTERFACE inet dhcp
+$WPA_CONF

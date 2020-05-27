@@ -1,0 +1,35 @@
+This driver was built on a Debian 10 system using a driver from a github repository.
+
+Numbered build steps for user "root":
+
+1. Install Debian 10 "buster"; enable networking.
+
+For this step I used an on-board ethernet adapter and connected it to the local network.
+
+2. Verify entries in /etc/apt/sources.list and /etc/apt/sources.list.d. Right after a USB installation, /etc/apt/sources.list was pointing to the USB drive. A networked version of this file:
+    
+deb http://ftp.us.debian.org/debian/ buster main contrib
+deb-src http://ftp.us.debian.org/debian/ buster main contrib
+deb http://ftp.us.debian.org/debian/ buster-updates main contrib
+deb-src http://ftp.us.debian.org/debian/ buster-updates main contrib
+deb http://security.debian.org/ buster/updates main contrib
+deb-src http://security.debian.org/ buster/updates main contrib
+
+3. apt-get install gcc-8 git build-essential
+
+Build kit.
+
+4. apt-get install linux-headers-$(uname -r)
+
+Need headers to build!
+
+5. git clone https://github.com/jeremyb31/rtl8192eu-linux-driver.git
+
+Driver repository.
+TIP: Change directory first to /tmp.
+
+6. cd rtl8192eu-linux-driver
+7. make
+
+After the build the current directory includes "8192eu.ko", the kernel module.
+
