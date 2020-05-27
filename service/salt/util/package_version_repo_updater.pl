@@ -111,17 +111,17 @@ foreach my $filename (@GIT_FILES)
         #print $_.qq{\n};
         if ($_ =~ /^[^\s]*packages\:$/)
         {
-            #print "Package stanza $_\n";
+            print "Package stanza $_\n";
             # pip3, npm, gem, <none>
-            if ($_ =~ /\-pip3\-/)
+            if ($_ =~ /(\-)?pip3\-/)
             {
                 $installer = 'pip3'
             }
-            elsif ($_ =~ /\-npm\-/)
+            elsif ($_ =~ /(\-)?npm\-/)
             {
                 $installer = 'npm'
             }
-            elsif ($_ =~ /\-gem\-/)
+            elsif ($_ =~ /(\-)?gem\-/)
             {
                 $installer = 'gem'
             }
