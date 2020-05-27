@@ -53,7 +53,7 @@ include:
 {% endif %}
     - bin_env: '/usr/bin/pip3'
     - require:
-      - sls: package
+      - sls: repository
 {% endfor %}
 
 salt-2018.3.2+ds-1-pip3-bug-hack:
