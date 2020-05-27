@@ -6,6 +6,8 @@ www_path: /srv/www
 pip3-packages:
   pymongo:
     version: == 3.10.1
+  wget:
+    version: == 3.2
 
 bigdata-packages:
   gfortran:
@@ -22,8 +24,6 @@ bigdata-packages:
     version: 0.29-6
 
 bigdata-pip3-packages:
-  wget:
-    version: == 3.2
   numpy:
     version: == 1.18.4
   freetype-py:
