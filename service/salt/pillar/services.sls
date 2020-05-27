@@ -48,4 +48,4 @@ web-packages:
     repo: {{ release_name }}-backports
     version: 0.31.0-1
   nginx:
-    version: 1.18.0-1~stretch
+    version: 1.18.0-1~buster
