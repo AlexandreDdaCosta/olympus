@@ -244,3 +244,11 @@ node-backend:
       - file: /etc/nginx/conf.d/node.conf
     - require:
       - sls: services/web
+
+initialize_olympus:
+  cmd.run:
+    - name: "su -s /bin/bash -c '/usr/local/bin/olympus/init.py --graceful' {{ pillar['core-app-user'] }}"
+    - user: root
+    - require: 
+      - mongod-backend
+      - node-backend
