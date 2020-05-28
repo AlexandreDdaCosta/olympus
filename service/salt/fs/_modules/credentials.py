@@ -26,7 +26,7 @@ def shared_database():
     passphrase = __salt__['data.get']('frontend_db_key')
     server = __grains__['server']
     services = None
-    print('foo')
+    fubar
     return True
 '''
     if (passphrase is not None and server is not None):
