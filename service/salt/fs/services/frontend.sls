@@ -279,18 +279,18 @@ django-migrate:
 tether-get:
   cmd:
     - run
-    - name: 'wget http://github.com/HubSpot/tether/archive/v1.3.3.zip -O {{ frontend_sass_path }}/src/v1.3.3.zip'
-    - unless: '[ -f {{ frontend_sass_path }}/src/v1.3.3.zip ]'
+    - name: 'wget http://github.com/HubSpot/tether/archive/v1.4.3.zip -O {{ frontend_sass_path }}/src/v1.4.3.zip'
+    - unless: '[ -f {{ frontend_sass_path }}/src/v1.4.3.zip ]'
 
 tether:
   cmd:
     - run
-    - name: 'unzip {{ frontend_sass_path }}/src/v1.3.3.zip -d {{ frontend_sass_path }}'
-    - unless: '[ -d {{ frontend_sass_path }}/tether-1.3.3 ]'
+    - name: 'unzip {{ frontend_sass_path }}/src/v1.4.3.zip -d {{ frontend_sass_path }}'
+    - unless: '[ -d {{ frontend_sass_path }}/tether-1.4.3 ]'
 
 {{ frontend_sass_path }}/tether:
   file.symlink:
-    - target: {{ frontend_sass_path}}/tether-1.3.3
+    - target: {{ frontend_sass_path}}/tether-1.4.3
 
 {{ frontend_sass_path}}/public/js/tether.min.js:
   file.managed:
