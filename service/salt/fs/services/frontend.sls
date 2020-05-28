@@ -122,6 +122,20 @@ frontend-user:
     - source: salt://services/frontend/files/init.uwsgi
     - user: root
 
+/var/log/uwsgi.log:
+  file.managed:
+    - group: {{ pillar['frontend-user'] }}
+    - mode: 0644
+    - replace: False
+    - user: {{ pillar['frontend-user'] }}
+
+/var/log/django.log:
+  file.managed:
+    - group: {{ pillar['frontend-user'] }}
+    - mode: 0644
+    - replace: False
+    - user: {{ pillar['frontend-user'] }}
+
 /etc/logrotate.d/uwsgi:
     file.managed:
     - group: root
@@ -129,13 +143,6 @@ frontend-user:
     - mode: 0644
     - source: salt://services/frontend/files/logrotate.uwsgi
     - user: root
-
-/var/log/uwsgi.log:
-  file.managed:
-    - group: {{ pillar['frontend-user'] }}
-    - mode: 0644
-    - replace: False
-    - user: {{ pillar['frontend-user'] }}
 
 /etc/nginx/conf.d/django.conf:
   file.managed:
