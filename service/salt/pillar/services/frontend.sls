@@ -16,7 +16,7 @@ frontend-pip3-packages:
   uwsgi:
     version: == 2.0.18
   virtualenv:
-    version: == 20.0.20
+    version: == 20.0.21
   yolk3k:
     version: == 0.9
 
