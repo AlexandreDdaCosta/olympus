@@ -12,7 +12,7 @@ def usb_backup_olympus():
         raise Exception("Can't get core-staff-user from pillar.")
     # Verify presence of olympus USB
     cmd = "blkid"
-    p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+    p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,text=True)
     output = p.communicate()
     lines = output[0].split("\n")
     matchstring = '.*' + re.escape('LABEL="olympus"') + '.*'
