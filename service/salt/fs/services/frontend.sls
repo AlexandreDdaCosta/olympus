@@ -319,18 +319,18 @@ bootstrap:
 fontawesome-get:
   cmd:
     - run
-    - name: 'wget http://fontawesome.io/assets/font-awesome-4.7.0.zip -O {{ frontend_sass_path }}/src/font-awesome-4.7.0.zip'
-    - unless: '[ -f {{ frontend_sass_path }}/src/font-awesome-4.7.0.zip ]'
+    - name: 'wget https://use.fontawesome.com/releases/v5.13.0/fontawesome-free-5.13.0-web.zip -O {{ frontend_sass_path }}/src/fontawesome-free-5.13.0-web.zip'
+    - unless: '[ -f {{ frontend_sass_path }}/src/fontawesome-free-5.13.0-web.zip ]'
 
 fontawesome:
   cmd:
     - run
-    - name: 'unzip {{ frontend_sass_path }}/src/font-awesome-4.7.0.zip -d {{ pillar.www_path }}/django/interface/sass'
-    - unless: '[ -d {{ frontend_sass_path }}/font-awesome-4.7.0 ]'
+    - name: 'unzip {{ frontend_sass_path }}/src/fontawesome-free-5.13.0-web.zip -d {{ pillar.www_path }}/django/interface/sass'
+    - unless: '[ -d {{ frontend_sass_path }}/fontawesome-free-5.13.0-web ]'
 
 {{ frontend_sass_path }}/font-awesome:
   file.symlink:
-    - target: {{ frontend_sass_path }}/font-awesome-4.7.0
+    - target: {{ frontend_sass_path }}/fontawesome-free-5.13.0-web
 
 font-awesome-fonts:
   cmd:
