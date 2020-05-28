@@ -33,7 +33,7 @@ def shared_database():
         if 'backend' in services:
             # Is database running?
             cmd = "ps -A | grep postgres | wc -l"
-            p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+            p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,encoding='utf8')
             backend_processes = p.communicate()[0].strip("\n")
             return True
             if int(backend_processes) > 0:
