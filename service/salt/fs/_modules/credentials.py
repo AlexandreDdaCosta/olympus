@@ -26,11 +26,11 @@ def shared_database():
     passphrase = __salt__['data.get']('frontend_db_key')
     server = __grains__['server']
     services = None
-    return True
     if (passphrase is not None and server is not None):
         key = server + ':services'
         services = __salt__['pillar.get'](key)
         delete_minion_data = False
+        return True
         if 'backend' in services:
             # Is database running?
             cmd = "ps -A | grep postgres | wc -l"
