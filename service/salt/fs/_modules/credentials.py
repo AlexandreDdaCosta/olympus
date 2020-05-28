@@ -26,6 +26,8 @@ def shared_database():
     passphrase = __salt__['data.get']('frontend_db_key')
     server = __grains__['server']
     services = None
+    
+    return True
 '''
     if (passphrase is not None and server is not None):
         key = server + ':services'
@@ -74,4 +76,3 @@ def shared_database():
         if delete_minion_data is True:
             __salt__['data.pop']('frontend_db_key')
 '''
-    return True
