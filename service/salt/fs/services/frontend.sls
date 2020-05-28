@@ -347,12 +347,12 @@ sass-css-full:
 jquery:
   cmd:
     - run
-    - name: 'curl https://code.jquery.com/jquery-3.2.0.min.js > {{ frontend_path }}/static/js/jquery-3.2.0.min.js'
+    - name: 'curl https://code.jquery.com/jquery-3.5.1.min.js > {{ frontend_path }}/static/js/jquery-3.5.1.min.js'
     - unless: '[ -f {{ frontend_path }}/static/js/jquery-3.2.0.min.js ]'
 
 {{ frontend_path }}/static/js/jquery.min.js:
   file.symlink:
-    - target: {{ frontend_path }}/static/js/jquery-3.2.0.min.js
+    - target: {{ frontend_path }}/static/js/jquery-3.5.1.min.js
 
 {% for username, user in pillar.get('users', {}).items() %}
 {% if user['is_staff'] %}
