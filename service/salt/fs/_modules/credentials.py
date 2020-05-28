@@ -31,10 +31,10 @@ def shared_database():
         services = __salt__['pillar.get'](key)
         delete_minion_data = False
         if 'backend' in services:
-            return True
             # Is database running?
             cmd = "ps -A | grep postgres | wc -l"
             p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+            return True
             backend_processes = p.communicate()[0].strip("\n")
             if int(backend_processes) > 0:
                 # Does frontend user exist?
