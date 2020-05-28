@@ -48,7 +48,7 @@ do_start()
     [ -f $inifile ] || exit 6
     touch $lockfile
     chmod 0664 $lockfile
-    chown uwsgi:uwsgi $lockfile
+    chown root:root $lockfile
     start-stop-daemon --start --quiet --pidfile $lockfile --exec $daemon -- $inifile
 }
 
