@@ -50,7 +50,7 @@ def _backup_directory(target, source):
     if not os.path.isdir(source):
         raise Exception(source + " not found");
     if os.path.exists(target):
+        if os.path.exists(target + '.bak'):
+            shutil.rmtree(target + '.bak')
         os.rename(target,target + '.bak')
     shutil.copytree(source,target)
-    if os.path.exists(target + '.bak'):
-        shutil.rmtree(target + '.bak')
