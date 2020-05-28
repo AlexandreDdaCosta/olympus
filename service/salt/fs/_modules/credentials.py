@@ -35,6 +35,7 @@ def shared_database():
             cmd = "ps -A | grep postgres | wc -l"
             p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
             backend_processes = p.communicate()[0].strip("\n")
+            return True
             if int(backend_processes) > 0:
                 # Does frontend user exist?
                 cmd = "sudo -u postgres psql -tAc \"SELECT rolname FROM pg_roles WHERE rolname='" + frontend_user + "'\""
@@ -42,7 +43,6 @@ def shared_database():
                 output = p.communicate()
                 rolname = output[0].split("\n")[-2]
                 if rolname == frontend_user:
-                    return True
                     # Update frontend user password
                     cmd = "sudo -u postgres psql -c \"ALTER USER " + frontend_user  + " ENCRYPTED PASSWORD '" + passphrase  + "';\""
                     p = subprocess.check_call(cmd,shell=True)
