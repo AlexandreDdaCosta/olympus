@@ -42,11 +42,11 @@ def shared_database():
                 output = p.communicate()
                 rolname = output[0].split("\n")[-2]
                 if rolname == frontend_user:
+                    return True
                     # Update frontend user password
                     cmd = "sudo -u postgres psql -c \"ALTER USER " + frontend_user  + " ENCRYPTED PASSWORD '" + passphrase  + "';\""
                     p = subprocess.check_call(cmd,shell=True)
                     delete_minion_data = True
-        return True
         if 'frontend' in services:
             delete_minion_data = False
             frontend_credential_file = '/srv/www/django/interface/settings_local.py'
