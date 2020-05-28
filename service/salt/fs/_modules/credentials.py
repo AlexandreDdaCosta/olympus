@@ -30,7 +30,6 @@ def shared_database():
         key = server + ':services'
         services = __salt__['pillar.get'](key)
         delete_minion_data = False
-        return True
         if 'backend' in services:
             # Is database running?
             cmd = "ps -A | grep postgres | wc -l"
@@ -47,6 +46,7 @@ def shared_database():
                     cmd = "sudo -u postgres psql -c \"ALTER USER " + frontend_user  + " ENCRYPTED PASSWORD '" + passphrase  + "';\""
                     p = subprocess.check_call(cmd,shell=True)
                     delete_minion_data = True
+        return True
         if 'frontend' in services:
             delete_minion_data = False
             frontend_credential_file = '/srv/www/django/interface/settings_local.py'
