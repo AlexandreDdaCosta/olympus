@@ -348,7 +348,7 @@ jquery:
   cmd:
     - run
     - name: 'curl https://code.jquery.com/jquery-3.5.1.min.js > {{ frontend_path }}/static/js/jquery-3.5.1.min.js'
-    - unless: '[ -f {{ frontend_path }}/static/js/jquery-3.2.0.min.js ]'
+    - unless: '[[ -f {{ frontend_path }}/static/js/jquery-3.2.0.min.js && ! -s {{ frontend_path }}/static/js/jquery-3.2.0.min.js ]]'
 
 {{ frontend_path }}/static/js/jquery.min.js:
   file.symlink:
