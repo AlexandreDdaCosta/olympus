@@ -10,7 +10,7 @@
       <div class="col-lg-3 col-md-2 col-sm-1">
       </div>
       <div class="col-lg-6 col-md-8 col-sm-10 col-wide">
-      {% if form.errors or form.non_field_errors or form.this_is_the_login_form.errors %}
+      {% if form.errors or form.non_field_errors %}
         <div class="alert alert-danger">{% trans 'Access denied' %}.</div>
       {% endif %}
         <div class="card login-card">
