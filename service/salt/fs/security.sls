@@ -193,7 +193,6 @@ update_minion_credential_data:
     - name: salt -C 'G@services:frontend or G@services:backend' data.update frontend_db_key {{ pillar['random_key']['frontend_db_key'] }}
 
 # 2. Call credentials update script for all frontend/backend minions
-
 update_db_credential:
   cmd.run:
     - name: salt -C 'G@services:frontend or G@services:backend' credentials.shared_database
