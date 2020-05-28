@@ -34,8 +34,8 @@ def shared_database():
             # Is database running?
             cmd = "ps -A | grep postgres | wc -l"
             p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-            return True
             backend_processes = p.communicate()[0].strip("\n")
+            return True
             if int(backend_processes) > 0:
                 # Does frontend user exist?
                 cmd = "sudo -u postgres psql -tAc \"SELECT rolname FROM pg_roles WHERE rolname='" + frontend_user + "'\""
