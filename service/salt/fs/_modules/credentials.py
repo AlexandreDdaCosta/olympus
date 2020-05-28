@@ -26,6 +26,7 @@ def shared_database():
     passphrase = __salt__['data.get']('frontend_db_key')
     server = __grains__['server']
     services = None
+    return True
     if (passphrase is not None and server is not None):
         key = server + ':services'
         services = __salt__['pillar.get'](key)
@@ -70,6 +71,6 @@ def shared_database():
                     if int(frontend_processes) > 0:
                         cmd = "service uwsgi restart"
                         p = subprocess.check_call(cmd,shell=True)
-    #    if delete_minion_data is True:
-    #        __salt__['data.pop']('frontend_db_key')
+        if delete_minion_data is True:
+            __salt__['data.pop']('frontend_db_key')
     return True
