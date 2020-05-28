@@ -335,7 +335,7 @@ fontawesome:
 font-awesome-fonts:
   cmd:
     - run
-    - name: 'cp -p {{ frontend_sass_path }}/font-awesome/fonts/* {{ frontend_sass_path }}/public/font'
+    - name: 'cp -p {{ frontend_sass_path }}/font-awesome/webfonts/* {{ frontend_sass_path }}/public/font'
 
 sass-css:
   cmd:
