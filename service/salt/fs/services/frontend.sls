@@ -299,18 +299,18 @@ tether:
 bootstrap-get:
   cmd:
     - run
-    - name: 'wget https://github.com/twbs/bootstrap/archive/v4.5.0.zip -O {{ frontend_sass_path }}/src/v4.5.0.zip'
-    - unless: '[ -f {{ frontend_sass_path }}/src/v4.5.0.zip ]'
+    - name: 'wget https://github.com/twbs/bootstrap/archive/v4.0.0-alpha.6.zip -O {{ frontend_sass_path }}/src/v4.0.0-alpha.6.zip'
+    - unless: '[ -f {{ frontend_sass_path }}/src/v4.0.0-alpha.6.zip ]'
 
 bootstrap:
   cmd:
     - run
-    - name: 'unzip {{ frontend_sass_path }}/src/v4.5.0.zip -d {{ frontend_sass_path }}'
-    - unless: '[ -d {{ frontend_sass_path }}/bootstrap-4.5.0 ]'
+    - name: 'unzip {{ frontend_sass_path }}/src/v4.0.0-alpha.6.zip -d {{ frontend_sass_path }}'
+    - unless: '[ -d {{ frontend_sass_path }}/bootstrap-4.0.0-alpha.6 ]'
 
 {{ frontend_sass_path }}/bootstrap:
   file.symlink:
-    - target: {{ frontend_sass_path}}/bootstrap-4.5.0
+    - target: {{ frontend_sass_path}}/bootstrap-4.0.0-alpha.6
 
 {{ frontend_sass_path}}/public/js/bootstrap.min.js:
   file.managed:
@@ -319,23 +319,23 @@ bootstrap:
 fontawesome-get:
   cmd:
     - run
-    - name: 'wget https://use.fontawesome.com/releases/v5.13.0/fontawesome-free-5.13.0-web.zip -O {{ frontend_sass_path }}/src/fontawesome-free-5.13.0-web.zip'
-    - unless: '[ -f {{ frontend_sass_path }}/src/fontawesome-free-5.13.0-web.zip ]'
+    - name: 'wget http://fontawesome.io/assets/font-awesome-4.7.0.zip -O {{ frontend_sass_path }}/src/font-awesome-4.7.0.zip'
+    - unless: '[ -f {{ frontend_sass_path }}/src/font-awesome-4.7.0.zip ]'
 
 fontawesome:
   cmd:
     - run
-    - name: 'unzip {{ frontend_sass_path }}/src/fontawesome-free-5.13.0-web.zip -d {{ pillar.www_path }}/django/interface/sass'
-    - unless: '[ -d {{ frontend_sass_path }}/fontawesome-free-5.13.0-web ]'
+    - name: 'unzip {{ frontend_sass_path }}/src/font-awesome-4.7.0.zip -d {{ pillar.www_path }}/django/interface/sass'
+    - unless: '[ -d {{ frontend_sass_path }}/font-awesome-4.7.0 ]'
 
 {{ frontend_sass_path }}/font-awesome:
   file.symlink:
-    - target: {{ frontend_sass_path }}/fontawesome-free-5.13.0-web
+    - target: {{ frontend_sass_path }}/font-awesome-4.7.0
 
 font-awesome-fonts:
   cmd:
     - run
-    - name: 'cp -p {{ frontend_sass_path }}/font-awesome/webfonts/* {{ frontend_sass_path }}/public/font'
+    - name: 'cp -p {{ frontend_sass_path }}/font-awesome/fonts/* {{ frontend_sass_path }}/public/font'
 
 sass-css:
   cmd:
