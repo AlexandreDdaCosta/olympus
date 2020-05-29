@@ -299,18 +299,18 @@ tether:
 bootstrap-get:
   cmd:
     - run
-    - name: 'wget https://github.com/twbs/bootstrap/archive/v4.0.0-alpha.6.zip -O {{ frontend_sass_path }}/src/v4.0.0-alpha.6.zip'
-    - unless: '[ -f {{ frontend_sass_path }}/src/v4.0.0-alpha.6.zip ]'
+    - name: 'wget https://github.com/twbs/bootstrap/archive/v4.5.0.zip -O {{ frontend_sass_path }}/src/v4.5.0.zip'
+    - unless: '[ -f {{ frontend_sass_path }}/src/v4.5.0.zip ]'
 
 bootstrap:
   cmd:
     - run
-    - name: 'unzip {{ frontend_sass_path }}/src/v4.0.0-alpha.6.zip -d {{ frontend_sass_path }}'
-    - unless: '[ -d {{ frontend_sass_path }}/bootstrap-4.0.0-alpha.6 ]'
+    - name: 'unzip {{ frontend_sass_path }}/src/v4.5.0.zip -d {{ frontend_sass_path }}'
+    - unless: '[ -d {{ frontend_sass_path }}/bootstrap-4.5.0 ]'
 
 {{ frontend_sass_path }}/bootstrap:
   file.symlink:
-    - target: {{ frontend_sass_path}}/bootstrap-4.0.0-alpha.6
+    - target: {{ frontend_sass_path}}/bootstrap-4.5.0
 
 {{ frontend_sass_path}}/public/js/bootstrap.min.js:
   file.managed:
