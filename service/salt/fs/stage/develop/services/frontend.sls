@@ -10,11 +10,11 @@ Currently the dev server does not restart automatically on server shutdown, unli
 full uWSGI server.
 #}
 
-/usr/local/bin/startserver.sh:
+/usr/local/bin/startserver.py:
   file.managed:
     - group: root
     - mode: 0755
-    - source: salt://stage/develop/services/frontend/files/startserver.sh
+    - source: salt://stage/develop/services/frontend/files/startserver.py
     - user: root
     - require:
       - sls: services/frontend
@@ -22,10 +22,6 @@ full uWSGI server.
 devserver-stop:
   cmd.run:
     - name: /usr/local/bin/killserver.sh
-
-frontend-uwsgi-stop:
-  service.dead:
-    - name: uwsgi
 
 develop-django.conf:
   file.managed:
@@ -38,7 +34,7 @@ develop-django.conf:
 
 devserver-start:
   cmd.run:
-    - name: /usr/local/bin/startserver.sh
+    - name: /usr/local/bin/startserver.py
 
 nginx-develop:
   service.running:
