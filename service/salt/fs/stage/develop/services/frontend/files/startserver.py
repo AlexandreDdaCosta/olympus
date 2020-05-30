@@ -2,5 +2,5 @@
 
 from subprocess import Popen
  
-cmd_str = 'sudo -u root /usr/bin/python3 /srv/www/django/manage.py runserver 1>>/var/log/devserver.log 2>>/var/log/devserver.log &'
+cmd_str = '/usr/bin/python3 /srv/www/django/manage.py runserver 1>>/var/log/devserver.log 2>>/var/log/devserver.log &'
 proc = Popen([cmd_str], shell=True, stdin=None, stdout=None, stderr=None, close_fds=True)

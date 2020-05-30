@@ -23,6 +23,10 @@ devserver-stop:
   cmd.run:
     - name: /usr/local/bin/killserver.sh
 
+frontend-uwsgi-stop:
+  service.dead:
+    - name: uwsgi
+
 develop-django.conf:
   file.managed:
     - group: root
