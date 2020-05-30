@@ -136,13 +136,7 @@ img.nav-login-logo {
   display: none;
 }
 .left-nav-icon {
-  -webkit-align-self: flex-start;
-  align-self: flex-start;
-  margin-right: auto;
-  justify-content: flex-start;
-  width: 100%;
-  margin-left: .25em;
-  margin-top: .25em;
+  margin-right: 4em;
 }
 .left-nav-icon-link {
   color: $navbar-light-color;
@@ -169,25 +163,17 @@ img.nav-login-logo {
     max-width: 100%;
   }
 }
-@media (max-width: 767px) {
-  .md-hide {
-    display: inline;
-  }
-}
-@media (min-width: 768px) {
-  .left-nav-icon, .md-hide {
+@media (min-width: 576px) {
+  .lg-hide {
     display: none;
   }
   .nav-float-icon {
     display: inline;
   }
 }
-@media (min-width: 992px) {
-  .md-hide {
+@media (min-width: 768px) {
+  .nav-float-icon {
     display: inline;
-  }
-  .lg-hide {
-    display: none;
   }
 }
 
