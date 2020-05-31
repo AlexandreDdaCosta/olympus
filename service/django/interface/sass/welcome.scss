@@ -3,9 +3,10 @@
 .blog_background {
   @media screen and (max-width: 320px) {
     background-image:url("/static/apps/welcome/image/Zodiacal_Light_320.jpg");
-  } 
+  }
+ALEX 
   @media screen and (min-width: 321px) and (max-width: 640px) {
-    background-image:url("/static/apps/welcome/image/Zodiacal_Light_640.jpg");
+    background-image:url("/static/apps/welcome/image/Zodiacal_Glow_Lightens_Paranal_Sky_640.jpg");
   } 
   @media screen and (min-width: 641px) and (max-width: 992px) {
     background-image:url("/static/apps/welcome/image/Zodiacal_Light_992.jpg");
@@ -143,7 +144,7 @@
     font-size: 1.7em; 
     letter-spacing: 1.7em; 
     text-indent: 1.7em; 
-    top: 1.2em;
+    top: 10.2em;
   }
   #intro_text img {
     margin: 1em;
@@ -154,7 +155,7 @@
     font-size: 1.5em; 
     letter-spacing: 1.5em; 
     text-indent: 1.5em; 
-    top: 1.6em;
+    top: 10.6em;
   }
   #intro_text img {
     margin-left: .8em;
@@ -165,7 +166,7 @@
     font-size: 1.4em; 
     letter-spacing: 1.4em; 
     text-indent: 1.4em; 
-    top: 1.9em;
+    top: 10.9em;
   }
   #intro_text img {
     margin-left: .5em;
@@ -184,7 +185,7 @@
     font-size: 1.8em; 
     letter-spacing: 1.2em; 
     text-indent: 1.2em; 
-    top: 1.0em;
+    top: 10.0em;
   }
   #intro_text img {
     display: none;
@@ -203,7 +204,7 @@
 }
 @media only screen and (max-width: 639px) {
   #intro_text { 
-    font-size: 1.8em; 
+    font-size: 1.6em; 
     letter-spacing: 1.2em; 
     text-indent: 1.2em; 
     top: 1.0em;
@@ -343,16 +344,16 @@ img[id="welcome_header_img"] {
     padding-top: 2em;
   }
   .welcome_header_intro { 
-    font-size: 2em;
+    font-size: 1.5em;
   }
   .welcome_header_name {
-    font-size: 3.5em;
+    font-size: 2.5em;
   }
   .welcome_header_slogan {
-    font-size: 1.2em;
+    font-size: 1.0em;
   }
   .welcome_header_slogan_highlight {
-    font-size: 1.8em;
+    font-size: 1.4em;
   }
 }
 
