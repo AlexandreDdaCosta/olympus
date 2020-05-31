@@ -54,6 +54,7 @@ TEMPLATES = [
             BASE_DIR + r'/interface/apps/welcome/templates',
             BASE_DIR + r'/interface/apps/blog/templates',
             BASE_DIR + r'/interface/apps/photography/templates',
+            BASE_DIR + r'/interface/apps/coding/templates',
         ],
         'APP_DIRS': True,
         'OPTIONS': {
