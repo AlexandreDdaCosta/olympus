@@ -1,6 +1,6 @@
 from django.conf.urls import url
 
-from interface.apps.photography.views import SpaceshipEarth
+from interface.apps.coding.views import TheKuiperBelt
 
 urlpatterns = [
     url(r'', TheKuiperBelt.as_view(), name='coding_thekuiperbelt'),
