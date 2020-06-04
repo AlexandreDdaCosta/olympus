@@ -1,0 +1,57 @@
+TOPICS
+------
+
+1. Guide to organizing imagery for proper display under a responsive set-up.
+
+Use the following resolution guide when editing images. All the listed resolutions need to be tested and verified.
+
+Inverses exist to account for horizontal and vertical orientations of mobile devices.
+
+The intent is to use midpoint sizes for related common screen resolutions. This should limit the number of required images and keep responsive cropping to a minimum.
+
+                                Target image dimensions
+
+320                             Full screen  Matched proportions (for inverses)
+---                             -----------  -------------------
+
+a. 480 x 320 (inverse of "c.")  524 x 320    524 x 858
+b. 568 x 320 (inverse of "d.")  ...
+
+c. 320 x 480                    320 x 524
+d. 320 x 568                    ... 
+
+e. 360 x 640                    420 x 720
+f. 480 x 800                    ...     
+
+640
+---
+
+g. 640 x 360 (inverse of "e.")
+h. 800 x 480 (inverse of "f.")
+
+i. 768 x 1024
+j. 720 x 1280
+k. 768 x 1280
+
+992
+---
+
+l. 1024 x 768 (inverse of "i.")
+
+1280
+----
+
+m. 1280 x 720 (inverse of "j.")
+n. 1280 x 768 (inverse of "k.")
+o. 1360 x 768
+p. 1440 x 900
+q. 1680 x 1050
+
+r. 1280 x 1024
+
+1920
+----
+
+s. 1920 x 1080
+t. 1920 x 1200
+
