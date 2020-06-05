@@ -18,11 +18,11 @@ Target resolutions              Target image dimensions
 ******************              ***********************
 
                                              Matched proportions
-320                             Full screen  (for inverses)
----                             -----------  -------------------
+320                             Full screen  (for inverses)       Mid-point
+---                             -----------  -------------------  ---------
 
-a. 480 x 320 (inverse of "c.")  524 x 320    524 x 858
-b. 568 x 320 (inverse of "d.")  ...          ...
+a. 480 x 320 (inverse of "c.")  524 x 320    524 x 858            524 x 589
+b. 568 x 320 (inverse of "d.")  ...          ...                  ...
 
 c. 320 x 480                    320 x 524
 d. 320 x 568                    ... 
@@ -33,8 +33,8 @@ f. 480 x 800                    ...
 640
 ---
 
-g. 640 x 360 (inverse of "e.")  720 x 420    720 x 1234
-h. 800 x 480 (inverse of "f.")  ...          ...
+g. 640 x 360 (inverse of "e.")  720 x 420    720 x 1234           720 x 827
+h. 800 x 480 (inverse of "f.")  ...          ...                  ...
 
 i. 768 x 1024                   752 x 1194
 j. 720 x 1280                   ...
@@ -43,14 +43,14 @@ k. 768 x 1280                   ...
 992
 ---
 
-l. 1024 x 768 (inverse of "i.") 1194 x 752   1194 x 1896
+l. 1024 x 768 (inverse of "i.") 1194 x 752   1194 x 1896          1194 x 1324
 m. 1024 x 1280 (placeholder)    1024 x 1280
 
 1280
 ----
 
-m. 1280 x 720 (inverse of "j.") 1340 x 789   1340 x 2128
-n. 1280 x 768 (inverse of "k.") ....         ....
+m. 1280 x 720 (inverse of "j.") 1340 x 789   1340 x 2128          1340 x 1458
+n. 1280 x 768 (inverse of "k.") ....         ....                 ....
 o. 1360 x 768                   ....
 p. 1440 x 900                   ....
 
