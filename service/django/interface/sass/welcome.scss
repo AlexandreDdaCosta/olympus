@@ -306,37 +306,51 @@ img[id="welcome_header_img"] {
 }
 
 @media only screen and (min-width: 640px) and (max-width: 991px) {
+  .image_highlight_text {
+    right: .6em;
+    font-size: 2.0em;
+  }
+  .image_highlight_text span {
+    font-size: 1.8em;
+  }
   #welcome_header_text {
-    padding-left: 2.5em;
-    padding-top: 3em;
+    padding-left: 3.0em;
+    padding-top: 4em;
   }
   .welcome_header_intro { 
-    font-size: 3em;
+    font-size: 3.6em;
   }
   .welcome_header_name {
-    font-size: 4.5em;
+    font-size: 4.6em;
   }
   .welcome_header_slogan {
-    font-size: 1.6em;
+    font-size: 2.4em;
   }
   .welcome_header_slogan_highlight {
-    font-size: 2.2em;
+    font-size: 3.0em;
   }
 }
 @media only screen and (min-width: 640px) and (max-width: 991px) and (max-height: 639px) {
   .image_highlight_text {
-    right: .6em;
-    font-size: 1.6em;
     transform: rotate(0deg);
   }
-  .image_highlight_text span {
-    font-size: 1.4em;
-  }
   .image_highlight_text_high {
-    bottom: 8.0em;
+    bottom: 4.0em;
+  }
+  .welcome_header_intro { 
+    font-size: 2.2em;
+  }
+  .welcome_header_name {
+    font-size: 3.0em;
+  }
+  .welcome_header_slogan {
+    font-size: 1.2em;
+  }
+  .welcome_header_slogan_highlight {
+    font-size: 1.8em;
   }
 }
-@media only screen and (min-width: 640px) and (max-width: 991px) and (min-height: 640px) {
+@media only screen and (max-width: 639px) {
   .image_highlight_text {
     right: .6em;
     font-size: 1.6em;
@@ -344,9 +358,6 @@ img[id="welcome_header_img"] {
   .image_highlight_text span {
     font-size: 1.4em;
   }
-}
-
-@media only screen and (max-width: 639px) {
   #welcome_header_text {
     padding-left: 2em;
     padding-top: 2em;
@@ -366,24 +377,10 @@ img[id="welcome_header_img"] {
 }
 @media only screen and (min-width: 321px) and (max-width: 639px) and (max-height: 320px) {
   .image_highlight_text {
-    right: .6em;
-    font-size: 1.6em;
     transform: rotate(0deg);
   }
-  .image_highlight_text span {
-    font-size: 1.4em;
-  }
   .image_highlight_text_high {
-    bottom: 8.0em;
-  }
-}
-@media only screen and (min-width: 321px) and (max-width: 639px) and (min-height: 321px) {
-  .image_highlight_text {
-    right: .6em;
-    font-size: 1.6em;
-  }
-  .image_highlight_text span {
-    font-size: 1.4em;
+    bottom: 6.0em;
   }
 }
 @media only screen and (max-width: 320px) {
