@@ -11,11 +11,15 @@ The intent is to use midpoint sizes for related common screen resolutions. This 
 
 Sizes are calculated by taking simple averages of the grouped resolutions.
 
+A placeholder is used to simplify css conditionals, giving at least two height options at each major width break point (320, 640, 992, 1280, 1920).
 
-                                Target image dimensions
 
-320                             Full screen  Matched proportions (for inverses)
----                             -----------  ----------------------------------
+Target resolutions              Target image dimensions
+******************              ***********************
+
+                                             Matched proportions
+320                             Full screen  (for inverses)
+---                             -----------  -------------------
 
 a. 480 x 320 (inverse of "c.")  524 x 320    524 x 858
 b. 568 x 320 (inverse of "d.")  ...          ...
@@ -40,6 +44,7 @@ k. 768 x 1280                   ...
 ---
 
 l. 1024 x 768 (inverse of "i.") 1194 x 752   1194 x 1896
+m. 1024 x 1280 (placeholder)    1024 x 1280
 
 1280
 ----
