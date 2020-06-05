@@ -9,13 +9,16 @@ Inverses exist to account for horizontal and vertical orientations of mobile dev
 
 The intent is to use midpoint sizes for related common screen resolutions. This should limit the number of required images and keep responsive cropping to a minimum.
 
+Sizes are calculated by taking simple averages of the grouped resolutions.
+
+
                                 Target image dimensions
 
 320                             Full screen  Matched proportions (for inverses)
----                             -----------  -------------------
+---                             -----------  ----------------------------------
 
 a. 480 x 320 (inverse of "c.")  524 x 320    524 x 858
-b. 568 x 320 (inverse of "d.")  ...
+b. 568 x 320 (inverse of "d.")  ...          ...
 
 c. 320 x 480                    320 x 524
 d. 320 x 568                    ... 
@@ -26,32 +29,32 @@ f. 480 x 800                    ...
 640
 ---
 
-g. 640 x 360 (inverse of "e.")
-h. 800 x 480 (inverse of "f.")
+g. 640 x 360 (inverse of "e.")  720 x 420    720 x 1234
+h. 800 x 480 (inverse of "f.")  ...          ...
 
-i. 768 x 1024
-j. 720 x 1280
-k. 768 x 1280
+i. 768 x 1024                   752 x 1194
+j. 720 x 1280                   ...
+k. 768 x 1280                   ...
 
 992
 ---
 
-l. 1024 x 768 (inverse of "i.")
+l. 1024 x 768 (inverse of "i.") 1194 x 752   1194 x 1896
 
 1280
 ----
 
-m. 1280 x 720 (inverse of "j.")
-n. 1280 x 768 (inverse of "k.")
-o. 1360 x 768
-p. 1440 x 900
-q. 1680 x 1050
+m. 1280 x 720 (inverse of "j.") 1340 x 789   1340 x 2128
+n. 1280 x 768 (inverse of "k.") ....         ....
+o. 1360 x 768                   ....
+p. 1440 x 900                   ....
 
-r. 1280 x 1024
+q. 1280 x 1024                  1480 x 1038
+r. 1680 x 1050                  ....
 
 1920
 ----
 
-s. 1920 x 1080
-t. 1920 x 1200
+s. 1920 x 1080                  1920 x 1140
+t. 1920 x 1200                   
 
