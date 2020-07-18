@@ -21,6 +21,10 @@ Afterwards, run "./service/salt/util/package_version_repo_updater.pl" in
 working git repository to generate updated package speciifications in 
 pillar files.
 
+sudo -i salt '*' state.sls <STATENAME> -v
+
+Run specified state file. Salt also will run any states which the selected state requires.
+
 sudo -i salt '*' state.sls shutdown -v
 
 Shutdown machine with default backup.
