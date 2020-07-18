@@ -1,0 +1,26 @@
+Commands
+--------
+
+For use by user with privilege:
+
+sudo -i salt '*' saltutil.refresh_pillar -v
+
+Reset pillar values after git filesystem update
+
+sudo -i salt '*' saltutil.sync_all -v
+
+Update salt modules, among others.
+
+sudo -i salt '*' state.highstate -v
+sudo -i salt '*' state.highstate pillar='{"pkg_latest": true}' -v
+
+Global configuration update.
+
+Pillar setting forces all installed packages to update to latest versions.
+Afterwards, run "./service/salt/util/package_version_repo_updater.pl" in
+working git repository to generate updated package speciifications in 
+pillar files.
+
+sudo -i salt '*' state.sls shutdown -v
+
+Shutdown machine with default backup.
