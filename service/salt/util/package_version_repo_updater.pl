@@ -55,11 +55,12 @@ $results = `pip3 list 2>&1`;
 @data = split "\n", $results;
 foreach my $line (@data)
 {
-    next if ($line !~ /^[^\s]+ \([^\s]+\)$/);
+    next if ($line !~ /^[^\s]+\s+[^\s]+\s*?$/);
     my @entry = split ' ', $line;
     #print join(", ", @entry) . qq{\n};
     my $package = lc $entry[0];
     my $version = $entry[1];
+    next if ($version !~ /\d/);
     $version =~ s/\(([^\s]*)\)/$1/;
     $installed_packages->{'pip3'}->{$package} = $version;
 }

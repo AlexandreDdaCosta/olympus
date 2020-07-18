@@ -8,15 +8,15 @@ frontend-packages:
 
 frontend-pip3-packages:
   django:
-    version: == 3.0.6
+    version: == 3.0.8
   psycopg2:
     version: == 2.8.5
   psycopg2-binary:
     version: == 2.8.5
   uwsgi:
-    version: == 2.0.18
+    version: == 2.0.19.1
   virtualenv:
-    version: == 20.0.21
+    version: == 20.0.27
   yolk3k:
     version: == 0.9
 
