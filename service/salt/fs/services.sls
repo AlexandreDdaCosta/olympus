@@ -17,3 +17,7 @@ ntp-service:
 ntpd-timecheck:
   cmd.run:
     - name: service ntp stop; /usr/sbin/ntpdate pool.ntp.org; service ntp start
+
+locate-updatedb:
+  cmd.run:
+    - name: updatedb
