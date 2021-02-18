@@ -382,7 +382,7 @@ frontend-cert:
 
 frontend_cert_renewal:
   cmd.run:
-    - name: /usr/bin/certbot renew --pre-hook "service nginx stop" --post-hook "service nginx start"
+    - name: /usr/bin/certbot renew --pre-hook "service nginx stop" --post-hook "service nginx start" --http-01-port 80
 
 nginx-frontend:
   service.running:
