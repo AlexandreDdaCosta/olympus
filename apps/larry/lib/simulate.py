@@ -35,7 +35,7 @@ class Backtest(market_key.Calculate):
         # Create rotation object to change parameters for each run
         # Parameters: rules, thresholds
 
-        # Chart signalsignals
+        # Chart signals
         chart = self.chartpoints()
         last = chart.last_entry()
         signals = chart.last_buy_signal(all=True)
