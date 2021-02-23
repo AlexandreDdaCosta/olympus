@@ -10,11 +10,10 @@ from olympus.equities_us import *
 class TestSymbols(testing.Test):
 
     def setUp(self):
-        self.init = symbols.Init()
+        self.init = symbols.Init(verbose=True)
 
     def test_populate_collections(self):
-        #quotes = self.quote.daily(TEST_SYMBOL_ONE)
-        #print(json.dumps(quotes,indent=4,sort_keys=True))
+        populate = self.init.populate_collections()
 
 if __name__ == '__main__':
 	unittest.main()

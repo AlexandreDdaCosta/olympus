@@ -11,8 +11,11 @@ class Connection():
 
     def __init__(self,user=USER,init_type=None,**kwargs):
         self.user = user
+        self.verbose = kwargs.get('verbose',False)
         self.database = DATABASE
-        self.client = pymongo.MongoClient(MONGO_URL,ssl=True,ssl_ca_certs=CAFILE,ssl_certfile=CERTFILE,ssl_keyfile=KEYFILE,ssl_match_hostname=False)
+        if self.verbose is True:
+            print('Establishing MongoDB client.')
+        self.client = pymongo.MongoClient(MONGO_URL,ssl=True,tlsCAFile=CAFILE,ssl_certfile=CERTFILE,ssl_keyfile=KEYFILE,tlsAllowInvalidHostnames=True)
         self.db = self.client.equities_us
         self.init_type = init_type
         if self.init_type is not None:
@@ -25,15 +28,14 @@ class Connection():
     def _initialized(self,**kwargs):
         if self.init_type is None:
             raise Exception('Initialization not available; exiting.')
-        dbnames = self.client.database_names()
+        dbnames = self.client.list_database_names()
         if self.database not in dbnames:
             return None, None
         else:
             querydict = {"datatype":self.init_type}
             for key in kwargs:
                 querydict[key] = kwargs[key]
-            cursor = self.init_collection.find(querydict)
-            if cursor.count() == 0:
+            if self.init_collection.count_documents(querydict) == 0:
                 return None, None
             start = None
             host = None
@@ -62,7 +64,7 @@ class Connection():
         if self.init_type is None:
             raise Exception('Initialization not available; exiting.')
         print('Creating document to record initialization.')
-        dbnames = self.client.database_names()
+        dbnames = self.client.list_database_names()
         if self.force is True:
             querydict = {"datatype":self.init_type}
             for key in kwargs:
