@@ -1,4 +1,4 @@
-import ast, csv, datetime, fcntl, json, os, re, socket, subprocess, time
+import ast, csv, datetime, fcntl, json, jsonschema, os, re, socket, subprocess, time
 
 import olympus.equities_us.data as data
 
@@ -13,7 +13,7 @@ SYMBOL_DATA_URLS = [
 {'exchange':'nyse','url':'https://api.nasdaq.com/api/screener/stocks?exchange=nyse&download=true'}
 ]
 
-FIRST_LINE_STRING = '"Symbol","Name","LastSale","MarketCap","IPOyear","Sector","industry","Summary Quote"'
+SYMBOL_SCHEMA_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/nasdaqSymbolList.json'
 
 class Init(data.Connection):
 
@@ -81,6 +81,12 @@ class Init(data.Connection):
 
         # Clean up received data
 
+        print(SYMBOL_SCHEMA_FILE)
+        try:
+            with open(SYMBOL_SCHEMA_FILE) as schema_file:
+                schema = json.load(schema_file)
+        except:
+            raise
         for company_file in company_files:
             exchange = company_file.rstrip(FILE_SUFFIX)
             if self.verbose is True:

@@ -1,0 +1,157 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "object",
+      "properties": {
+        "headers": {
+          "type": "object",
+          "properties": {
+            "symbol": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "lastsale": {
+              "type": "string"
+            },
+            "netchange": {
+              "type": "string"
+            },
+            "pctchange": {
+              "type": "string"
+            },
+            "marketCap": {
+              "type": "string"
+            },
+            "country": {
+              "type": "string"
+            },
+            "ipoyear": {
+              "type": "string"
+            },
+            "volume": {
+              "type": "string"
+            },
+            "sector": {
+              "type": "string"
+            },
+            "industry": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbol",
+            "name",
+            "lastsale",
+            "netchange",
+            "pctchange",
+            "marketCap",
+            "country",
+            "ipoyear",
+            "volume",
+            "sector",
+            "industry",
+            "url"
+          ]
+        },
+        "rows": {
+          "type": "array",
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "symbol": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "lastsale": {
+                  "type": "string"
+                },
+                "netchange": {
+                  "type": "string"
+                },
+                "pctchange": {
+                  "type": "string"
+                },
+                "volume": {
+                  "type": "string"
+                },
+                "marketCap": {
+                  "type": "string"
+                },
+                "country": {
+                  "type": "string"
+                },
+                "ipoyear": {
+                  "type": "string"
+                },
+                "industry": {
+                  "type": "string"
+                },
+                "sector": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "symbol",
+                "name",
+                "lastsale",
+                "netchange",
+                "pctchange",
+                "volume",
+                "marketCap",
+                "country",
+                "ipoyear",
+                "industry",
+                "sector",
+                "url"
+              ]
+            }
+          ]
+        }
+      },
+      "required": [
+        "headers",
+        "rows"
+      ]
+    },
+    "message": {
+      "type": "null"
+    },
+    "status": {
+      "type": "object",
+      "properties": {
+        "rCode": {
+          "type": "integer"
+        },
+        "bCodeMessage": {
+          "type": "null"
+        },
+        "developerMessage": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "rCode",
+        "bCodeMessage",
+        "developerMessage"
+      ]
+    }
+  },
+  "required": [
+    "data",
+    "message",
+    "status"
+  ]
+}
