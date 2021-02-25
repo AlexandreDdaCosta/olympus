@@ -38,6 +38,8 @@ bigdata-pip3-packages:
     version: == 1.5.1
 
 pip3-packages:
+  jsonschema:
+    version: == 3.2.0
   pymongo:
     version: == 3.10.1
   wget:

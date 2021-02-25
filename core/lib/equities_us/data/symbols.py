@@ -8,9 +8,9 @@ INIT_TYPE = 'symbols'
 NORMALIZE_CAP_REGEX = re.compile('[^0-9\.]')
 SYMBOL_COLLECTION = INIT_TYPE
 SYMBOL_DATA_URLS = [
-{'exchange':'amex','url':'https://old.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=amex&render=download'},
-{'exchange':'nasdaq','url':'https://old.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=nasdaq&render=download'},
-{'exchange':'nyse','url':'https://old.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=nyse&render=download'}
+{'exchange':'amex','url':'https://api.nasdaq.com/api/screener/stocks?exchange=amex&download=true'},
+{'exchange':'nasdaq','url':'https://api.nasdaq.com/api/screener/stocks?exchange=nasdaq&download=true'},
+{'exchange':'nyse','url':'https://api.nasdaq.com/api/screener/stocks?exchange=nyse&download=true'}
 ]
 
 FIRST_LINE_STRING = '"Symbol","Name","LastSale","MarketCap","IPOyear","Sector","industry","Summary Quote"'
@@ -28,6 +28,8 @@ class Init(data.Connection):
 
         # Set up environment
 
+        if self.verbose is True:
+            print('Setting up environment.')
         LOCKFILE = LOCKFILE_DIR(self.user)+INIT_TYPE+'.pid'
         lockfilehandle = open(LOCKFILE,'w')
         fcntl.flock(lockfilehandle,fcntl.LOCK_EX|fcntl.LOCK_NB)
@@ -49,7 +51,7 @@ class Init(data.Connection):
         if self.verbose is True:
             print('Downloading company data.')
         company_files = []
-        FILE_SUFFIX = '-companylist.csv'
+        FILE_SUFFIX = '-companylist.json'
         epoch_time = int(time.time())
         for urlconf in SYMBOL_DATA_URLS:
             target_file = urlconf['exchange']+FILE_SUFFIX
@@ -62,7 +64,7 @@ class Init(data.Connection):
                         print('Using existing company list for ' + urlconf['exchange'] + ': Less than eight hours old.')
                         continue
             if self.verbose is True:
-                print('Downloading data from exchange ' + urlconf['exchange'] + ', URL ' + urlconf['url'])
+                print('Downloading data for exchange ' + urlconf['exchange'] + ', URL ' + urlconf['url'])
             try:
                 os.remove(target_file)
             except OSError:
@@ -79,11 +81,11 @@ class Init(data.Connection):
 
         # Clean up received data
 
-        fieldnames = ["Symbol","Name","Last","Capitalization","IPO Year","Sector","Industry","Summary"]
         for company_file in company_files:
             exchange = company_file.rstrip(FILE_SUFFIX)
             if self.verbose is True:
                 print('Cleaning up data from exchange "' + exchange + '".')
+            """
             repaired_csvfile = open(self.working_dir+company_file+'.import','w+')
             csvfile = open(DOWNLOAD_DIR(self.user)+company_file,'r')
             first_line = csvfile.readline().rstrip(',\n')
@@ -161,9 +163,12 @@ class Init(data.Connection):
             print('Indexing "Capitalization".')
         collection.create_index("Capitalization")
 	
+            """
         self._clean_up(lockfilehandle)
 	
     def _clean_up(self,lockfilehandle,end_it=True):
+        if self.verbose is True:
+            print('Cleaning up post download.')
         if end_it is True:
             self._record_end()
         lockfilehandle.write('')
