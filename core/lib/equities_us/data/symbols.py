@@ -146,8 +146,8 @@ class Init(data.Connection):
                 print('Indexing "Industry".')
             collection.create_index("Industry")
             if self.verbose is True:
-                print('Indexing "marketCap".')
-            collection.create_index("marketCap")
+                print('Indexing "Capitalization".')
+            collection.create_index("Capitalization")
         except:
             self._clean_up(lockfilehandle)
             raise

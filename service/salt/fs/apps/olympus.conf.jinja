@@ -11,6 +11,8 @@ d /run/olympus/apps 0755 root root -
 
 d /run/olympus/init 0755 root root -
 d /run/olympus/apps/olympus 0755 olympus olympus -
+f /run/olympus/apps/olympus/options.pid 0644 olympus olympus -
+f /run/olympus/apps/olympus/symbols.pid 0644 olympus olympus -
 
 {% if grains.get('apps') -%}
 # Applications
