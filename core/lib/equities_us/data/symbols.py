@@ -1,10 +1,12 @@
 import ast, csv, datetime, fcntl, json, jsonschema, os, re, socket, subprocess, time
+from jsonschema import validate
 
 import olympus.equities_us.data as data
 
 from olympus import USER, DOWNLOAD_DIR, LOCKFILE_DIR, WORKING_DIR
 
 INIT_TYPE = 'symbols'
+JSON_FILE_SUFFIX = '-companylist.json'
 NORMALIZE_CAP_REGEX = re.compile('[^0-9\.]')
 SYMBOL_COLLECTION = INIT_TYPE
 SYMBOL_DATA_URLS = [
@@ -12,7 +14,6 @@ SYMBOL_DATA_URLS = [
 {'exchange':'nasdaq','url':'https://api.nasdaq.com/api/screener/stocks?exchange=nasdaq&download=true'},
 {'exchange':'nyse','url':'https://api.nasdaq.com/api/screener/stocks?exchange=nyse&download=true'}
 ]
-
 SYMBOL_SCHEMA_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/nasdaqSymbolList.json'
 
 class Init(data.Connection):
@@ -25,8 +26,6 @@ class Init(data.Connection):
         self.working_dir = WORKING_DIR(self.user)
 
     def populate_collections(self):
-
-        # Set up environment
 
         if self.verbose is True:
             print('Setting up environment.')
@@ -46,15 +45,12 @@ class Init(data.Connection):
             else:
                 raise Exception('Initialization record check failed; cannot record start of initialization.')
     
-        # Download
-
         if self.verbose is True:
             print('Downloading company data.')
         company_files = []
-        FILE_SUFFIX = '-companylist.json'
         epoch_time = int(time.time())
         for urlconf in SYMBOL_DATA_URLS:
-            target_file = urlconf['exchange']+FILE_SUFFIX
+            target_file = urlconf['exchange']+JSON_FILE_SUFFIX
             company_files.insert(0,target_file)
             target_file = DOWNLOAD_DIR(self.user)+target_file
             if self.force is False:
@@ -79,121 +75,93 @@ class Init(data.Connection):
                     return
                 raise
 
-        # Clean up received data
-
-        print(SYMBOL_SCHEMA_FILE)
-        try:
-            with open(SYMBOL_SCHEMA_FILE) as schema_file:
-                schema = json.load(schema_file)
-        except:
-            raise
-        for company_file in company_files:
-            exchange = company_file.rstrip(FILE_SUFFIX)
-            if self.verbose is True:
-                print('Cleaning up data from exchange "' + exchange + '".')
-            """
-            repaired_csvfile = open(self.working_dir+company_file+'.import','w+')
-            csvfile = open(DOWNLOAD_DIR(self.user)+company_file,'r')
-            first_line = csvfile.readline().rstrip(',\n')
-            if first_line != FIRST_LINE_STRING:
-                self._clean_up(lockfilehandle)
-                raise Exception('First line does not match expected format; exiting.')
-            for line in csvfile:
-                symbol = line.split(',')[0]
-                if re.match(r'.*?\^',symbol) or re.match(r'.*?\.',symbol):
-                    # Drop these symbols, which are currently not relevant classes of equities
-                    continue
-                if re.match(r'.*?ATEST',symbol):
-                    # Nasdaq test symbols
-                    continue
-                # Strip and convert capitalization figures
-                matchobj = re.match(r'^\".*?\",\".*?\",\".*?\",\"(.*?)\"',line)
-                market_cap = self._normalize_market_capitalization(matchobj.group(1))
-                line = re.sub(r'^(\".*?\",\".*?\",\".*?\",)(\".*?\")',r'\g<1>'+market_cap,line)
-                # Strip ending commas
-                line = line[:-2] + '\n'
-                # Recast "n/a" for JSON
-                line = line.replace('"n/a"','null')
-                # Trim ending whitespace in all columns
-                line = re.sub(r'\s*\"',"\"",line)
-                repaired_csvfile.write(line)
-            csvfile.close()
-            repaired_csvfile.close()
-            csvfile = open(self.working_dir+company_file+'.import','r')
-            jsonfile = open(self.working_dir+company_file+'.json','w')
-            jsonfile.write('[')
-            reader = csv.DictReader(csvfile,fieldnames)
-            for row in reader:
-                for name in fieldnames:
-                    if row[name] == 'null':
-                        del(row[name])
-                row['Exchange'] = exchange
-                jsonstring = json.dumps(row)
-                jsonfile.write('\n'+jsonstring+',')
-            jsonfile.close()
-            os.remove(self.working_dir+company_file+'.import')
-            with open(self.working_dir+company_file+'.json','rb+') as f:
-                f.seek(0,2)
-                size=f.tell()
-                f.truncate(size-1)
-                f.close()
-            jsonfile = open(self.working_dir+company_file+'.json','a')
-            jsonfile.write('\n]')
-            jsonfile.close()
-        
-        # Create final collection
-        
         if self.verbose is True:
             print('Creating unified symbol collection.')
         collection_name = SYMBOL_COLLECTION
         collection = self.db[collection_name]
         collection.drop()
-        for urlconf in SYMBOL_DATA_URLS:
+
+        if self.verbose is True:
+            print('Verifying and importing downloaded data.')
+        try:
+            with open(SYMBOL_SCHEMA_FILE) as schema_file:
+                validation_schema = json.load(schema_file)
+        except:
+            self._clean_up(lockfilehandle)
+            raise
+        for company_file in company_files:
+            exchange = company_file.rstrip(JSON_FILE_SUFFIX)
             if self.verbose is True:
-                print('Importing JSON data for exchange ' + urlconf['exchange']  + '.')
-            json_import_file = self.working_dir+urlconf['exchange']+'-companylist.csv.json'
-            jsonfile = open(json_import_file,'r')
-            json_data = json.loads(jsonfile.read())
-            jsonfile.close()
-            collection.insert_many(json_data)
+                print('Verifying data for exchange "' + exchange + '".')
+            data_file_name = DOWNLOAD_DIR(self.user)+exchange+JSON_FILE_SUFFIX
+            json_data = ''
+            try:
+                with open(data_file_name) as data_file:
+                    json_data = json.load(data_file)
+                    data_file.close()
+                    validate(instance=json_data,schema=validation_schema)
+            except:
+                self._clean_up(lockfilehandle)
+                raise
+            if self.verbose is True:
+                print('Importing symbol data for exchange "' + exchange + '".')
+            try:
+                json_write = []
+                for company in json_data['data']['rows']:
+                    if company['sector'] == '':
+                        continue
+                    company.pop('lastsale',None)
+                    company.pop('netchange',None)
+                    company.pop('pctchange',None)
+                    company.pop('volume',None)
+                    company.pop('url',None)
+                    company['Capitalization'] = company.pop('marketCap')
+                    if company['Capitalization'] == '':
+                        company['Capitalization'] = 0
+                    else:
+                        company['Capitalization'] = int(float(company['Capitalization']))
+                    company['Country'] = company.pop('country')
+                    company['Exchange'] = exchange
+                    company['Industry'] = company.pop('industry')
+                    company['IPO Year'] = company.pop('ipoyear')
+                    company['Name'] = company.pop('name')
+                    company['Sector'] = company.pop('sector')
+                    company['Symbol'] = company.pop('symbol')
+                    json_write.append(company)
+                collection.insert_many(json_write)
+            except:
+                self._clean_up(lockfilehandle)
+                raise
+
         if self.verbose is True:
-            print('Indexing "Symbol".')
-        collection.create_index("Symbol")
-        if self.verbose is True:
-            print('Indexing "Sector".')
-        collection.create_index("Sector")
-        if self.verbose is True:
-            print('Indexing "Industry".')
-        collection.create_index("Industry")
-        if self.verbose is True:
-            print('Indexing "Capitalization".')
-        collection.create_index("Capitalization")
+            print('Indexing updated collection.')
+        try:
+            if self.verbose is True:
+                print('Indexing "Symbol".')
+            collection.create_index("Symbol")
+            if self.verbose is True:
+                print('Indexing "Sector".')
+            collection.create_index("Sector")
+            if self.verbose is True:
+                print('Indexing "Industry".')
+            collection.create_index("Industry")
+            if self.verbose is True:
+                print('Indexing "marketCap".')
+            collection.create_index("marketCap")
+        except:
+            self._clean_up(lockfilehandle)
+            raise
 	
-            """
         self._clean_up(lockfilehandle)
 	
     def _clean_up(self,lockfilehandle,end_it=True):
         if self.verbose is True:
-            print('Cleaning up post download.')
+            print('Cleaning up symbol creation process.')
         if end_it is True:
             self._record_end()
         lockfilehandle.write('')
         fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
         lockfilehandle.close()
-
-    def _normalize_market_capitalization(self,c):
-        multiplier = 1
-        if re.match(r'.*?B',c):
-            multiplier = 1000000000
-        elif re.match(r'.*?M',c):
-            multiplier = 1000000
-        elif re.match(r'.*?T',c):
-            multiplier = 1000000000000
-        else:
-            return 'null'
-        c = re.sub(NORMALIZE_CAP_REGEX,r'',c)
-        c = int(float(c) * multiplier)
-        return '"'+str(c)+'"'
 
 class Read(data.Connection):
 
