@@ -14,7 +14,7 @@ olympus-scripts-path: /usr/local/bin/olympus
 
 repo-packages:
   apt-transport-https:
-    version: 1.8.2.1
+    version: 1.8.2.2
 
 packages:
   at:
@@ -40,6 +40,6 @@ packages:
   python3-pip:
     version: 18.1-5
   sudo:
-    version: 1.8.27-1+deb10u2
+    version: 1.8.27-1+deb10u3
   vim:
     version: 2:8.1.0875-5
