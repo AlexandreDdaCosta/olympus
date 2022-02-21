@@ -35,7 +35,7 @@ delete_old_backports_file:
     - name: deb http://ftp.debian.org/debian {{ pillar['release'] }}-backports main
   cmd:
     - run
-    - name: 'apt-get update'
+    - name: 'apt-get update --allow-releaseinfo-change'
 
 mongodb_repo:
   pkgrepo.managed:
