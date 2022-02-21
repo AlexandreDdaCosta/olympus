@@ -1,4 +1,4 @@
 from django.apps import AppConfig
 
 class CodingConfig(AppConfig):
-    name = 'coding'
+    name = 'interface.apps.coding'

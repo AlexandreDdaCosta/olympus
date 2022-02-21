@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 class BlogConfig(AppConfig):
-    name = 'blog'
+    name = 'interface.apps.blog'
     verbose_name = "The Zodiacal Light"

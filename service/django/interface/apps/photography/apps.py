@@ -1,4 +1,4 @@
 from django.apps import AppConfig
 
 class PhotographyConfig(AppConfig):
-    name = 'photography'
+    name = 'interface.apps.photography'
