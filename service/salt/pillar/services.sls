@@ -19,11 +19,11 @@ bigdata-packages:
 
 bigdata-pip3-packages:
   numpy:
-    version: == 1.20.1
+    version: == 1.21.5
   freetype-py:
     version: == 2.2.0
   ipython:
-    version: == 7.21.0
+    version: == 7.31.1
   nose:
     version: == 1.3.7
   pandas:
@@ -50,4 +50,4 @@ web-packages:
     repo: {{ release_name }}-backports
     version: 0.31.0-1+deb10u1
   nginx:
-    version: 1.18.0-2~buster
+    version: 1.20.2-1~buster

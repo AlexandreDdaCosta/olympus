@@ -22,7 +22,7 @@ packages:
   build-essential:
     version: 12.6
   curl:
-    version: 7.64.0-4+deb10u1
+    version: 7.64.0-4+deb10u2
   fail2ban:
     version: 0.10.2-2.1
   ntp:
