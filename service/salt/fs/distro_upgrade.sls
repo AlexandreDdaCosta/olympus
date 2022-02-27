@@ -4,6 +4,7 @@ Currently this shell encapsulates the steps used to complete a distro update. Ri
 it's a simple list with minimal details.
 
 See https://linuxconfig.org/how-to-upgrade-debian-9-stretch-to-debian-10-buster.
+For 10 to 11: https://linuxize.com/post/how-to-upgrade-debian-10-to-debian-11/
 
 Unless noted, run steps as a privileged user under "sudo -i".
 
@@ -23,6 +24,7 @@ apt-mark showhold
 Edit/push release and repo settings in distribution.sls pillar file (unprivileged)
 -- Verify latest releases and repositories with software sources beforehand
 
+salt '<server>' saltutil.sync_all
 salt '<server>' state.sls repository
 -- Rebuilds apt repository entries and keys
 -- May have run error the first time. Try running again.
