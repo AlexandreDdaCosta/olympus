@@ -21,7 +21,14 @@ dpkg -C
 apt-mark showhold
 -- Work through issues displayed
 
-Edit/push release and repo settings in distribution.sls pillar file (unprivileged)
+Edit/push release and repo settings at top of distribution.sls pillar file (unprivileged)
+-- Listing of settings ('xxx' represents a setting to change'):
+   {% set release_name = 'xxx' %}
+   mongo-repo: xxx
+   nodejs-repo: xxx
+   previous-release: xxx
+   release-version: xxx
+   {% set python3 = xxx %}
 -- Verify latest releases and repositories with software sources beforehand
 
 salt '<server>' saltutil.sync_all
