@@ -1,10 +1,10 @@
-{% set release_name = 'bullseye' %}
+{% set release_name = 'buster' %}
 distribution: debian
 mongo-repo: 4.4
 nodejs-repo: node_14.x
-previous-release: buster
+previous-release: stretch
 release: {{ release_name }}
-release-version: 11
+release-version: 10
 {% set python3 = 3.7 %}
 
 python3-version: {{ python3 }}
