@@ -1,7 +1,7 @@
 {% set release_name = 'buster' %}
 distribution: debian
 mongo-repo: 4.4
-nodejs-repo: node_14.x
+nodejs-repo: node_16.x
 previous-release: stretch
 release: {{ release_name }}
 release-version: 10
