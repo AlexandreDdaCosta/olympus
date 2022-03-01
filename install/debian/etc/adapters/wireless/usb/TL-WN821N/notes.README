@@ -31,5 +31,6 @@ TIP: Change directory first to /tmp.
 6. cd rtl8192eu-linux-driver
 7. make
 
-After the build the current directory includes "8192eu.ko", the kernel module.
+After a successful build the current directory will include "8192eu.ko", the kernel module.
 
+8. make install

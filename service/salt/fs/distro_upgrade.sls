@@ -12,18 +12,26 @@ Make note of and repair errors revealed by apt and salt.
 
 * ---------- *
 
+salt '<server>' state.highstate -v
+-- Repair any errors detected by highstate before continuing
+salt '<server>' state.highstate pillar='{"pkg_latest": true}' -v
+<olympus repository>/service/salt/util/package_version_repo_updater.pl
+-- Update existing package specifications as identified by package_version_repo_updater.pl
+-- Repair any errors detected by package update highstate before continuing
+
 apt-get update
 DEBIAN_FRONTEND=noninteractive apt-get -y upgrade
 DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
+-- The above three steps upgrade to current distro version to the latest available.
 dpkg -C
 apt-mark showhold
 -- Work through issues displayed
-reboot now
 
+reboot now
 ping 8.8.8.8
 -- Test the network connection via ping of default Google DNS server.
-(Here it's probable that a wireless USB network connection will fail due to a broken or missing driver. If
-this is the case, proceed through the following steps:
+(Assuming a kernel update has occurred, here it's likely that a wireless USB network connection will fail
+due to a broken or missing driver. If this is the case, proceed through the following steps:
 
 networking.sh
 -- Located in "install/debian/scripts/" under olympus git repository.
@@ -32,9 +40,10 @@ networking.sh
    1. Connect a networking cable between the router and eno1 and use the PCI ethernet option to obtain a 
       networking connection.
    2. Follow the driver build steps located in "install/debian/etc/adapters/wireless/usb/<wireless adapter>/notes.README",
-      taking into account changes needed to accomodate the new distro. Be sure to update this README for the new distro and
-      check the file back into git.
 )
+
+STOP HERE if only upgrading to the latest version of a major release.
+The following steps are for major release upgrade (for example, Debian buster to Debian bullseye).
 
 Edit/push release and repo settings at top of distribution.sls pillar file (unprivileged)
 -- Listing of settings ('xxx' represents a setting to change'):
