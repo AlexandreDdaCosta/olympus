@@ -1,11 +1,11 @@
 {% set release_name = 'bullseye' %}
 distribution: debian
-mongo-repo: 5.1
-nodejs-repo: node_16.x
+mongo-repo: 4.2
+nodejs-repo: node_14.x
 previous-release: buster
 release: {{ release_name }}
 release-version: 11
-{% set python3 = 3.9.0 %}
+{% set python3 = 3.7 %}
 
 python3-version: {{ python3 }}
 olympus-app-package-path: /usr/local/lib/python{{ python3 }}/dist-packages

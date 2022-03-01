@@ -48,11 +48,8 @@ The following steps are for major release upgrade (for example, Debian buster to
 Edit/push release and repo settings at top of distribution.sls pillar file (unprivileged)
 -- Listing of settings ('xxx' represents a setting to change'):
    {% set release_name = 'xxx' %}
-   mongo-repo: xxx
-   nodejs-repo: xxx
    previous-release: xxx
    release-version: xxx
-   {% set python3 = xxx %}
 -- Verify latest releases and repositories with software sources beforehand
 
 salt '<server>' saltutil.sync_all
