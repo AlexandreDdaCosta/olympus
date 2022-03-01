@@ -23,6 +23,7 @@ apt-get update
 DEBIAN_FRONTEND=noninteractive apt-get -y upgrade
 DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
 -- The above three steps upgrade to current distro version to the latest available.
+-- Work through issues displayed
 dpkg -C
 apt-mark showhold
 -- Work through issues displayed
@@ -44,6 +45,10 @@ networking.sh
 
 STOP HERE if only upgrading to the latest version of a major release.
 The following steps are for major release upgrade (for example, Debian buster to Debian bullseye).
+-- Review upgrade procedures for added packages. You may be required to required to upgrade versions
+   of these packages BEFORE upgrading the major release. This is typically accomplished by:
+   1. Upgrading respository entries that point to a specific version of an added package
+   2. Use "apt-get update" steps indicated previously to upgrade the added package
 
 Edit/push release and repo settings at top of distribution.sls pillar file (unprivileged)
 -- Listing of settings ('xxx' represents a setting to change'):
