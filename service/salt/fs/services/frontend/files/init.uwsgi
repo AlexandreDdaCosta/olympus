@@ -12,8 +12,6 @@
 ### END INIT INFO
 
 daemon=/usr/local/bin/uwsgi
-django_conf_file=/etc/nginx/conf.d/django.conf
-django_dev_server_port=8000
 inifile=/etc/uwsgi.ini
 lockfile=/var/run/uwsgi.pid
 prog=uwsgi
@@ -23,13 +21,6 @@ vassaldir=/etc/uwsgi/vassals
 
 do_start()
 {
-    status="0"
-    wait=1
-    /usr/bin/grep $django_dev_server_port $django_conf_file 2>&1 > /dev/null
-    status=$?
-    if [ "$status" == "0" ]; then
-        /usr/local/bin/startserver.py
-    fi
     status="0"
     wait=1
     while [ $status -eq "0" ]
@@ -63,12 +54,6 @@ do_start()
 
 do_stop()
 {
-    status="0"
-    /usr/bin/grep $django_dev_server_port $django_conf_file 2>&1 > /dev/null
-    status=$?
-    if [ "$status" == "0" ]; then
-        /usr/local/bin/killserver.sh 2>&1 > /dev/null
-    fi
     start-stop-daemon --signal QUIT -p $lockfile --stop $daemon
 }
 
