@@ -8,7 +8,7 @@ backend-packages:
   mongodb-org:
     repo: {{ release_name }}/mongodb-org
   nodejs:
-    version: 14.19.0-deb-1nodesource1
+    version: 16.14.0-deb-1nodesource1
   pgadmin3:
     repo: {{ release_name }}-pgdg
     version: 1.22.2-6.pgdg100+2
@@ -26,7 +26,7 @@ backend-npm-packages:
   express-generator:
     version: 4.16.1
   fs-extra:
-    version: 10.0.0
+    version: 10.0.1
   mocha:
     version: 9.2.1
   mongodb:
@@ -40,7 +40,7 @@ backend-npm-packages:
   request:
     version: 2.88.2
   sequelize:
-    version: 6.16.2
+    version: 6.17.0
   sequelize-cli:
     version: 6.4.1
   supervisor:

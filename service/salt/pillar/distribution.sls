@@ -14,7 +14,7 @@ olympus-scripts-path: /usr/local/bin/olympus
 
 repo-packages:
   apt-transport-https:
-    version: 1.8.2.2
+    version: 1.8.2.3
 
 packages:
   at:
