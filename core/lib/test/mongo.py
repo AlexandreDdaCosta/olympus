@@ -12,7 +12,7 @@ class TestMongo(testing.Test):
         pass
 
     def test_connect(self):
-        client = pymongo.MongoClient(MONGO_URL,ssl=True,ssl_ca_certs=CAFILE,ssl_certfile=CERTFILE,ssl_keyfile=KEYFILE,ssl_match_hostname=False)
+        client = pymongo.MongoClient(MONGO_URL,ssl=True,tlsCAFile=CAFILE,ssl_certfile=CERTFILE,ssl_keyfile=KEYFILE,tlsAllowInvalidHostnames=True)
         test_collection = client.test.pymongo_test
         test_collection.drop()
         delete_result = test_collection.delete_many({})
