@@ -75,6 +75,10 @@ include:
   cmd.run:
     - name: openssl x509 -req -extfile {{ dir }}/client.cnf -days 999 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in {{ dir }}/client-csr.pem -CA {{ cert_dir }}/ca-crt.pem -CAkey {{ cert_dir }}/ca-key.pem -CAcreateserial -out {{ dir }}/client-crt.pem
 
+{{ host }}_client-crt-key.pem:
+  cmd.run:
+    - name: cat {{ dir }}/client-key.pem  {{ dir }}/client-crt.pem > {{ dir }}/client-crt-key.pem
+
 {%- endfor %}
 
 # Local certificates and chains
@@ -168,6 +172,13 @@ transfer_client_certificates:
 transfer_client_keys:
   cmd.run:
     - name: salt '*' cp.get_file "salt://client_certificates/{% raw %}{{ grains.localhost }}{% endraw %}/client-key.pem" {{ cert_dir }}/client-key.pem template=jinja
+    - require:
+      - regen_trusted_CA
+
+# Trigger all minions to update combined client certificate/key file:
+transfer_client_certficate_key_files:
+  cmd.run:
+    - name: salt '*' cp.get_file "salt://client_certificates/{% raw %}{{ grains.localhost }}{% endraw %}/client-crt-key.pem" {{ cert_dir }}/client-crt-key.pem template=jinja
     - require:
       - regen_trusted_CA
 
