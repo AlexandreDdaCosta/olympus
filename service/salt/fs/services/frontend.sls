@@ -144,7 +144,7 @@ frontend-user:
     - source: salt://services/frontend/files/logrotate.uwsgi
     - user: root
 
-/etc/init.d/nginx
+/etc/init.d/nginx:
   file.managed:
     - group: root
     - makedirs: False
