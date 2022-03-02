@@ -1,6 +1,5 @@
 import datetime, pymongo, os, socket
 
-#ALEX from olympus import CAFILE, CERTFILE, KEYFILE, MONGO_URL, USER, DOWNLOAD_DIR
 from olympus import CAFILE, CERTKEYFILE, MONGO_URL, USER, DOWNLOAD_DIR
 
 DATABASE = 'equities_us'
@@ -17,7 +16,6 @@ class Connection():
         if self.verbose is True:
             print('Establishing MongoDB client.')
         self.client = pymongo.MongoClient(MONGO_URL,tls=True,tlsCAFile=CAFILE,tlsCertificateKeyFile=CERTKEYFILE,tlsAllowInvalidHostnames=True)
-        #ALEX self.client = pymongo.MongoClient(MONGO_URL,ssl=True,tlsCAFile=CAFILE,ssl_certfile=CERTFILE,ssl_keyfile=KEYFILE,tlsAllowInvalidHostnames=True)
         self.db = self.client.equities_us
         self.init_type = init_type
         if self.init_type is not None:
