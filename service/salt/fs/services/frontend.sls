@@ -384,6 +384,26 @@ frontend_cert_renewal:
   cmd.run:
     - name: /usr/bin/certbot renew --pre-hook "service nginx stop" --post-hook "service nginx start" --http-01-port 80
 
+/lib/systemd/system/runserver.service:
+  file.managed:
+    - group: root
+    - makedirs: False
+    - mode: 0644
+    - source: salt://services/frontend/files/runserver.service
+    - user: root
+
+/usr/local/bin/runserver:
+  file.managed:
+    - group: root
+    - makedirs: False
+    - mode: 0755
+    - source: salt://services/frontend/files/runserver
+    - user: root
+
+systmctl_enable_runserver:
+  cmd.run:
+    - name: systemctl enable runserver.service
+
 nginx-frontend:
   service.running:
     - name: nginx

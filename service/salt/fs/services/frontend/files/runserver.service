@@ -1,0 +1,9 @@
+[Unit]
+Description=Start development Django web server on bootup if configured
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/runserver
+
+[Install]
+WantedBy=multi-user.target
