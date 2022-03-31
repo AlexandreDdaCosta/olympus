@@ -29,7 +29,7 @@ bigdata-pip3-packages:
   pandas:
     version: == 1.3.5
   sympy:
-    version: == 1.9
+    version: == 1.10.1
   jupyter:
     version: == 1.0.0
   matplotlib:
@@ -41,7 +41,7 @@ pip3-packages:
   jsonschema:
     version: == 4.4.0
   pymongo:
-    version: == 4.0.1
+    version: == 4.0.2
   wget:
     version: == 3.2
 

@@ -42,4 +42,4 @@ packages:
   sudo:
     version: 1.8.27-1+deb10u3
   vim:
-    version: 2:8.1.0875-5
+    version: 2:8.1.0875-5+deb10u2

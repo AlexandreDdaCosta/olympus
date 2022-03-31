@@ -8,7 +8,7 @@ backend-packages:
   mongodb-org:
     repo: {{ release_name }}/mongodb-org
   nodejs:
-    version: 16.14.0-deb-1nodesource1
+    version: 16.14.2-deb-1nodesource1
   pgadmin3:
     repo: {{ release_name }}-pgdg
     version: 1.22.2-6.pgdg100+2
@@ -28,9 +28,9 @@ backend-npm-packages:
   fs-extra:
     version: 10.0.1
   mocha:
-    version: 9.2.1
+    version: 9.2.2
   mongodb:
-    version: 4.4.0
+    version: 4.4.1
   pg:
     version: 8.7.3
   pg-hstore:
