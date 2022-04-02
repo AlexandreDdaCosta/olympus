@@ -56,6 +56,65 @@ https://docs.djangoproject.com/en/4.0/faq/install/#faq-python-version-support)
 
 * ---------- *
 
-$ sudo apt install postgresql-14
+$ sudo apt install postgresql-14 
+# New service starts autmatically, port 5433 per new conf file
+
+$ sudo systemctl --type=service --state=running | grep postgres 
+# Verifies running postgres services; at this stage, 9.6 and 14
+
+$ sudo service postgresql stop 
+# Stops both services
+
+$ sudo su - postgres
+$ /usr/lib/postgresql/14/bin/pg_upgrade -b /usr/lib/postgresql/9.6/bin -B /usr/lib/postgresql/14/bin -d /var/lib/postgresql/9.6/main -D /var/lib/postgresql/14/main -o '-c config_file=/etc/postgresql/9.6/main/postgresql.conf' -O '-c config_file=/etc/postgresql/14/main/postgresql.conf' -c
+# Check cluster compatibility. Note added "-o" and "-O" options required for config file in /etc; expected location 
+# /var/lib/postgresql/(9.6|14)/main. Also note format with -o/-O switch.
+# Successful output:
+# Performing Consistency Checks
+# ...
+# *Clusters are compatible*
+
+$ /usr/lib/postgresql/14/bin/pg_upgrade -b /usr/lib/postgresql/9.6/bin -B /usr/lib/postgresql/14/bin -d /var/lib/postgresql/9.6/main -D /var/lib/postgresql/14/main -o '-c config_file=/etc/postgresql/9.6/main/postgresql.conf' -O '-c config_file=/etc/postgresql/14/main/postgresql.conf'
+# Run actual upgrade: same as previous command without the "check" (-c) flag.
+# Successful output:
+# Performing Consistency Checks
+# ...
+# Upgrade Complete
+# ...
+
+$ psql -p 5433
+postgres=# \l
+# Visually verify transfer of old data.
+postgres=# \q
+$ exit
+# End postgres user session
+# Another option is to TEMPORARILY edit the Django local settings file to connect to upgrade port, then
+# restart the relevant service and following up with an operational check:
+# Open /srv/www/django/interface/settings_local.py
+# Edit two occurrences of "'PORT': '5432'" to "'PORT': '5433'"
+# service restart uwsgi
+
+$ sudo cp -rp /var/lib/postgresql/9.6 /var/lib/postgresql/9.6.SAVED
+# Backup old data files
+
+* ---------- *
+
+# Update salt files
+# ./service/salt/pillar/services/backend.sls
+#   In "backend-packages:":
+#     "postgres-<old_version>" to "postgres-<new_version>"
+#     "version:": old version to new version
+# ./service/salt/fs/services/backend.sls
+#   Update all references in following stanzas from old version to new version:
+#     /etc/postgresql/<old_version>/main/pg_hba.conf:
+#     /etc/postgresql/<old_version>/main/postgresql.conf:
+#     postgresql:
+#   Update salt://services/backend/files/pg_hba.conf using old parameters and latest version as model
+#   Update salt://services/backend/files/postgresql.conf using old parameters and latest version as model
+
+* ---------- *
+
+sudo -i salt '*' state.highstate -v
+# Adjust "server" of command depending on set-up
 
 #}

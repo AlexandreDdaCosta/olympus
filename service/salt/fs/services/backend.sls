@@ -45,14 +45,14 @@ include:
         - sls: package
 {% endfor %}
 
-/etc/postgresql/9.6/main/pg_hba.conf:
+/etc/postgresql/14/main/pg_hba.conf:
   file.managed:
     - group: postgres
     - mode: 0640
     - source: salt://services/backend/files/pg_hba.conf
     - user: postgres
 
-/etc/postgresql/9.6/main/postgresql.conf:
+/etc/postgresql/14/main/postgresql.conf:
   file.managed:
     - group: postgres
     - mode: 0600
@@ -63,10 +63,10 @@ postgresql:
   service.running:
     - enable: True
     - watch:
-      - file: /etc/postgresql/9.6/main/pg_hba.conf
-      - file: /etc/postgresql/9.6/main/postgresql.conf
+      - file: /etc/postgresql/14/main/pg_hba.conf
+      - file: /etc/postgresql/14/main/postgresql.conf
       - pkg: pgadmin3
-      - pkg: postgresql-9.6
+      - pkg: postgresql-14
     - require:
       - sls: services/web
 
