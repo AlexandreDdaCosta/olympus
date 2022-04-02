@@ -114,7 +114,14 @@ $ sudo cp -rp /var/lib/postgresql/9.6 /var/lib/postgresql/9.6.SAVED
 
 * ---------- *
 
-sudo -i salt '*' state.highstate -v
+$ git commit -a
+# From "olympus" directory
+$ sudo apt-get purge postgresql-9.6
+# Removes old installation and data directories
+$ sudo -i salt '*' state.highstate -v
 # Adjust "server" of command depending on set-up
+# Here is a last place to verify proper operation of server and transfer of data
+$ sudo rm -rf /var/lib/postgresql/9.6.SAVED
+$ sudo rm -f /var/lib/postgresql/delete_old_cluster.sh
 
 #}
