@@ -56,6 +56,10 @@ mongodb_repo:
     - name: 'wget -O - https://www.mongodb.org/static/pgp/server-{{ pillar['mongo-repo'] }}.asc | apt-key add -'
     - unless: 'apt-key list | grep -i MongoDB | grep {{ pillar['mongo-repo'] }}' 
 
+delete_nginx_repo:
+  file.absent:
+    - name: /etc/apt/sources.list.d/nginx.list
+
 nginx_repo:
   pkgrepo.managed:
     - dist: {{ pillar['release'] }}
@@ -74,6 +78,10 @@ nginx_src_repo:
     - humanname: Nginx source repository for {{ pillar['distribution'] }} {{ pillar['release'] }}
     - name: deb-src http://nginx.org/packages/debian/ {{ pillar['release'] }} nginx
 
+delete_nodesource_repo:
+  file.absent:
+    - name: /etc/apt/sources.list.d/nodesource.list
+
 nodesource_repo:
   pkgrepo.managed:
     - dist: {{ pillar['release'] }}
@@ -91,6 +99,10 @@ nodesource_src_repo:
     - file: /etc/apt/sources.list.d/nodesource.list
     - humanname: Nodesource node.js source repository for {{ pillar['distribution'] }} {{ pillar['release'] }}
     - name: deb-src https://deb.nodesource.com/{{ pillar['nodejs-repo'] }} {{ pillar['release'] }} main
+
+delete_postgresql_repo:
+  file.absent:
+    - name: /etc/apt/sources.list.d/pgdg.list
 
 postgresql_repo:
   pkgrepo.managed:
