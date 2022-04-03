@@ -34,3 +34,6 @@ TIP: Change directory first to /tmp.
 After a successful build the current directory will include "8192eu.ko", the kernel module.
 
 8. make install
+
+Currently, with the wireless adapter connected, the interface appears in "/sys/class/net" after a reboot.
+Recommend researching a command that will do this without reboot.

@@ -288,8 +288,18 @@ then
 fi
 if [[ $NETWORK_INTERFACE == '' ]]
 then
-    echo 'ERROR: Network interface unknown; exiting.' 1>&2
-    exit 1
+    if [[ $interface_type -eq 1 ]]
+    then
+        echo 'ERROR: Network interface unknown; exiting.' 1>&2
+        exit 1
+    else
+    # [[ $interface_type -eq 2 ]]
+        echo 'ERROR: Wireless network interface not found.'
+        echo 'If there has been a kernel update, you will need to rebuild the kernel module.'
+        echo 'Follow the steps indicated in the build README for the existing wireless adapter.'
+        echo 'As of this writing, a reboot gets the wireless interface to appear in /sys/class/net.'
+        exit 1
+    fi
 fi
 
 # Configure wpa_supplicant as needed

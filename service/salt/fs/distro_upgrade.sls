@@ -28,20 +28,22 @@ dpkg -C
 apt-mark showhold
 -- Work through issues displayed
 
-reboot now
-ping 8.8.8.8
--- Test the network connection via ping of default Google DNS server.
-(Assuming a kernel update has occurred, here it's likely that a wireless USB network connection will fail
-due to a broken or missing driver. If this is the case, proceed through the following steps:
+Assuming a kernel update has occurred, here it's likely that a wireless USB network connection will fail
+at reboot due to a broken or missing driver. Follow the driver build steps located in 
+"install/debian/etc/adapters/wireless/usb/<wireless adapter>/notes.README" to create and install
+an updated kernel module.
 
 networking.sh
 -- Located in "install/debian/scripts/" under olympus git repository.
--- If the USB wifi setup succeeds, proceed to the next section (not likely due to upgraded distro)
+-- If the USB wifi setup succeeds, proceed to the next section
 -- If the USB wifi setup fails:
    1. Connect a networking cable between the router and eno1 and use the PCI ethernet option to obtain a 
       networking connection.
-   2. Follow the driver build steps located in "install/debian/etc/adapters/wireless/usb/<wireless adapter>/notes.README",
-)
+   2. Follow the driver build steps located in "install/debian/etc/adapters/wireless/usb/<wireless adapter>/notes.README".
+
+reboot now
+ping 8.8.8.8
+-- Test the network connection via ping of default Google DNS server.
 
 STOP HERE if only upgrading to the latest version of a major release.
 The following steps are for major release upgrade (for example, Debian buster to Debian bullseye).
