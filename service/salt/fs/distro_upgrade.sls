@@ -85,6 +85,9 @@ apt-get autoremove
 apt search '~o'
 -- May be useful checking for obsolete packages
 
+-- Re-execute NETWORKING START -> NETWORKING END steps above. Note that a reboot may be need to enable
+-- the new kernel before rebuilding the wireless kernel module.
+
 cd
 olympus/service/salt/util/package_version_repo_updater.pl
 -- Check output files back into git repo
@@ -94,9 +97,6 @@ salt '<server>' state.highstate -v
 -- Update all upgraded dependencies
 
 -- Check for available updates to major dependencies (Django)
-
--- Re-execute NETWORKING START -> NETWORKING END steps above. Note that a reboot may be need to enable
--- the new kernel before rebuilding the wireless kernel module.
 
 Useful salt commands for debugging:
 
