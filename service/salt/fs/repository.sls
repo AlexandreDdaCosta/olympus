@@ -49,7 +49,7 @@ mongodb_repo:
   pkgrepo.managed:
     - dist: {{ pillar['release'] }}/mongodb-org/{{ pillar['mongo-repo'] }}
     - file: /etc/apt/sources.list.d/mongodb-org-{{ pillar['mongo-repo'] }}.list
-    - humanname: MongoDB package repository for {{ pillar['distribution'] }} {{ pillar['previous-release'] }}
+    - humanname: MongoDB package repository for {{ pillar['distribution'] }} {{ pillar['release'] }}
     - name: deb http://repo.mongodb.org/apt/debian {{ pillar['previous-release'] }}/mongodb-org/{{ pillar['mongo-repo'] }} main
   cmd:
     - run
