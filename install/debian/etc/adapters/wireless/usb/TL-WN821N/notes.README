@@ -15,7 +15,7 @@ deb-src http://ftp.us.debian.org/debian/ buster-updates main contrib
 deb http://security.debian.org/ buster/updates main contrib
 deb-src http://security.debian.org/ buster/updates main contrib
 
-3. apt-get install gcc-8 git build-essential
+3. apt-get install gcc-10 git build-essential
 
 Build kit.
 

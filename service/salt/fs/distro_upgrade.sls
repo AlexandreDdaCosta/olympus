@@ -28,6 +28,8 @@ dpkg -C
 apt-mark showhold
 -- Work through issues displayed
 
+-- NETWORKING START
+
 Assuming a kernel update has occurred, here it's likely that a wireless USB network connection will fail
 at reboot due to a broken or missing driver. Follow the driver build steps located in 
 "install/debian/etc/adapters/wireless/usb/<wireless adapter>/notes.README" to create and install
@@ -40,6 +42,8 @@ networking.sh
    1. Connect a networking cable between the router and eno1 and use the PCI ethernet option to obtain a 
       networking connection.
    2. Follow the driver build steps located in "install/debian/etc/adapters/wireless/usb/<wireless adapter>/notes.README".
+
+-- NETWORKING END
 
 reboot now
 ping 8.8.8.8
@@ -90,6 +94,9 @@ salt '<server>' state.highstate -v
 -- Update all upgraded dependencies
 
 -- Check for available updates to major dependencies (Django)
+
+-- Re-execute NETWORKING START -> NETWORKING END steps above. Note that a reboot may be need to enable
+-- the new kernel before rebuilding the wireless kernel module.
 
 Useful salt commands for debugging:
 
