@@ -78,7 +78,7 @@ DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
 apt-get autoremove
 -- Get rid of unused packages
 
-aptitude search '~o'
+apt search '~o'
 -- May be useful checking for obsolete packages
 
 cd

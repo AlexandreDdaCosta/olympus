@@ -14,7 +14,7 @@ backend-packages:
     version: 1.22.2-6.pgdg100+2
   postgresql-14:
     repo: {{ release_name }}-pgdg
-    version: 14.2-1.pgdg100+1
+    version: 14.2-1.pgdg110+1
 
 backend-npm-packages:
   body-parser:
