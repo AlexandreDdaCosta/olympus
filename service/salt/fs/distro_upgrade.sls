@@ -47,7 +47,7 @@ ping 8.8.8.8
 
 STOP HERE if only upgrading to the latest version of a major release.
 The following steps are for major release upgrade (for example, Debian buster to Debian bullseye).
--- Review upgrade procedures for added packages. You may be required to required to upgrade versions
+-- Review upgrade procedures for added packages. You may be required to upgrade versions
    of these packages BEFORE upgrading the major release. This is typically accomplished by:
    1. Upgrading respository entries that point to a specific version of an added package
    2. Use "apt-get update" steps indicated previously to upgrade the added package
