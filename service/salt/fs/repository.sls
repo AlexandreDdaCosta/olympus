@@ -37,6 +37,10 @@ delete_old_backports_file:
     - run
     - name: 'apt-get update --allow-releaseinfo-change'
 
+delete_mongodb_repo_previous:
+  file.absent:
+    - name: /etc/apt/sources.list.d/mongodb-org-{{ pillar['mongo-repo-previous'] }}.list
+
 delete_mongodb_repo:
   file.absent:
     - name: /etc/apt/sources.list.d/mongodb-org-{{ pillar['mongo-repo'] }}.list
