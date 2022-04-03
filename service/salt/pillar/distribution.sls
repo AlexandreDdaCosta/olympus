@@ -1,6 +1,6 @@
 {% set release_name = 'bullseye' %}
 distribution: debian
-mongo-repo: 4.4
+mongo-repo: 5.0
 nodejs-repo: node_16.x
 previous-release: buster
 release: {{ release_name }}
