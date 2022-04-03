@@ -155,7 +155,7 @@ then
 fi
 echo
 
-adapter_dependencies_file="${adapter_conf_path}$ADAPTER/dependencies"
+adapter_dependencies_file="${adapter_conf_path}$ADAPTER/release/$VERSION_CODENAME/dependencies"
 if [ -f $adapter_dependencies_file ]
 then
     echo 'Verifying and installing dependencies.'
