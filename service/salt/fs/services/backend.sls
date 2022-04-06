@@ -1,4 +1,7 @@
 {% set api_path=pillar.www_path+'/node' %}
+{% set cert_dir = pillar.cert_dir %}
+{% set server_cert_file_name = pillar.server_cert_file_name %}
+{% set server_cert_key_file_name = pillar.server_cert_key_file_name %}
 
 include:
   - base: package
@@ -56,7 +59,8 @@ include:
   file.managed:
     - group: postgres
     - mode: 0600
-    - source: salt://services/backend/files/postgresql.conf
+    - source: salt://services/backend/postgresql.conf.jinja
+    - template: jinja
     - user: postgres
 
 postgresql:
@@ -65,6 +69,8 @@ postgresql:
     - watch:
       - file: /etc/postgresql/14/main/pg_hba.conf
       - file: /etc/postgresql/14/main/postgresql.conf
+      - file: {{ cert_dir }}/{{ server_cert_file_name }}
+      - file: {{ cert_dir }}/{{ server_cert_key_file_name }}
       - pkg: pgadmin3
       - pkg: postgresql-14
     - require:

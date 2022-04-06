@@ -1,5 +1,9 @@
 {% set cert_dir = pillar.cert_dir %}
 {% set cert_dir_client = pillar.cert_dir_client %}
+{% set server_cert_file_name = pillar.server_cert_file_name %}
+{% set server_cert_chained_file_name = pillar.server_cert_chained_file_name %}
+{% set server_cert_combined_file_name = pillar.server_cert_combined_file_name %}
+{% set server_cert_key_file_name = pillar.server_cert_key_file_name %}
 
 include:
   - base: package
@@ -83,9 +87,9 @@ include:
 
 # Local certificates and chains
 
-server-key.pem:
+{{ server_cert_key_file_name }}:
   cmd.run:
-    - name: 'openssl genrsa -out {{ cert_dir }}/server-key.pem 4096'
+    - name: 'openssl genrsa -out {{ cert_dir }}/{{ server_cert_key_file_name }} 4096'
     - require: 
       - {{ cert_dir }}/ca.cnf
 
@@ -98,25 +102,25 @@ server.cnf:
     - template: jinja
     - user: root
   cmd.run:
-    - name: 'openssl req -new -config {{ cert_dir }}/server.cnf -key {{ cert_dir }}/server-key.pem -out {{ cert_dir }}/server-csr.pem'
+    - name: 'openssl req -new -config {{ cert_dir }}/server.cnf -key {{ cert_dir }}/{{ server_cert_key_file_name }} -out {{ cert_dir }}/server-csr.pem'
     - require: 
-      - server-key.pem
+      - {{ server_cert_key_file_name }}
 
 create_server_cert:
   cmd.run:
-    - name: 'openssl x509 -req -extfile {{ cert_dir }}/server.cnf -days 365 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in {{ cert_dir }}/server-csr.pem -CA {{ cert_dir }}/ca-crt.pem -CAkey {{ cert_dir }}/ca-key.pem -CAcreateserial -out {{ cert_dir }}/server-crt.pem'
+    - name: 'openssl x509 -req -extfile {{ cert_dir }}/server.cnf -days 365 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in {{ cert_dir }}/server-csr.pem -CA {{ cert_dir }}/ca-crt.pem -CAkey {{ cert_dir }}/ca-key.pem -CAcreateserial -out {{ cert_dir }}/{{ server_cert_file_name }}'
     - require: 
       - server.cnf
 
 create_chained_cert:
   cmd.run:
-    - name: cat {{ cert_dir }}/server-crt.pem {{ cert_dir }}/ca-crt.pem > {{ cert_dir }}/server-crt-chain.pem
+    - name: cat {{ cert_dir }}/{{ server_cert_file_name }} {{ cert_dir }}/ca-crt.pem > {{ cert_dir }}/{{ server_cert_chained_file_name }}
     - require: 
       - create_server_cert
 
 create_combined_cert:
   cmd.run:
-    - name: cat {{ cert_dir }}/server-key.pem {{ cert_dir }}/server-crt.pem > {{ cert_dir }}/server-key-crt.pem
+    - name: cat {{ cert_dir }}/{{ server_cert_key_file_name }} {{ cert_dir }}/{{ server_cert_file_name }} > {{ cert_dir }}/{{ server_cert_combined_file_name }}
     - require: 
       - create_chained_cert
 
@@ -136,8 +140,8 @@ trust_server_cert:
     - force: True
     - group: root
     - mode: 644
-    - name: /usr/local/share/ca-certificates/server-crt.pem.crt
-    - source: {{ cert_dir }}/server-crt.pem
+    - name: /usr/local/share/ca-certificates/{{ server_cert_file_name }}.crt
+    - source: {{ cert_dir }}/{{ server_cert_file_name }}
     - user: root
     - require: 
       - copy_CA_cert_local
