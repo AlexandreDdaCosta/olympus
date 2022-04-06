@@ -32,7 +32,7 @@ delete_old_backports_file:
     - dist: {{ pillar['release'] }}-backports
     - file: /etc/apt/sources.list.d/{{ pillar['release'] }}-backports.list
     - humanname: Added packages for Debian
-    - name: deb http://ftp.debian.org/debian {{ pillar['release'] }}-backports main
+    - name: deb http://ftp.debian.org/debian {{ pillar['release'] }}-backports main contrib non-free
   cmd:
     - run
     - name: 'apt-get update --allow-releaseinfo-change'
