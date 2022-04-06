@@ -27,7 +27,7 @@ delete_old_backports_file:
   file.absent:
     - name: /etc/apt/sources.list.d/{{ pillar['previous-release'] }}-backports.list
 
-/etc/apt/sources.list.d/{{ pillar['release'] }}-backports.list
+/etc/apt/sources.list.d/{{ pillar['release'] }}-backports.list:
   file.managed:
     - group: root
     - makedirs: False
