@@ -63,6 +63,12 @@ include:
     - template: jinja
     - user: postgres
 
+{{ cert_dir }}/{{ server_cert_file_name }}:
+  file.exists
+
+{{ cert_dir }}/{{ server_cert_key_file_name }}:
+  file.exists
+
 postgresql:
   service.running:
     - enable: True
