@@ -27,12 +27,14 @@ delete_old_backports_file:
   file.absent:
     - name: /etc/apt/sources.list.d/{{ pillar['previous-release'] }}-backports.list
 
-{{ pillar['release'] }}_backports_repo:
-  pkgrepo.managed:
-    - dist: {{ pillar['release'] }}-backports
-    - file: /etc/apt/sources.list.d/{{ pillar['release'] }}-backports.list
-    - humanname: Added packages for Debian
-    - name: deb http://ftp.debian.org/debian {{ pillar['release'] }}-backports main contrib non-free
+/etc/apt/sources.list.d/{{ pillar['release'] }}-backports.list
+  file.managed:
+    - group: root
+    - makedirs: False
+    - mode: 0644
+    - source: salt://repository/backports.list.jinja
+    - template: jinja
+    - user: root
   cmd:
     - run
     - name: 'apt-get update --allow-releaseinfo-change'
