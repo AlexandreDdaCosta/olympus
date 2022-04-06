@@ -3,5 +3,5 @@
 firmware:
 {% if check_BCM57 != '0' %}
   firmware-bnx2:
-    version: 20190114-2
+    version: 20210315-3
 {% endif %}
