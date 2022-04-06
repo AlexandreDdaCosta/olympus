@@ -6,7 +6,7 @@ nodejs-repo: node_16.x
 previous-release: buster
 release: {{ release_name }}
 release-version: 11
-{% set python3 = 3.7 %}
+{% set python3 = 3.9 %}
 
 python3-version: {{ python3 }}
 olympus-app-package-path: /usr/local/lib/python{{ python3 }}/dist-packages
