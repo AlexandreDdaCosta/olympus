@@ -1,5 +1,6 @@
 {% set release_name = 'bullseye' %}
 distribution: debian
+# Current CPU does not have AVX flag, meaning that it cannot currently run mongo5
 mongo-repo: 4.4
 mongo-repo-previous: 4.2
 nodejs-repo: node_16.x
