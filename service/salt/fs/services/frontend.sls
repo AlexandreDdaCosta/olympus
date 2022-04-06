@@ -1,6 +1,6 @@
 {% set frontend_path=pillar.www_path+'/django/interface' %}
 {% set frontend_sass_path=frontend_path+'/sass' %}
-{%- set random_password_generator='echo "import random; import string; print \'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100))" | /usr/bin/python' -%}
+{%- set random_password_generator='echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100)))" | /usr/bin/python3' -%}
 
 include:
   - base: package
