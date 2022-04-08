@@ -23,7 +23,7 @@ Build kit.
 
 Need headers to build!
 
-5. git clone https://github.com/jeremyb31/rtl8192eu-linux-driver.git
+5. git clone https://github.com/clnhub/rtl8192eu-linux.git
 
 Driver repository.
 TIP: Change directory first to /tmp.
@@ -34,6 +34,7 @@ TIP: Change directory first to /tmp.
 After a successful build the current directory will include "8192eu.ko", the kernel module.
 
 8. make install
+9. modprobe 8192eu
 
-Currently, with the wireless adapter connected, the interface appears in "/sys/class/net" after a reboot.
-Recommend researching a command that will do this without reboot.
+With the wireless adapter connected, the interface appears with "ls /sys/class/net" as "wlxd0374568a96a" or similar
+("wlx" is the Debian prefix for wireless network interfaces).
