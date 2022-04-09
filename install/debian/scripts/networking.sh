@@ -332,25 +332,32 @@ if [ "$auto_initialize" == 'Y' ] || [ "$auto_initialize" == 'y' ]
 then
     find $INTERFACES_FILE_PATH -type f | xargs sed -i -e 's/^auto/# auto/g'
     auto_string="auto $NETWORK_INTERFACE"$'\n'
-    export AUTO="$auto_string"
-    export IP="$IP"
-    export NETWORK_INTERFACE="$NETWORK_INTERFACE"
-    export WPA_CONF=''
-    if [[ $interface_type -eq 2 ]]
-    then
-        export WPA_CONF='wpa-conf /etc/wpa_supplicant.conf'
-    fi
-    INTERFACES_FILE="${INTERFACES_FILE_PATH}${INTERFACES_FILE_PREFIX}${NETWORK_INTERFACE}"
-    envsubst \$AUTO,\$IP,\$NETWORK_INTERFACE,\$WPA_CONF < "$interfaces_source_file" > "$INTERFACES_FILE"
-    chown root:root $INTERFACES_FILE
-    chmod 0644 $INTERFACES_FILE
+else
+    auto_string="# auto $NETWORK_INTERFACE"$'\n'
 fi
+export AUTO="$auto_string"
+export IP="$IP"
+export NETWORK_INTERFACE="$NETWORK_INTERFACE"
+export WPA_CONF=''
+if [[ $interface_type -eq 2 ]]
+then
+    export WPA_CONF='wpa-conf /etc/wpa_supplicant.conf'
+fi
+INTERFACES_FILE="${INTERFACES_FILE_PATH}${INTERFACES_FILE_PREFIX}${NETWORK_INTERFACE}"
+envsubst \$AUTO,\$IP,\$NETWORK_INTERFACE,\$WPA_CONF < "$interfaces_source_file" > "$INTERFACES_FILE"
+chown root:root $INTERFACES_FILE
+chmod 0644 $INTERFACES_FILE
 
-up_interface=`/usr/bin/find /sys/class/net/*/operstate | xargs grep -l up`
-IFS=/
-read -a up_file_pieces <<< $up_interface
-unset IFS
-running_interface="${up_file_pieces[4]}"
+get_running_interface () {
+    up_interface=`/usr/bin/find /sys/class/net/*/operstate | xargs grep -l up`
+    IFS=/
+    read -a up_file_pieces <<< $up_interface
+    unset IFS
+    running_interface="${up_file_pieces[4]}"
+    echo "$running_interface"
+}
+running_interface=$( get_running_interface )
+
 started=false
 running_ip_address=`hostname -I`
 my_ip_address=`who am i | awk '{print $5}' | sed -r 's/[\(/)]//g'`
@@ -392,11 +399,11 @@ else
         echo 'Start-up interface: USB wireless'
         startup_ip_address=`find $INTERFACES_FILE* | xargs grep address | awk '{print $2}'`
         echo "Start-up IP address: $startup_ip_address"
-    elif [ $startup_interface == '' ]]
+    elif [[ $startup_interface == '' ]]
     then
-        echo 'WARNING: Start-up interface: None'
+        echo 'WARNING: No start-up interface configured.'
     else
-        echo 'WARNING: Start-up interface: Unknown'
+        echo 'WARNING: Start-up interface unknown.'
     fi
 fi
 
@@ -414,7 +421,6 @@ option_three=''
 option_three_reboot=false
 option_four=''
 option_four_reboot=false
-option_five=''
 echo "1. Exit without further commands"
 echo "2. Test network connectivity"
 
@@ -451,12 +457,12 @@ then
         option_three_reboot=true
     fi
 fi
-if $option_three
+if [ $option_three ]
 then
     operations+='/3'
 fi
 
-# Possible OPTION FOUR
+# Possible OPTION THREE or FOUR
 if [[ $running_interface == $PREFIX_ETHERNET_INTERFACE* ]]
 then
     OPTIONAL_INTERFACES_FILE="${INTERFACES_FILE_PATH}${INTERFACES_FILE_PREFIX}${PREFIX_WIRELESS_INTERFACE}"
@@ -464,7 +470,7 @@ then
     file_count=`find $OPTIONAL_INTERFACES_FILE* | wc -l`
     if [[ $file_count -eq 1 ]]
     then
-        if $option_three
+        if [ $option_three ]
         then
             option_four='switch_active'
             echo '4. Switch to USB wifi interface'
@@ -478,20 +484,31 @@ then
     if [ $startup_ip_address != $running_ip_address ] && [[ $my_ip_address =~ $IP_REGEX ]] && [ $my_ip_address != $startup_ip_address ]
     then
         echo '   WARNING: Reboot required due to change of IP address!'
-        if [[ $option_four == '' ]]
+        if [ ! $option_four ]
         then
             option_three_reboot=true
         else
             option_four_reboot=true
         fi
     fi
-fi
-
-# Possible OPTION FIVE
-
-if ! $option_three_reboot || ! $option_four_reboot
+elif [[ $running_interface == $PREFIX_WIRELESS_INTERFACE* ]]
 then
-    echo 'ALEX'
+    INTERFACES_FILE="${INTERFACES_FILE_PATH}${INTERFACES_FILE_PREFIX}${PREFIX_ETHERNET_INTERFACE}"
+    if [[ $startup_interface == $INTERFACES_FILE* ]]
+    then
+        if [ $option_three ]
+        then
+            option_four='switch_active'
+            echo '4. Switch to PCI ethernet interface'
+            operations+='/4'
+        else
+            option_three='switch_active'
+            echo '3. Switch to PCI ethernet interface'
+            operations+='/3'
+        fi
+        echo '   WARNING: Reboot required due to interruption of wireless interface!'
+        option_four_reboot=true
+    fi
 fi
 
 started=false
@@ -508,34 +525,107 @@ then
     is_up=`/usr/bin/ping -w 2 -c 1 $PING_TEST_IP | grep " 0% packet loss" | wc -l`
     if [[ $is_up -eq 1 ]]
     then
-        echo "Network connectivity is verified."
+        echo "Network connection through [$running_interface] is verified."
     else
         echo "Network cannot be reached."
     fi
 elif [[ $operation_type -eq 3 ]]
 then
-    if [[ $option_three == '' ]]
+    if [ ! $option_three ]
     then
         echo 'ERROR: Bad choice; skipping further actions.'
     else
-        echo 'ALEX OPTION 3'
         if [[ $option_three == 'enable_network' ]]
         then
-        elsif $option_three_reboot
+            echo
+            echo 'Select interface to start:'
+            echo
+            available_interfaces=(`ls ${INTERFACES_FILE_PATH}`)
+            enable_options=()
+            index=0
+            enable_option_numbers=''
+            for available_interface in "${available_interfaces[@]}"
+            do
+                this_interface=`echo "$available_interface" | sed "s/^${INTERFACES_FILE_PREFIX}//"`
+                enable_options[$index]=$this_interface
+                ((index++))
+                if [ ! $enable_option_numbers ]
+                then
+                    enable_option_numbers=$index
+                else
+                    enable_option_numbers+="/$index"
+                fi
+            done
+            index=1
+            choices=()
+            valid_choices=()
+            valid_choices[0]=''
+            for enable_option in "${enable_options[@]}"
+            do
+                if [[ $enable_option == $PREFIX_ETHERNET_INTERFACE* ]]
+                then
+                    interface_description='PCI ethernet interface'
+                elif [[ $enable_option == $PREFIX_WIRELESS_INTERFACE* ]]
+                then
+                    interface_description='USB wireless interface'
+                else
+                    continue
+                fi
+                echo "$index. $interface_description [$enable_option]" 
+                choices+=($index)
+                valid_choices[$index]=$enable_option
+                ((index++))
+            done
+            echo
+            printf "Choose interface ($enable_option_numbers). > "
+            read selected_start_interface
+            if [[ " ${choices[*]} " == *"$selected_start_interface"* ]]
+            then
+                to_start=${valid_choices[$selected_start_interface]}
+                echo "Starting $to_start."
+                ifup $to_start
+                started=true
+            else
+                echo 'ERROR: Bad choice; skipping further actions.'
+            fi
+        elif [ $option_three_reboot ]
         then
-            echo 'Rebooting in 5 seconds ...'
+            echo 'Rebooting in 5 seconds ... exiting ...'
             sleep 5
+            reboot now && exit
         else # $running_interface == $PREFIX_ETHERNET_INTERFACE*
-        then
+            echo 'Restarting ethernet interface ...'
+            ifdown $running_interface && ifup $running_interface
+            started=true
         fi
     fi
 elif [[ $operation_type -eq 4 ]]
 then
-    if [[ $option_four == '' ]]
+    if [ ! $option_four ]
     then
         echo 'ERROR: Bad choice; skipping further actions.'
     else
-        echo 'ALEX OPTION 4'
+        if [ $option_four_reboot ]
+        then
+            echo 'Rebooting in 5 seconds ... exiting ...'
+            sleep 5
+            reboot now && exit
+        else
+            echo 'Switching to USB wireless interface.'
+            IFS=$'\n'
+            net_interfaces=(`ls /sys/class/net`)
+            for potential_interface in "${net_interfaces[@]}"
+            do
+                if [[ $potential_interface == $PREFIX_WIRELESS_INTERFACE* ]]
+                then
+                    NETWORK_INTERFACE=${potential_interface}
+                break
+                fi 
+            done
+            unset IFS
+            ifdown $running_interface && ifup $NETWORK_INTERFACE
+            started=true
+        fi
     fi
 else
     echo 'ERROR: Bad choice; skipping further actions.'
@@ -544,7 +634,8 @@ fi
 if $started
 then
     verified=false
-    echo "Verifying network through []."
+    running_interface=$( get_running_interface )
+    echo "Verifying network through [$running_interface]."
     sleep_seconds=3
     for i in {1..30}
     do
@@ -556,7 +647,7 @@ then
         is_up=`/usr/bin/ping -w 2 -c 1 $PING_TEST_IP | grep " 0% packet loss" | wc -l`
         if [[ $is_up -eq 1 ]]
         then
-            echo "Network connection through [] is verified."
+            echo "Network connection through [$running_interface] is verified."
             verified=true
             break
         elif [[ $i -lt 30 ]]
@@ -566,7 +657,7 @@ then
     done
     if [[ $verified == false ]]
     then
-        echo "ERROR: Unable to verify network connection through interface []; exiting." 1>&2
+        echo "ERROR: Unable to verify network connection through [$running_interface]; exiting." 1>&2
         exit 1
     fi
 fi
