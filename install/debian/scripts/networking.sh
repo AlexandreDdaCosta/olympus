@@ -588,7 +588,7 @@ then
             else
                 echo 'ERROR: Bad choice; skipping further actions.'
             fi
-        elif [ $option_three_reboot ]
+        elif $option_three_reboot
         then
             echo 'Rebooting in 5 seconds ... exiting ...'
             sleep 5
@@ -605,7 +605,7 @@ then
     then
         echo 'ERROR: Bad choice; skipping further actions.'
     else
-        if [ $option_four_reboot ]
+        if $option_four_reboot
         then
             echo 'Rebooting in 5 seconds ... exiting ...'
             sleep 5
@@ -634,8 +634,7 @@ fi
 if $started
 then
     verified=false
-    running_interface=$( get_running_interface )
-    echo "Verifying network through [$running_interface]."
+    echo "Verifying network."
     sleep_seconds=3
     for i in {1..30}
     do
@@ -647,6 +646,7 @@ then
         is_up=`/usr/bin/ping -w 2 -c 1 $PING_TEST_IP | grep " 0% packet loss" | wc -l`
         if [[ $is_up -eq 1 ]]
         then
+            running_interface=$( get_running_interface )
             echo "Network connection through [$running_interface] is verified."
             verified=true
             break
@@ -657,7 +657,7 @@ then
     done
     if [[ $verified == false ]]
     then
-        echo "ERROR: Unable to verify network connection through [$running_interface]; exiting." 1>&2
+        echo "ERROR: Unable to verify network connection; exiting." 1>&2
         exit 1
     fi
 fi
