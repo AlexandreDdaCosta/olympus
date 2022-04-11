@@ -27,6 +27,8 @@ packages:
     version: 7.82.0-2~bpo11+1
   fail2ban:
     version: 0.11.2-2
+  libuser:
+    version: 1:0.62~dfsg-0.4
   ntp:
     version: 1:4.2.8p15+dfsg-1
   ntpdate:

@@ -63,20 +63,12 @@ include:
     - template: jinja
     - user: postgres
 
-{{ cert_dir }}/{{ server_cert_file_name }}:
-  file.exists
-
-{{ cert_dir }}/{{ server_cert_key_file_name }}:
-  file.exists
-
 postgresql:
   service.running:
     - enable: True
     - watch:
       - file: /etc/postgresql/14/main/pg_hba.conf
       - file: /etc/postgresql/14/main/postgresql.conf
-      - file: {{ cert_dir }}/{{ server_cert_file_name }}
-      - file: {{ cert_dir }}/{{ server_cert_key_file_name }}
       - pkg: pgadmin3
       - pkg: postgresql-14
     - require:

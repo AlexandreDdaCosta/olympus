@@ -186,6 +186,40 @@ transfer_client_certficate_key_files:
     - require:
       - regen_trusted_CA
 
+# START postgres section
+postgresql.{{ server_cert_key_file_name }}:
+  cmd.run:
+    - name: 'openssl genrsa -out {{ cert_dir }}/postgresql.{{ server_cert_key_file_name }} 4096'
+    - require: 
+      - {{ cert_dir }}/ca.cnf
+
+postgresql.server.cnf:
+  file.managed:
+    - group: root
+    - mode: 600
+    - name: {{ cert_dir }}/postgresql.server.cnf
+    - source: salt://security/server.cnf.jinja
+    - template: jinja
+    - user: root
+  cmd.run:
+    - name: 'openssl req -new -config {{ cert_dir }}/postgresql.server.cnf -key {{ cert_dir }}/postgresql.{{ server_cert_key_file_name }} -out {{ cert_dir }}/postgresql.server-csr.pem'
+    - require: 
+      - postgresql.{{ server_cert_key_file_name }}
+
+create_postgresql_server_cert:
+  cmd.run:
+    - name: 'openssl x509 -req -extfile {{ cert_dir }}/postgresql.server.cnf -days 365 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in {{ cert_dir }}/postgresql.server-csr.pem -CA {{ cert_dir }}/ca-crt.pem -CAkey {{ cert_dir }}/ca-key.pem -CAcreateserial -out {{ cert_dir }}/postgresql.{{ server_cert_file_name }}'
+    - require: 
+      - postgresql.server.cnf
+
+cert_postgresql_restart:
+  cmd.run:
+    - name: service postgresql status; if [ $? = 0 ]; then service postgresql restart; fi;
+    - require:
+      - regen_trusted_CA
+
+# END postgres section
+
 cert_www_restart:
   cmd.run:
     - name: service nginx status; if [ $? = 0 ]; then service nginx restart; fi;
