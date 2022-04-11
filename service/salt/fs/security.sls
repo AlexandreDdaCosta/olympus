@@ -186,6 +186,13 @@ transfer_client_certficate_key_files:
     - require:
       - regen_trusted_CA
 
+# Trigger all minions to restart nginx, if running
+cert_www_restart:
+  cmd.run:
+    - name: salt '*' cmd.run 'service nginx status; if [ $? = 0 ]; then service nginx restart; fi;'
+    - require:
+      - regen_trusted_CA
+
 # START postgres section
 
 postgresql.{{ server_cert_key_file_name }}:
@@ -226,12 +233,6 @@ cert_postgresql_restart:
       - regen_trusted_CA
 
 # END postgres section
-
-cert_www_restart:
-  cmd.run:
-    - name: service nginx status; if [ $? = 0 ]; then service nginx restart; fi;
-    - require:
-      - regen_trusted_CA
 
 cert_mongo_restart:
   cmd.run:
