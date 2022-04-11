@@ -499,15 +499,16 @@ then
         if [ $option_three ]
         then
             option_four='switch_active'
+            option_four_reboot=true
             echo '4. Switch to PCI ethernet interface'
             operations+='/4'
         else
             option_three='switch_active'
+            option_three_reboot=true
             echo '3. Switch to PCI ethernet interface'
             operations+='/3'
         fi
         echo '   WARNING: Reboot required due to interruption of wireless interface!'
-        option_four_reboot=true
     fi
 fi
 
