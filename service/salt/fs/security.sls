@@ -187,6 +187,7 @@ transfer_client_certficate_key_files:
       - regen_trusted_CA
 
 # START postgres section
+
 postgresql.{{ server_cert_key_file_name }}:
   cmd.run:
     - name: 'openssl genrsa -out {{ cert_dir }}/postgresql.{{ server_cert_key_file_name }} 4096'
@@ -211,6 +212,15 @@ create_postgresql_server_cert:
     - name: 'openssl x509 -req -extfile {{ cert_dir }}/postgresql.server.cnf -days 365 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in {{ cert_dir }}/postgresql.server-csr.pem -CA {{ cert_dir }}/ca-crt.pem -CAkey {{ cert_dir }}/ca-key.pem -CAcreateserial -out {{ cert_dir }}/postgresql.{{ server_cert_file_name }}'
     - require: 
       - postgresql.server.cnf
+
+postgresql_server_key_group_perms:
+  file.managed:
+    - group: ssl-cert
+    - mode: 640
+    - name: postgresql.{{ server_cert_key_file_name }}
+    - require: 
+      - postgresql.{{ server_cert_key_file_name }}
+    - user: root
 
 cert_postgresql_restart:
   cmd.run:
