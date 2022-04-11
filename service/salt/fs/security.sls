@@ -190,9 +190,15 @@ transfer_client_certficate_key_files:
 
 postgresql.{{ server_cert_key_file_name }}:
   cmd.run:
-    - name: 'openssl genrsa -out {{ cert_dir }}/postgresql.{{ server_cert_key_file_name }} 4096'
+    - name: 'openssl genrsa -out {{ cert_dir }}/postgresql.{{ server_cert_key_file_name }} 4096; chmod 0640 {{ cert_dir }}/postgresql.{{ server_cert_key_file_name }}'
     - require: 
       - {{ cert_dir }}/ca.cnf
+
+postgresql.{{ server_cert_key_file_name }}.perms:
+  cmd.run:
+    - name: 'if grep -q ssl-cert /etc/group; then chgrp ssl-cert {{ cert_dir }}/postgresql.{{ server_cert_key_file_name }}; fi;'
+    - require: 
+      - postgresql.{{ server_cert_key_file_name }}
 
 postgresql.server.cnf:
   file.managed:
@@ -212,15 +218,6 @@ create_postgresql_server_cert:
     - name: 'openssl x509 -req -extfile {{ cert_dir }}/postgresql.server.cnf -days 365 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in {{ cert_dir }}/postgresql.server-csr.pem -CA {{ cert_dir }}/ca-crt.pem -CAkey {{ cert_dir }}/ca-key.pem -CAcreateserial -out {{ cert_dir }}/postgresql.{{ server_cert_file_name }}'
     - require: 
       - postgresql.server.cnf
-
-postgresql_server_key_group_perms:
-  file.managed:
-    - group: ssl-cert
-    - mode: 640
-    - name: postgresql.{{ server_cert_key_file_name }}
-    - require: 
-      - postgresql.{{ server_cert_key_file_name }}
-    - user: root
 
 cert_postgresql_restart:
   cmd.run:
