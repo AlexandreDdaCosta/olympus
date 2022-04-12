@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.urls import url
 
 from interface.apps.welcome.views import Home
 

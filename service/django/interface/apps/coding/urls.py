@@ -1,4 +1,4 @@
-from django.conf.urls import path
+from django.urls import path
 
 from interface.apps.coding.views import TheKuiperBelt
 
