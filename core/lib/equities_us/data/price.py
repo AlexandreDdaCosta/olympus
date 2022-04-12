@@ -148,34 +148,3 @@ class Quote(data.Connection):
         latest['symbol'] = symbol
         latest['volume'] = quote['06. volume']
         return latest
-
-    def real_time(self,symbols,**kwargs):
-        # "symbols" can be a list or a string
-        if isinstance(symbols,list):
-            url_symbols = ",".join(symbols)
-            url = ALPHAVANTAGE_URL + '&function=BATCH_STOCK_QUOTES&outputsize=full&symbols=' + url_symbols
-        elif isinstance(symbols,str):
-            url = ALPHAVANTAGE_URL + '&function=BATCH_STOCK_QUOTES&outputsize=full&symbols=' + symbols
-        else:
-            raise Exception("Variable 'symbols' must be a list or string.")
-        request = urllib.request.urlopen(url)
-        reply = json.loads(re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8")))
-        if 'Stock Quotes' not in reply:
-            raise Exception("Reply format failure: "+str(reply))
-        real_time_quotes = {}
-        if isinstance(symbols,list):
-            for quote in reply['Stock Quotes']:
-                real_time_quote = {}
-                real_time_quote['date'] = re.sub(r'\s+.*$',r'',quote['4. timestamp'])
-                real_time_quote['price'] = quote['2. price']
-                real_time_quote['symbol'] = quote['1. symbol']
-                real_time_quote['timestamp'] = quote['4. timestamp']
-                real_time_quote['volume'] = quote['3. volume']
-                real_time_quotes[quote['1. symbol']] = real_time_quote
-        else:
-            real_time_quotes['date'] = re.sub(r'\s+.*$',r'',reply['Stock Quotes'][0]['4. timestamp'])
-            real_time_quotes['price'] = reply['Stock Quotes'][0]['2. price']
-            real_time_quotes['symbol'] = reply['Stock Quotes'][0]['1. symbol']
-            real_time_quotes['timestamp'] = reply['Stock Quotes'][0]['4. timestamp']
-            real_time_quotes['volume'] = reply['Stock Quotes'][0]['3. volume']
-        return real_time_quotes
