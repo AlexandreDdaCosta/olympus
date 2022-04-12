@@ -19,15 +19,15 @@ bigdata-packages:
 
 bigdata-pip3-packages:
   numpy:
-    version: == 1.21.5
+    version: == 1.22.3
   freetype-py:
     version: == 2.2.0
   ipython:
-    version: == 7.32.0
+    version: == 8.2.0
   nose:
     version: == 1.3.7
   pandas:
-    version: == 1.3.5
+    version: == 1.4.2
   sympy:
     version: == 1.10.1
   jupyter:
@@ -35,13 +35,13 @@ bigdata-pip3-packages:
   matplotlib:
     version: == 3.5.1
   scipy:
-    version: == 1.7.3
+    version: == 1.8.0
 
 pip3-packages:
   jsonschema:
     version: == 4.4.0
   pymongo:
-    version: == 4.0.2
+    version: == 4.1.0
   wget:
     version: == 3.2
 

@@ -18,7 +18,7 @@ backend-packages:
 
 backend-npm-packages:
   body-parser:
-    version: 1.19.2
+    version: 1.20.0
   chai:
     version: 4.3.6
   express:
@@ -30,7 +30,7 @@ backend-npm-packages:
   mocha:
     version: 9.2.2
   mongodb:
-    version: 4.4
+    version: 4.5.0
   pg:
     version: 8.7.3
   pg-hstore:
@@ -40,7 +40,7 @@ backend-npm-packages:
   request:
     version: 2.88.2
   sequelize:
-    version: 6.17.0
+    version: 6.18.0
   sequelize-cli:
     version: 6.4.1
   supervisor:
