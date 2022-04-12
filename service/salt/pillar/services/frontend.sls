@@ -8,7 +8,7 @@ frontend-packages:
 
 frontend-pip3-packages:
   django:
-    version: == 3.2.12
+    version: == 4.0.4
   psycopg2:
     version: == 2.9.3
   psycopg2-binary:
