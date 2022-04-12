@@ -1,7 +1,7 @@
-from django.conf.urls import url
+from django.conf.urls import path
 
 from interface.apps.photography.views import SpaceshipEarth
 
 urlpatterns = [
-    url(r'', SpaceshipEarth.as_view(), name='photography_spaceshipearth'),
+    path(r'', SpaceshipEarth.as_view(), name='photography_spaceshipearth'),
 ]

@@ -1,7 +1,7 @@
-from django.conf.urls import url
+from django.conf.urls import path
 
 from interface.apps.coding.views import TheKuiperBelt
 
 urlpatterns = [
-    url(r'', TheKuiperBelt.as_view(), name='coding_thekuiperbelt'),
+    path(r'', TheKuiperBelt.as_view(), name='coding_thekuiperbelt'),
 ]

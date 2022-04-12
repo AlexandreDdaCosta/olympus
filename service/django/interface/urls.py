@@ -1,15 +1,15 @@
-from django.conf.urls import include, url
+from django.conf.urls import include, path
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
 
 urlpatterns = [
-    url(r'^$', RedirectView.as_view(url='/welcome/')),
-    url(r'^admin/', admin.site.urls),
-    url(r'^blog/', include('interface.apps.blog.urls')),
-    url(r'^coding/', include('interface.apps.coding.urls')),
-    url(r'^login/', auth_views.LoginView.as_view()),
-    url(r'^logout/', auth_views.LogoutView.as_view()),
-    url(r'^photography/', include('interface.apps.photography.urls')),
-    url(r'^welcome/', include('interface.apps.welcome.urls')),
+    path(r'^$', RedirectView.as_view(url='/welcome/')),
+    path(r'^admin/', admin.site.urls),
+    path(r'^blog/', include('interface.apps.blog.urls')),
+    path(r'^coding/', include('interface.apps.coding.urls')),
+    path(r'^login/', auth_views.LoginView.as_view()),
+    path(r'^logout/', auth_views.LogoutView.as_view()),
+    path(r'^photography/', include('interface.apps.photography.urls')),
+    path(r'^welcome/', include('interface.apps.welcome.urls')),
 ]
