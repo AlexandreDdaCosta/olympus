@@ -5,13 +5,13 @@ from datetime import timedelta
 from dateutil.parser import parse
 from pytz import timezone
 
-from olympus import USER
+from olympus import DOWNLOAD_DIR, USER
 
 import olympus.equities_us.data as data
 
 ALPHAVANTAGE_API_KEY = 'CHLVRDAEA445JOCB'
 ALPHAVANTAGE_URL = 'https://www.alphavantage.co/query?apikey=' + ALPHAVANTAGE_API_KEY
-ALTERNATE_URL = 'https://api.iextrading.com'
+YAHOO_FINANCE_URL = 'https://query1.finance.yahoo.com/v7/finance/download/'
 
 DAILY_PRICE_COLLECTION = 'price_daily'
 
@@ -26,7 +26,6 @@ class Quote(data.Connection):
         regen = kwargs.get('regen',False)
         start_date = kwargs.get('start_date',None)
         end_date = kwargs.get('end_date',None)
-        regen = kwargs.get('regen',False)
         tz = timezone('EST')
         now = dt.now(tz)
         # First we check/update stored data to save on bandwidth
@@ -61,60 +60,10 @@ class Quote(data.Connection):
         elif symbol_db_data is None:
             regenerate  = True
         if regen is True or regenerate is True:
-            url = ALPHAVANTAGE_URL + '&function=TIME_SERIES_DAILY_ADJUSTED&outputsize=full&symbol=' + str(symbol)
-            request = urllib.request.urlopen(url)
-            raw_json_reply = re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8"))
-            json.loads(raw_json_reply) # Test for valid json
-            # Clean up returned result
-            json_reply = ''
-            adjusted_close = None
-            open = None
-            close = None
-            high = None
-            low = None
-            for line in raw_json_reply.splitlines():
-                line = line.rstrip()
-                if 'dividend amount\": \"0.0000' in line:
-                    continue
-                if 'split coefficient' in line:
-                    json_reply = json_reply[:-2]
-                    json_reply = json_reply + '\n'
-                    continue
-                line = re.sub(r'^\s*?(\")([0-9]*\.\s+)(.*)$',r'\1\3',line)
-                if 'adjusted close' in line:
-                    adjusted_close = float(re.sub(r'[^0-9.]',r'',line))
-                elif 'open' in line:
-                    open = float(re.sub(r'[^0-9.]',r'',line))
-                elif 'close' in line:
-                    close = float(re.sub(r'[^0-9.]',r'',line))
-                elif 'high' in line:
-                    high = float(re.sub(r'[^0-9.]',r'',line))
-                elif 'low' in line:
-                    low = float(re.sub(r'[^0-9.]',r'',line))
-                if adjusted_close is not None and open is not None and close is not None and high is not None and low is not None:
-                    adjustment = adjusted_close / close
-                    json_reply += '"adjusted open": "'+str("%.2f" % (open * adjustment) ) + '",\n'
-                    json_reply += '"adjusted high": "'+str("%.2f" % (high * adjustment) ) + '",\n'
-                    json_reply += '"adjusted low": "'+str("%.2f" % (low * adjustment) ) + '",\n'
-                    adjusted_close = None
-                    open = None
-                    close = None
-                    high = None
-                    low = None
-                json_reply += line + '\n'
-            write_reply = '{"Symbol":"'+symbol+'","Time":"'+str(now)+'","Quote":'+json_reply + '}'
-            if regen is True or symbol_db_data is not None:
-                collection.delete_many({ "Symbol":symbol })
-            collection.insert_one(json.loads(write_reply))
-            symbol_db_data = collection.find_one({"Symbol":symbol})
-        returndata = symbol_db_data['Quote']['Time Series (Daily)']
-        if start_date is not None:
-            start_date = dt.strptime(start_date,"%Y-%m-%d")
-            returndata = {key: value for key, value in returndata.items() if dt.strptime(key,"%Y-%m-%d") > start_date}
-        if end_date is not None:
-            end_date = dt.strptime(end_date,"%Y-%m-%d")
-            returndata = {key: value for key, value in returndata.items() if dt.strptime(key,"%Y-%m-%d") < end_date}
-        return collections.OrderedDict(sorted(returndata.items()))
+            url = YAHOO_FINANCE_URL + str(symbol) + '?period1=0&period2=9999999999&interval=1d&events=history&includeAdjustedClose=true'
+            target_file = DOWNLOAD_DIR(self.user)+str(symbol)+'-daily.csv'
+            response = urllib.request.urlretrieve(url,target_file)
+            # Verify retrieved csv
 
     def intraday(self,symbol,interval=1,**kwargs):
         # Interval results:

@@ -3,7 +3,7 @@ from jsonschema import validate
 
 import olympus.equities_us.data as data
 
-from olympus import USER, DOWNLOAD_DIR, LOCKFILE_DIR, WORKING_DIR
+from olympus import DOWNLOAD_DIR, LOCKFILE_DIR, USER, WORKING_DIR
 
 INIT_TYPE = 'symbols'
 JSON_FILE_SUFFIX = '-companylist.json'

@@ -13,12 +13,15 @@ class TestPrice(testing.Test):
         self.quote = price.Quote()
 
     def test_daily(self):
-        quotes = self.quote.daily(TEST_SYMBOL_ONE)
+        #quotes = self.quote.daily(TEST_SYMBOL_ONE)
+        #print(json.dumps(quotes,indent=4,sort_keys=True))
+        quotes = self.quote.daily(TEST_SYMBOL_ONE,regen=True)
         print(json.dumps(quotes,indent=4,sort_keys=True))
-
+"""
     def test_intra_day(self):
         quote = self.quote.intraday(TEST_SYMBOL_ONE)
         print(json.dumps(quote,indent=4,sort_keys=True))
+"""
 
 if __name__ == '__main__':
 	unittest.main()
