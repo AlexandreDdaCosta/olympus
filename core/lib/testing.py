@@ -1,4 +1,4 @@
-import argparse, inspect, random, re, string, sys, unittest
+import argparse, inspect, os, pwd, random, re, string, sys, unittest
 
 DEFAULT_STRING_LENGTH = 60
 GREP_TEXT = 'Search string located in file.'
@@ -83,3 +83,11 @@ class Test(unittest.TestCase):
 
     def random_string(self,length=DEFAULT_STRING_LENGTH):
         return ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(length))
+    
+    def validRunUser(self,username):
+        username = str(username)
+        uid = os.getuid()
+        run_username = pwd.getpwuid(uid)[0]
+        if username != run_username:
+            raise Exception('Run user ' + run_username + ' does not match required run user ' + username)
+        return username

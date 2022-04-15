@@ -1,16 +1,27 @@
 #!/usr/bin/env python3
 
-import json, unittest
+import json, sys, unittest
+
+from olympus import USER
 
 import olympus.equities_us.data.price as price
 import olympus.testing as testing
 
 from olympus.equities_us import *
 
+# Standard run parameters:
+# sudo su -s /bin/bash -c '... price.py' USER
+# Optionally:
+# '... price.py <current_run_username>'
+
 class TestPrice(testing.Test):
 
     def setUp(self):
-        self.quote = price.Quote()
+        if len(sys.argv) == 2:
+            username = self.validRunUser(sys.argv[1])
+        else:
+            username = self.validRunUser(USER)
+        self.quote = price.Quote(username)
 
     def test_daily(self):
         #quotes = self.quote.daily(TEST_SYMBOL_ONE)
@@ -24,4 +35,7 @@ class TestPrice(testing.Test):
 """
 
 if __name__ == '__main__':
-	unittest.main()
+    if len(sys.argv) == 2:
+        unittest.main(argv=['run_username'])
+    else:
+        unittest.main()
