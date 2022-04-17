@@ -139,7 +139,7 @@ backend-user:
     - user: root
 {#
 command line: 
-mongo --ssl --sslCAFile /etc/ssl/localcerts/ca-crt.pem --sslPEMKeyFile /etc/ssl/localcerts/server-key-crt.pem --sslAllowInvalidHostnames
+mongo --tls --tlsCAFile /etc/ssl/localcerts/ca-crt.pem --tlsCertificateKeyFile /etc/ssl/localcerts/server-key-crt.pem --tlsAllowInvalidHostnames
 #}
 
 /etc/nginx/conf.d/node.conf:
