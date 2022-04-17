@@ -165,12 +165,30 @@ class Init(data.Connection):
 
 class Read(data.Connection):
 
-    def __init__(self,**kwargs):
-        super(Read,self).__init__(**kwargs)
+    def __init__(self,user=USER,**kwargs):
+        super(Read,self).__init__(user,**kwargs)
         if SYMBOL_COLLECTION not in self.db.list_collection_names():
             raise Exception('Symbol collection "' + SYMBOL_COLLECTION + '" not located in database "' + self.database + '". Collections located: ' + str(self.db.list_collection_names()))
         self.collection = self.db[SYMBOL_COLLECTION]
 
     def get_symbol(self,symbol,**kwargs):
         symbol = symbol.upper()
-        return self.collection.find_one({"Symbol":symbol})
+        result = self.collection.find_one({"Symbol":symbol})
+        if result is None:
+            raise SymbolNotFoundError(symbol)
+        return result
+
+class SymbolNotFoundError(Exception):
+    """ Raised for non-existent symbol
+    Attributes:
+        symbol: Missing symbol
+        message: Explanation
+    """
+
+    def __init__(self, symbol, message='Queried symbol not found in symbol database'):
+        self.symbol = symbol
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return self.message + ' : ' + self.symbol

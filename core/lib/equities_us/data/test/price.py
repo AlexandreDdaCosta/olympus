@@ -3,6 +3,7 @@
 import json, sys, unittest
 
 from olympus import USER
+from olympus.equities_us.data.symbols import SymbolNotFoundError
 
 import olympus.equities_us.data.price as price
 import olympus.testing as testing
@@ -24,15 +25,18 @@ class TestPrice(testing.Test):
         self.quote = price.Quote(username)
 
     def test_daily(self):
-        #quotes = self.quote.daily(TEST_SYMBOL_ONE)
-        #print(json.dumps(quotes,indent=4,sort_keys=True))
+        with self.assertRaises(SymbolNotFoundError):
+            quotes = self.quote.daily(TEST_SYMBOL_FAKE)
         quotes = self.quote.daily(TEST_SYMBOL_ONE,regen=True)
         print(json.dumps(quotes,indent=4,sort_keys=True))
-"""
+        quotes = self.quote.daily(TEST_SYMBOL_ONE)
+        print(json.dumps(quotes,indent=4,sort_keys=True))
+
     def test_intra_day(self):
+        with self.assertRaises(SymbolNotFoundError):
+            quotes = self.quote.daily(TEST_SYMBOL_FAKE)
         quote = self.quote.intraday(TEST_SYMBOL_ONE)
         print(json.dumps(quote,indent=4,sort_keys=True))
-"""
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:

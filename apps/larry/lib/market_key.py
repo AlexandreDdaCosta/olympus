@@ -1016,7 +1016,7 @@ class Calculate(object):
         self.user = user
         self.regen = kwargs.get('regen',False)
         self.symbol = symbol
-        symbol_object = symbols.Read()
+        symbol_object = symbols.Read(user)
         self.symbol_record = symbol_object.get_symbol(symbol)
         if self.symbol_record is None:
             raise Exception('Symbol ' + symbol + ' not located.')
