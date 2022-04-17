@@ -6,13 +6,10 @@ from dateutil.parser import parse
 from pytz import timezone
 
 from olympus import DOWNLOAD_DIR, USER
+from olympus.equities_us.datasources import ALPHAVANTAGE, YAHOO_FINANCE
 
 import olympus.equities_us.data as data
 import olympus.equities_us.data.symbols as symbols
-
-ALPHAVANTAGE_API_KEY = 'CHLVRDAEA445JOCB'
-ALPHAVANTAGE_URL = 'https://www.alphavantage.co/query?apikey=' + ALPHAVANTAGE_API_KEY
-YAHOO_FINANCE_URL = 'https://query1.finance.yahoo.com/v7/finance/download/'
 
 DAILY_PRICE_COLLECTION = 'price_daily'
 
@@ -63,7 +60,7 @@ class Quote(data.Connection):
         elif symbol_db_data is None:
             regenerate  = True
         if regen is True or regenerate is True:
-            url = YAHOO_FINANCE_URL + str(symbol) + '?period1=0&period2=9999999999&interval=1d&events=history&includeAdjustedClose=true'
+            url = YAHOO_FINANCE['url'] + str(symbol) + '?period1=0&period2=9999999999&interval=1d&events=history&includeAdjustedClose=true'
             target_file = DOWNLOAD_DIR(self.user)+str(symbol)+'-daily.csv'
             response = urllib.request.urlretrieve(url,target_file)
             with open(target_file,'r') as f:
@@ -112,14 +109,14 @@ class Quote(data.Connection):
         # 
         if interval not in [1,5,15,30,60]:
             raise Exception("If specified, 'interval' must be in the set: 1, 5, 15, 30, 60.")
-        url = ALPHAVANTAGE_URL + '&function=TIME_SERIES_INTRADAY&outputsize=full&symbol=' + str(symbol) + '&interval=' + str(interval) + 'min'
+        url = ALPHAVANTAGE['url'] + '&function=TIME_SERIES_INTRADAY&outputsize=full&symbol=' + str(symbol) + '&interval=' + str(interval) + 'min'
         request = urllib.request.urlopen(url)
         json_reply = re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8"))
         return json.loads(json_reply)
 
     def latest(self,symbol,**kwargs):
         # Complete price quote for latest trading day
-        url = ALPHAVANTAGE_URL + '&function=GLOBAL_QUOTE&symbol=' + symbol
+        url = ALPHAVANTAGE['url'] + '&function=GLOBAL_QUOTE&symbol=' + symbol
         request = urllib.request.urlopen(url)
         quote = json.loads(re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8")))
         quote = quote['Global Quote']
