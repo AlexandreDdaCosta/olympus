@@ -1,3 +1,5 @@
+import fcntl, os
+
 import olympus.equities_us.data as data
 
 from olympus import USER, DOWNLOAD_DIR, LOCKFILE_DIR, WORKING_DIR
