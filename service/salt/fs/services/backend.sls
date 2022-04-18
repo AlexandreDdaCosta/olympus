@@ -250,10 +250,44 @@ node-backend:
     - require:
       - sls: services/web
 
-initialize_olympus:
+initialize_olympus_equities:
   cmd.run:
-    - name: "su -s /bin/bash -c '/usr/local/bin/olympus/init.py --graceful' {{ pillar['core-app-user'] }}"
+    - name: "su -s /bin/bash -c '/usr/local/bin/olympus/init_equities.py --graceful' {{ pillar['core-app-user'] }}"
     - user: root
     - require: 
       - mongod-backend
       - node-backend
+
+{% comment %}
+ALEX
+initialize_datasource_credentials:
+{% for datasource_name, datasource in pillar.get('datasource_credentials', {}).items() %}
+{{ datasource_name }}:
+  module.run:
+    - name: mongodb.insert
+    - m_name: TestUser
+    - roles: ["admin"]
+    - database: admin
+    - user: admin
+    - password: ''
+    - host: localhost
+    - port: 27017
+    - require: 
+      - initialize_olympus
+{% endfor %}
+{{ username }}:
+
+  group:
+    - name: {{ username }}
+    - present
+  user:
+    - fullname: {{ user['fullname'] }}
+    - groups:
+      - {{ username }}
+equities_us_data_sources:
+  ALPHAVANTAGE:
+    keyname: apikey
+    key: CHLVRDAEA445JOCB
+    issue_epoch_date: 1514782800
+  TD_AMERITRADE:
+{% endcomment %}

@@ -4,6 +4,11 @@ from olympus import CAFILE, CERTKEYFILE, MONGO_URL, USER, DOWNLOAD_DIR
 
 DATABASE = 'equities_us'
 INDEX_SUFFIX = '_idx'
+URLS = {
+   "ALPHAVANTAGE": "https://www.alphavantage.co/query?apikey=",
+   "YAHOO_FINANCE": "https://query1.finance.yahoo.com/v7/finance/download/",
+   "TD_AMERITRADE": "https://api.tdameritrade.com/v1/"
+}
 
 # Collections
 
