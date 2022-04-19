@@ -264,7 +264,7 @@ initialize_olympus_equities:
 {{ datasource_name }}_delete:
   module.run:
     - name: mongodb.remove
-    - m_collection: credentials
+    - collection: credentials
     - database: equities_us
     - query: '[{ "DataSource": {{ datasource_name }} }]'
     - require: 
@@ -273,9 +273,9 @@ initialize_olympus_equities:
 {{ datasource_name }}_insert:
   module.run:
     - name: mongodb.insert
-    - m_objects: '[{ "DataSource": {{ datasource_name }}, "KeyName": {{ datasource['KeyName'] }}, "Key": {{ datasource['Key'] }}, "IssueEpochDate": {{datasource['IssueEpochDate'] }} }]'
-    - m_collection: credentials
+    - collection: credentials
     - database: equities_us
+    - objects: '[{ "DataSource": {{ datasource_name }}, "KeyName": {{ datasource['KeyName'] }}, "Key": {{ datasource['Key'] }}, "IssueEpochDate": {{datasource['IssueEpochDate'] }} }]'
     - require: 
       - initialize_olympus_equities
 
