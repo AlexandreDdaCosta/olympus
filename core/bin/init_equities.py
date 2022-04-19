@@ -5,7 +5,6 @@ import sys, time
 from argparse import ArgumentParser
 
 from olympus.equities_us.data.credentials import InitCredentials
-from olympus.equities_us.data.options import InitOptions
 from olympus.equities_us.data.symbols import InitSymbols
 
 parser = ArgumentParser(sys.argv)
@@ -24,10 +23,6 @@ print("Begin symbol import.")
 process = InitSymbols(force=args.force,graceful=args.graceful,verbose=args.verbose)
 process.populate_collections()
 print("Ended symbol import.")
-print("Begin options import.")
-process = InitOptions(force=args.force,graceful=args.graceful,verbose=args.verbose)
-process.populate_collections()
-print("Ended options import.")
 if args.verbose == True:
     end = time.time()
     print('Elapsed seconds: ' + str(end - start))

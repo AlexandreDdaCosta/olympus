@@ -19,7 +19,7 @@ SYMBOL_SCHEMA_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpat
 class InitSymbols(data.Connection):
 
     def __init__(self,user=USER,**kwargs):
-        super(Init,self).__init__(user,INIT_TYPE,**kwargs)
+        super(InitSymbols,self).__init__(user,INIT_TYPE,**kwargs)
         self.force = kwargs.get('force',False)
         self.graceful = kwargs.get('graceful',False)
         self.verbose = kwargs.get('verbose',False)

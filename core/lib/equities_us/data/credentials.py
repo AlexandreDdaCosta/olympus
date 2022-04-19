@@ -13,6 +13,7 @@ class InitCredentials(data.Connection):
         super(InitCredentials,self).__init__(user,INIT_TYPE,**kwargs)
         self.force = kwargs.get('force',False)
         self.graceful = kwargs.get('graceful',False)
+        self.verbose = kwargs.get('verbose',False)
         self.working_dir = WORKING_DIR(self.user)
 
     def populate_collections(self):
@@ -24,7 +25,7 @@ class InitCredentials(data.Connection):
         fcntl.flock(lockfilehandle,fcntl.LOCK_EX|fcntl.LOCK_NB)
         lockfilehandle.write(str(os.getpid()))
         os.chdir(self.working_dir)
-       
+      
         if self._record_start() is not True:
             self._clean_up(lockfilehandle,False)
             if self.graceful is True:

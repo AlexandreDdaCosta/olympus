@@ -98,14 +98,3 @@ class Connection():
             self.db.init.delete_many(deletedict)
             return False
         return True
-
-# External connections
-
-class Connection():
-
-    def __init__(self,user=USER,init_type=None,**kwargs):
-        self.user = user
-        self.verbose = kwargs.get('verbose',False)
-        self.database = DATABASE
-        if self.verbose is True:
-            print('Establishing MongoDB client.')
