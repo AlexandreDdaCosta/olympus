@@ -266,6 +266,7 @@ initialize_olympus_equities:
     - name: mongodb.remove
     - collection: credentials
     - database: equities_us
+    - port: 27017
     - query: '[{ "DataSource": {{ datasource_name }} }]'
     - require: 
       - initialize_olympus_equities
@@ -276,6 +277,7 @@ initialize_olympus_equities:
     - collection: credentials
     - database: equities_us
     - objects: '[{ "DataSource": {{ datasource_name }}, "KeyName": {{ datasource['KeyName'] }}, "Key": {{ datasource['Key'] }}, "IssueEpochDate": {{datasource['IssueEpochDate'] }} }]'
+    - port: 27017
     - require: 
       - initialize_olympus_equities
 
