@@ -1,4 +1,4 @@
-import fcntl, os
+import fcntl, os, time
 
 import olympus.equities_us.data as data
 
@@ -34,9 +34,20 @@ class InitCredentials(data.Connection):
             else:
                 raise Exception('Initialization record check failed; cannot record start of initialization.')
     
-        # Create collection
+        # Create collection using a dummy entry
        
         collection = self.db[CREDENTIALS_COLLECTION]
+        dummy_record = {'DataSource': 'DUMMY', 'KeyName': 'dummy_name', 'Key': 'dummy_key', 'IssueEpochDate': int(time.time())}
+        collection.replace_one({'DataSource': 'DUMMY'}, dummy_record, upsert=True)
+        if self.verbose is True:
+            print('Indexing collection.')
+        try:
+            if self.verbose is True:
+                print('Indexing "DataSource".')
+            collection.create_index("DataSource")
+        except:
+            self._clean_up(lockfilehandle)
+            raise
 		
         self._clean_up(lockfilehandle)
 	
