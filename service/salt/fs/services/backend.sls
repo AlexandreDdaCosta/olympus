@@ -250,6 +250,8 @@ node-backend:
     - require:
       - sls: services/web
 
+# START equities project backend section
+
 initialize_olympus_equities:
   cmd.run:
     - name: "su -s /bin/bash -c '/usr/local/bin/olympus/init_equities.py --graceful' {{ pillar['core-app-user'] }}"
@@ -257,3 +259,25 @@ initialize_olympus_equities:
     - require: 
       - mongod-backend
       - node-backend
+
+initialize_datasource_credentials:
+{% for datasource_name, datasource in pillar.get('datasource_credentials', {}).items() %}
+{{ datasource_name }}_delete:
+  module.run:
+    - name: mongodb.remove
+    - m_collection: credentials
+    - database: equities_us
+    - query: '[{ "DataSource": {{ datasource_name }} }]'
+    - require: 
+      - initialize_olympus_equities
+
+{{ datasource_name }}_insert:
+  module.run:
+    - name: mongodb.insert
+    - m_objects: '[{ "DataSource": {{ datasource_name }}, "KeyName": {{ datasource['KeyName'] }}, "Key": {{ datasource['Key'] }}, "IssueEpochDate": {{datasource['IssueEpochDate'] }} }]'
+    - m_collection: credentials
+    - database: equities_us
+    - require: 
+      - initialize_olympus_equities
+
+{% endfor %}
