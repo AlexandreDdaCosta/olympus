@@ -260,7 +260,7 @@ initialize_olympus_equities:
       - mongod-backend
       - node-backend
 
-{% for datasource_name, datasource in pillar.get('datasource_credentials', {}).items() %}
+{% for datasource_name, datasource in pillar.get('equities_credentials', {}).items() %}
 {{ datasource_name }}_delete:
   module.run:
     - name: mongodb.remove
