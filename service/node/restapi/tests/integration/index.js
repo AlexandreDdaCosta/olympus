@@ -1,12 +1,13 @@
-var chai = require('chai');
-var expect = chai.expect;
-var fs = require('fs'); 
-var https = require('https'); 
-var request = require('request');
+const chai = require('chai');
+const expect = chai.expect;
+const fs = require('fs'); 
+const https = require('https'); 
+const request = require('request');
 
-var url = 'http://zeus:8889/api/';
-var message = 'Olympus back-end API listening for requests via express/node.js.'
+const url = 'http://zeus:8889/api/';
+const message = 'Olympus back-end API listening for requests via express/node.js.'
 
+/*
 describe('Connection to HTTP index page of API', function () {
   it('Should return HTTP code 200 with JSON reply including a "message" key.', function (done) {
     request.get(url, function (err, response, body){
@@ -41,3 +42,4 @@ describe('Connection to HTTPS index page of API', function () {
     request.end();
   }); 
 }); 
+*/
