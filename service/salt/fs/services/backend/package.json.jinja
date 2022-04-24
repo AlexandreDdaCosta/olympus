@@ -1,11 +1,11 @@
 {
     "dependencies": {
-{%- for packagename, package in pillar.get('backend-npm-packages', {}).items() -%}
-      {%- if 'last_entry' in package and package['last_entry'] -%}
+{% for packagename, package in pillar.get('backend-npm-packages', {}).items() -%}
+      {%- if 'last_entry' in package and package['last_entry'] %}
       "{{ packagename }}": "{{ package['version'] }}"
-      {%- else -%}
+      {%- else %}
       "{{ packagename }}": "{{ package['version'] }}",
-      {%- endif -%}
+      {%- endif %}
 {%- endfor -%}
     },
     "main": "app.js",
