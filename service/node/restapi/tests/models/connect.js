@@ -15,7 +15,7 @@ var options =  {
     sslKey: ssl_key
   }
 };
-var url = 'mongodb://127.0.0.1:27017/olympus?ssl=true';
+var url = 'mongodb://127.0.0.1:27017/olympus?tls=true';
 var test_collection = 'test'
 
 var findDocuments = function(db, callback) {

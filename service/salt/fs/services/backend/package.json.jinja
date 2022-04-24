@@ -1,7 +1,11 @@
 {
     "dependencies": {
 {%- for packagename, package in pillar.get('backend-npm-packages', {}).items() %}
+      {% if package['last_entry'] %}
+      "{{ packagename }}": "{{ package['version'] }}"
+      {% else %}
       "{{ packagename }}": "{{ package['version'] }}",
+      {% endif %}
 {%- endfor %}
     },
     "main": "app.js",
@@ -9,5 +13,5 @@
     "scripts": {
         "tests": "mocha lib/**/**.spec.js"
     },
-    "version": "{{ pillar['backend-version'] }}",
+    "version": "{{ pillar['backend-version'] }}"
 }

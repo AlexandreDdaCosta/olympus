@@ -1,7 +1,5 @@
-var express = require('express');
-var router = express.Router();
-router.get('/', function(req, res) {
-    console.log('/ index.js');
-    res.json({ message: 'Olympus back-end API listening for requests via express/node.js.' });   
-});
+const express = require('express');
+const router = express.Router();
+const indexController = require('../controllers/index');
+router.get('/', indexController.newIndex);
 module.exports = router; 

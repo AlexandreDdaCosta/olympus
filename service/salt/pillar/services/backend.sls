@@ -44,5 +44,5 @@ backend-npm-packages:
   sequelize-cli:
     version: 6.4.1
   supervisor:
+    last_entry: True
     version: 0.12.0
-
