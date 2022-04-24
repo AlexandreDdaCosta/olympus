@@ -27,6 +27,8 @@ backend-npm-packages:
     version: 4.16.1
   fs-extra:
     version: 10.0.1
+  jest:
+    version: 27.5.1
   mocha:
     version: 9.2.2
   mongodb:
