@@ -8,7 +8,7 @@
     - fullname: {{ user['fullname'] }}
     - groups:
       - {{ username }}
-      {% if user['is_staff'] -%}
+      {% if 'is_staff' in user and user['is_staff'] -%}
       - git
       - staff
       {%- endif %}
