@@ -2,6 +2,7 @@ const chai = require('chai');
 const expect = chai.expect;
 const fs = require('fs'); 
 const https = require('https'); 
+const jest = require('jest'); 
 const request = require('request');
 
 const url = 'http://zeus:8889/api/';
