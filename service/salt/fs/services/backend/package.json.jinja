@@ -5,7 +5,7 @@
       "{{ packagename }}": "{{ package['version'] }}"
       {%- else %}
       "{{ packagename }}": "{{ package['version'] }}",
-      {%- endif %}
+      {%- endif -%}
 {% endfor -%}
     },
     "main": "app.js",
