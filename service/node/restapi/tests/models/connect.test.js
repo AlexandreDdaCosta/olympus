@@ -1,12 +1,69 @@
-// Excerpted from http://mongodb.github.io/node-mongodb-native/2.2/quick-start/quick-start/
+// sudo su -s /bin/bash -c 'export NODE_PATH=/usr/lib/nodejs:/usr/lib/node_modules:/usr/share/javascript; cd /srv/www/node/restapi; npm test ./tests/models/connect.test.js' node
 
-var chai = require('chai');
-var expect = chai.expect;
-var fs = require('fs');
+const fs = require('fs'); 
+const MongoClient = require('mongodb').MongoClient;
+const options = { 
+  server: {
+    sslKey: fs.readFileSync('/etc/ssl/localcerts/client-key.pem'), 
+    sslCert: fs.readFileSync('/etc/ssl/localcerts/client-crt.pem'), 
+    sslCA: fs.readFileSync('/etc/ssl/certs/ca-crt-supervisor.pem.pem')
+  }
+}; 
+const url = 'mongodb://127.0.0.1:27017/test?tls=true';
+const test_collection = 'test'
+
+/*
+Initialize test commands
+*/
+
+const insertDocuments = (db, callback) => {
+  var collection = db.collection(test_collection);
+  collection.insertMany([
+    {a : 1}, {a : 2}, {a : 3}
+  ], function(err, result) {
+    expect(err).toBe(null);
+    expect(result.result.ok).toBe(1);
+    expect(result.result.n).toBe(3);
+    expect(result.insertedCount).toBe(3);
+    expect(result.ops.length).toBe(3);
+    expect(result.ops[0]['a']).toBe(1);
+    expect(result.ops[1]['a']).toBe(2);
+    expect(result.ops[2]['a']).toBe(3);
+    console.log("Inserted three documents into test collection.");
+  });
+}
+
+const removeCollection = (db, callback) => {
+  var collection = db.collection(test_collection);
+  collection.remove( function(err, result) {
+    expect(err).toBe(null);
+    expect(result.result.ok).toBe(1);
+    console.log("Dropped the test collection.");
+  });    
+}
+
+/*
+Run test commands
+*/
+
+describe('MongoDB basic connection and test database and collection operations', () => {
+  test('Connect to test database.', () => {
+    MongoClient.connect(url, options, (err, db) => {
+      console.log(db);
+      if (err) return (err);
+      removeCollection(db, function() {
+        insertDocuments(db, function() {
+        });
+      });
+    });
+  });
+});
+
+
+/*
+ALEX
 
 var ca_cert = fs.readFileSync('/usr/local/share/ca-certificates/ca-crt-supervisor.pem.crt');
-var ssl_cert = fs.readFileSync('/etc/ssl/localcerts/client-crt.pem');
-var ssl_key = fs.readFileSync('/etc/ssl/localcerts/client-key.pem');
 var MongoClient = require('mongodb').MongoClient;
 var options =  {
   server: {
@@ -15,8 +72,6 @@ var options =  {
     sslKey: ssl_key
   }
 };
-var url = 'mongodb://127.0.0.1:27017/olympus?tls=true';
-var test_collection = 'test'
 
 var findDocuments = function(db, callback) {
   var collection = db.collection(test_collection);
@@ -148,3 +203,4 @@ describe('MongoDB basic connection and operations', function () {
   });
 });
 
+*/
