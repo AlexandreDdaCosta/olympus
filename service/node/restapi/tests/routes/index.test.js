@@ -13,7 +13,7 @@ Command line: curl zeus:8889
 describe('Connection to HTTP index page of API, node port', () => {
   test('Should return HTTP code 200 with JSON reply including a "message" key.', () => {
     request.get(url, function (err, response){
-      if (err) return (err);
+      if (err) throw new Error(err);
       expect(response.statusCode).toBe(200);
       jsonobject = JSON.parse(response.body);
       expect(jsonobject['message']).toBe(message);
@@ -40,7 +40,7 @@ const options = {
 describe('Connection to HTTPS index page of API', () => {
   test('Should return HTTP code 200 with JSON reply including a "message" key.', () => {
     const req = https.request(options, function (err, resp) { 
-      if (err) return (err);
+      if (err) throw new Error(err);
       expect(resp.statusCode).toBe(200);
       jsonobject = JSON.parse(resp.body);
       expect(jsonobject['message']).toBe(message);

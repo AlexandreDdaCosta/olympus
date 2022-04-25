@@ -2,19 +2,16 @@
 
 const fs = require('fs'); 
 const MongoClient = require('mongodb').MongoClient;
-const options = { 
-  server: {
-    sslKey: fs.readFileSync('/etc/ssl/localcerts/client-key.pem'), 
-    sslCert: fs.readFileSync('/etc/ssl/localcerts/client-crt.pem'), 
-    sslCA: fs.readFileSync('/etc/ssl/certs/ca-crt-supervisor.pem.pem')
-  }
-}; 
-const url = 'mongodb://127.0.0.1:27017/test?tls=true';
 const test_collection = 'test'
+const url = 'mongodb://192.168.1.179:27017/test?tls=true';
+const tls_connect_options = {
+  tlsAllowInvalidHostnames: true, 
+  tlsCAFile: '/etc/ssl/certs/ca-crt-supervisor.pem.pem',
+  tlsCertificateKeyFile: '/etc/ssl/localcerts/client-crt-key.pem'
+};
 
 /*
 Initialize test commands
-*/
 
 const insertDocuments = (db, callback) => {
   var collection = db.collection(test_collection);
@@ -32,13 +29,15 @@ const insertDocuments = (db, callback) => {
     console.log("Inserted three documents into test collection.");
   });
 }
+*/
 
-const removeCollection = (db, callback) => {
-  var collection = db.collection(test_collection);
+const removeCollection = (client, callback) => {
+  var collection = client.collection(test_collection);
   collection.remove( function(err, result) {
     expect(err).toBe(null);
     expect(result.result.ok).toBe(1);
     console.log("Dropped the test collection.");
+    callback();
   });    
 }
 
@@ -48,30 +47,17 @@ Run test commands
 
 describe('MongoDB basic connection and test database and collection operations', () => {
   test('Connect to test database.', () => {
-    MongoClient.connect(url, options, (err, db) => {
-      console.log(db);
-      if (err) return (err);
-      removeCollection(db, function() {
-        insertDocuments(db, function() {
-        });
-      });
+    MongoClient.connect(url, tls_connect_options, (err, client) => {
+      if (err) throw new Error(err);
+//      removeCollection(client, function() {});
+//        insertDocuments(client, function() {
+      client.close();
     });
   });
 });
 
-
 /*
 ALEX
-
-var ca_cert = fs.readFileSync('/usr/local/share/ca-certificates/ca-crt-supervisor.pem.crt');
-var MongoClient = require('mongodb').MongoClient;
-var options =  {
-  server: {
-    sslCA: ca_cert,
-    sslCert: ssl_cert,
-    sslKey: ssl_key
-  }
-};
 
 var findDocuments = function(db, callback) {
   var collection = db.collection(test_collection);
