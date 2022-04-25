@@ -2,6 +2,11 @@ const fs = require('fs');
 const https = require('https'); 
 const request = require('request');
 
+//
+Test direct backend connection, bypassing nginx
+Command line: curl localhost:8889
+//
+
 const url = 'http://zeus:8889/api/';
 const message = 'Olympus back-end API listening for requests via express/node.js.'
 
