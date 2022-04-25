@@ -29,8 +29,6 @@ backend-npm-packages:
     version: 10.0.1
   jest:
     version: 27.5.1
-  mocha:
-    version: 9.2.2
   mongodb:
     version: 4.5.0
   pg:
