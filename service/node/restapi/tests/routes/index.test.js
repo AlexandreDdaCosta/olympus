@@ -22,9 +22,8 @@ describe('Connection to HTTP index page of API, node port', () => {
 });
 
 /*
-Test nginx proxy connection
-Command line: curl https://zeus:4443 ????? ALEX
-curl -k https://zeus:4443 -v -key /etc/ssl/localcerts/client-key.pem -cacert /etc/ssl/certs/ca-crt-supervisor.pem.pem -cert /etc/ssl/localcerts/client-crt.pem
+Test nginx proxy connection (https)
+Command line: openssl s_client -connect zeus:4443 -cert /etc/ssl/localcerts/client-crt.pem -key /etc/ssl/localcerts/client-key.pem ... GET /
 */
 
 const fs = require('fs'); 
