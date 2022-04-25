@@ -40,7 +40,7 @@ describe('Connection to HTTPS index page of API', () => {
   test('Should return HTTP code 200 with JSON reply including a "message" key.', () => {
     const req = https.request(options, function (err, resp) { 
       if (err) return (err);
-      expect(response.statusCode).toBe(200);
+      expect(resp.statusCode).toBe(200);
       jsonobject = JSON.parse(resp.body);
       expect(jsonobject['message']).toBe(message);
     });
