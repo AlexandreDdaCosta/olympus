@@ -32,6 +32,6 @@ caIssuers;URI.0 = http://{{ pillar['core-domain-CN'] }}/ca.cert
 subjectAltName = @alt_names
 
 [ alt_names ]
-{%- for ip in ip_addresses -%}
+{% for ip in ip_addresses -%}
 IP.{{ loop.index }} = {{ ip }}
-{% endfor -%}
+{%- endfor -%}
