@@ -14,11 +14,11 @@ ST           = {{ pillar['core-domain-ST'] }}
 L            = {{ pillar['core-domain-L'] }}
 O            = {{ pillar['core-domain-O'] }}
 OU           = {{ pillar['core-domain-OU'] }}
-CN           = localhost
+CN           = 127.0.0.1
 emailAddress = {{ pillar['core-email'] }}
 
 [ req_attributes ]
-challengePassword = localhost
+challengePassword = 127.0.0.1
 
 [ v3_ca ]
 authorityInfoAccess = @issuer_info
