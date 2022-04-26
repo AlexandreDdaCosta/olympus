@@ -3,7 +3,7 @@
 const fs = require('fs'); 
 const MongoClient = require('mongodb').MongoClient;
 const test_collection = 'test'
-const url = 'mongodb://192.168.1.179:27017/test?tls=true';
+const url = 'mongodb://127.0.0.1:27017/test?tls=true';
 const tls_connect_options = {
   tlsAllowInvalidHostnames: true, 
   tlsCAFile: '/etc/ssl/certs/ca-crt-supervisor.pem.pem',

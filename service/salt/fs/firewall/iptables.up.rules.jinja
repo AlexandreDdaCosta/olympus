@@ -64,8 +64,6 @@
 {%- if ip != '127.0.0.1' %}
 # Backend API
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -s {{ ip }} -j ACCEPT
-# MongoDB
--A INPUT -p tcp -m state --state NEW -m tcp --dport 27017 -s {{ ip }} -j ACCEPT
 {% endif -%}
 {%- endfor -%}
 {%- elif hostinfo['server'] == 'worker' %}
@@ -74,8 +72,6 @@
 {% for ip in hostinfo['ipv4'] %}
 # Backend API
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -s {{ ip }} -j ACCEPT
-# MongoDB
--A INPUT -p tcp -m state --state NEW -m tcp --dport 27017 -s {{ ip }} -j ACCEPT
 {%- endfor -%}
 {%- endif -%}
 {%- endif -%}
