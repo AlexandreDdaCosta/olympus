@@ -19,6 +19,7 @@ distinguished_name = req_distinguished_name
 attributes         = req_attributes
 prompt             = no
 output_password    = {{ pillar['random_key']['ca_key'] }}
+req_extensions     = v3_req
 
 [ req_distinguished_name ]
 C            = {{ pillar['core-domain-C'] }}

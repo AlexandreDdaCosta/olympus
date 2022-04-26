@@ -7,6 +7,7 @@ distinguished_name = req_distinguished_name
 attributes         = req_attributes
 prompt             = no
 x509_extensions    = v3_ca
+req_extensions     = v3_req
 
 [ req_distinguished_name ]
 C            = {{ pillar['core-domain-C'] }}
@@ -22,13 +23,15 @@ challengePassword = {{ client_hostname }}
 
 [ v3_ca ]
 authorityInfoAccess = @issuer_info
-subjectAltName = @alt_names
-
-[ alt_names ]
-{% for ip in ip_addresses %}
-IP.{{ loop.index }} = {{ ip }}
-{% endfor -%}
 
 [ issuer_info ]
 OCSP;URI.0 = http://ocsp.{{ pillar['core-domain-CN'] }}/
 caIssuers;URI.0 = http://{{ pillar['core-domain-CN'] }}/ca.cert
+
+[ v3_req ]
+subjectAltName = @alt_names
+
+[ alt_names ]
+{%- for ip in ip_addresses -%}
+IP.{{ loop.index }} = {{ ip }}
+{% endfor -%}
