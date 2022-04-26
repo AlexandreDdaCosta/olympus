@@ -37,6 +37,6 @@ challengePassword = {{ pillar['random_key']['ca_key'] }}
 subjectAltName = @alt_names
 
 [ alt_names ]
-{% for ip in ip_addresses -%}
+{%- for ip in ip_addresses %}
 IP.{{ loop.index }} = {{ ip }}
 {%- endfor -%}
