@@ -25,7 +25,7 @@ authorityInfoAccess = @issuer_info
 subjectAltName = @alt_names
 
 [ alt_names ]
-{% for ip in salt['mine.get']('{{ client_hostname }}', 'ipv4').item() -%}
+{% for ip {{ ip_addresses }} -%}
 IP.{{ loop.index }} = {{ ip }}
 {% endfor -%}
 

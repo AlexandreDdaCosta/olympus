@@ -63,6 +63,7 @@ include:
   file.managed:
     - context:
       client_hostname: {{ host }}
+      ip_addresses: {{ hostinfo['ipv4'] }}
     - group: root
     - mode: 600
     - source: salt://security/client.cnf.jinja
