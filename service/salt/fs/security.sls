@@ -32,7 +32,7 @@ include:
 {{ cert_dir }}/ca.cnf:
   file.managed:
     - context:
-      ip_addresses: {{ grains.get['ipv4'] }}
+      ip_addresses: {{ grains.get('ipv4') }}
     - group: root
     - mode: 600
     - source: salt://security/ca.cnf.jinja
