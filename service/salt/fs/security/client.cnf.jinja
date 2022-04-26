@@ -14,14 +14,20 @@ ST           = {{ pillar['core-domain-ST'] }}
 L            = {{ pillar['core-domain-L'] }}
 O            = {{ pillar['core-domain-O'] }}
 OU           = {{ pillar['core-domain-OU'] }}
-CN           = 127.0.0.1
+CN           = {{ client_hostname }}
 emailAddress = {{ pillar['core-email'] }}
 
 [ req_attributes ]
-challengePassword = 127.0.0.1
+challengePassword = {{ client_hostname }}
 
 [ v3_ca ]
 authorityInfoAccess = @issuer_info
+subjectAltName = @alt_names
+
+[ alt_names ]
+{% for ip in salt['mine.get']('{{ client_hostname }}', 'ipv4').item() -%}
+IP.{{ loop.index }} = {{ ip }}
+{% endfor -%}
 
 [ issuer_info ]
 OCSP;URI.0 = http://ocsp.{{ pillar['core-domain-CN'] }}/
