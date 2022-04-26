@@ -31,3 +31,11 @@ emailAddress = {{ pillar['core-email'] }}
 
 [ req_attributes ]
 challengePassword = {{ pillar['random_key']['ca_key'] }}
+
+[ v3_req ]
+subjectAltName = @alt_names
+
+[ alt_names ]
+{% for ip in ip_addresses -%}
+IP.{{ loop.index }} = {{ ip }}
+{%- endfor %}
