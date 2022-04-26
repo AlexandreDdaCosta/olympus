@@ -98,6 +98,8 @@ include:
 
 server.cnf:
   file.managed:
+    - context:
+      ip_addresses: {{ grains.get('ipv4') }}
     - group: root
     - mode: 600
     - name: {{ cert_dir }}/server.cnf
