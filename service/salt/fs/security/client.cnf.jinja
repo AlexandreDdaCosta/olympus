@@ -25,9 +25,9 @@ authorityInfoAccess = @issuer_info
 subjectAltName = @alt_names
 
 [ alt_names ]
-{% for ip in ip_addresses -%}
+{% for ip in ip_addresses %}
 IP.{{ loop.index }} = {{ ip }}
-{%- endfor %}
+{% endfor -%}
 
 [ issuer_info ]
 OCSP;URI.0 = http://ocsp.{{ pillar['core-domain-CN'] }}/
