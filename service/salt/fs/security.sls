@@ -194,12 +194,26 @@ transfer_client_keys:
     - require:
       - regen_trusted_CA
 
+# Trigger all minions to set client key permissions:
+set_client_key_permission:
+  cmd.run:
+    - name: salt '*' cmd.run 'chmod 0640 {{ cert_dir }}/client-key.pem'
+    - require:
+      - transfer_client_keys
+
 # Trigger all minions to update combined client certificate/key file:
 transfer_client_certficate_key_files:
   cmd.run:
     - name: salt '*' cp.get_file "salt://client_certificates/{% raw %}{{ grains.localhost }}{% endraw %}/client-crt-key.pem" {{ cert_dir }}/client-crt-key.pem template=jinja
     - require:
       - regen_trusted_CA
+
+# Trigger all minions to set combined client certificate/key permissions:
+set_client_certficate_key_file_permissions:
+  cmd.run:
+    - name: salt '*' cmd.run 'chmod 0640 {{ cert_dir }}/client-crt-key.pem'
+    - require:
+      - transfer_client_certficate_key_files
 
 # Trigger all minions to restart nginx, if running
 cert_www_restart:
