@@ -61,6 +61,11 @@ include:
     - name: 'openssl genrsa -out {{ dir }}/client-key.pem 4096'
     - unless: 'test -f {{ dir }}/client-key.pem && test -f {{ dir }}/client-csr.pem'
 
+{{ host }}_client-key_perms:
+  cmd:
+    - run
+    - name: 'chmod 0640 {{ dir }}/client-key.pem'
+
 {{ dir }}/client.cnf:
   file.managed:
     - context:
@@ -85,6 +90,11 @@ include:
 {{ host }}_client-crt-key.pem:
   cmd.run:
     - name: cat {{ dir }}/client-key.pem  {{ dir }}/client-crt.pem > {{ dir }}/client-crt-key.pem
+
+{{ host }}_client-crt-key_perms:
+  cmd:
+    - run
+    - name: 'chmod 0640 {{ dir }}/client-crt-key.pem'
 
 {%- endfor %}
 
