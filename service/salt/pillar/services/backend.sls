@@ -5,8 +5,6 @@ backend-user: node
 backend-version: 0.1
 
 backend-packages:
-  mongodb-org:
-    repo: {{ release_name }}/mongodb-org
   nodejs:
     version: 16.14.2-deb-1nodesource1
   pgadmin3:

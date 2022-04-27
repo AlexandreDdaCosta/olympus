@@ -4,6 +4,7 @@
 
 include:
   - base: package
+  - base: services
   - base: services/web
 
 {% for packagename, package in pillar.get('backend-packages', {}).items() %}
@@ -130,18 +131,6 @@ backend-user:
     - groups:
       - {{ pillar['backend-user'] }}
 
-/etc/mongod.conf:
-  file.managed:
-    - group: root
-    - makedirs: False
-    - mode: 0644
-    - source: salt://services/backend/files/mongod.conf
-    - user: root
-{#
-command line: 
-mongo --tls --tlsCAFile /etc/ssl/localcerts/ca-crt.pem --tlsCertificateKeyFile /etc/ssl/localcerts/server-key-crt.pem --tlsAllowInvalidHostnames
-#}
-
 /etc/nginx/conf.d/node.conf:
   file.managed:
     - group: root
@@ -223,22 +212,6 @@ nginx-backend:
     - watch:
       - file: /etc/nginx/conf.d/node.conf
 
-systmctl_enable_mongod:
-  cmd.run:
-    - name: systemctl enable mongod
-
-mongodb_proper_perms:
-  cmd.run:
-    - name: chown -R mongodb:mongodb /var/lib/mongodb
-{# Bug: Found bad perms of unknown origin #}
-
-mongod-backend:
-  service.running:
-    - enable: True
-    - name: mongod
-    - watch:
-      - file: /etc/mongod.conf
-
 node-backend:
   service.running:
     - enable: True
@@ -257,7 +230,6 @@ initialize_olympus_equities:
     - name: "su -s /bin/bash -c '/usr/local/bin/olympus/init_equities.py --graceful' {{ pillar['core-app-user'] }}"
     - user: root
     - require: 
-      - mongod-backend
       - node-backend
 
 {% for datasource_name, datasource in pillar.get('equities_credentials', {}).items() %}

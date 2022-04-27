@@ -29,6 +29,8 @@ packages:
     version: 0.11.2-2
   libuser:
     version: 1:0.62~dfsg-0.4
+  mongodb-org:
+    repo: {{ release_name }}/mongodb-org
   ntp:
     version: 1:4.2.8p15+dfsg-1
   ntpdate:
