@@ -27,7 +27,7 @@ locate-updatedb:
     - group: root
     - makedirs: False
     - mode: 0644
-    - source: salt://services/backend/files/mongod.conf
+    - source: salt://services/files/mongod.conf
     - user: root
 {#
 command line: 
