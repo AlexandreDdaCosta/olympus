@@ -119,16 +119,6 @@ backend-group:
     - name: {{ pillar['backend-user'] }}
     - system: True
 
-backend-user:
-  user.present:
-    - createhome: True
-    - fullname: {{ pillar['backend-user'] }}
-    - name: {{ pillar['backend-user'] }}
-    - shell: /bin/false
-    - home: /home/{{ pillar['backend-user'] }}
-    - groups:
-      - {{ pillar['backend-user'] }}
-
 /etc/nginx/conf.d/node.conf:
   file.managed:
     - group: root
@@ -220,10 +210,6 @@ node-backend:
       - file: /etc/nginx/conf.d/node.conf
     - require:
       - sls: services/web
-
-debug_node_issue:
-  cmd.run:
-    - name: usermod -a -G clientcert node
 
 # START equities project backend section
 
