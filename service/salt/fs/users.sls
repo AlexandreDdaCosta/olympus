@@ -27,7 +27,7 @@
       {% if 'groups' in user -%}
       {% for groupname in user['groups'] -%}
       - {{ groupname }}
-      {%- endfor %}
+      {% endfor %}
       {%- endif %}
     {% if 'createhome' in user and user['createhome'] -%}
     - home: /home/{{ username }}
