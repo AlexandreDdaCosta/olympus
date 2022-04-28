@@ -244,7 +244,7 @@ postgresql.{{ server_cert_key_file_name }}:
     - require: 
       - {{ cert_dir }}/ca.cnf
 
-{{ host }}_client-key_perms:
+postgresql.{{ server_cert_key_file_name }}_perms:
   cmd:
     - run
     - name: 'chmod 0640 {{ cert_dir }}/postgresql.{{ server_cert_key_file_name }}; chgrp pgcert {{ cert_dir }}/postgresql.{{ server_cert_key_file_name }}'
