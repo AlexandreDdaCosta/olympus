@@ -1,28 +1,45 @@
+{% for groupname, group in pillar.get('groupss', {}).items() %}
+{{ groupname }}:
+    - present
+{% endfor %}
+
 {% for username, user in pillar.get('users', {}).items() %}
+{% if 'server' not in user or grains.get('server') in user['server'] -%}
 {{ username }}:
 
   group:
     - name: {{ username }}
     - present
   user:
+    {% if 'createhome' in user and user['createhome'] -%}
+    - createhome: True
+    {%- endif %}
+    {% if 'fullname' in user -%}
     - fullname: {{ user['fullname'] }}
+    {%- endif %}
     - groups:
       - {{ username }}
       {% if 'is_staff' in user and user['is_staff'] -%}
       - git
       - staff
       {%- endif %}
+    {% if 'createhome' in user and user['createhome'] -%}
     - home: /home/{{ username }}
+    {%- endif %}
     - name: {{ username }}
     - present
+    {% if 'shell' in user -%}
+    - shell: {{ user['shell'] }}
+    {%- endif %}
+
+{% if 'createhome' in user and user['createhome'] and 'ssh_public_key' in user %}
+{{ username }}-sshconfig:
+
   file.directory:
     - dir_mode: 0700
     - group: {{ username }}
     - name: /home/{{ username }}/.ssh
     - user: {{ username }}
-
-{{ username }}-sshconfig:
-
   file.managed:
     - group: {{ username }}
     - mode: 0644
@@ -31,7 +48,6 @@
     - source: salt://users/.ssh/config.jinja
     - template: jinja
 
-{% if 'ssh_public_key' in user %}
 {{ username }}-sshkey:
 
   file.managed:
@@ -42,6 +58,7 @@
     - user: {{ username }}
 
 {%- endif %}
+{% if 'createhome' in user and user['createhome'] and 'vimuser' in user and user['vimuser'] -%}
 {{ username }}-vimrc:
 
   file.managed:
@@ -51,5 +68,7 @@
     - user: {{ username }}
     - source: salt://users/vimrc.jinja
     - template: jinja
+{%- endif %}
 
+{% endif %}
 {% endfor %}
