@@ -37,6 +37,7 @@ manage_tmpfiles:
 {% if grains.get('apps') %}
 {% set apps = grains.get('apps') + [ pillar['core-app-user'] ] %}
 {% for app in apps %}
+{% if app !=  pillar['core-app-user'] %}
 app_user_{{ app }}:
   group:
     - name: {{ app }}
@@ -51,14 +52,6 @@ app_user_{{ app }}:
     - groups:
       - {{ app }}
 
-/home/{{ app }}/Downloads:
-  file.directory:
-    - group: {{ app }}
-    - makedirs: False
-    - mode: 0750
-    - user: {{ app }}
-
-{% if app != pillar['core-app-user'] %}
 /home/{{ app }}:
   file.recurse:
     - dir_mode: 0755
@@ -82,8 +75,13 @@ app_user_{{ app }}:
     - user: root
   cmd.run:
     - name: "find {{ pillar['olympus-app-package-path'] }}/{{ app }} -type f | grep -E 'test/.*?\\.py$' | xargs -r chmod 0755"
-
 {% endif %}
 
+/home/{{ app }}/Downloads:
+  file.directory:
+    - group: {{ app }}
+    - makedirs: False
+    - mode: 0750
+    - user: {{ app }}
 {% endfor %}
 {% endif %}
