@@ -2,6 +2,12 @@ groups:
   - clientcert
   - servercert
 
+{% comment %}
+Groups:
+  clientcert: Add this group to give a user access to client certificate and key
+  servercert: Add this group to give a user access to server certificate and key
+{% endcomment %}
+
 users:
   mongodb:
     fullname: MongoDB administrator and run user
