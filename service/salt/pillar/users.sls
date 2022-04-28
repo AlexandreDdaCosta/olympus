@@ -1,6 +1,8 @@
 groups:
-  - clientcert
-  - servercert
+  clientcert:
+    - comment: Add user to this group to be able to read the client key and cert
+  servercert:
+    - comment: Add user to this group to be able to read the server key and cert
 
 users:
   mongodb:
