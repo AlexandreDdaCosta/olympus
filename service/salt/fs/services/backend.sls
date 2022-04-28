@@ -62,8 +62,6 @@ include:
     - source: salt://services/backend/postgresql.conf.jinja
     - template: jinja
     - user: postgres
-  cmd.run:
-    - name: chgrp ssl-cert {{ cert_dir }}/postgresql.{{ server_cert_key_file_name }}
 
 postgresql:
   service.running:
