@@ -3,12 +3,7 @@
 const fs = require('fs'); 
 const MongoClient = require('mongodb').MongoClient;
 const test_collection = 'test'
-const url = 'mongodb://127.0.0.1:27017/test?tls=true';
-const tls_connect_options = {
-//  tlsAllowInvalidHostnames: true,
-  tlsCAFile: '/etc/ssl/certs/ca-crt-supervisor.pem.pem',
-  tlsCertificateKeyFile: '/etc/ssl/localcerts/client-key-crt.pem'
-};
+const url = 'mongodb://127.0.0.1:27017/' + test_collection
 
 /*
 Initialize test commands
@@ -47,7 +42,7 @@ Run test commands
 
 describe('MongoDB basic connection and test database and collection operations', () => {
   test('Connect to test database.', () => {
-    MongoClient.connect(url, tls_connect_options, (err, client) => {
+    MongoClient.connect(url, (err, client) => {
       if (err) throw new Error(err);
 //      removeCollection(client, function() {});
 //        insertDocuments(client, function() {
