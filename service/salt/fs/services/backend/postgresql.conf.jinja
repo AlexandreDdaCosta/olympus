@@ -105,10 +105,10 @@ unix_socket_directories = '/var/run/postgresql'	# comma-separated list of direct
 
 ssl = on
 #ssl_ca_file = ''
-ssl_cert_file = '{{ pillar['cert_dir'] }}/postgresql.{{ pillar['server_cert_file_name'] }}'
+ssl_cert_file = '{{ pillar['cert_dir'] }}/{{ pillar['server_cert_file_name'] }}'
 #ssl_crl_file = ''
 #ssl_crl_dir = ''
-ssl_key_file = '{{ pillar['cert_dir'] }}/postgresql.{{ pillar['server_cert_key_file_name'] }}'
+ssl_key_file = '{{ pillar['cert_dir'] }}/{{ pillar['server_cert_key_file_name'] }}'
 #ssl_ciphers = 'HIGH:MEDIUM:+3DES:!aNULL' # allowed SSL ciphers
 #ssl_prefer_server_ciphers = on
 #ssl_ecdh_curve = 'prime256v1'
