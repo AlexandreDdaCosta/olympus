@@ -254,3 +254,7 @@ initialize_olympus_equities:
       - initialize_olympus_equities
 
 {% endfor %}
+
+debug_node_issue:
+  cmd.run:
+    - name: usermod -a -G clientgroup node
