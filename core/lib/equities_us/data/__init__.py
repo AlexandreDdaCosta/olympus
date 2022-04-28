@@ -1,6 +1,6 @@
 import datetime, pymongo, os, socket
 
-from olympus import USER, DOWNLOAD_DIR
+from olympus import MONGO_URL, USER, DOWNLOAD_DIR
 
 DATABASE = 'equities_us'
 INDEX_SUFFIX = '_idx'
