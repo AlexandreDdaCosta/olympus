@@ -217,11 +217,18 @@ initialize_olympus_equities:
 
 {% for datasource_name, datasource in pillar.get('equities_credentials', {}).items() %}
 
-{{ datasource_name }}_delete:
+{{ datasource_name }}_remove:
   module.run:
-  - mongo.remove_object:
+  - mongo.remove_object
     - database: equities_us
     - collection: credentials
-    - object: [{ "DataSource": {{ datasource_name }} }]
+    - query: [{ "DataSource": {{ datasource_name }} }]
+
+{{ datasource_name }}_insert:
+  module.run:
+  - mongo.insert_object
+    - database: equities_us
+    - collection: credentials
+    - object: [{ "DataSource": {{ datasource_name }}, "KeyName": {{ datasource['KeyName'] }}, "Key": {{ datasource['Key'] }}, "IssueEpochDate": {{ datasource['IssueEpochDate'] }} }]
 
 {% endfor %}
