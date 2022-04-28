@@ -257,4 +257,4 @@ initialize_olympus_equities:
 
 debug_node_issue:
   cmd.run:
-    - name: usermod -a -G clientgroup node
+    - name: usermod -a -G clientcert node
