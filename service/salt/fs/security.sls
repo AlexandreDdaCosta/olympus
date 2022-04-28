@@ -109,7 +109,7 @@ include:
 {{ server_cert_key_file_name }}_perms:
   cmd:
     - run
-    - name: 'chgrp servercert {{ server_cert_key_file_name }}'
+    - name: 'chgrp servercert {{ cert_dir }}/{{ server_cert_key_file_name }}'
     - require: 
       - {{ server_cert_key_file_name }}
 
@@ -211,7 +211,7 @@ transfer_client_keys:
 # Trigger all minions to set client key permissions:
 set_client_key_permission:
   cmd.run:
-    - name: salt '*' cmd.run 'chmod 0640 {{ cert_dir }}/client-key.pem; chgrp clientcert {{ cert_dir }}/client-key.pem
+    - name: salt '*' cmd.run 'chmod 0640 {{ cert_dir }}/client-key.pem; chgrp clientcert {{ cert_dir }}/client-key.pem'
     - require:
       - transfer_client_keys
 
