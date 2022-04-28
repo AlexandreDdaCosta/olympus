@@ -222,13 +222,16 @@ initialize_olympus_equities:
   - mongo.remove_object
     - database: equities_us
     - collection: credentials
-    - query: [{ "DataSource": {{ datasource_name }} }]
+    - datasource_name: {{ datasource_name }}
 
 {{ datasource_name }}_insert:
   module.run:
   - mongo.insert_object
     - database: equities_us
     - collection: credentials
-    - object: [{ "DataSource": {{ datasource_name }}, "KeyName": {{ datasource['KeyName'] }}, "Key": {{ datasource['Key'] }}, "IssueEpochDate": {{ datasource['IssueEpochDate'] }} }]
+    - datasource_name: {{ datasource_name }}
+    - key_name: {{ datasource['KeyName'] }}
+    - key: {{ datasource['Key'] }}
+    = issue_epoch_date: {{ datasource['IssueEpochDate'] }}
 
 {% endfor %}
