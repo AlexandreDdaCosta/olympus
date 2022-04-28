@@ -1,11 +1,13 @@
 groups:
   - clientcert
+  - pgcert
   - servercert
 
 {#
 Groups:
-  clientcert: Add this group to give a user access to client certificate and key
-  servercert: Add this group to give a user access to server certificate and key
+  clientcert: Add this group to give a user access to client combined certificate and key
+  pgcert: Add this group to give a user access to postgres key
+  servercert: Add this group to give a user access to server combined certificate and key
 #}
 
 users:
@@ -48,7 +50,7 @@ users:
   postgres:
     fullname: PostgreSQL administrator
     groups:
-      - servercert
+      - pgcert
     server:
       - supervisor
       - unified

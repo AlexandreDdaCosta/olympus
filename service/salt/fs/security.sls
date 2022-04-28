@@ -244,11 +244,10 @@ postgresql.{{ server_cert_key_file_name }}:
     - require: 
       - {{ cert_dir }}/ca.cnf
 
-postgresql.{{ server_cert_key_file_name }}.perms:
-  cmd.run:
-    - name: 'if grep -q ssl-cert /etc/group; then chgrp ssl-cert {{ cert_dir }}/postgresql.{{ server_cert_key_file_name }}; fi;'
-    - require: 
-      - postgresql.{{ server_cert_key_file_name }}
+{{ host }}_client-key_perms:
+  cmd:
+    - run
+    - name: 'chmod 0640 {{ cert_dir }}/postgresql.{{ server_cert_key_file_name }}; chgrp pgcert {{ cert_dir }}/postgresql.{{ server_cert_key_file_name }}'
 
 postgresql.server.cnf:
   file.managed:
