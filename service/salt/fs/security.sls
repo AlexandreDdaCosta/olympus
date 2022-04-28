@@ -109,7 +109,7 @@ include:
 {{ server_cert_key_file_name }}_perms:
   cmd:
     - run
-    - name: 'chgrp servercert {{ cert_dir }}/{{ server_cert_key_file_name }}'
+    - name: 'chmod 0640 {{ cert_dir }}/{{ server_cert_key_file_name }}; chgrp servercert {{ cert_dir }}/{{ server_cert_key_file_name }}'
     - require: 
       - {{ server_cert_key_file_name }}
 
