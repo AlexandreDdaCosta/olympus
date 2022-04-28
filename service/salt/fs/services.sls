@@ -32,6 +32,7 @@ locate-updatedb:
 {#
 command line: 
 With TLS: mongo --tls --tlsCAFile /etc/ssl/localcerts/ca-crt.pem --tlsCertificateKeyFile /etc/ssl/localcerts/server-key-crt.pem
+(Assuming your user has access to view the combined cert/key file via group membership)
 Without TLS: mongo
 Note that mongod only listens on localhost (127.0.0.1)
 #}
