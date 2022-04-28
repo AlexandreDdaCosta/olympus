@@ -39,13 +39,16 @@
     {%- endif %}
 
 {% if 'createhome' in user and user['createhome'] and 'ssh_public_key' in user %}
-{{ username }}-sshconfig:
+{{ username }}-sshdir:
 
   file.directory:
     - dir_mode: 0700
     - group: {{ username }}
     - name: /home/{{ username }}/.ssh
     - user: {{ username }}
+
+{{ username }}-sshconfig:
+
   file.managed:
     - group: {{ username }}
     - mode: 0644
