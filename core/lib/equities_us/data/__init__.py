@@ -1,6 +1,6 @@
 import datetime, pymongo, os, socket
 
-from olympus import CAFILE, CERTKEYFILE, MONGO_URL, USER, DOWNLOAD_DIR
+from olympus import USER, DOWNLOAD_DIR
 
 DATABASE = 'equities_us'
 INDEX_SUFFIX = '_idx'
@@ -20,7 +20,7 @@ class Connection():
         self.database = DATABASE
         if self.verbose is True:
             print('Establishing MongoDB client.')
-        self.client = pymongo.MongoClient(MONGO_URL,tls=True,tlsCAFile=CAFILE,tlsCertificateKeyFile=CERTKEYFILE,tlsAllowInvalidHostnames=True)
+        self.client = pymongo.MongoClient(MONGO_URL)
         self.db = self.client.equities_us
         self.init_type = init_type
         if self.init_type is not None:

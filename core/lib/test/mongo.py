@@ -4,7 +4,7 @@ import pymongo, unittest
 
 import olympus.testing as testing
 
-from olympus import CAFILE, CERTKEYFILE, MONGO_URL
+from olympus import MONGO_URL
 
 class TestMongo(testing.Test):
 
@@ -12,7 +12,7 @@ class TestMongo(testing.Test):
         pass
 
     def test_connect(self):
-        client = pymongo.MongoClient(MONGO_URL,tls=True,tlsCAFile=CAFILE,tlsCertificateKeyFile=CERTKEYFILE,tlsAllowInvalidHostnames=True)
+        client = pymongo.MongoClient(MONGO_URL)
         test_collection = client.test.pymongo_test
         test_collection.drop()
         delete_result = test_collection.delete_many({})
