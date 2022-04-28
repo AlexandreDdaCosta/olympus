@@ -217,11 +217,9 @@ initialize_olympus_equities:
 
 {% for datasource_name, datasource in pillar.get('equities_credentials', {}).items() %}
 
-Better:
-
 {{ datasource_name }}_delete:
   module.run:
-  - mongodb.remove_object:
+  - mongo.remove_object:
     - database: equities_us
     - collection: credentials
     - object: [{ "DataSource": {{ datasource_name }} }]
