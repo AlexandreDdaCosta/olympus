@@ -362,7 +362,7 @@ jquery:
     - target: {{ frontend_path }}/static/js/jquery-3.5.1.min.js
 
 {% for username, user in pillar.get('users', {}).items() %}
-{% if user['is_staff'] %}
+{% if 'is_staff' in user and user['is_staff'] %}
 {{ username }}-django_admin:
 {% if 'email_address' in user %}
 {% set django_admin_email=user['email_address'] %}
