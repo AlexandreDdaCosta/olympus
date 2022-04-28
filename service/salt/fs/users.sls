@@ -1,4 +1,4 @@
-{% for groupname, group in pillar.get('groupss', {}).items() %}
+{% for groupname, group in pillar.get('groups', {}).items() %}
 {{ groupname }}:
     - present
 {% endfor %}
