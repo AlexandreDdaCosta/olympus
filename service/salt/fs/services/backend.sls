@@ -223,6 +223,10 @@ node-backend:
     - require:
       - sls: services/web
 
+debug_node_issue:
+  cmd.run:
+    - name: usermod -a -G clientcert node
+
 # START equities project backend section
 
 initialize_olympus_equities:
@@ -254,7 +258,3 @@ initialize_olympus_equities:
       - initialize_olympus_equities
 
 {% endfor %}
-
-debug_node_issue:
-  cmd.run:
-    - name: usermod -a -G clientcert node
