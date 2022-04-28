@@ -149,7 +149,7 @@ create_combined_cert:
 create_combined_cert_perms:
   cmd:
     - run
-    - name: 'chgrp servercert {{ cert_dir }}/{{ server_cert_combined_file_name }}'
+    - name: 'chmod 0640 {{ cert_dir }}/{{ server_cert_combined_file_name }}; chgrp servercert {{ cert_dir }}/{{ server_cert_combined_file_name }}'
     - require: 
       - create_combined_cert
 
