@@ -114,11 +114,6 @@ frontend-user_data_privs:
     - privileges:
       - ALL
 
-backend-group:
-  group.present:
-    - name: {{ pillar['backend-user'] }}
-    - system: True
-
 /etc/nginx/conf.d/node.conf:
   file.managed:
     - group: root

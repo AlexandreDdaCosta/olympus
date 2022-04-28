@@ -56,21 +56,6 @@ include:
       - sls: package
 {% endfor %}
 
-frontend-group:
-  group.present:
-    - name: {{ pillar['frontend-user'] }}
-    - system: True
-
-frontend-user:
-  user.present:
-    - createhome: True
-    - fullname: {{ pillar['frontend-user'] }}
-    - name: {{ pillar['frontend-user'] }}
-    - shell: /bin/false
-    - home: /home/{{ pillar['frontend-user'] }}
-    - groups:
-      - {{ pillar['frontend-user'] }}
-
 /etc/uwsgi/vassals:
   file.directory:
     - group: root
