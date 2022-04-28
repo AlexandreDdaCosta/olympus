@@ -222,6 +222,6 @@ initialize_olympus_equities:
     - mongo.remove_object:
       - database: equities_us
       - collection: credentials
-      - datasource_name: foo
+      - datasource_name: {{ datasource_name }}
 
 {% endfor %}
