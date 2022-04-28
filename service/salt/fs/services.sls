@@ -31,7 +31,9 @@ locate-updatedb:
     - user: root
 {#
 command line: 
-mongo --tls --tlsCAFile /etc/ssl/localcerts/ca-crt.pem --tlsCertificateKeyFile /etc/ssl/localcerts/server-key-crt.pem --tlsAllowInvalidHostnames
+With TLS: mongo --tls --tlsCAFile /etc/ssl/localcerts/ca-crt.pem --tlsCertificateKeyFile /etc/ssl/localcerts/server-key-crt.pem
+Without TLS: mongo
+Note that mongod only listens on localhost (127.0.0.1)
 #}
 
 systmctl_enable_mongod:
