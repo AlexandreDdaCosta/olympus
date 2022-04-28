@@ -14,6 +14,9 @@ def insert_object(database,collection,datasource_name,key_name,key,issue_epoch_d
 def remove_object(database,collection,datasource_name):
     f = open("/tmp/narfie", "a")
     f.write('TEST2')
+    f.write(database)
+    f.write(collection)
+    f.write(datasource_name)
     f.close()
     # query: [{ "DataSource": {{ datasource_name }} }]
     return True

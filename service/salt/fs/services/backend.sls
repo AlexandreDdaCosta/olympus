@@ -220,8 +220,8 @@ initialize_olympus_equities:
 {{ datasource_name }}_remove:
   module.run:
     - mongo.remove_object:
-      - database: foo
-      - collection: foo
+      - database: equities_us
+      - collection: credentials
       - datasource_name: foo
 
 {% endfor %}
