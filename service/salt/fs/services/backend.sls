@@ -216,24 +216,14 @@ initialize_olympus_equities:
       - node-backend
 
 {% for datasource_name, datasource in pillar.get('equities_credentials', {}).items() %}
+
+Better:
+
 {{ datasource_name }}_delete:
   module.run:
-    - name: mongodb.remove
-    - collection: credentials
+  - mongodb.remove_object:
     - database: equities_us
-    - port: 27017
-    - query: '[{ "DataSource": {{ datasource_name }} }]'
-    - require: 
-      - initialize_olympus_equities
-
-{{ datasource_name }}_insert:
-  module.run:
-    - name: mongodb.insert
     - collection: credentials
-    - database: equities_us
-    - objects: '[{ "DataSource": {{ datasource_name }}, "KeyName": {{ datasource['KeyName'] }}, "Key": {{ datasource['Key'] }}, "IssueEpochDate": {{datasource['IssueEpochDate'] }} }]'
-    - port: 27017
-    - require: 
-      - initialize_olympus_equities
+    - object: [{ "DataSource": {{ datasource_name }} }]
 
 {% endfor %}
