@@ -64,7 +64,7 @@ include:
 {{ host }}_client-key_perms:
   cmd:
     - run
-    - name: 'chmod 0640 {{ dir }}/client-key.pem'
+    - name: 'chmod 0640 {{ dir }}/client-key.pem; chgrp clientcert {{ dir }}/client-key.pem'
 
 {{ dir }}/client.cnf:
   file.managed:
@@ -94,7 +94,7 @@ include:
 {{ host }}_client-crt-key_perms:
   cmd:
     - run
-    - name: 'chmod 0640 {{ dir }}/client-crt-key.pem'
+    - name: 'chmod 0640 {{ dir }}/client-crt-key.pem; chgrp clientcert {{ dir }}/client-crt-key.pem'
 
 {%- endfor %}
 
@@ -105,6 +105,13 @@ include:
     - name: 'openssl genrsa -out {{ cert_dir }}/{{ server_cert_key_file_name }} 4096'
     - require: 
       - {{ cert_dir }}/ca.cnf
+
+{{ server_cert_key_file_name }}_perms:
+  cmd:
+    - run
+    - name: 'chgrp servercert {{ server_cert_key_file_name }}'
+    - require: 
+      - {{ server_cert_key_file_name }}
 
 server.cnf:
   file.managed:
@@ -138,6 +145,13 @@ create_combined_cert:
     - name: cat {{ cert_dir }}/{{ server_cert_key_file_name }} {{ cert_dir }}/{{ server_cert_file_name }} > {{ cert_dir }}/{{ server_cert_combined_file_name }}
     - require: 
       - create_chained_cert
+
+create_combined_cert_perms:
+  cmd:
+    - run
+    - name: 'chgrp servercert {{ cert_dir }}/{{ server_cert_combined_file_name }}'
+    - require: 
+      - create_combined_cert
 
 copy_CA_cert_local:
   file.copy:
@@ -197,7 +211,7 @@ transfer_client_keys:
 # Trigger all minions to set client key permissions:
 set_client_key_permission:
   cmd.run:
-    - name: salt '*' cmd.run 'chmod 0640 {{ cert_dir }}/client-key.pem'
+    - name: salt '*' cmd.run 'chmod 0640 {{ cert_dir }}/client-key.pem; chgrp clientcert {{ cert_dir }}/client-key.pem
     - require:
       - transfer_client_keys
 
@@ -211,7 +225,7 @@ transfer_client_certficate_key_files:
 # Trigger all minions to set combined client certificate/key permissions:
 set_client_certficate_key_file_permissions:
   cmd.run:
-    - name: salt '*' cmd.run 'chmod 0640 {{ cert_dir }}/client-crt-key.pem'
+    - name: salt '*' cmd.run 'chmod 0640 {{ cert_dir }}/client-crt-key.pem; chgrp clientcert {{ cert_dir }}/client-crt-key.pem'
     - require:
       - transfer_client_certficate_key_files
 
