@@ -87,14 +87,14 @@ include:
   cmd.run:
     - name: openssl x509 -req -extfile {{ dir }}/client.cnf -days 999 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in {{ dir }}/client-csr.pem -CA {{ cert_dir }}/ca-crt.pem -CAkey {{ cert_dir }}/ca-key.pem -CAcreateserial -out {{ dir }}/client-crt.pem
 
-{{ host }}_client-crt-key.pem:
+{{ host }}_client-key-crt.pem:
   cmd.run:
-    - name: cat {{ dir }}/client-key.pem  {{ dir }}/client-crt.pem > {{ dir }}/client-crt-key.pem
+    - name: cat {{ dir }}/client-key.pem {{ dir }}/client-crt.pem > {{ dir }}/client-key-crt.pem
 
-{{ host }}_client-crt-key_perms:
+{{ host }}_client-key-crt_perms:
   cmd:
     - run
-    - name: 'chmod 0640 {{ dir }}/client-crt-key.pem; chgrp clientcert {{ dir }}/client-crt-key.pem'
+    - name: 'chmod 0640 {{ dir }}/client-key-crt.pem; chgrp clientcert {{ dir }}/client-key-crt.pem'
 
 {%- endfor %}
 
@@ -218,14 +218,14 @@ set_client_key_permission:
 # Trigger all minions to update combined client certificate/key file:
 transfer_client_certficate_key_files:
   cmd.run:
-    - name: salt '*' cp.get_file "salt://client_certificates/{% raw %}{{ grains.localhost }}{% endraw %}/client-crt-key.pem" {{ cert_dir }}/client-crt-key.pem template=jinja
+    - name: salt '*' cp.get_file "salt://client_certificates/{% raw %}{{ grains.localhost }}{% endraw %}/client-key-crt.pem" {{ cert_dir }}/client-key-crt.pem template=jinja
     - require:
       - regen_trusted_CA
 
 # Trigger all minions to set combined client certificate/key permissions:
 set_client_certficate_key_file_permissions:
   cmd.run:
-    - name: salt '*' cmd.run 'chmod 0640 {{ cert_dir }}/client-crt-key.pem; chgrp clientcert {{ cert_dir }}/client-crt-key.pem'
+    - name: salt '*' cmd.run 'chmod 0640 {{ cert_dir }}/client-key-crt.pem; chgrp clientcert {{ cert_dir }}/client-key-crt.pem'
     - require:
       - transfer_client_certficate_key_files
 

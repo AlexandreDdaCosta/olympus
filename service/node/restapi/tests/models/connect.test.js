@@ -7,7 +7,7 @@ const url = 'mongodb://127.0.0.1:27017/test?tls=true';
 const tls_connect_options = {
 //  tlsAllowInvalidHostnames: true,
   tlsCAFile: '/etc/ssl/certs/ca-crt-supervisor.pem.pem',
-  tlsCertificateKeyFile: '/etc/ssl/localcerts/client-crt-key.pem'
+  tlsCertificateKeyFile: '/etc/ssl/localcerts/client-key-crt.pem'
 };
 
 /*

@@ -15,7 +15,7 @@ ST           = {{ pillar['core-domain-ST'] }}
 L            = {{ pillar['core-domain-L'] }}
 O            = {{ pillar['core-domain-O'] }}
 OU           = {{ pillar['core-domain-OU'] }}
-CN           = {{ grains.get('localhost') }}
+CN           = 127.0.0.1
 emailAddress = {{ pillar['core-email'] }}
 
 [ req_attributes ]
@@ -34,6 +34,7 @@ keyUsage = nonRepudiation, digitalSignature, keyEncipherment
 subjectAltName = @alt_names
 
 [ alt_names ]
+DNS = {{ grains.get('localhost') }}
 {%- for ip in ip_addresses %}
 IP.{{ loop.index }} = {{ ip }}
 {%- endfor -%}
