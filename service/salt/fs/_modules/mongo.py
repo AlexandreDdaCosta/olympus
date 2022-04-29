@@ -23,9 +23,10 @@ def remove_object(database,collection,datasource_name,key_name,query):
     db = client[database]
     coll = db[collection]
     f.write(str(query)+'\n')
-    record = ast.literal_eval(query)
-    f.write(str(record)+'\n')
-    f.write(str(type(record))+'\n')
-    recid = coll.delete_one(record)
+    #record = ast.literal_eval(query)
+    #f.write(str(record)+'\n')
+    #f.write(str(type(record))+'\n')
+    #recid = coll.delete_one(record)
+    recid = coll.delete_one(query)
     f.close()
     return True
