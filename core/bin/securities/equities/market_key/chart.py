@@ -4,9 +4,9 @@ import sys, time
 
 from argparse import ArgumentParser
 
-from larry import *
-from larry.market_key import Calculate
-from olympus.equities_us import BUY, SELL, SYMBOL
+from olympus.securities.equities.algo.market_key import *
+from olympus.securities.equities.algo.market_key.livermore import Calculate
+from olympus.securities.equities import BUY, SELL, SYMBOL
 
 parser = ArgumentParser(sys.argv)
 parser.add_argument("-l","--latest",action='store_true',default=False,help="Include latest data in evaluation")

@@ -2,7 +2,7 @@ import datetime, pymongo, os, socket
 
 from olympus import MONGO_URL, USER, DOWNLOAD_DIR
 
-DATABASE = 'equities_us'
+DATABASE = 'equities'
 INDEX_SUFFIX = '_idx'
 URLS = {
    "ALPHAVANTAGE": "https://www.alphavantage.co/query?apikey=",
@@ -21,7 +21,7 @@ class Connection():
         if self.verbose is True:
             print('Establishing MongoDB client.')
         self.client = pymongo.MongoClient(MONGO_URL)
-        self.db = self.client.equities_us
+        self.db = self.client.equities
         self.init_type = init_type
         if self.init_type is not None:
             self.init_collection = self.db.init

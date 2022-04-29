@@ -4,7 +4,7 @@ import sys, time
 
 from argparse import ArgumentParser
 
-from olympus.equities_us.data.edgar import InitForm4Indices
+from olympus.securities.equities.data.edgar import InitForm4Indices
 
 parser = ArgumentParser(sys.argv)
 parser.add_argument("-g","--graceful",action="store_true",help="Nice crash and burn for permissible errors")

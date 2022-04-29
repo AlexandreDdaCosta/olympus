@@ -1,7 +1,7 @@
 import ast, csv, datetime, fcntl, json, jsonschema, os, re, socket, subprocess, time
 from jsonschema import validate
 
-import olympus.equities_us.data as data
+import olympus.securities.equities.data as data
 
 from olympus import DOWNLOAD_DIR, LOCKFILE_DIR, USER, WORKING_DIR
 

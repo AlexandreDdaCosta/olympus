@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 from bson.json_util import dumps, loads
 from xmlschema.validators.exceptions import XMLSchemaValidationError
 
-import olympus.equities_us.data as data
+import olympus.securities.equities.data as data
 
 from olympus import USER, LOCKFILE_DIR, WORKING_DIR
 

@@ -4,8 +4,8 @@ import sys, time
 
 from argparse import ArgumentParser
 
-from olympus.equities_us.data.credentials import InitCredentials
-from olympus.equities_us.data.symbols import InitSymbols
+from olympus.equities.data.credentials import InitCredentials
+from olympus.equities.data.symbols import InitSymbols
 
 parser = ArgumentParser(sys.argv)
 parser.add_argument("-f","--force",action="store_true",help="Force reinitialization")

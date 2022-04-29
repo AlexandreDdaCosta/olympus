@@ -206,11 +206,16 @@ node-backend:
     - require:
       - sls: services/web
 
+# Change/set mongod admin password
+# Change/set settings.mongod
+  # Admin account name/password
+  # 
+
 # START equities project backend section
 
 initialize_olympus_equities:
   cmd.run:
-    - name: "su -s /bin/bash -c '/usr/local/bin/olympus/init_equities.py --graceful' {{ pillar['core-app-user'] }}"
+    - name: "su -s /bin/bash -c '/usr/local/bin/olympus/securities/equities/init_equities.py --graceful' {{ pillar['core-app-user'] }}"
     - user: root
     - require: 
       - node-backend
@@ -220,14 +225,14 @@ initialize_olympus_equities:
 {{ datasource_name }}_remove:
   module.run:
     - mongo.remove_object:
-      - database: equities_us
+      - database: equities
       - collection: credentials
       - query: { "DataSource": "{{ datasource_name }}", "KeyName": "{{ datasource["KeyName"] }}" }
 
 {{ datasource_name }}_insert:
   module.run:
     - mongo.insert_object:
-      - database: equities_us
+      - database: equities
       - collection: credentials
       - object: { "DataSource": "{{ datasource_name }}", "KeyName": "{{ datasource["KeyName"] }}", "Key": "{{ datasource["Key"] }}", "IssueEpochDate": {{ datasource["IssueEpochDate"] }} }
 

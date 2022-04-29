@@ -2,10 +2,10 @@
 
 import json, unittest
 
-import olympus.equities_us.data.symbols as symbols
+import olympus.securities.equities.data.symbols as symbols
 import olympus.testing as testing
 
-from olympus.equities_us import *
+from olympus.securities.equities import *
 
 class TestSymbols(testing.Test):
 

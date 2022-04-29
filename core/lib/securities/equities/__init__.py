@@ -1,5 +1,3 @@
-# Core and default application constants
-
 # Symbols
 
 TEST_SYMBOL_ONE = 'ba'
@@ -14,3 +12,7 @@ SYMBOL = TEST_SYMBOL_ONE
 
 BUY = 'Buy'
 SELL = 'Sell'
+
+# Quantities (defaults)
+
+TEST_PURCHASE_SIZE = 100 # Shares

@@ -7,8 +7,8 @@ from pytz import timezone
 
 from olympus import DOWNLOAD_DIR, USER
 
-import olympus.equities_us.data as data
-import olympus.equities_us.data.symbols as symbols
+import olympus.securities.equities.data as data
+import olympus.securities.equities.data.symbols as symbols
 
 DAILY_PRICE_COLLECTION = 'price_daily'
 

@@ -3,12 +3,12 @@
 import json, sys, unittest
 
 from olympus import USER
-from olympus.equities_us.data.symbols import SymbolNotFoundError
+from olympus.securities.equities.data.symbols import SymbolNotFoundError
 
-import olympus.equities_us.data.price as price
+import olympus.securities.equities.data.price as price
 import olympus.testing as testing
 
-from olympus.equities_us import *
+from olympus.securities.equities import *
 
 # Standard run parameters:
 # sudo su -s /bin/bash -c '... price.py' USER
