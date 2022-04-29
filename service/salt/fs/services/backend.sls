@@ -226,12 +226,12 @@ initialize_olympus_equities:
 
 {{ datasource_name }}_insert:
   module.run:
-    - mongo.insert_object
+    - mongo.insert_object:
       - database: equities_us
       - collection: credentials
       - datasource_name: {{ datasource_name }}
-      - key_name: ABC1
-      - key: ABC2
-      - issue_epoch_date: ABC3 
+      - key_name: {{ datasource['KeyName'] }}
+      - key: {{ datasource['Key'] }}
+      - issue_epoch_date: {{ datasource['IssueEpochDate'] }}
 
 {% endfor %}
