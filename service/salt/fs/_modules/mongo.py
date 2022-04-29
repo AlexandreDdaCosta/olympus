@@ -22,9 +22,10 @@ def remove_object(database,collection,datasource_name,key_name,query):
     client = pymongo.MongoClient(MONGO_URL)
     db = client[database]
     coll = db[collection]
-    record = ast.literal_eval(query)
     f.write(str(query)+'\n')
-    f.write(str(type(query))+'\n')
+    record = ast.literal_eval(query)
+    f.write(str(record)+'\n')
+    f.write(str(type(record))+'\n')
     recid = coll.delete_one(record)
     f.close()
     return True
