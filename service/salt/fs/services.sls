@@ -1,3 +1,5 @@
+{%- set check_mongo_auth_enabled='/usr/bin/touch /etc/mongod.conf && grep '^[ ]*authorization: enabled' /etc/mongod.conf | wc -l' -%}
+
 include:
   - base: package
 
@@ -24,10 +26,13 @@ locate-updatedb:
 
 /etc/mongod.conf:
   file.managed:
+    - context:
+      auth_enabled_count: {{ salt['cmd.shell'](check_mongo_auth_enabled) }}
     - group: root
     - makedirs: False
     - mode: 0644
-    - source: salt://services/files/mongod.conf
+    - source: salt://services/files/mongod.conf.jinja
+    - template: jinja
     - user: root
 {#
 command line: 
