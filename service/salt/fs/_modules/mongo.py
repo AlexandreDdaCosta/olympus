@@ -4,6 +4,10 @@
 Tools for handling MongoDB operations
 '''
 
+import ast, pymongo
+
+from olympus import MONGO_URL
+
 def insert_object(database,collection,datasource_name,key_name,key,issue_epoch_date,object):
     f = open("/tmp/narfie", "a")
     f.write('TEST1')
@@ -16,6 +20,11 @@ def insert_object(database,collection,datasource_name,key_name,key,issue_epoch_d
     f.write(object)
     f.close()
     # object: [{ "DataSource": {{ datasource_name }}, "KeyName": {{ datasource['KeyName'] }}, "Key": {{ datasource['Key'] }}, "IssueEpochDate": {{ datasource['IssueEpochDate'] }} }]
+    client = pymongo.MongoClient(MONGO_URL)
+    db = client[database]
+    coll = db[collection]
+    record = ast.literal_eval(object)
+    #recid = coll.insert_one(record)
     return True
 
 def remove_object(database,collection,datasource_name,query):
