@@ -235,6 +235,6 @@ initialize_olympus_equities:
       - key_name: {{ datasource['KeyName'] }}
       - key: {{ datasource['Key'] }}
       - issue_epoch_date: {{ datasource['IssueEpochDate'] }}
-      - object: '{ "DataSource": "{{ datasource_name }}", "KeyName": "{{ datasource["KeyName"] }}", "Key": "{{ datasource["Key"] }}", "IssueEpochDate": {{ datasource["IssueEpochDate"] }} }'
+      - object: { "DataSource": "{{ datasource_name }}", "KeyName": "{{ datasource["KeyName"] }}", "Key": "{{ datasource["Key"] }}", "IssueEpochDate": {{ datasource["IssueEpochDate"] }} }
 
 {% endfor %}

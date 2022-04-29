@@ -12,8 +12,9 @@ def insert_object(database,collection,datasource_name,key_name,key,issue_epoch_d
     client = pymongo.MongoClient(MONGO_URL)
     db = client[database]
     coll = db[collection]
-    record = ast.literal_eval(object)
+    #record = ast.literal_eval(object)
     #recid = coll.insert_one(record)
+    recid = coll.insert_one(object)
     return True
 
 def remove_object(database,collection,datasource_name,key_name,query):
