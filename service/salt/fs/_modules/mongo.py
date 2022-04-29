@@ -24,7 +24,7 @@ def insert_object(database,collection,datasource_name,key_name,key,issue_epoch_d
     coll = db[collection]
     record = ast.literal_eval(object)
     f.write(str(record))
-    f.write(type(record))
+    f.write(str(type(record)))
     recid = coll.insert_one(record)
     f.write(str(recid))
     f.close()
