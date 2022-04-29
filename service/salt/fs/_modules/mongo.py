@@ -4,7 +4,7 @@
 Tools for handling MongoDB operations
 '''
 
-def insert_object(database,collection,datasource_name,key_name,key,issue_epoch_date):
+def insert_object(database,collection,datasource_name,key_name,key,issue_epoch_date,object):
     f = open("/tmp/narfie", "a")
     f.write('TEST1')
     f.write(database)
@@ -13,6 +13,7 @@ def insert_object(database,collection,datasource_name,key_name,key,issue_epoch_d
     f.write(key_name)
     f.write(key)
     f.write(str(issue_epoch_date))
+    f.write(object)
     f.close()
     # object: [{ "DataSource": {{ datasource_name }}, "KeyName": {{ datasource['KeyName'] }}, "Key": {{ datasource['Key'] }}, "IssueEpochDate": {{ datasource['IssueEpochDate'] }} }]
     return True
@@ -23,7 +24,7 @@ def remove_object(database,collection,datasource_name,query):
     f.write(database)
     f.write(collection)
     f.write(datasource_name)
-    f.write(str(query))
+    f.write(query)
     f.close()
     # query: [{ "DataSource": {{ datasource_name }} }]
     return True
