@@ -223,7 +223,7 @@ initialize_olympus_equities:
       - database: equities_us
       - collection: credentials
       - datasource_name: {{ datasource_name }}
-      - query: '[{ "DataSource": '{{ datasource_name }}' }]'
+      - query: '[{ "DataSource": {{ datasource_name }} }]'
 
 {{ datasource_name }}_insert:
   module.run:
