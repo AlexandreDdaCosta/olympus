@@ -12,7 +12,7 @@ def insert_object(database,collection,datasource_name,key_name,key,issue_epoch_d
     f.write(datasource_name)
     f.write(key_name)
     f.write(key)
-    f.write(issue_epoch_date)
+    f.write(str(issue_epoch_date))
     f.close()
     # object: [{ "DataSource": {{ datasource_name }}, "KeyName": {{ datasource['KeyName'] }}, "Key": {{ datasource['Key'] }}, "IssueEpochDate": {{ datasource['IssueEpochDate'] }} }]
     return True
