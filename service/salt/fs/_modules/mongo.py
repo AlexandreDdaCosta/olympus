@@ -23,7 +23,7 @@ def remove_object(database,collection,datasource_name,query):
     f.write(database)
     f.write(collection)
     f.write(datasource_name)
-    f.write(query)
+    f.write(str(query))
     f.close()
     # query: [{ "DataSource": {{ datasource_name }} }]
     return True
