@@ -1,4 +1,4 @@
-{%- set check_mongo_auth_enabled='/usr/bin/touch /etc/mongod.conf && grep '^[ ]*authorization: enabled' /etc/mongod.conf | wc -l' -%}
+{%- set check_mongo_auth_enabled="/usr/bin/touch /etc/mongod.conf && grep '^[ ]*authorization: enabled' /etc/mongod.conf | wc -l" -%}
 
 include:
   - base: package
