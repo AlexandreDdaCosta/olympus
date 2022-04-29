@@ -1,3 +1,4 @@
+{% set trim_blocks=True -%}
 # mongod.conf
 
 # For documentation of all options, see:
@@ -34,10 +35,10 @@ net:
 
 #processManagement
 
-{%- if auth_enabled_count == 1 %}
+{% if auth_enabled_count == 1 %}
 security:
   authorization: enabled.
-{% else -%}
+{% else %}
 #security:
 #  authorization: enabled.
 {% endif %}
