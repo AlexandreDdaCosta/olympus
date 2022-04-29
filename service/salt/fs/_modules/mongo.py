@@ -9,16 +9,18 @@ import ast, pymongo
 from olympus import MONGO_URL
 
 def insert_object(database,collection,object):
-    client = pymongo.MongoClient(MONGO_URL)
-    db = client[database]
-    coll = db[collection]
-    #recid = coll.insert_one(object)
+    #client = pymongo.MongoClient(MONGO_URL)
+    #db = client[database]
+    #coll = db[collection]
+    coll = _connect(database, collection)
+    recid = coll.insert_one(object)
     return True
 
 def remove_object(database,collection,query):
-    client = pymongo.MongoClient(MONGO_URL)
-    db = client[database]
-    coll = db[collection]
+    #client = pymongo.MongoClient(MONGO_URL)
+    #db = client[database]
+    #coll = db[collection]
+    coll = _connect(database, collection)
     recid = coll.delete_one(query)
     return True
 
