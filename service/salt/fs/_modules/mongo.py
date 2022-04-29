@@ -18,13 +18,14 @@ def insert_object(database,collection,datasource_name,key_name,key,issue_epoch_d
     f.write(key)
     f.write(str(issue_epoch_date))
     f.write(object)
-    f.close()
     # object: [{ "DataSource": {{ datasource_name }}, "KeyName": {{ datasource['KeyName'] }}, "Key": {{ datasource['Key'] }}, "IssueEpochDate": {{ datasource['IssueEpochDate'] }} }]
     client = pymongo.MongoClient(MONGO_URL)
     db = client[database]
     coll = db[collection]
     record = ast.literal_eval(object)
-    #recid = coll.insert_one(record)
+    recid = coll.insert_one(record)
+    f.write(str(recid))
+    f.close()
     return True
 
 def remove_object(database,collection,datasource_name,query):
