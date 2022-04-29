@@ -230,8 +230,8 @@ initialize_olympus_equities:
       - database: equities_us
       - collection: credentials
       - datasource_name: {{ datasource_name }}
-      - key_name: {{ datasource['KeyName'] }}
-      - key: {{ datasource['Key'] }}
-      - issue_epoch_date: {{ datasource['IssueEpochDate'] }}
+      - key_name: ABC1
+      - key: ABC2
+      - issue_epoch_date: ABC3 
 
 {% endfor %}
