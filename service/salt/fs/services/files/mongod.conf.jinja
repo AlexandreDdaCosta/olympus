@@ -35,13 +35,13 @@ net:
 
 #processManagement
 
-{% if auth_enabled_count == 1 %}
+{% if auth_enabled_count == 1 -%}
 security:
   authorization: enabled.
 {% else %}
 #security:
 #  authorization: enabled.
-{% endif %}
+{%- endif %}
 
 #operationProfiling:
 
