@@ -12,18 +12,21 @@ def insert_object(database,collection,datasource_name,key_name,key,issue_epoch_d
     f = open("/tmp/narfie", "a")
     f.write('TEST1\n')
     f.write(object+'\n')
-    # object: [{ "DataSource": {{ datasource_name }}, "KeyName": {{ datasource['KeyName'] }}, "Key": {{ datasource['Key'] }}, "IssueEpochDate": {{ datasource['IssueEpochDate'] }} }]
     client = pymongo.MongoClient(MONGO_URL)
     db = client[database]
     coll = db[collection]
     record = ast.literal_eval(object)
     f.write(str(record)+'\n')
     f.write(str(type(record))+'\n')
-    recid = coll.insert_one(record)
+    #recid = coll.insert_one(record)
     f.write(str(recid)+'\n')
     f.close()
     return True
 
-def remove_object(database,collection,datasource_name,query):
-    # query: [{ "DataSource": {{ datasource_name }} }]
+def remove_object(database,collection,datasource_name,key_name,query):
+    client = pymongo.MongoClient(MONGO_URL)
+    db = client[database]
+    coll = db[collection]
+    record = ast.literal_eval(query)
+    recid = coll.delete_one(record)
     return True
