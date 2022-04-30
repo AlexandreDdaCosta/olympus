@@ -56,6 +56,14 @@ include:
       - sls: repository
 {% endfor %}
 
+/etc/sysfs.conf:
+  file.managed:
+    - group: root
+    - makedirs: False
+    - mode: 0644
+    - source: salt://package/files/sysfs.conf
+    - user: root
+
 salt-3000.3+ds-1-bug-hack:
   cmd:
     - run

@@ -43,6 +43,8 @@ packages:
     version: 3.9.2-3
   python3-pip:
     version: 20.3.4-4+deb11u1
+  sysfsutils:
+    version: 2.1.0+repack-7
   sudo:
     version: 1.9.5p2-3
   vim:
