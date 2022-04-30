@@ -15,6 +15,8 @@ backend-packages:
     version: 14.2-1.pgdg110+1
 
 backend-npm-packages:
+  async:
+    version: 3.2.3
   body-parser:
     version: 1.20.0
   chai:
