@@ -1,7 +1,6 @@
 // sudo su -s /bin/bash -c 'export NODE_PATH=/usr/lib/nodejs:/usr/lib/node_modules:/usr/share/javascript; cd /srv/www/node/restapi; npm test ./tests/routes/index.test.js' node
 
 const request = require('request');
-
 const url = 'http://zeus:8889/';
 const message = 'Olympus back-end API listening for requests via express/node.js.'
 
@@ -12,8 +11,7 @@ Command line: curl zeus:8889
 
 describe('Connection to HTTP index page of API, node port', () => {
   test('Should return HTTP code 200 with JSON reply including a "message" key.', () => {
-    request.get(url, function (err, response){
-      if (err) throw new Error(err);
+    request.get(url, (error, response) => {
       expect(response.statusCode).toBe(200);
       jsonobject = JSON.parse(response.body);
       expect(jsonobject['message']).toBe(message);
@@ -39,12 +37,13 @@ const options = {
 }; 
 describe('Connection to HTTPS index page of API', () => {
   test('Should return HTTP code 200 with JSON reply including a "message" key.', () => {
-    const req = https.request(options, function (err, resp) { 
-      if (err) throw new Error(err);
-      expect(resp.statusCode).toBe(200);
-      jsonobject = JSON.parse(resp.body);
-      expect(jsonobject['message']).toBe(message);
+    const https_request = https.request(options, (response) => { 
+      expect(response.statusCode).toBe(200);
+      response.on('data', (d) => {
+        jsonobject = JSON.parse(d);
+        expect(jsonobject['message']).toBe(message);
+      });
     });
-    req.end();
+    https_request.end();
   }); 
 });
