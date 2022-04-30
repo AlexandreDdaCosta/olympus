@@ -29,7 +29,6 @@ OCSP;URI.0 = http://ocsp.{{ pillar['core-domain-CN'] }}/
 caIssuers;URI.0 = http://{{ pillar['core-domain-CN'] }}/ca.cert
 
 [ v3_req ]
-authorityKeyIdentifier=keyid,issuer
 basicConstraints = CA:FALSE
 keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
 subjectAltName = @alt_names
