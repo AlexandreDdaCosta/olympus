@@ -1,11 +1,126 @@
 // sudo su -s /bin/bash -c 'export NODE_PATH=/usr/lib/nodejs:/usr/lib/node_modules:/usr/share/javascript; cd /srv/www/node/restapi; npm test ./tests/models/connect.test.js' node
 
+const async = require('async');
 const fs = require('fs'); 
 const MongoClient = require('mongodb').MongoClient;
 const test_collection = 'test'
-const url = 'mongodb://127.0.0.1:27017/' + test_collection
+const url = 'mongodb://127.0.0.1:27017/' + test_collection;
+
+describe('MongoDB connection', () => {
+  test('Connect to test database.', () => {
+    MongoClient.connect(url, (error, database) => {
+      if (error) throw new Error(error);
+      async.waterfall([
+
+
+
+      ]);
+      database.close();
+    });
+  });
+});
+
 
 /*
+
+function removeCollection(db,collectionName,callback) {
+
+  async.waterfall([
+
+    // Get collection
+    function(cb) {
+      db.collection(collectionName,function(err,collection) {
+        if (err) throw err;
+        cb(null,collection);
+      });
+    },
+
+    // Count collection current
+    function(collection,cb) {
+      collection.count(function(err,count) {
+        console.log(
+          "%s collection has %s documents",
+          collectionName,
+          count
+        );
+        cb(null,collection);
+      });
+    },
+
+    // Remove collection documents
+    function(collection,cb) {
+      collection.remove({},function(err,removed) {
+        console.log(
+          "%s collection removed %s documents",
+          collectionName,
+          removed
+        );
+        cb(null,collection);
+      });
+    },
+
+  ],function(err,collection) {
+
+    collection.count(function(err,count) {
+      console.log(
+        "%s collection now has %s documents",
+        collectionName,
+        count
+      );
+      callback(err);
+    });
+
+  });
+}
+
+// Main flow after connection
+MongoClient.connect('mongodb://localhost/test',function(err,db) {
+
+  if (err) throw err;
+
+  async.waterfall([
+
+    // Set up a collection
+    function(cb) {
+      var collectionName = "sample";
+
+      db.collection(collectionName,function(err,collection) {
+        cb(null,collection,collectionName);
+      });
+    },
+
+    // Insert some things
+    function(collection,collectionName,cb) {
+      async.eachSeries([1,2,3,4,5,6,7,8],function(item,complete) {
+        collection.insert({ "item": item },function(err) {
+          if (err) throw err;
+          complete();
+        });
+      },function(err) {
+        // When all are complete
+        cb(null,collectionName);
+      });
+    },
+
+    // Call your remove method
+    function(collectionName,cb) {
+
+      removeCollection(db,collectionName,function(err) {
+        if (err) throw err;
+
+        cb();
+      });
+
+    }
+
+  ]);
+
+});
+
+
+
+
+
 Initialize test commands
 
 const insertDocuments = (db, callback) => {
@@ -24,7 +139,6 @@ const insertDocuments = (db, callback) => {
     console.log("Inserted three documents into test collection.");
   });
 }
-*/
 
 const removeCollection = (client, callback) => {
   var collection = client.collection(test_collection);
@@ -36,9 +150,7 @@ const removeCollection = (client, callback) => {
   });    
 }
 
-/*
 Run test commands
-*/
 
 describe('MongoDB basic connection and test database and collection operations', () => {
   test('Connect to test database.', () => {
@@ -50,6 +162,7 @@ describe('MongoDB basic connection and test database and collection operations',
     });
   });
 });
+*/
 
 /*
 ALEX
