@@ -13,43 +13,53 @@ describe('insert', () => {
   beforeAll(async () => {
     connection = await MongoClient.connect(url, {});
     db = await connection.db(test_database);
+    await db.dropDatabase();
   });
 
   afterAll(async () => {
+    await db.dropDatabase();
     await connection.close();
   });
 
   it('Dopey test', async () => {
     expect('1').toEqual('1');
   });
+  
+  it('Insert/delete a single document into/from collection', async () => {
+    var collection = db.collection(test_collection);
+    var mockItem = {a : 1};
+    await collection.insertOne(mockItem);
+    var insertedItem = await collection.findOne({a : 1});
+    expect(insertedItem).toEqual(mockItem);
+    await collection.deleteOne(mockItem);
+    var deletedItem = await collection.findOne({a : 1});
+    expect(deletedItem).toEqual(null);
+  });
+
+  it('Insert/delete multiple documents into/from collection', async () => {
+    var collection = db.collection(test_collection);
+    var mockItems = [{a : 1}, {b : 2}];
+    await collection.insertMany(mockItems);
+    var item = {a : 1};
+    var searchedItem = await collection.findOne({a : 1});
+    expect(searchedItem['a']).toEqual(1);
+    searchedItem = await collection.findOne({b : 1});
+    expect(searchedItem).toEqual(null);
+    var searchedItems = await collection.find({b : 2}).toArray();
+    expect(searchedItems.length).toEqual(1);
+    searchedItems = await collection.find({b : 1}).toArray();
+    expect(searchedItems.length).toEqual(0);
+    var searchedItems = await collection.find({}).toArray();
+    expect(searchedItems.length).toEqual(2);
+    expect(searchedItems[0]['a']).toEqual(1);
+    expect(searchedItems[1]['b']).toEqual(2);
+  });
+
 });
 
 /*
 
 
-var findDocuments = function(db, callback) {
-  var collection = db.collection(test_collection);
-  collection.find({}).toArray(function(err, docs) {
-    expect(err).to.equal(null);
-    expect(docs.length).to.equal(3);
-    expect(docs[0]['a']).to.equal(1);
-    expect(docs[1]['a']).to.equal(2);
-    expect(docs[1]['b']).to.equal(undefined);
-    expect(docs[2]['a']).to.equal(3);
-    console.log("Found the following records:");
-    callback();
-  });
-}
-var filterDocuments = function(db, callback) {
-  var collection = db.collection(test_collection);
-  collection.find({'a': 1}).toArray(function(err, docs) {
-    expect(err).to.equal(null);
-    expect(docs.length).to.equal(1);
-    expect(docs[0]['a']).to.equal(1);
-    console.log("Found one record.");
-    callback();
-  });      
-}
 var filterRemovedDocument = function(db, callback) {
   var collection = db.collection(test_collection);
   collection.find({'b': 1}).toArray(function(err, docs) {
@@ -81,32 +91,6 @@ var indexCollection = function(db, callback) {
     }
   );
 };
-var insertDocuments = function(db, callback) {
-  var collection = db.collection(test_collection);
-  collection.insertMany([
-    {a : 1}, {a : 2}, {a : 3}
-  ], function(err, result) {
-    expect(err).to.equal(null);
-    expect(result.result.ok).to.equal(1);
-    expect(result.result.n).to.equal(3);
-    expect(result.insertedCount).to.equal(3);
-    expect(result.ops.length).to.equal(3);
-    expect(result.ops[0]['a']).to.equal(1);
-    expect(result.ops[1]['a']).to.equal(2);
-    expect(result.ops[2]['a']).to.equal(3);
-    console.log("Inserted three documents into test collection.");
-    callback();
-  });
-}
-var removeCollection = function(db, callback) {
-  var collection = db.collection(test_collection);
-  collection.remove(function(err, result) {
-    expect(err).to.equal(null);
-    expect(result.result.ok).to.equal(1);
-    console.log("Dropped the test collection.");
-    callback();
-  });    
-}
 var removeDocument = function(db, callback) {
   var collection = db.collection(test_collection);
   collection.deleteOne({ a : 2 }, function(err, result) {
@@ -126,35 +110,5 @@ var updateDocument = function(db, callback) {
     callback();
   });  
 }
-
-describe('MongoDB basic connection and operations', function () {
-  it('Connect to olympus database, manage test document', function (done) {
-    MongoClient.connect(url, options, function(err, db) {
-      expect(err).to.equal(null);
-      removeCollection(db, function() {
-        insertDocuments(db, function() {
-          findDocuments(db, function() {
-            filterDocuments(db, function() {
-              updateDocument(db, function() {
-                filterUpdatedDocument(db, function() {
-                  indexCollection(db, function() {
-                    removeDocument(db, function() {
-                      filterRemovedDocument(db, function() {
-                        removeCollection(db, function() {
-                          db.close();
-                          done();
-                        });
-                      });
-                    });
-                  });
-                });
-              });
-            });
-          });
-        });
-      });
-    });
-  });
-});
 
 */
