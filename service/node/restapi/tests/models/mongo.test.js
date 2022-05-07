@@ -2,7 +2,7 @@
 
 const {MongoClient} = require('mongodb');
 
-let test_collection = 'test.mongo'
+let test_collection = 'test.mongo2'
 let test_database = 'user_node'
 let url = 'mongodb://127.0.0.1:27017/';
 
@@ -14,12 +14,12 @@ describe('insert', () => {
     connection = await MongoClient.connect(url, {});
     db = await connection.db(test_database);
     var collection = db.collection(test_collection);
-    await collection.remove();
+    collection.drop(function (err, result) { if (err); });
   });
 
   afterAll(async () => {
     var collection = db.collection(test_collection);
-    await collection.remove();
+    await collection.drop();
     await connection.close();
   });
 
