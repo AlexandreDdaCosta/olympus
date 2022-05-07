@@ -65,6 +65,11 @@ app_user_{{ app }}:
   cmd.run:
     - name: 'if [ -d "/home/{{ app }}/bin" ]; then chmod -R 0750 /home/{{ app }}/bin; fi'
 
+/home/{{ app }}-perms:
+  cmd.run:
+    - name: 'chmod 0750 /home/{{ app }}'
+
+
 {{ pillar['olympus-app-package-path'] }}/{{ app }}:
   file.recurse:
     - clean: True
@@ -82,6 +87,13 @@ app_user_{{ app }}:
     - group: {{ app }}
     - makedirs: False
     - mode: 0750
+    - user: {{ app }}
+
+/home/{{ app }}/etc:
+  file.directory:
+    - dir_mode: 0700
+    - group: {{ app }}
+    - name: /home/{{ app }}/etc
     - user: {{ app }}
 {% endfor %}
 {% endif %}
