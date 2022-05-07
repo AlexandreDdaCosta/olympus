@@ -13,11 +13,13 @@ describe('insert', () => {
   beforeAll(async () => {
     connection = await MongoClient.connect(url, {});
     db = await connection.db(test_database);
-    await db.dropDatabase();
+    var collection = db.collection(test_collection);
+    await collection.remove();
   });
 
   afterAll(async () => {
-    await db.dropDatabase();
+    var collection = db.collection(test_collection);
+    await collection.remove();
     await connection.close();
   });
 
