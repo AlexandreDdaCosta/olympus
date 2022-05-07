@@ -1,4 +1,5 @@
-{%- set check_mongo_auth_enabled="/usr/bin/touch /etc/mongod.conf && grep '^[ ]*authorization: enabled' /etc/mongod.conf | wc -l" -%}
+{%- set check_mongo_auth_enabled="/usr/bin/touch /etc/mongod.conf && grep '^[ ]*authorization: enabled' /etc/mongod.conf | wc -l" %}
+{%- set random_password_generator='echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100)))" | /usr/bin/python3' -%}
 
 include:
   - base: package
@@ -49,7 +50,7 @@ systmctl_enable_mongod:
 mongodb_proper_perms:
   cmd.run:
     - name: chown -R mongodb:mongodb /var/lib/mongodb
-{# Bug: Found bad perms of unknown origin #}
+# Bug: Found bad perms of unknown origin
 
 mongod-service:
   service.running:
@@ -57,3 +58,35 @@ mongod-service:
     - name: mongod
     - watch:
       - file: /etc/mongod.conf
+
+# Mongo access passwords, database permissions, and password files 
+
+{% for username, user in pillar.get('users', {}).items() %}
+{% if 'server' not in user or grains.get('server') in user['server'] -%}
+
+{{ username }}_mongodb:
+  module.run:
+    - mongo.user:
+      - user: {{ username }}
+      - password: {{ salt['cmd.shell'](random_password_generator) }}
+      - admin: True
+      - roles: []
+{# 
+    {% if 'createhome' in user and user['createhome'] -%}
+    {% if 'is_staff' in user and user['is_staff'] -%}
+    mongodb:
+      admin: True
+    mongodb:
+      databases:
+        - equities: read
+        - equities: readwrite
+        - user_node: admin
+    - name: sudo /usr/bin/python3 {{ pillar.www_path }}/django/manage.py verifyuser --username {{ username }} --email {{ django_admin_email }} --password {{ salt['cmd.shell'](random_password_generator) }} --admin --superuser
+#}
+
+{% endif %}
+{% endfor %}
+
+# With permissions in place, change/set settings.mongod
+
+# TODO ALEX

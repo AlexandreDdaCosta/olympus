@@ -206,11 +206,6 @@ node-backend:
     - require:
       - sls: services/web
 
-# Change/set mongod admin password
-# Change/set settings.mongod
-  # Admin account name/password
-  # 
-
 # START equities project backend section
 
 initialize_olympus_equities:

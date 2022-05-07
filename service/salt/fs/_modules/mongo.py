@@ -18,6 +18,14 @@ def remove_object(database,collection,query):
     recid = coll.delete_one(query)
     return True
 
+def user(username,password,admin,roles):
+    with open('/tmp/pymongo', 'a') as f:
+        f.write(username)
+        f.write(password)
+        f.write(str(admin))
+        f.write(str(roles))
+    return True
+
 def _connect(database,collection):
     client = pymongo.MongoClient(MONGO_URL)
     db = client[database]

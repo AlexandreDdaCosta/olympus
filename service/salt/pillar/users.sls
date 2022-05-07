@@ -67,7 +67,7 @@ users:
     mongodb:
       databases:
         - equities: admin
-        - user.olympus: admin
+        - user_olympus: admin
     shell: /bin/false
   postgres:
     fullname: PostgreSQL administrator
