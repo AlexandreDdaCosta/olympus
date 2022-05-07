@@ -38,10 +38,10 @@
     - shell: {{ user['shell'] }}
     {%- endif %}
 
-{% if 'createhome' in user and user['createhome'] and 'ssh_public_key' in user %}
+{% if 'createhome' in user and user['createhome'] -%}
 /home/{{ username }}-perms:
   cmd.run:
-    - name: 'cmhod 0750 /home/{{ username }}'
+    - name: 'chmod 0750 /home/{{ username }}'
 
 {{ username }}-etc:
   file.directory:
@@ -50,6 +50,8 @@
     - name: /home/{{ username }}/etc
     - user: {{ username }}
 
+{%- endif %}
+{% if 'createhome' in user and user['createhome'] and 'ssh_public_key' in user %}
 {{ username }}-sshdir:
   file.directory:
     - dir_mode: 0700
