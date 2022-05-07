@@ -54,7 +54,7 @@ users:
     mongodb:
       databases:
         - equities: read
-        - user.node: admin
+        - user_node: admin
     server:
       - supervisor
       - unified

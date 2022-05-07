@@ -2,8 +2,8 @@
 
 const {MongoClient} = require('mongodb');
 
-let test_collection = 'test.mongo'
-let test_database = 'user.node'
+let test_collection = 'test_mongo'
+let test_database = 'user_node'
 let url = 'mongodb://127.0.0.1:27017/';
 
 describe('insert', () => {
