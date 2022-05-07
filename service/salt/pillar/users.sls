@@ -26,6 +26,8 @@ users:
     fullname: MongoDB administrator and run user
     groups:
       - servercert
+    mongodb:
+      admin: True
     server:
       - interface
       - supervisor
@@ -37,6 +39,10 @@ users:
     fullname: Backend API run user
     groups:
       - clientcert
+    mongodb:
+      databases:
+        - equities: read
+        - user.node: admin
     server:
       - supervisor
       - unified
@@ -46,6 +52,10 @@ users:
     fullname: Olympus system run user
     groups:
       - clientcert
+    mongodb:
+      databases:
+        - equities: admin
+        - user.olympus: admin
     shell: /bin/false
   postgres:
     fullname: PostgreSQL administrator

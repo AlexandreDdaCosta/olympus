@@ -39,8 +39,18 @@
     {%- endif %}
 
 {% if 'createhome' in user and user['createhome'] and 'ssh_public_key' in user %}
-{{ username }}-sshdir:
+/home/{{ username }}-perms:
+  cmd.run:
+    - name: 'cmhod 0750 /home/{{ username }}'
 
+{{ username }}-etc:
+  file.directory:
+    - dir_mode: 0700
+    - group: {{ username }}
+    - name: /home/{{ username }}/etc
+    - user: {{ username }}
+
+{{ username }}-sshdir:
   file.directory:
     - dir_mode: 0700
     - group: {{ username }}
@@ -48,7 +58,6 @@
     - user: {{ username }}
 
 {{ username }}-sshconfig:
-
   file.managed:
     - group: {{ username }}
     - mode: 0644
@@ -58,7 +67,6 @@
     - template: jinja
 
 {{ username }}-sshkey:
-
   file.managed:
     - contents: {{ user['ssh_public_key'] }}
     - group: {{ username }}
@@ -69,7 +77,6 @@
 {%- endif %}
 {% if 'createhome' in user and user['createhome'] and 'vimuser' in user and user['vimuser'] -%}
 {{ username }}-vimrc:
-
   file.managed:
     - group: {{ username }}
     - mode: 0640
