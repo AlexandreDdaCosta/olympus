@@ -2,7 +2,7 @@
 
 const {MongoClient} = require('mongodb');
 
-let test_collection = 'connect.test'
+let test_collection = 'test.mongo'
 let test_database = 'user.node'
 let url = 'mongodb://127.0.0.1:27017/';
 
