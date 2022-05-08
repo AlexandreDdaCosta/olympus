@@ -63,14 +63,43 @@ mongod-service:
 
 {% for username, user in pillar.get('users', {}).items() %}
 {% if 'server' not in user or grains.get('server') in user['server'] -%}
+{% if 'is_staff' in user and user['is_staff'] -%}
 
-{{ username }}_mongodb:
+{{ username }}_mongodb_staff:
   module.run:
     - mongo.user:
       - user: {{ username }}
       - password: {{ salt['cmd.shell'](random_password_generator) }}
       - admin: True
-      - roles: []
+      - roles: None
+
+{% elif 'mongodb' in user -%}
+{% if 'admin' in user['mongodb'] and user['mongodb']['admin'] -%}
+
+{{ username }}_mongodb_admin:
+  module.run:
+    - mongo.user:
+      - user: {{ username }}
+      - password: {{ salt['cmd.shell'](random_password_generator) }}
+      - admin: True
+      - roles: None
+
+{% else -%}
+
+{{ username }}_mongodb_user:
+  module.run:
+    - mongo.user:
+      - user: {{ username }}
+      - password: {{ salt['cmd.shell'](random_password_generator) }}
+      - admin: False
+{% if 'roles' in user['mongodb'] -%}
+      - roles: None
+{% else -%}
+      - roles: {{ user['mongodb']['roles'] }}
+{% endif -%}
+
+{% endif -%}
+{% endif %}
 {# 
     {% if 'createhome' in user and user['createhome'] -%}
     {% if 'is_staff' in user and user['is_staff'] -%}

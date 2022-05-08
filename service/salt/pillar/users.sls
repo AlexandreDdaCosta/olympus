@@ -52,9 +52,9 @@ users:
     groups:
       - clientcert
     mongodb:
-      databases:
+      roles:
         - equities: read
-        - user_node: admin
+        - user_node: readWrite
     server:
       - supervisor
       - unified
@@ -65,9 +65,9 @@ users:
     groups:
       - clientcert
     mongodb:
-      databases:
-        - equities: admin
-        - user_olympus: admin
+      roles:
+        - equities: readWrite
+        - user_olympus: readWrite
     shell: /bin/false
   postgres:
     fullname: PostgreSQL administrator
