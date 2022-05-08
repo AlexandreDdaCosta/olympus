@@ -91,7 +91,7 @@ mongod-service:
       - password: {{ salt['cmd.shell'](random_password_generator) }}
       - admin: False
 {% if 'roles' in user['mongodb'] -%}
-      - roles: [ {{ user['mongodb']['roles'] }} ]
+      - roles: [ 'foo', 'bar' ]
 {% endif -%}
 
 {% endif -%}
@@ -99,6 +99,7 @@ mongod-service:
 {% endif -%}
 {% endfor %}
 
+#      - roles: [ {{ user['mongodb']['roles'] }} ]
 # With permissions in place, change/set settings.mongod
 
 # TODO ALEX
