@@ -6,7 +6,7 @@ Tools for handling MongoDB operations
 
 import ast, pymongo
 
-from olympus import MONGO_URL
+from olympus import MONGO_ADMIN_USERNAME, MONGO_URL
 
 def insert_object(database,collection,object):
     coll = _connect(database, collection)
