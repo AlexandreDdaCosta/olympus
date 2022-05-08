@@ -26,6 +26,11 @@ def user(username,password,admin,roles=None):
             for role in roles:
                 f.write(str(role))
                 f.write('\n')
+                for database, permission in role.items():
+                    f.write(database)
+                    f.write('\n')
+                    f.write(permission)
+                    f.write('\n')
         f.close()
     return True
 
