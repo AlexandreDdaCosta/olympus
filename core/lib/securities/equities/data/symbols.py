@@ -57,9 +57,6 @@ class InitSymbols(data.Connection):
                 subprocess.run(['wget "'+urlconf['url']+'" --timeout=10 --user-agent=' + self.user + ' --output-document='+target_file], shell=True)
             except Exception as e:
                 self._clean_up(lockfilehandle)
-                if self.graceful is True:
-                    print('WARNING: Bypassing initialization due to download error: '+str(e))
-                    return
                 raise
 
         if self.verbose is True:

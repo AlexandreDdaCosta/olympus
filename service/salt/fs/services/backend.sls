@@ -210,7 +210,7 @@ node-backend:
 
 initialize_olympus_equities:
   cmd.run:
-    - name: "su -s /bin/bash -c '/usr/local/bin/olympus/securities/equities/init_equities.py --graceful' {{ pillar['core-app-user'] }}"
+    - name: "su -s /bin/bash -c '/usr/local/bin/olympus/securities/equities/init_equities.py' {{ pillar['core-app-user'] }}"
     - user: root
     - require: 
       - node-backend
