@@ -14,4 +14,5 @@ def WORKING_DIR(user=USER):
 
 # Backend
 
-MONGO_URL = 'mongodb://localhost:27017/';
+MONGO_ADMIN_USERNAME = 'mongodb'
+MONGO_URL = 'mongodb://localhost:27017/'
