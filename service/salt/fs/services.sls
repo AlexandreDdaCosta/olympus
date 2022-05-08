@@ -71,7 +71,6 @@ mongod-service:
       - user: {{ username }}
       - password: {{ salt['cmd.shell'](random_password_generator) }}
       - admin: True
-      - roles: False
 
 {% endif -%}
 {% endif -%}

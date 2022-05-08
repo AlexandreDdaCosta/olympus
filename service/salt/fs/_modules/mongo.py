@@ -18,7 +18,7 @@ def remove_object(database,collection,query):
     recid = coll.delete_one(query)
     return True
 
-def user(username,password,admin,roles):
+def user(username,password,admin,roles=None):
     with open('/tmp/pymongo', 'a') as f:
         f.write(username)
         f.write(password)
