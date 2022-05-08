@@ -99,21 +99,9 @@ mongod-service:
 {% endif -%}
 
 {% endif -%}
-{% endif %}
-{# 
-    {% if 'createhome' in user and user['createhome'] -%}
-    {% if 'is_staff' in user and user['is_staff'] -%}
-    mongodb:
-      admin: True
-    mongodb:
-      databases:
-        - equities: read
-        - equities: readwrite
-        - user_node: admin
-    - name: sudo /usr/bin/python3 {{ pillar.www_path }}/django/manage.py verifyuser --username {{ username }} --email {{ django_admin_email }} --password {{ salt['cmd.shell'](random_password_generator) }} --admin --superuser
-#}
+{% endif -%}
 
-{% endif %}
+{% endif -%}
 {% endfor %}
 
 # With permissions in place, change/set settings.mongod
