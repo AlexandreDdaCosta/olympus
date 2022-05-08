@@ -99,7 +99,6 @@ mongod-service:
 {% endif -%}
 {% endfor %}
 
-#      - roles: [ {{ user['mongodb']['roles'] }} ]
 # With permissions in place, change/set settings.mongod
 
 # TODO ALEX
