@@ -23,6 +23,7 @@ def user(username,password,admin,roles=None):
         if roles is not None:
             for role in roles:
                 f.write(str(role))
+                f.write('\n')
     return True
 
 def _connect(database,collection):
