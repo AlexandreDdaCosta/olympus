@@ -90,6 +90,9 @@ mongod-service:
       - username: {{ username }}
       - password: {{ salt['cmd.shell'](random_password_generator) }}
       - admin: False
+{% if 'roles' in user['mongodb'] -%}
+      - roles: {{ user['mongodb']['roles'] }}
+{% endif -%}
 
 {% endif -%}
 {% endif -%}
