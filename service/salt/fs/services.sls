@@ -68,7 +68,7 @@ mongod-service:
 {{ username }}_mongodb_staff:
   module.run:
     - mongo.user:
-      - user: {{ username }}
+      - username: {{ username }}
       - password: {{ salt['cmd.shell'](random_password_generator) }}
       - admin: True
 
