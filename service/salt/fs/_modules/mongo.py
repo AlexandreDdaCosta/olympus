@@ -22,8 +22,8 @@ def user(username,password,admin,roles=None):
     with open('/tmp/pymongo', 'a') as f:
         if roles is not None:
             f.write(username)
+            f.write('\n')
             for role in roles:
-                f.write('\n')
                 f.write(str(role))
                 f.write('\n')
         f.close()
