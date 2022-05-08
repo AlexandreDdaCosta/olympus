@@ -20,10 +20,9 @@ def remove_object(database,collection,query):
 
 def user(username,password,admin,roles=None):
     with open('/tmp/pymongo', 'a') as f:
-        f.write(username)
-        f.write(password)
-        f.write(str(admin))
-        f.write(str(roles))
+        if roles is not None:
+            for role in roles:
+                f.write(str(role))
     return True
 
 def _connect(database,collection):
