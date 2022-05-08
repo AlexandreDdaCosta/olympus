@@ -18,8 +18,6 @@ class InitForm4Indices(data.Connection):
 
     def __init__(self,user=USER,**kwargs):
         super(InitForm4Indices,self).__init__(user,'form4_indices',**kwargs)
-        self.force = kwargs.get('force',False)
-        self.graceful = kwargs.get('graceful',False)
         self.verbose = kwargs.get('verbose',False)
         self.working_dir = WORKING_DIR(self.user)
 
@@ -35,15 +33,6 @@ class InitForm4Indices(data.Connection):
         lockfilehandle.write(str(os.getpid()))
         os.chdir(self.working_dir)
        
-        if self._record_start() is not True:
-            if self.graceful:
-                lockfilehandle.write('')
-                fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
-                lockfilehandle.close()
-                return
-            else:
-                raise Exception('Initialization record check failed; cannot record start of initialization.')
-
         # The edgar module retrieves based on a starting year. 
         # Read existing collection, looking for last worked year, in order oldest to newest
         
@@ -155,7 +144,6 @@ class InitForm4Indices(data.Connection):
         if self.verbose:
             print('Cleaning up.')
         shutil.rmtree(download_directory)
-        self._record_end()
         lockfilehandle.write('')
         fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
         lockfilehandle.close()
@@ -177,8 +165,6 @@ class Form4(data.Connection):
 
         # Gather detailed Form4 records based on downloaded EDGAR indices
         self.epoch_time = int(time.time())
-        self.force = kwargs.get('force',False)
-        self.graceful = kwargs.get('graceful',False)
         schema_directory = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/'
         self.form4_schema = xmlschema.XMLSchema(schema_directory + 'ownership4Document.xsd.xml')
         self.form4a_schema = xmlschema.XMLSchema(schema_directory + 'ownership4ADocument.xsd.xml')
@@ -339,7 +325,6 @@ class Form4(data.Connection):
                 xml_content = xml_content.replace("\n", "")
                
                 xml_validate = True 
-                for_continue = False
                 repair_attempts = 0
                 while xml_validate is True:
                     try:
@@ -357,16 +342,10 @@ class Form4(data.Connection):
                             if self.verbose:
                                 print('\n\nhttps://www.sec.gov/Archives/edgar/data/'+str(record['issuerCik'])+'/'+record['file']+'.txt\n')
                                 print('Gracefully bypassing record ' + str(record['_id']) + ' for failed validation:\n'+str(e))
-                            if self.graceful:
-                                self._revert_unlock_record(record['_id'],str(e))
-                                for_continue = True
-                            else:
-                                raise
+                            raise
                     except Exception:
                         raise
                     xml_validate = False
-                if for_continue:
-                    continue
                 data = {}
                 data = xmltodict.parse(xml_content)
 
@@ -406,16 +385,10 @@ class Form4(data.Connection):
                     print('UPDATED INDEX: '+ str(record['issuerCik']) + ' ' + str(record['file']))
 
             except Exception as e:
-                if self.graceful:
-                    if self.verbose:
-                        print('Gracefully bypassing failed record ' + str(record['_id']) + ':\n'+str(e))
-                    self._revert_unlock_record(record['_id'],str(e))
-                    continue
-                else:
-                    if os.path.isdir(download_directory):
-                        shutil.rmtree(download_directory)
-                    self._revert_unlock_slice(records,record['_id'],str(e))
-                    raise
+                if os.path.isdir(download_directory):
+                    shutil.rmtree(download_directory)
+                self._revert_unlock_slice(records,record['_id'],str(e))
+                raise
         if os.path.isdir(download_directory):
             shutil.rmtree(download_directory)
 
@@ -529,25 +502,12 @@ class Form4(data.Connection):
     def _select_lock_slice(self,year):
         if self.done is True:
             return []
-        if self.force is True and not self.force_unlocked:
+        if not self.force_unlocked:
             # Unlock all entries being processed and all failed entries
             print('FORCING '+str(year))
             self.collection_index.update({ 'failure': { '$exists': True }, 'year': int(year)}, {'$unset': {'failure': 1}}, multi=True)
             self.collection_index.update({ 'pid': { '$exists': True }, 'year': int(year)}, {'$unset': {'pid': 1, 'processing': 1}}, multi=True)
             self.force_unlocked = True
-        waits = 0
-        while True:
-            if self._record_start(year=year) is not True:
-                waits = waits + 1
-                if waits >= self.INIT_WAIT:
-                    if self.verbose:
-                        print('Initialization running; exceeded maximum wait time.')
-                        return []
-                if self.verbose:
-                    print('Initialization conflict; waiting '+str(self.INIT_SLEEP)+' seconds.')
-                time.sleep(self.INIT_SLEEP)
-            else:
-                break
 
         # Go through records where 'rptOwnerCik'/'processing' keys are missing
         # Lock PROCESSING_BLOCK_SIZE entries in main index. 
@@ -557,7 +517,6 @@ class Form4(data.Connection):
         if self.max_records > 0:
             if self.max_record_count >= self.max_records:
                 print('Reached maximum number [' + str(self.max_records) + '] of records to process; ending')
-                self._record_end(year=year)
                 self.done = True
                 return records
             elif self.max_records - self.max_record_count < block_size:
@@ -571,5 +530,4 @@ class Form4(data.Connection):
             bulk.find({ '_id': record['_id'] }).update({ '$set': { 'processing': self.epoch_time, 'pid': os.getpid() } })
         if len(records) > 0:
             bulk.execute()
-        self._record_end(year=year)
         return records

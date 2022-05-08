@@ -20,8 +20,6 @@ class InitSymbols(data.Connection):
 
     def __init__(self,user=USER,**kwargs):
         super(InitSymbols,self).__init__(user,INIT_TYPE,**kwargs)
-        self.force = kwargs.get('force',False)
-        self.graceful = kwargs.get('graceful',False)
         self.verbose = kwargs.get('verbose',False)
         self.working_dir = WORKING_DIR(self.user)
 
@@ -36,16 +34,6 @@ class InitSymbols(data.Connection):
         os.chdir(self.working_dir)
        
         if self.verbose is True:
-            print('Initialization checks to prevent multiple execution.')
-        if self._record_start() is not True:
-            self._clean_up(lockfilehandle,False)
-            if self.graceful is True:
-                print('Initialization record check failed; cannot record start of initialization.')
-                return
-            else:
-                raise Exception('Initialization record check failed; cannot record start of initialization.')
-    
-        if self.verbose is True:
             print('Downloading company data.')
         company_files = []
         epoch_time = int(time.time())
@@ -53,12 +41,11 @@ class InitSymbols(data.Connection):
             target_file = urlconf['exchange']+JSON_FILE_SUFFIX
             company_files.insert(0,target_file)
             target_file = DOWNLOAD_DIR(self.user)+target_file
-            if self.force is False:
-                # Download site issues; use existing downloads if not too old
-                if os.path.isfile(target_file) and os.stat(target_file).st_size > 1:
-                    if epoch_time - os.stat(target_file).st_mtime < 28800:
-                        print('Using existing company list for ' + urlconf['exchange'] + ': Less than eight hours old.')
-                        continue
+            # Download site issues; use existing downloads if not too old
+            if os.path.isfile(target_file) and os.stat(target_file).st_size > 1:
+                if epoch_time - os.stat(target_file).st_mtime < 28800:
+                    print('Using existing company list for ' + urlconf['exchange'] + ': Less than eight hours old.')
+                    continue
             if self.verbose is True:
                 print('Downloading data for exchange ' + urlconf['exchange'] + ', URL ' + urlconf['url'])
             try:
@@ -154,11 +141,9 @@ class InitSymbols(data.Connection):
 	
         self._clean_up(lockfilehandle)
 	
-    def _clean_up(self,lockfilehandle,end_it=True):
+    def _clean_up(self,lockfilehandle):
         if self.verbose is True:
             print('Cleaning up symbol creation process.')
-        if end_it is True:
-            self._record_end()
         lockfilehandle.write('')
         fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
         lockfilehandle.close()

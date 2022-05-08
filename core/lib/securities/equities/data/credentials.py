@@ -11,8 +11,6 @@ class InitCredentials(data.Connection):
 
     def __init__(self,user=USER,**kwargs):
         super(InitCredentials,self).__init__(user,INIT_TYPE,**kwargs)
-        self.force = kwargs.get('force',False)
-        self.graceful = kwargs.get('graceful',False)
         self.verbose = kwargs.get('verbose',False)
         self.working_dir = WORKING_DIR(self.user)
 
@@ -26,14 +24,6 @@ class InitCredentials(data.Connection):
         lockfilehandle.write(str(os.getpid()))
         os.chdir(self.working_dir)
       
-        if self._record_start() is not True:
-            self._clean_up(lockfilehandle,False)
-            if self.graceful is True:
-                print('Initialization record check failed; cannot record start of initialization.')
-                return
-            else:
-                raise Exception('Initialization record check failed; cannot record start of initialization.')
-    
         # Create collection using a dummy entry
        
         collection = self.db[CREDENTIALS_COLLECTION]
@@ -51,10 +41,7 @@ class InitCredentials(data.Connection):
 		
         self._clean_up(lockfilehandle)
 	
-    def _clean_up(self,lockfilehandle,end_it=True):
-        if end_it is True:
-            self._record_end()
+    def _clean_up(self,lockfilehandle):
         lockfilehandle.write('')
         fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
         lockfilehandle.close()
-
