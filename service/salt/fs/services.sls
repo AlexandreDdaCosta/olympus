@@ -73,34 +73,7 @@ mongod-service:
       - admin: True
       - roles: None
 
-{% elif 'mongodb' in user -%}
-{% if 'admin' in user['mongodb'] and user['mongodb']['admin'] -%}
-
-{{ username }}_mongodb_admin:
-  module.run:
-    - mongo.user:
-      - user: {{ username }}
-      - password: {{ salt['cmd.shell'](random_password_generator) }}
-      - admin: True
-      - roles: None
-
-{% else -%}
-
-{{ username }}_mongodb_user:
-  module.run:
-    - mongo.user:
-      - user: {{ username }}
-      - password: {{ salt['cmd.shell'](random_password_generator) }}
-      - admin: False
-{% if 'roles' in user['mongodb'] -%}
-      - roles: None
-{% else -%}
-      - roles: {{ user['mongodb']['roles'] }}
 {% endif -%}
-
-{% endif -%}
-{% endif -%}
-
 {% endif -%}
 {% endfor %}
 
