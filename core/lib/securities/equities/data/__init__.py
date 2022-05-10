@@ -22,7 +22,7 @@ class Connection():
         self.database = DATABASE
         if self.verbose is True:
             print('Establishing MongoDB client.')
-        connector = mongodb.Connection(self.username)
+        connector = mongodb.Connection(self.user)
         self.client = connector.connect()
         self.db = self.client.equities
         self.data_type = data_type
