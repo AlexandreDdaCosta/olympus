@@ -4,13 +4,13 @@ import olympus.securities.equities.data as data
 
 from olympus import USER, DOWNLOAD_DIR, LOCKFILE_DIR, WORKING_DIR
 
-INIT_TYPE = 'credentials'
-CREDENTIALS_COLLECTION = 'credentials'
+DATA_TYPE = 'credentials'
+CREDENTIALS_COLLECTION = DATA_TYPE
 
 class InitCredentials(data.Connection):
 
     def __init__(self,user=USER,**kwargs):
-        super(InitCredentials,self).__init__(user,INIT_TYPE,**kwargs)
+        super(InitCredentials,self).__init__(user,DATA_TYPE,**kwargs)
         self.verbose = kwargs.get('verbose',False)
         self.working_dir = WORKING_DIR(self.user)
 
@@ -18,7 +18,7 @@ class InitCredentials(data.Connection):
 
         # Set up environment
 
-        LOCKFILE = LOCKFILE_DIR(self.user)+INIT_TYPE+'.pid'
+        LOCKFILE = LOCKFILE_DIR(self.user)+DATA_TYPE+'.pid'
         lockfilehandle = open(LOCKFILE,'w')
         fcntl.flock(lockfilehandle,fcntl.LOCK_EX|fcntl.LOCK_NB)
         lockfilehandle.write(str(os.getpid()))

@@ -9,6 +9,7 @@ import olympus.securities.equities.data as data
 
 from olympus import USER, LOCKFILE_DIR, WORKING_DIR
 
+DATA_TYPE = 'edgar'
 FORM4_INDEX_COLLECTION_NAME = 'form4_indices'
 QUARTERLY_FIRST_YEAR = 2004
 QUARTERLY_ORIGINAL_YEAR = 1993
@@ -17,7 +18,7 @@ QUARTERLY_YEAR_LIST = range(QUARTERLY_FIRST_YEAR,datetime.datetime.now().year+1)
 class InitForm4Indices(data.Connection):
 
     def __init__(self,user=USER,**kwargs):
-        super(InitForm4Indices,self).__init__(user,'form4_indices',**kwargs)
+        super(InitForm4Indices,self).__init__(user,DATA_TYPE,**kwargs)
         self.verbose = kwargs.get('verbose',False)
         self.working_dir = WORKING_DIR(self.user)
 
@@ -27,7 +28,7 @@ class InitForm4Indices(data.Connection):
 
         if self.verbose:
             print('Initializing Form4 collection procedure.')
-        LOCKFILE = LOCKFILE_DIR(self.user)+self.init_type+'.pid'
+        LOCKFILE = LOCKFILE_DIR(self.user)+DATA_TYPE+'.pid'
         lockfilehandle = open(LOCKFILE,'w')
         fcntl.flock(lockfilehandle,fcntl.LOCK_EX|fcntl.LOCK_NB)
         lockfilehandle.write(str(os.getpid()))

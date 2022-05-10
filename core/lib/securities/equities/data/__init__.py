@@ -1,6 +1,8 @@
-import datetime, pymongo, os, socket
+import os
 
-from olympus import MONGO_URL, USER, DOWNLOAD_DIR
+import olympus.mongodb as mongodb
+
+from olympus import USER, DOWNLOAD_DIR
 
 DATABASE = 'equities'
 INDEX_SUFFIX = '_idx'
@@ -14,16 +16,17 @@ URLS = {
 
 class Connection():
 
-    def __init__(self,user=USER,init_type=None,**kwargs):
+    def __init__(self,user=USER,data_type=None,**kwargs):
         self.user = user
         self.verbose = kwargs.get('verbose',False)
         self.database = DATABASE
         if self.verbose is True:
             print('Establishing MongoDB client.')
-        self.client = pymongo.MongoClient(MONGO_URL)
+        connector = mongodb.Connection(self.username)
+        self.client = connector.connect()
         self.db = self.client.equities
-        self.init_type = init_type
-        if self.init_type is not None:
+        self.data_type = data_type
+        if self.data_type is not None:
             try:
                 os.makedirs(DOWNLOAD_DIR(self.user))
             except OSError:

@@ -5,10 +5,10 @@ import olympus.securities.equities.data as data
 
 from olympus import DOWNLOAD_DIR, LOCKFILE_DIR, USER, WORKING_DIR
 
-INIT_TYPE = 'symbols'
+DATA_TYPE = 'symbols'
 JSON_FILE_SUFFIX = '-companylist.json'
 NORMALIZE_CAP_REGEX = re.compile('[^0-9\.]')
-SYMBOL_COLLECTION = INIT_TYPE
+SYMBOL_COLLECTION = DATA_TYPE
 SYMBOL_DATA_URLS = [
 {'exchange':'amex','url':'https://api.nasdaq.com/api/screener/stocks?exchange=amex&download=true'},
 {'exchange':'nasdaq','url':'https://api.nasdaq.com/api/screener/stocks?exchange=nasdaq&download=true'},
@@ -19,7 +19,7 @@ SYMBOL_SCHEMA_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpat
 class InitSymbols(data.Connection):
 
     def __init__(self,user=USER,**kwargs):
-        super(InitSymbols,self).__init__(user,INIT_TYPE,**kwargs)
+        super(InitSymbols,self).__init__(user,DATA_TYPE,**kwargs)
         self.verbose = kwargs.get('verbose',False)
         self.working_dir = WORKING_DIR(self.user)
 
@@ -27,7 +27,7 @@ class InitSymbols(data.Connection):
 
         if self.verbose is True:
             print('Setting up environment.')
-        LOCKFILE = LOCKFILE_DIR(self.user)+INIT_TYPE+'.pid'
+        LOCKFILE = LOCKFILE_DIR(self.user)+DATA_TYPE+'.pid'
         lockfilehandle = open(LOCKFILE,'w')
         fcntl.flock(lockfilehandle,fcntl.LOCK_EX|fcntl.LOCK_NB)
         lockfilehandle.write(str(os.getpid()))
