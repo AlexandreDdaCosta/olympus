@@ -135,6 +135,7 @@ mongodb_set_authorization:
 {% elif 'mongodb' in user -%}
 {{ mongodb_users.append(username) }}
 {% endif %}
+{% endfor %}
 
 mongodb_purge_invalid_users:
   module.run:
