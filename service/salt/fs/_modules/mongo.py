@@ -25,6 +25,15 @@ def user(username,password,admin=False,roles=None):
         roles = [{'role':'userAdminAnyDatabase','db':'admin'}]
     elif roles is None:
         roles = []
+    else:
+        # Re-formatting roles variable from salt's jinja2 pillar declarations
+        new_roles = []
+        for role_ordered_dict in roles:
+            for database, role in role_ordered_dict.items():
+                role_dict = [{'role': role, 'db': database}]
+                new_roles.append(role_dict)
+                break
+        roles = new_roles
     print('ROLES\n'+str(roles)+'\n')
     with open('/tmp/pymongo','a') as f:
         f.write('ROLES\n'+str(roles)+'\n')
