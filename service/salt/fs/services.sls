@@ -128,5 +128,15 @@ mongodb_set_authorization:
   cmd.run:
     - name: service mongod restart
 
-# ALEX
-# TODO: Purge invalid mongod users (not in pillar)
+{% set mongodb_users = [] %}
+{% for username, user in pillar.get('users', {}).items() %}
+{% if 'is_staff' in user and user['is_staff'] -%}
+{{ mongodb_users.append(username) }}
+{% elif 'mongodb' in user -%}
+{{ mongodb_users.append(username) }}
+{% endif %}
+
+mongodb_purge_invalid_users:
+  module.run:
+    - mongo.purge_users:
+      - valid_users: {{ mongodb_users }}

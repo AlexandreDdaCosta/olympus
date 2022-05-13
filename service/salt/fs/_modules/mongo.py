@@ -14,6 +14,21 @@ def insert_object(database,collection,object):
     recid = coll.insert_one(object)
     return True
 
+def purge_users(valid_users=None);
+    if valid_users is None:
+        valid_users = []
+    f = open("/tmp/foo", "a")
+    f.write(str(valid_users))
+    f.close()
+    manager = mongodb.Connection(user=MONGO_ADMIN_USERNAME)
+    database = manager.connect('admin')
+    users=database['system.users'].find({},{'_id':0, 'user':1})
+    if users is not None:
+        f = open("/tmp/foo", "a")
+        f.write(str(users))
+        f.close()
+    return True
+
 def remove_object(database,collection,query):
     connector = mongodb.Connection(user=MONGO_ADMIN_USERNAME)
     coll = connector.connect(database,collection)
