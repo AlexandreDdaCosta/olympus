@@ -17,16 +17,12 @@ def insert_object(database,collection,object):
 def purge_users(valid_users=None):
     if valid_users is None:
         valid_users = []
-    f = open("/tmp/foo", "a")
-    f.write(str(valid_users))
-    f.close()
     manager = mongodb.Connection(user=MONGO_ADMIN_USERNAME)
     database = manager.connect('admin')
     users=database['system.users'].find({},{'_id':0, 'user':1})
-    if users is not None:
-        f = open("/tmp/foo", "a")
-        f.write(str(users))
-        f.close()
+    for user in users:
+        if user['user'] != MONGO_ADMIN_USERNAME and user['user'] not in valid_users:
+            database.command('dropUser',user['user'])
     return True
 
 def remove_object(database,collection,query):
