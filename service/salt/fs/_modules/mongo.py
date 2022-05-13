@@ -6,10 +6,10 @@ Tools for handling MongoDB operations
 
 import olympus.mongodb as mongodb
 
-from olympus import MONGO_ADMIN_USERNAME, MONGO_URL
+from olympus import MONGO_ADMIN_USERNAME, MONGO_URL, USER
 
 def insert_object(database,collection,object):
-    connector = mongodb.Connection(user=MONGO_ADMIN_USERNAME)
+    connector = mongodb.Connection(user=USER)
     coll = connector.connect(database,collection)
     recid = coll.insert_one(object)
     return True
@@ -26,7 +26,7 @@ def purge_users(valid_users=None):
     return True
 
 def remove_object(database,collection,query):
-    connector = mongodb.Connection(user=MONGO_ADMIN_USERNAME)
+    connector = mongodb.Connection(user=USER)
     coll = connector.connect(database,collection)
     recid = coll.delete_one(query)
     return True
