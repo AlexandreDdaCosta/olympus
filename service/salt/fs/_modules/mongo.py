@@ -41,7 +41,7 @@ def user(username,password,admin=False,roles=None):
     manager = mongodb.Connection(user=MONGO_ADMIN_USERNAME)
     database = manager.connect('admin')
     user_entry=database['system.users'].find_one({"user":username},{'_id':0, 'user':1})
-    manager.rotate_password_file(password)
+    manager.rotate_password_file(password,username)
     if user_entry is not None:
         database.command('updateUser',username,pwd=password,roles=roles)
     else:

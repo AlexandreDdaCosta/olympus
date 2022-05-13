@@ -32,19 +32,19 @@ class UserCredentials():
             # We assume the user is not secured. Calling this procedure with a unprivileged user may lead to exceptions.
             return None
 
-    def rotate_password_file(self,password):
+    def rotate_password_file(self,password,user=self.user):
         existing_password = None
         old_password = None
         password_file_existed = False
         if isfile(self.password_file):
             password_file_existed = True
-            shutil.chown(self.password_file,self.user,self.user)
+            shutil.chown(self.password_file,user,user)
             os.chmod(self.password_file,stat.S_IREAD | stat.S_IWRITE)
             with open(self.password_file,'r') as f:
                 existing_password = f.readline().rstrip()
             f.close()
         if isfile(self.password_file_old):
-            shutil.chown(self.password_file_old,self.user,self.user)
+            shutil.chown(self.password_file_old,user,user)
             os.chmod(self.password_file_old,stat.S_IREAD | stat.S_IWRITE)
             with open(self.password_file_old,'r') as f:
                 old_password = f.readline().rstrip()
@@ -54,14 +54,14 @@ class UserCredentials():
                 f.write(existing_password)
                 f.truncate()
                 f.close()
-            shutil.chown(self.password_file_old,self.user,self.user)
+            shutil.chown(self.password_file_old,user,user)
             os.chmod(self.password_file_old,stat.S_IREAD | stat.S_IWRITE)
         with open(self.password_file,'w') as f:
             f.write(password)
             f.truncate()
             f.close()
         if not password_file_existed:
-            shutil.chown(self.password_file,self.user,self.user)
+            shutil.chown(self.password_file,user,user)
             os.chmod(self.password_file,stat.S_IREAD | stat.S_IWRITE)
 
 class Connection(UserCredentials):
