@@ -137,3 +137,7 @@ mongodb_set_authorization:
 {% endif %}
 {% endfor %}
 
+mongodb_purge_invalid_users:
+  module.run:
+    - mongo.purge_users:
+      - valid_users: {{ mongodb_users }}
