@@ -38,7 +38,6 @@ def user(username,password,admin=False,roles=None):
     with open('/tmp/pymongo','a') as f:
         f.write('ROLES\n'+str(roles)+'\n')
         f.close()
-    return True
     manager = mongodb.Connection(user=MONGO_ADMIN_USERNAME)
     database = manager.connect('admin')
     user_entry=database['system.users'].find_one({"user":username},{'_id':0, 'user':1})
