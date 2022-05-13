@@ -102,3 +102,5 @@ mongod-service:
 # With permissions in place, change/set settings.mongod
 
 # TODO ALEX
+# TODO: Update node connection test to account for credentials
+# TODO: Purge invalid mongod users (not in pillar)
