@@ -39,10 +39,18 @@ locate-updatedb:
 {%- endif %}
 
 {#
-command line: 
-With TLS: mongo --tls --tlsCAFile /etc/ssl/localcerts/ca-crt.pem --tlsCertificateKeyFile /etc/ssl/localcerts/server-key-crt.pem
-(Assuming your user has access to view the combined cert/key file via group membership)
+Command line: 
+
+Pre authentication enabled:
+
 Without TLS: mongo
+With TLS: mongo --tls --tlsCAFile /etc/ssl/localcerts/ca-crt.pem --tlsCertificateKeyFile /etc/ssl/localcerts/server-key-crt.pem --tlsAllowInvalidHostnames
+(Assuming your user has access to view the combined cert/key file via group membership)
+
+Post authentication enabled:
+
+mongo --username `whoami` --password `cat /home/\`whoami\`/etc/mongodb_password` <TLS options as above for TLS>
+
 Note that mongod only listens on localhost (127.0.0.1)
 #}
 
@@ -121,5 +129,4 @@ mongodb_set_authorization:
     - name: service mongod restart
 
 # ALEX
-# TODO: Update node connection test to account for credentials
 # TODO: Purge invalid mongod users (not in pillar)

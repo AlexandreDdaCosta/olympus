@@ -1,17 +1,33 @@
 // sudo su -s /bin/bash -c 'export NODE_PATH=/usr/lib/nodejs:/usr/lib/node_modules:/usr/share/javascript; cd /srv/www/node/restapi; npm test ./tests/models/mongo.test.js' node
 
 const {MongoClient} = require('mongodb');
+const fs = require('fs');
+const os = require('os');
 
-let test_collection = 'test.mongo'
-let test_database = 'user_node'
-let url = 'mongodb://127.0.0.1:27017/';
+const runuser = 'node';
+const runuser_password_file = '/home/'+runuser+'/etc/mongodb_password';
+const test_collection = 'test.models.mongo';
+const test_database = 'user_'+runuser;
 
 describe('insert', () => {
   let connection;
   let db;
+  let password;
+
+  if (os.userInfo().username != runuser) {
+      throw new Error('Test must be run under run user '+runuser);
+      process.exit(1);
+  }
+  try {
+    password = fs.readFileSync(runuser_password_file, 'utf8');
+  } catch (err) {
+    throw new Error(err);
+    process.exit(1);
+  }
 
   beforeAll(async () => {
-    connection = await MongoClient.connect(url, {});
+    const uri = 'mongodb://'+runuser+':'+password+'@127.0.0.1:27017/admin';
+    connection = await MongoClient.connect(uri, {});
     db = await connection.db(test_database);
     var collection = db.collection(test_collection);
     collection.drop(function (err, result) { if (err); });

@@ -22,7 +22,7 @@ def remove_object(database,collection,query):
 
 def user(username,password,admin=False,roles=None):
     if admin is True:
-        roles = [{'role':'userAdminAnyDatabase','db':'admin'}]
+        roles = [{'role':'userAdminAnyDatabase','db':'admin'},{'role':'readWriteAnyDatabase','db':'admin'}]
     elif roles is None:
         roles = []
     else:
