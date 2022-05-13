@@ -32,7 +32,9 @@ class UserCredentials():
             # We assume the user is not secured. Calling this procedure with a unprivileged user may lead to exceptions.
             return None
 
-    def rotate_password_file(self,password,user=self.user):
+    def rotate_password_file(self,password,user=None):
+        if user is None:
+            user=self.user
         existing_password = None
         old_password = None
         password_file_existed = False
