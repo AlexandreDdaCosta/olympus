@@ -35,13 +35,13 @@ net:
    CAFile: /etc/ssl/localcerts/ca-crt.pem
 
 # processManagement
-{% if auth_enabled is sameas true -%}
+{% if auth_enabled is sameas true %}
 security:
   authorization: enabled
 {% else %}
 security:
   authorization: disabled
-{%- endif %}
+{% endif -%}
 
 #operationProfiling:
 
