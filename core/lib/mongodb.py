@@ -45,9 +45,6 @@ class UserCredentials():
         else:
             password_file = MONGO_USER_PASSWORD_FILE(user)
             password_file_old = MONGO_USER_OLD_PASSWORD_FILE(user)
-        with open('/tmp/pymongo','a') as f:
-            f.write('USER\n'+user+'\n')
-            f.close()
         existing_password = None
         old_password = None
         password_file_existed = False
