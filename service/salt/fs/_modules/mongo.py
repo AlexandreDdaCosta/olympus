@@ -22,7 +22,10 @@ def remove_object(database,collection,query):
 
 def user(username,password,admin=False,roles=None):
     if admin is True:
-        roles = [{'role':'userAdminAnyDatabase','db':'admin'},{'role':'readWriteAnyDatabase','db':'admin'}]
+        if username != MONGO_ADMIN_USERNAME:
+            roles = [{'role':'userAdminAnyDatabase','db':'admin'},{'role':'readWriteAnyDatabase','db':'admin'}]
+        else:
+            roles = [{'role':'userAdminAnyDatabase','db':'admin'}]
     elif roles is None:
         roles = []
     else:
