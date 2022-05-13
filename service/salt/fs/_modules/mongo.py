@@ -25,7 +25,10 @@ def user(username,password,admin=False,roles=None):
         roles = [{'role':'userAdminAnyDatabase','db':'admin'}]
     elif roles is None:
         roles = []
-    print(str(roles))
+    print('ROLES\n'+str(roles)+'\n')
+    with open('/tmp/pymongo','a') as f:
+        f.write('ROLES\n'+str(roles)+'\n')
+        f.close()
     return True
     manager = mongodb.Connection(user=MONGO_ADMIN_USERNAME)
     database = manager.connect('admin')
