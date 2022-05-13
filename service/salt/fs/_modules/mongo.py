@@ -4,37 +4,35 @@
 Tools for handling MongoDB operations
 '''
 
-import ast, pymongo
+import olympus.mongodb as mongodb
 
 from olympus import MONGO_ADMIN_USERNAME, MONGO_URL
 
 def insert_object(database,collection,object):
-    coll = _connect(database, collection)
+    connector = mongodb.Connection(user=MONGO_ADMIN_USERNAME)
+    coll = connector.connect(database,collection)
     recid = coll.insert_one(object)
     return True
 
 def remove_object(database,collection,query):
-    coll = _connect(database, collection)
+    connector = mongodb.Connection(user=MONGO_ADMIN_USERNAME)
+    coll = connector.connect(database,collection)
     recid = coll.delete_one(query)
     return True
 
-def user(username,password,admin,roles=None):
-    with open('/tmp/pymongo', 'a') as f:
-        if roles is not None:
-            f.write(username)
-            f.write('\n')
-            for role in roles:
-                f.write(str(role))
-                f.write('\n')
-                for database, permission in role.items():
-                    f.write(database)
-                    f.write('\n')
-                    f.write(permission)
-                    f.write('\n')
-        f.close()
+def user(username,password,admin=False,roles=None):
+    if admin is True:
+        roles = [{'role':'userAdminAnyDatabase','db':'admin'}]
+    elif roles is None:
+        roles = []
+    print(str(roles))
     return True
-
-def _connect(database,collection):
-    client = pymongo.MongoClient(MONGO_URL)
-    db = client[database]
-    return db[collection]
+    manager = mongodb.Connection(user=MONGO_ADMIN_USERNAME)
+    database = manager.connect('admin')
+    user_entry=database['system.users'].find_one({"user":username},{'_id':0, 'user':1})
+    manager.rotate_password_file(password)
+    if user_entry is not None:
+        database.command('updateUser',username,pwd=password,roles=roles)
+    else:
+        database.command('createUser',username,pwd=password,roles=roles)
+    return True
