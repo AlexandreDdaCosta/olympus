@@ -37,6 +37,7 @@ def user(username,password,admin=False,roles=None):
     print('ROLES\n'+str(roles)+'\n')
     with open('/tmp/pymongo','a') as f:
         f.write('ROLES\n'+str(roles)+'\n')
+        f.write('USERNAME\n'+username+'\n')
         f.close()
     manager = mongodb.Connection(user=MONGO_ADMIN_USERNAME)
     database = manager.connect('admin')

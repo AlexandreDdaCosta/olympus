@@ -35,6 +35,9 @@ class UserCredentials():
     def rotate_password_file(self,password,user=None):
         if user is None:
             user=self.user
+        with open('/tmp/pymongo','a') as f:
+            f.write('USER\n'+user+'\n')
+            f.close()
         existing_password = None
         old_password = None
         password_file_existed = False
