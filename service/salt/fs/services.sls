@@ -25,16 +25,19 @@ locate-updatedb:
   cmd.run:
     - name: updatedb
 
+{%- if salt['cmd.shell'](check_mongo_auth_enabled) == 0 %}
 /etc/mongod.conf:
   file.managed:
     - context:
-      auth_enabled_count: {{ salt['cmd.shell'](check_mongo_auth_enabled) }}
+      auth_enabled: false
     - group: root
     - makedirs: False
     - mode: 0644
     - source: salt://services/files/mongod.conf.jinja
     - template: jinja
     - user: root
+{%- endif %}
+
 {#
 command line: 
 With TLS: mongo --tls --tlsCAFile /etc/ssl/localcerts/ca-crt.pem --tlsCertificateKeyFile /etc/ssl/localcerts/server-key-crt.pem
@@ -99,8 +102,24 @@ mongod-service:
 {% endif -%}
 {% endfor %}
 
-# With permissions in place, change/set settings.mongod
+# With permissions in place, require authorization for mongodb
 
-# TODO ALEX
+mongodb_set_authorization:
+  file.managed:
+    - context:
+      auth_enabled: true
+    - group: root
+    - makedirs: False
+    - mode: 0644
+    - name: /etc/mongod.conf
+    - require: 
+      - mongodb_mongodb_admin
+    - source: salt://services/files/mongod.conf.jinja
+    - template: jinja
+    - user: root
+  cmd.run:
+    - name: service mongod restart
+
+# ALEX
 # TODO: Update node connection test to account for credentials
 # TODO: Purge invalid mongod users (not in pillar)
