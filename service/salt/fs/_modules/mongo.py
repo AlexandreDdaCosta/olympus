@@ -14,7 +14,7 @@ def insert_object(database,collection,object):
     recid = coll.insert_one(object)
     return True
 
-def purge_users(valid_users=None);
+def purge_users(valid_users=None):
     if valid_users is None:
         valid_users = []
     f = open("/tmp/foo", "a")
