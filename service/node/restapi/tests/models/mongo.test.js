@@ -15,8 +15,8 @@ describe('insert', () => {
   let password;
 
   if (os.userInfo().username != runuser) {
-      throw new Error('Test must be run under run user '+runuser);
-      process.exit(1);
+    throw new Error('Test must be run under run user '+runuser);
+    process.exit(1);
   }
   try {
     password = fs.readFileSync(runuser_password_file, 'utf8');
@@ -30,7 +30,7 @@ describe('insert', () => {
     connection = await MongoClient.connect(uri, {});
     db = await connection.db(test_database);
     var collection = db.collection(test_collection);
-    collection.drop(function (err, result) { if (err); });
+    await collection.drop(function (err, result) { if (err); });
   });
 
   afterAll(async () => {

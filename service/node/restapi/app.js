@@ -3,10 +3,10 @@ const fs = require('fs');
 const process = require('process');
 const util = require('util');
 const express = require('express');
+const config = require('config');
 
-const logdir = '/var/log/node/';
-const access = fs.createWriteStream(logdir + 'access.log', { flags: 'a' });
-const error = fs.createWriteStream(logdir + 'error.log', { flags: 'a' });
+const access = fs.createWriteStream(config.get('log.access'), { flags: 'a' });
+const error = fs.createWriteStream(config.get('log.error'), { flags: 'a' });
 process.stdout.write = access.write.bind(access);
 process.stderr.write = error.write.bind(error);
 console.log = function () {
@@ -18,7 +18,7 @@ console.error = function () {
   process.stderr.write(now.toJSON() + ' ' + util.format.apply(null, arguments) + '\n');
 }
 let data = util.format('%s', process.pid);
-fs.writeFile("/var/run/node.pid", util.format('%s', process.pid), (err) => {
+fs.writeFile(config.get('pidfile'), util.format('%s', process.pid), (err) => {
   if (err)
     return console.error(err);
   else
@@ -33,5 +33,5 @@ app.use(bodyParser.json());
 const routes = require('./api/routes');
 app.use('/', routes);
 
-app.listen(port);
-console.log('node.js REST API listening on port ' + port);
+app.listen(config.get('server.port'));
+console.log('node.js REST API listening on port ' + config.get('server.port'));

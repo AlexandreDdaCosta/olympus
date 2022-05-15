@@ -40,6 +40,7 @@ do_start()
     touch $lockfile
     chmod 0664 $lockfile
     chown node:node $lockfile
+    export NODE_CONFIG_DIR=/srv/www/node/restapi/config
     export NODE_PATH=/usr/lib/nodejs:/usr/lib/node_modules:/usr/share/javascript
     start-stop-daemon --start --quiet --pidfile $lockfile --chuid $nodeuser --background --exec $daemon $app
 }

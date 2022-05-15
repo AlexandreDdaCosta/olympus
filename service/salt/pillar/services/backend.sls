@@ -21,6 +21,8 @@ backend-npm-packages:
     version: 1.20.0
   chai:
     version: 4.3.6
+  config:
+    version: 3.3.7
   express:
     version: 4.17.3
   express-generator:

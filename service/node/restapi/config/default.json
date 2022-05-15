@@ -1,0 +1,14 @@
+{
+  "log":
+  {
+    "dir": "/var/log/node",
+    "access": "/var/log/node/access.log",
+    "error": "/var/log/node/error.log"
+  },
+  "pidfile": "/var/run/node.pid",
+  "server":
+  {
+    "port" : 8889,
+    "host": "127.0.0.1"
+  }
+}
