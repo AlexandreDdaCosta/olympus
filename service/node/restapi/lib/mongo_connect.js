@@ -1,4 +1,4 @@
-const {MongoClient} = require('mongodb');
+const MongoClient = require('mongodb').MongoClient;
 const config = require('config');
 const fs = require('fs');
 
@@ -6,25 +6,18 @@ const password = fs.readFileSync(config.get('mongodb.password_file'), 'utf8');
 const uri = 'mongodb://'+config.get('mongodb.user')+':'+password+'@'+config.get('mongodb.host')+':'+config.get('mongodb.port')+'/'+config.get('mongodb.database_auth');
 
 const option = {
-  db:{
-    numberOfRetries : 5
-  },
-  server: {
-    auto_reconnect: true,
-    poolSize : 10,
-    socketOptions: {
-        connectTimeoutMS: 500
-    }
-  },
-  replSet: {},
-  mongos: {}
+    appname: 'node_restapi',
+    connectTimeoutMS: 10000,
+    maxPoolSize: 100,
+    socketTimeoutMS: 30000,
+    waitQueueTimeoutMS: 10000
 };
 
-function MongoPool(){}
+function MongoPool(){};
 var pool_connection;
 
 function initPool(callback) {
-  MongoClient.connect(url, option, function(err, connection) {
+  MongoClient.connect(uri, option, function(err, connection) {
     if (err) throw err;
     // await connection.db("admin").command({ ping: 1 });
     pool_connection = connection;
@@ -47,10 +40,7 @@ function getInstance(callback) {
 MongoPool.initPool = initPool;
 MongoPool.getInstance = getInstance;
 module.exports = MongoPool;
-
 /*
-#require("mongo_connect").initPool();
-
 const MongoPool = require("mongo-connect");
 MongoPool.getInstance(function (connection){
   // Query MongoDB using connection

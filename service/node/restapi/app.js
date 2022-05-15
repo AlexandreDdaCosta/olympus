@@ -5,8 +5,6 @@ const fs = require('fs');
 const process = require('process');
 const util = require('util');
 
-//require("mongo_connect").initPool();
-
 const access = fs.createWriteStream(config.get('log.access'), { flags: 'a' });
 const error = fs.createWriteStream(config.get('log.error'), { flags: 'a' });
 process.stdout.write = access.write.bind(access);
@@ -27,6 +25,8 @@ fs.writeFile(config.get('pidfile'), util.format('%s', process.pid), (err) => {
   else
     console.log(util.format('PID written successfully [%s]', process.pid));
 });
+
+require('./lib/mongo_connect').initPool();
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
