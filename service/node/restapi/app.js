@@ -1,9 +1,11 @@
 const bodyParser = require('body-parser');
+const config = require('config');
+const express = require('express');
 const fs = require('fs');
 const process = require('process');
 const util = require('util');
-const express = require('express');
-const config = require('config');
+
+//require("mongo_connect").initPool();
 
 const access = fs.createWriteStream(config.get('log.access'), { flags: 'a' });
 const error = fs.createWriteStream(config.get('log.error'), { flags: 'a' });
@@ -17,6 +19,7 @@ console.error = function () {
   var now = new Date();
   process.stderr.write(now.toJSON() + ' ' + util.format.apply(null, arguments) + '\n');
 }
+
 let data = util.format('%s', process.pid);
 fs.writeFile(config.get('pidfile'), util.format('%s', process.pid), (err) => {
   if (err)
@@ -26,7 +29,6 @@ fs.writeFile(config.get('pidfile'), util.format('%s', process.pid), (err) => {
 });
 
 const app = express();
-const port = 8889;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 

@@ -5,6 +5,15 @@
     "access": "/var/log/node/access.log",
     "error": "/var/log/node/error.log"
   },
+  "mongodb":
+  {
+    "database_auth": "admin",
+    "database_default": "user_node",
+    "host": "127.0.0.1",
+    "password_file": "/home/node/etc/mongodb_password",
+    "port": 27017,
+    "user": "node"
+  },
   "pidfile": "/var/run/node.pid",
   "server":
   {

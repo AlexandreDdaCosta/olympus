@@ -25,6 +25,9 @@ do_start()
     wait=1
     while [ $status -eq "0" ]
     do
+        if [ ! -f $lockfile ]; then
+            break
+        fi
         ps -p`cat $lockfile` 2>&1 > /dev/null
         status=$?
         if [ "$status" != "0" ]; then

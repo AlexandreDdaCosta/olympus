@@ -1,34 +1,32 @@
-// sudo su -s /bin/bash -c 'export NODE_PATH=/usr/lib/nodejs:/usr/lib/node_modules:/usr/share/javascript; cd /srv/www/node/restapi; npm test ./tests/models/mongo.test.js' node
+// sudo su -s /bin/bash -c 'source /srv/www/node/restapi/tests/test_source.sh; cd /srv/www/node/restapi; npm test ./tests/models/mongo.test.js' node
 
 const {MongoClient} = require('mongodb');
+const config = require('config');
 const fs = require('fs');
 const os = require('os');
 
-const runuser = 'node';
-const runuser_password_file = '/home/'+runuser+'/etc/mongodb_password';
 const test_collection = 'test.models.mongo';
-const test_database = 'user_'+runuser;
 
 describe('insert', () => {
   let connection;
   let db;
   let password;
 
-  if (os.userInfo().username != runuser) {
-    throw new Error('Test must be run under run user '+runuser);
+  if (os.userInfo().username != config.get('mongodb.user')) {
+    throw new Error('Test must be run under run user '+config.get('mongodb.user'));
     process.exit(1);
   }
   try {
-    password = fs.readFileSync(runuser_password_file, 'utf8');
+    password = fs.readFileSync(config.get('mongodb.password_file'), 'utf8');
   } catch (err) {
     throw new Error(err);
     process.exit(1);
   }
 
   beforeAll(async () => {
-    const uri = 'mongodb://'+runuser+':'+password+'@127.0.0.1:27017/admin';
+    const uri = 'mongodb://'+config.get('mongodb.user')+':'+password+'@'+config.get('mongodb.host')+':'+config.get('mongodb.port')+'/'+config.get('mongodb.database_auth');
     connection = await MongoClient.connect(uri, {});
-    db = await connection.db(test_database);
+    db = await connection.db(config.get('mongodb.database_default'));
     var collection = db.collection(test_collection);
     await collection.drop(function (err, result) { if (err); });
   });

@@ -1,4 +1,4 @@
-// sudo su -s /bin/bash -c 'export NODE_PATH=/usr/lib/nodejs:/usr/lib/node_modules:/usr/share/javascript; cd /srv/www/node/restapi; npm test ./tests/routes/index.test.js' node
+// sudo su -s /bin/bash -c 'source /srv/www/node/restapi/tests/test_source.sh; cd /srv/www/node/restapi; npm test ./tests/routes/index.test.js' node
 
 const request = require('request');
 const url = 'http://zeus:8889/';
