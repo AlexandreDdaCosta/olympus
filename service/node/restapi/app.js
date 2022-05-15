@@ -26,7 +26,7 @@ fs.writeFile(config.get('pidfile'), util.format('%s', process.pid), (err) => {
     console.log(util.format('PID written successfully [%s]', process.pid));
 });
 
-require('./lib/mongo_connect').initPool();
+require('mongo_connect').initPool();
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));

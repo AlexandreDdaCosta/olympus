@@ -7,10 +7,7 @@ const uri = 'mongodb://'+config.get('mongodb.user')+':'+password+'@'+config.get(
 
 const option = {
     appname: 'node_restapi',
-    connectTimeoutMS: 10000,
-    maxPoolSize: 100,
-    socketTimeoutMS: 30000,
-    waitQueueTimeoutMS: 10000
+    maxPoolSize: 100
 };
 
 function MongoPool(){};
