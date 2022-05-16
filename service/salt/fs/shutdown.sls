@@ -16,11 +16,9 @@ shutdown:
 {% else %}
     - name: /sbin/shutdown --poweroff +3
 {% endif %}
-    {% if grains.get('server') %}
-    {% if 'services' in pillar[grains.get('server')] %}
-    {% if 'frontend' in pillar[grains.get('server')]['services'] %}
+    {% if 'services' in pillar['servers'][grains.get('server')] %}
+    {% if 'frontend' in pillar['servers'][grains.get('server')]['services'] %}
     - require:
       - sls: services/frontend
-    {% endif %}
     {% endif %}
     {% endif %}

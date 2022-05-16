@@ -34,8 +34,7 @@ manage_tmpfiles:
     - watch:
         - file: /usr/lib/tmpfiles.d/olympus.conf
 
-{% if grains.get('apps') %}
-{% set apps = grains.get('apps') + [ pillar['core-app-user'] ] %}
+{% set apps = pillar['servers'][grains.get('server')['apps'] + [ pillar['core-app-user'] ] %}
 {% for app in apps %}
 {% if app !=  pillar['core-app-user'] %}
 app_user_{{ app }}:
@@ -69,7 +68,6 @@ app_user_{{ app }}:
   cmd.run:
     - name: 'chmod 0750 /home/{{ app }}'
 
-
 {{ pillar['olympus-app-package-path'] }}/{{ app }}:
   file.recurse:
     - clean: True
@@ -80,6 +78,13 @@ app_user_{{ app }}:
     - user: root
   cmd.run:
     - name: "find {{ pillar['olympus-app-package-path'] }}/{{ app }} -type f | grep -E 'test/.*?\\.py$' | xargs -r chmod 0755"
+
+/home/{{ app }}/etc:
+  file.directory:
+    - dir_mode: 0700
+    - group: {{ app }}
+    - name: /home/{{ app }}/etc
+    - user: {{ app }}
 {% endif %}
 
 /home/{{ app }}/Downloads:
@@ -88,12 +93,4 @@ app_user_{{ app }}:
     - makedirs: False
     - mode: 0750
     - user: {{ app }}
-
-/home/{{ app }}/etc:
-  file.directory:
-    - dir_mode: 0700
-    - group: {{ app }}
-    - name: /home/{{ app }}/etc
-    - user: {{ app }}
 {% endfor %}
-{% endif %}

@@ -31,7 +31,6 @@ Enable starting services:
     - source: salt://saltstack/files/minion.d/core.conf
     - user: root
 
-{% if grains.get('server') %}
 {% set server_conf_file=grains.get('server') %}
 /etc/salt/minion.d/{{ server_conf_file }}.conf:
   file.managed:
@@ -40,7 +39,6 @@ Enable starting services:
     - mode: 0644
     - source: salt://saltstack/files/minion.d/{{ server_conf_file }}.conf
     - user: root
-{% endif %}
 
 salt-minion-service-restart:
   cmd.run:
@@ -48,9 +46,7 @@ salt-minion-service-restart:
     - name: 'salt-call service.restart salt-minion'
     - onchanges:
         - file: /etc/salt/minion.d/core.conf
-{% if grains.get('server') %}
         - file: /etc/salt/minion.d/{{ server_conf_file  }}.conf
-{% endif %}
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
         - pkg: salt-minion
 {% endif %}

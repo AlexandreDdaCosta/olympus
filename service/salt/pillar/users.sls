@@ -55,6 +55,9 @@ users:
       roles:
         - equities: read
         - user_node: readWrite
+    restapi:
+      routes:
+        - equities
     server:
       - supervisor
       - unified
@@ -68,6 +71,9 @@ users:
       roles:
         - equities: readWrite
         - user_olympus: readWrite
+    restapi:
+      routes:
+        - equities
     shell: /bin/false
   postgres:
     fullname: PostgreSQL administrator

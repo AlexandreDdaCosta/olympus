@@ -1,4 +1,3 @@
-{%- if grains.get('server') %}
 {%- if grains.get('server') == 'supervisor' or grains.get('server') == 'unified' %}
 
 Disable starting services:
@@ -51,5 +50,4 @@ salt-master-service-restart:
         - file: /etc/salt/master.d/reactor.conf
         - pkg: salt-master
 
-{% endif %}
 {% endif %}

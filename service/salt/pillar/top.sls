@@ -6,7 +6,6 @@ base:
     - apps
     - random_key
     - security
-    - server
     - services
     - stage
     - users

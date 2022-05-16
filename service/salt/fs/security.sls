@@ -17,7 +17,6 @@ include:
     - mode: 0755
     - user: root
 
-{%- if grains.get('server') %}
 {%- if grains.get('server') == 'unified' or grains.get('server') == 'supervisor' %}
 
 {{ cert_dir_client }}:
@@ -302,7 +301,6 @@ update_db_credential:
 
 # END Shared credentials
 
-{% endif %}
 {% endif %}
 
 openssh-server-service:

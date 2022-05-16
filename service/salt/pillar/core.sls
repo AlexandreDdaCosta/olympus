@@ -21,15 +21,53 @@ core-states:
   - services
   - users
 
-{# For local router; LAN settings #}
-{% set core_lan_ip = '192.168.1.179' %}
+{# For local router #}
 network_ssid: {{ systemname }}
-interface_lan_ip: {{ core_lan_ip }}
-supervisor_lan_ip: 192.168.1.178
-unified_lan_ip: {{ core_lan_ip }}
 
 {% set core_server_name = 'zeus' %}
-interface_name: apollo
-supervisor_name: {{ core_server_name }}
-unified_master_name: {{ core_server_name }}
-
+servers:
+  database:
+    name: apollo
+    lan_ip: 192.168.1.178
+  interface:
+    apps:
+      - larry
+    lan_ip: 192.168.1.177
+    name: hermes
+    services:
+      - frontend
+  supervisor:
+    name: {{ core_server_name }}
+    lan_ip: 192.168.1.179
+    services:
+      - backend
+  unified:
+    apps:
+      - larry
+    lan_ip: 192.168.1.179
+    name: {{ core_server_name }}
+    services:
+      - backend
+      - frontend
+  worker:
+    names:
+      hephaistos:
+        lan_ip: 192.168.1.180
+      artemis:
+        lan_ip: 192.168.1.181
+      athena:
+        lan_ip: 192.168.1.182
+      dionysus:
+        lan_ip: 192.168.1.183
+      demeter:
+        lan_ip: 192.168.1.184
+      ares:
+        lan_ip: 192.168.1.185
+      poseidon:
+        lan_ip: 192.168.1.186
+      hera:
+        lan_ip: 192.168.1.187
+      aphrodite:
+        lan_ip: 192.168.1.188
+    services:
+      - bigdata
