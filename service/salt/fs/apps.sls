@@ -34,7 +34,7 @@ manage_tmpfiles:
     - watch:
         - file: /usr/lib/tmpfiles.d/olympus.conf
 
-{% set apps = pillar['servers'][grains.get('server')['apps'] + [ pillar['core-app-user'] ] %}
+{% set apps = pillar['servers'][grains.get('server')]['apps'] + [ pillar['core-app-user'] ] %}
 {% for app in apps %}
 {% if app !=  pillar['core-app-user'] %}
 app_user_{{ app }}:
