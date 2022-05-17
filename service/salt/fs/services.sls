@@ -3,6 +3,7 @@
 
 include:
   - base: package
+  - base: users
 
 atd:
   service.running:
