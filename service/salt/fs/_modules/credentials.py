@@ -12,7 +12,7 @@ def backend():
     server = __grains__['server']
     services = None
     if (passphrase is not None and server is not None):
-        key = server + ':services'
+        key = 'servers:' + server + ':services'
         services = __salt__['pillar.get'](key)
         if 'backend' in services:
             cmd = "sudo -u postgres psql -c \"ALTER USER " + frontend_user  + " ENCRYPTED PASSWORD '" + passphrase  + "';\""
@@ -27,7 +27,7 @@ def shared_database():
     server = __grains__['server']
     services = None
     if (passphrase is not None and server is not None):
-        key = server + ':services'
+        key = 'servers:' + server + ':services'
         services = __salt__['pillar.get'](key)
         delete_minion_data = False
         if 'backend' in services:
