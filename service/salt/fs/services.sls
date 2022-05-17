@@ -1,9 +1,7 @@
 {% set cert_dir = pillar.cert_dir %}
-{% set server_cert_authority_file_name = pillar.server_cert_authority_file_name %}
 {% set server_cert_combined_file_name = pillar.server_cert_combined_file_name %}
 {% set check_mongo_auth_enabled="/usr/bin/touch /etc/mongod.conf && grep '^[ ]*authorization: enabled' /etc/mongod.conf | wc -l" %}
 {% set check_mongo_certs_available="[ -f \'/etc/ssl/localcerts/server-key-crt.pem\' ] && echo \'Yes\' | wc -l" %}
-#{% set check_mongo_certs_available="if [ -f '{{ cert_dir }}/{{ server_cert_combined_file_name }}' ] && [ -f '{{ cert_dir }}/{{ server_cert_authority_file_name }}' ]; then echo 'Yes'; else echo 'No'; fi;" %}
 {% set random_password_generator='echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100)))" | /usr/bin/python3' %}
 
 include:
