@@ -18,8 +18,8 @@ core-states:
   - package
   - firewall
   - services
-  - security
   - users
+  - security
 
 {# For local router #}
 network_ssid: {{ systemname }}

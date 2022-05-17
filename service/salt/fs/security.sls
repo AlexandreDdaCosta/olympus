@@ -9,6 +9,7 @@ include:
   - base: package
   - base: firewall
   - base: services
+  - base: users
 
 # BEGIN Server certificates and keys
 
