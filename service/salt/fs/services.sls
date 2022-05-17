@@ -123,7 +123,7 @@ mongodb_set_authorization:
     - context:
       auth_enabled: true
       cmd_result: {{ salt['cmd.shell'](check_mongo_certs_available) }}
-{%- if salt['cmd.shell'](check_mongo_certs_available) == 1 %}
+{%- if salt['cmd.shell'](check_mongo_certs_available) == '1' %}
       certs_available: true
 {%- else %}
       certs_available: false
