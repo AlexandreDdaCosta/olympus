@@ -6,7 +6,6 @@
 {% set server_cert_key_file_name = pillar.server_cert_key_file_name %}
 
 include:
-  - base: package
   - base: firewall
   - base: services
   - base: users
