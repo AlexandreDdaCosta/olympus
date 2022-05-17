@@ -1,5 +1,3 @@
-{% set cert_dir = pillar.cert_dir %}
-{% set server_cert_combined_file_name = pillar.server_cert_combined_file_name %}
 {% set check_mongo_auth_enabled="/usr/bin/touch /etc/mongod.conf && grep '^[ ]*authorization: enabled' /etc/mongod.conf | wc -l" %}
 {% set check_mongo_certs_available="[ -f \'" + pillar.cert_dir + "/" + pillar.server_cert_combined_file_name + "\' ] && echo \'Yes\' | wc -l" %}
 {% set random_password_generator='echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100)))" | /usr/bin/python3' %}
