@@ -30,10 +30,10 @@ net:
   bindIp: 127.0.0.1
   port: 27017
 {% if certs_available is sameas true -%}
-  tls:
-   mode: allowTLS
-   certificateKeyFile: /etc/ssl/localcerts/server-key-crt.pem
-   CAFile: /etc/ssl/localcerts/ca-crt.pem
+tls:
+  mode: allowTLS
+  certificateKeyFile: /etc/ssl/localcerts/server-key-crt.pem
+  CAFile: /etc/ssl/localcerts/ca-crt.pem
 {% endif %}
 # processManagement
 {% if auth_enabled is sameas true -%}
