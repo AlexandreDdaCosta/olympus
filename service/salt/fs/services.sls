@@ -1,5 +1,10 @@
-{%- set check_mongo_auth_enabled="/usr/bin/touch /etc/mongod.conf && grep '^[ ]*authorization: enabled' /etc/mongod.conf | wc -l" %}
-{%- set random_password_generator='echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100)))" | /usr/bin/python3' -%}
+{% set cert_dir = pillar.cert_dir %}
+{% set server_cert_authority_file_name = pillar.server_cert_authority_file_name %}
+{% set server_cert_combined_file_name = pillar.server_cert_combined_file_name %}
+{% set check_mongo_auth_enabled="/usr/bin/touch /etc/mongod.conf && grep '^[ ]*authorization: enabled' /etc/mongod.conf | wc -l" %}
+#{% set check_mongo_certs_available="if [ -f '/etc/ssl/localcerts/server-key-crt.pem' ] && [ -f '/etc/ssl/localcerts/ca-crt.pem' ]; then echo 'Yes'; else echo 'No'; fi;" %}
+{% set check_mongo_certs_available="if [ -f '{{ cert_dir }}/{{ server_cert_combined_file_name }}' ] && [ -f '{{ cert_dir }}/{{ server_cert_authority_file_name }}' ]; then echo 'Yes'; else echo 'No'; fi;" %}
+{% set random_password_generator='echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100)))" | /usr/bin/python3' %}
 
 include:
   - base: package
@@ -31,6 +36,7 @@ locate-updatedb:
   file.managed:
     - context:
       auth_enabled: false
+      certs_available: false
     - group: root
     - makedirs: False
     - mode: 0644
@@ -46,7 +52,8 @@ Pre authentication enabled:
 
 Without TLS: mongo
 With TLS: mongo --tls --tlsCAFile /etc/ssl/localcerts/ca-crt.pem --tlsCertificateKeyFile /etc/ssl/localcerts/server-key-crt.pem --tlsAllowInvalidHostnames
-(Assuming your user has access to view the combined cert/key file via group membership)
+(Assumes the certs exist, which only occurs after running security.sls, so not immediately upon server creation.
+Also assumes your user has access to view the combined cert/key file via group membership.)
 
 Post authentication enabled:
 
@@ -117,6 +124,11 @@ mongodb_set_authorization:
   file.managed:
     - context:
       auth_enabled: true
+{%- if salt['cmd.shell'](check_mongo_certs_available) == 'Yes' %}
+      certs_available: true
+{%- else %}
+      certs_available: false
+{%- endif %}
     - group: root
     - makedirs: False
     - mode: 0644

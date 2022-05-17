@@ -1,6 +1,7 @@
 {% set cert_dir = pillar.cert_dir %}
 {% set cert_dir_client = pillar.cert_dir_client %}
 {% set server_cert_file_name = pillar.server_cert_file_name %}
+{% set server_cert_authority_file_name = pillar.server_cert_authority_file_name %}
 {% set server_cert_chained_file_name = pillar.server_cert_chained_file_name %}
 {% set server_cert_combined_file_name = pillar.server_cert_combined_file_name %}
 {% set server_cert_key_file_name = pillar.server_cert_key_file_name %}
@@ -40,7 +41,7 @@ include:
     - template: jinja
     - user: root
   cmd.run:
-    - name: 'openssl req -new -x509 -days 9999 -config {{ cert_dir }}/ca.cnf -keyout {{ cert_dir }}/ca-key.pem -out {{ cert_dir }}/ca-crt.pem'
+    - name: 'openssl req -new -x509 -days 9999 -config {{ cert_dir }}/ca.cnf -keyout {{ cert_dir }}/ca-key.pem -out {{ cert_dir }}/{{ server_cert_authority_file_name }}'
     - onchanges:
       - file: {{ cert_dir }}/ca.cnf
 
@@ -86,7 +87,7 @@ include:
 
 {{ host }}_client-csr.pem_sign:
   cmd.run:
-    - name: openssl x509 -req -extfile {{ dir }}/client.cnf -days 999 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in {{ dir }}/client-csr.pem -CA {{ cert_dir }}/ca-crt.pem -CAkey {{ cert_dir }}/ca-key.pem -CAcreateserial -out {{ dir }}/client-crt.pem
+    - name: openssl x509 -req -extfile {{ dir }}/client.cnf -days 999 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in {{ dir }}/client-csr.pem -CA {{ cert_dir }}/{{ server_cert_authority_file_name }} -CAkey {{ cert_dir }}/ca-key.pem -CAcreateserial -out {{ dir }}/client-crt.pem
 
 {{ host }}_client-key-crt.pem:
   cmd.run:
@@ -131,13 +132,13 @@ server.cnf:
 
 create_server_cert:
   cmd.run:
-    - name: 'openssl x509 -req -extfile {{ cert_dir }}/server.cnf -days 365 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in {{ cert_dir }}/server-csr.pem -CA {{ cert_dir }}/ca-crt.pem -CAkey {{ cert_dir }}/ca-key.pem -CAcreateserial -out {{ cert_dir }}/{{ server_cert_file_name }}'
+    - name: 'openssl x509 -req -extfile {{ cert_dir }}/server.cnf -days 365 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in {{ cert_dir }}/server-csr.pem -CA {{ cert_dir }}/{{ server_cert_authority_file_name }} -CAkey {{ cert_dir }}/ca-key.pem -CAcreateserial -out {{ cert_dir }}/{{ server_cert_file_name }}'
     - require: 
       - server.cnf
 
 create_chained_cert:
   cmd.run:
-    - name: cat {{ cert_dir }}/{{ server_cert_file_name }} {{ cert_dir }}/ca-crt.pem > {{ cert_dir }}/{{ server_cert_chained_file_name }}
+    - name: cat {{ cert_dir }}/{{ server_cert_file_name }} {{ cert_dir }}/{{ server_cert_authority_file_name }} > {{ cert_dir }}/{{ server_cert_chained_file_name }}
     - require: 
       - create_server_cert
 
@@ -159,8 +160,8 @@ copy_CA_cert_local:
     - force: True
     - group: root
     - mode: 644
-    - name: /usr/local/share/ca-certificates/ca-crt.pem.crt
-    - source: {{ cert_dir }}/ca-crt.pem
+    - name: /usr/local/share/ca-certificates/{{ server_cert_authority_file_name }}.crt
+    - source: {{ cert_dir }}/{{ server_cert_authority_file_name }}
     - user: root
     - require: 
       - create_combined_cert
@@ -179,14 +180,14 @@ trust_server_cert:
 # Push CA cert from supervisor minion to master
 push_CA_cert:
   cmd.run:
-    - name: salt '{{ grains.get('localhost') }}' cp.push {{ cert_dir }}/ca-crt.pem
+    - name: salt '{{ grains.get('localhost') }}' cp.push {{ cert_dir }}/{{ server_cert_authority_file_name }}
     - require: 
       - trust_server_cert
 
 # Trigger all minions to get supervisor CA certificate
 get_client_cert_and_key:
   cmd.run:
-    - name: salt '*' cp.get_file "salt://{{ grains.get('localhost') }}{{ cert_dir }}/ca-crt.pem" /usr/local/share/ca-certificates/ca-crt-supervisor.pem.crt
+    - name: salt '*' cp.get_file "salt://{{ grains.get('localhost') }}{{ cert_dir }}/{{ server_cert_authority_file_name }}" /usr/local/share/ca-certificates/ca-crt-supervisor.pem.crt
     - require: 
       - push_CA_cert
 
@@ -267,7 +268,7 @@ postgresql.server.cnf:
 
 create_postgresql_server_cert:
   cmd.run:
-    - name: 'openssl x509 -req -extfile {{ cert_dir }}/postgresql.server.cnf -days 365 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in {{ cert_dir }}/postgresql.server-csr.pem -CA {{ cert_dir }}/ca-crt.pem -CAkey {{ cert_dir }}/ca-key.pem -CAcreateserial -out {{ cert_dir }}/postgresql.{{ server_cert_file_name }}'
+    - name: 'openssl x509 -req -extfile {{ cert_dir }}/postgresql.server.cnf -days 365 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in {{ cert_dir }}/postgresql.server-csr.pem -CA {{ cert_dir }}/{{ server_cert_authority_file_name }} -CAkey {{ cert_dir }}/ca-key.pem -CAcreateserial -out {{ cert_dir }}/postgresql.{{ server_cert_file_name }}'
     - require: 
       - postgresql.server.cnf
 
