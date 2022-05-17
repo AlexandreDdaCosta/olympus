@@ -286,6 +286,12 @@ cert_mongo_restart:
     - require:
       - regen_trusted_CA
 
+mongo_restart_node_restart:
+  cmd.run:
+    - name: service node status; if [ $? = 0 ]; then service node restart; fi;
+    - require:
+      - cert_mongo_restart
+
 # END Server certificates and keys
 
 # BEGIN Shared credentials

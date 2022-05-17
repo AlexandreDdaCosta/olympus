@@ -124,6 +124,7 @@ mongodb_set_authorization:
   file.managed:
     - context:
       auth_enabled: true
+      cmd_result: {{ salt['cmd.shell'](check_mongo_certs_available) }}
 {%- if salt['cmd.shell'](check_mongo_certs_available) == 'Yes' %}
       certs_available: true
 {%- else %}
@@ -139,7 +140,7 @@ mongodb_set_authorization:
     - template: jinja
     - user: root
   cmd.run:
-    - name: service mongod restart
+    - name: service mongod restart; service node status; if [ $? = 0 ]; then service node restart; fi;
 
 {% set mongodb_users = [] %}
 {% for username, user in pillar.get('users', {}).items() %}
