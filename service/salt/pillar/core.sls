@@ -16,9 +16,9 @@ core-states:
   - grains
   - repository
   - package
-  - security
   - firewall
   - services
+  - security
   - users
 
 {# For local router #}
