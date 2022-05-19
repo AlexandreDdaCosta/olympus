@@ -1,3 +1,12 @@
+{#
+To redo security settings systemwide, run the following:
+
+sudo -i salt '*' state.sls security -v
+
+This will redo users (and associated SSH keys), stored passwords, and SSL certificates on all connected servers. Cookies will also be
+invaidated and open sessions closed. 
+#}
+
 {% set cert_dir = pillar.cert_dir %}
 {% set cert_dir_client = pillar.cert_dir_client %}
 {% set server_cert_file_name = pillar.server_cert_file_name %}

@@ -151,3 +151,61 @@ mongodb_purge_invalid_users:
   module.run:
     - mongo.purge_users:
       - valid_users: {{ mongodb_users }}
+
+# Recognized user passwords for REST API
+
+{% if grains.get('server') == 'unified' or grains.get('server') == 'supervisor' -%}
+{% for username, user in pillar.get('users', {}).items() -%}
+
+{% if 'is_staff' in user and user['is_staff'] -%}
+
+# Call minions to rotate restapi password file (remote module will check if user exists on server)
+
+# ALEX TODO
+
+# Update password in mongodb
+
+{{ username }}_restapi_staff:
+  module.run:
+    - mongo.insert_update_restapi_user:
+      - username: {{ username }}
+      - password: user['restapi']['password']
+      - routes: []
+      - all_routes: True
+
+{% elif 'restapi' in user %}
+{% if 'routes' in user['restapi'] %}
+{% set restapi_routes=user['restapi'] %}
+{% else %}
+{% set restapi_routes=[] %}
+{% endif %}
+
+# Call minions to rotate restapi password file
+
+# ALEX TODO
+
+# Update password in mongodb
+
+{{ username }}_restapi_user:
+  module.run:
+    - mongo.insert_update_restapi_user:
+      - username: {{ username }}
+      - password: user['restapi']['password']
+      - routes: {{ restapi_routes }}
+      - all_routes: False
+
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{#
+# ALEX
+  node:
+    restapi:
+      password: {{ salt['cmd.shell'](random_password_generator) }}
+      routes:
+        - equities
+    server:
+      - supervisor
+      - unified
+#}

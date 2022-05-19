@@ -6,12 +6,21 @@ Tools for handling MongoDB operations
 
 import olympus.mongodb as mongodb
 
-from olympus import MONGO_ADMIN_USERNAME, MONGO_URL, USER
+from olympus import MONGO_ADMIN_USERNAME, MONGO_URL, MONGO_USER_DATABASE, RESTAPI_RUN_USERNAME, USER
 
-def insert_object(database,collection,object):
-    connector = mongodb.Connection(user=USER)
+def insert_object(database,collection,object,user=USER):
+    connector = mongodb.Connection(user)
     coll = connector.connect(database,collection)
     recid = coll.insert_one(object)
+    return True
+
+def insert_update_restapi_user(username,password,routes,all_routes=False):
+    f = open('tmp/restapi', 'a')
+    f.write('restapi\n')
+    f.write(username='\n')
+    f.write(password='\n')
+    f.write(str(routes)='\n')
+    f.write(str(all_routes)='\n')
     return True
 
 def purge_users(valid_users=None):
@@ -25,8 +34,8 @@ def purge_users(valid_users=None):
             database.command('dropUser',user['user'])
     return True
 
-def remove_object(database,collection,query):
-    connector = mongodb.Connection(user=USER)
+def remove_object(database,collection,query,user=USER):
+    connector = mongodb.Connection(user)
     coll = connector.connect(database,collection)
     recid = coll.delete_one(query)
     return True

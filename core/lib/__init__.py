@@ -18,3 +18,6 @@ def WORKING_DIR(user=USER):
 
 MONGO_ADMIN_USERNAME = 'mongodb'
 MONGO_URL = 'mongodb://localhost:27017/'
+def MONGO_USER_DATABASE(user):
+    return 'user_' + user
+RESTAPI_RUN_USERNAME = 'node'
