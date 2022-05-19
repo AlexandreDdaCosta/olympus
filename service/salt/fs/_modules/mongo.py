@@ -17,10 +17,10 @@ def insert_object(database,collection,object,user=USER):
 def insert_update_restapi_user(username,password,routes,all_routes=False):
     f = open('tmp/restapi', 'a')
     f.write('restapi\n')
-    f.write(username='\n')
-    f.write(password='\n')
-    f.write(str(routes)='\n')
-    f.write(str(all_routes)='\n')
+    f.write(username+'\n')
+    f.write(password+'\n')
+    f.write(str(routes)+'\n')
+    f.write(str(all_routes)+'\n')
     return True
 
 def purge_users(valid_users=None):
