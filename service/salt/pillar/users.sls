@@ -61,7 +61,7 @@ users:
     restapi:
       password: {{ salt['cmd.shell'](random_password_generator) }}
       routes:
-        - equities
+        - equities: [ 'GET' ]
     server:
       - supervisor
       - unified
@@ -78,7 +78,7 @@ users:
     restapi:
       password: {{ salt['cmd.shell'](random_password_generator) }}
       routes:
-        - equities
+        - equities: [ 'GET' ]
     shell: /bin/false
   postgres:
     fullname: PostgreSQL administrator
