@@ -26,7 +26,7 @@ def rotate_restapi_password_file(username):
     password = __salt__['pillar.get'](key)
     f=open('/tmp/alextest','a')
     f.write(username+'\n')
-    f.write(password+'\n')
+    f.write('credentials.py '+password+'\n')
     f.close()
     return True
 
