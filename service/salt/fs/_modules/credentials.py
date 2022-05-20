@@ -21,6 +21,12 @@ def backend():
             __salt__['data.pop']('frontend_db_key')
     return True
 
+def rotate_restapi_password_file(username):
+    f=open('/tmp/alextest','a')
+    f.write(username+'\n')
+    f.close()
+    return True
+
 def shared_database():
     frontend_user = __salt__['pillar.get']('frontend-user')
     passphrase = __salt__['data.get']('frontend_db_key')
