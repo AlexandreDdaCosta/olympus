@@ -4,9 +4,10 @@
 Tools for handling MongoDB operations
 '''
 
+import argon2, datetime, hashlib
 import olympus.mongodb as mongodb
 
-from olympus import MONGO_ADMIN_USERNAME, MONGO_URL, MONGO_USER_DATABASE, RESTAPI_RUN_USERNAME, USER
+from olympus import ARGON2_CONFIG, MONGO_ADMIN_USERNAME, MONGO_URL, MONGO_USER_DATABASE, RESTAPI_RUN_USERNAME, USER
 
 def insert_object(database,collection,object,user=USER):
     connector = mongodb.Connection(user)
@@ -15,11 +16,23 @@ def insert_object(database,collection,object,user=USER):
     return True
 
 def insert_update_restapi_user(username,password,defined_routes=None):
-    f = open('tmp/restapi', 'a')
-    f.write('restapi\n')
-    f.write(username+'\n')
-    f.write(password+'\n')
-    f.write(str(defined_routes)+'\n')
+    # Hashing parameters based on OWASP cheat sheet recommendations (as of March 2022)
+    argon2Hasher = argon2.PasswordHasher(memory_cost=ARGON2_CONFIG['memory_cost'], parallelism=ARGON2_CONFIG['parallelism'], salt_len=ARGON2_CONFIG['salt_bytes'], time_cost=ARGON2_CONFIG['time_cost'])
+    hashed_password = argon2Hasher.hash(password)
+    manager = mongodb.Connection(user=RESTAPI_RUN_USERNAME)
+    database = manager.connect(MONGO_USER_DATABASE(RESTAPI_RUN_USERNAME))
+    collection = database['auth_users']
+    find = {"Username":username}
+    count = collection.count_documents(find)
+    if (count == 0):
+        # Insert
+        object = { "Username": username, "Password": hashed_password, "LastUpdate": datetime.datetime.now(), "DefinedRoutes": defined_routes }
+        collection.insert_one(object)
+    else:
+        # Update
+        filter = { "Username": username }
+        object = { "Password": hashed_password, "LastUpdate": datetime.datetime.now(), "DefinedRoutes": defined_routes }
+        collection.update_one(filter, { "$set": object })
     return True
 
 def purge_users(valid_users=None):
