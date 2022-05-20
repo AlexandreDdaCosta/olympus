@@ -14,13 +14,12 @@ def insert_object(database,collection,object,user=USER):
     recid = coll.insert_one(object)
     return True
 
-def insert_update_restapi_user(username,password,routes,all_routes=False):
+def insert_update_restapi_user(username,password,defined_routes=None):
     f = open('tmp/restapi', 'a')
     f.write('restapi\n')
     f.write(username+'\n')
     f.write(password+'\n')
-    f.write(str(routes)+'\n')
-    f.write(str(all_routes)+'\n')
+    f.write(str(defined_routes)+'\n')
     return True
 
 def purge_users(valid_users=None):

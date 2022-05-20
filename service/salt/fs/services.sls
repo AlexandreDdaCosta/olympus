@@ -162,20 +162,16 @@ mongodb_purge_invalid_users:
 # ALEX TODO
 
 # Update user authorization entry in backend mongodb
-# NOTE: Empty routes specification implies all routes, all verbs
-
-{% if 'routes' in user['restapi'] %}
-{% set restapi_routes=user['restapi']['routes'] %}
-{% else %}
-{% set restapi_routes=[] %}
-{% endif %}
+# NOTE: No defined routes implies all routes, all verbs
 
 {{ username }}_restapi_user:
   module.run:
     - mongo.insert_update_restapi_user:
       - username: {{ username }}
       - password: {{ user['restapi']['password'] }}
-      - routes: {{ restapi_routes }}
+{%- if 'routes' in user['restapi'] %}
+      - defined_routes: {{ user['restapi']['routes'] }}
+{%- endif %}
 
 {% endif %}
 {% endfor %}
