@@ -21,3 +21,9 @@ MONGO_URL = 'mongodb://localhost:27017/'
 def MONGO_USER_DATABASE(user):
     return 'user_' + user
 RESTAPI_RUN_USERNAME = 'node'
+
+# Password hashing via argon2
+
+ARGON2_CONFIG = { "memory_cost": 64*1024, "parallelism": 1, "salt_bytes": 16, "time_cost": 3 }
+
+

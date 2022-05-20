@@ -162,7 +162,7 @@ mongodb_purge_invalid_users:
 # ALEX TODO
 
 # Update user authorization entry in backend mongodb
-# NOTE: No defined routes implies all routes, all verbs
+# NOTE: No defined routes implies all available routes, all available verbs
 
 {{ username }}_restapi_user:
   module.run:

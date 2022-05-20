@@ -1,4 +1,11 @@
 {
+  "argon2":
+  {
+    "memory_cost" : 65536,
+    "parallelism" : 1,
+    "salt_bytes" : 16,
+    "time_cost" : 3
+  },
   "log":
   {
     "dir": "/var/log/node",

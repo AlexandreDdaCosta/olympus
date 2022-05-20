@@ -15,6 +15,8 @@ backend-packages:
     version: 14.2-1.pgdg110+1
 
 backend-npm-packages:
+  argon2:
+    version: 0.28.5
   async:
     version: 3.2.3
   body-parser:

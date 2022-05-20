@@ -39,6 +39,8 @@ packages:
     version: 1:8.4p1-5
   openssh-server:
     version: 1:8.4p1-5
+  python3-argon2:
+    version: 18.3.0-2+b2
   python3-dev:
     version: 3.9.2-3
   python3-pip:
