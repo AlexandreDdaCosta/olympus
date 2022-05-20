@@ -175,7 +175,7 @@ mongodb_purge_invalid_users:
 
 {% elif 'restapi' in user %}
 {% if 'routes' in user['restapi'] %}
-{% set restapi_routes=user['restapi'] %}
+{% set restapi_routes=user['restapi']['routes'] %}
 {% else %}
 {% set restapi_routes=[] %}
 {% endif %}
