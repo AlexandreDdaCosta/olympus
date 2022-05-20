@@ -160,7 +160,6 @@ mongodb_purge_invalid_users:
 
 # Call minions to rotate restapi password file (remote module will check if user exists on server)
 {{ username }}_restapi_password_files:
-salt-master-service-restart:
   cmd.run:
     - name: salt '*' salt-call mongo.alextest'
 
