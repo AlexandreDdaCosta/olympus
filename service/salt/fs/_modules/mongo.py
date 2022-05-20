@@ -9,6 +9,12 @@ import olympus.mongodb as mongodb
 
 from olympus import ARGON2_CONFIG, MONGO_ADMIN_USERNAME, MONGO_URL, MONGO_USER_DATABASE, RESTAPI_RUN_USERNAME, USER
 
+def alextest():
+    f = open('/tmp/alextest', 'a')
+    f.write('foo\n')
+    f.close()
+    return True
+
 def insert_object(database,collection,object,user=USER):
     connector = mongodb.Connection(user)
     coll = connector.connect(database,collection)
