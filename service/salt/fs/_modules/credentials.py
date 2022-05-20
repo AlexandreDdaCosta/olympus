@@ -23,7 +23,7 @@ def backend():
 
 def rotate_restapi_password_file(username):
     key = 'users:' + username + ':restapi:password'
-    password = __salt__['pillar.get'](key)
+    password = __salt__['data.get'](key)
     f=open('/tmp/alextest','a')
     f.write(username+'\n')
     f.write('credentials.py '+password+'\n')
