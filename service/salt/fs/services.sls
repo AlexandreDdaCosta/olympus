@@ -169,7 +169,7 @@ mongodb_purge_invalid_users:
   module.run:
     - mongo.insert_update_restapi_user:
       - username: {{ username }}
-      - password: user['restapi']['password']
+      - password: {{ user['restapi']['password'] }}
       - routes: []
       - all_routes: True
 
@@ -190,7 +190,7 @@ mongodb_purge_invalid_users:
   module.run:
     - mongo.insert_update_restapi_user:
       - username: {{ username }}
-      - password: user['restapi']['password']
+      - password: {{ user['restapi']['password'] }}
       - routes: {{ restapi_routes }}
       - all_routes: False
 
