@@ -34,6 +34,13 @@ locate-updatedb:
     - mode: 0600
     - user: root
 
+/etc/passwords/salt:
+  file.directory:
+    - group: root
+    - makedirs: False
+    - mode: 0600
+    - user: root
+
 {%- if salt['cmd.shell'](check_mongo_auth_enabled) == 0 %}
 /etc/mongod.conf:
   file.managed:
@@ -168,6 +175,13 @@ mongodb_purge_invalid_users:
     - mode: 0600
     - user: root
 
+/etc/passwords/salt/restapi:
+  file.directory:
+    - group: root
+    - makedirs: False
+    - mode: 0600
+    - user: root
+
 {% if grains.get('server') == 'unified' or grains.get('server') == 'supervisor' %}
 {% for username, user in pillar.get('users', {}).items() %}
 {% if 'restapi' in user %}
@@ -179,23 +193,16 @@ mongodb_purge_invalid_users:
       restapi_password: {{ user['restapi']['password'] }}
     - group: root
     - makedirs: False
-    - name: /etc/passwords/restapi/{{ username }}.master
+    - name: /etc/passwords/salt/restapi/{{ username }}
     - mode: 0600
     - source: salt://services/files/restapi_password.jinja
     - template: jinja
     - user: root
 
-# Push user password file from supervisor minion to master
-push_{{ username }}_restapi_password_file:
-  cmd.run:
-    - name: salt '{{ grains.get('localhost') }}' cp.push /etc/passwords/restapi/{{ username }}.master
-    - require: 
-      - trust_server_cert
-
 # Trigger all minions to get user password file
 get_{{ username }}_restapi_password_file:
   cmd.run:
-    - name: salt '*' cp.get_file "salt://{{ grains.get('localhost') }}/etc/passwords/restapi/{{ username }}.master" /etc/passwords/restapi/{{ username }}
+    - name: salt '*' cp.get_file "salt://{{ grains.get('localhost') }}/restapi/{{ username }}" /etc/passwords/restapi/{{ username }}
     - require: 
       - {{ username }}_restapi_password_file
 
