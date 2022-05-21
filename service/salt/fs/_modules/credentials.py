@@ -6,7 +6,7 @@ Tools for managing cross-server credentials
 
 import os, subprocess
 
-from olympus import User
+from olympus import RESTAPI_SERVICE, User
 
 def backend():
     frontend_user = __salt__['pillar.get']('frontend-user')
@@ -39,6 +39,8 @@ def rotate_restapi_password_file(username,tmp_file_name):
         return True
     with open(tmp_file_name, 'r') as f:
         new_password = f.readline().rstrip()
+    user = User(username)
+    user.rotate_service_password_file(RESTAPI_SERVICE,new_password)
     f.close()
     f=open('/tmp/alextest','a')
     f.write('credentials.py '+username+'\n')
@@ -48,6 +50,7 @@ def rotate_restapi_password_file(username,tmp_file_name):
     f.write('tmp_file_name '+tmp_file_name+'\n')
     f.write('new_password '+new_password+'\n')
     f.close()
+    #os.remove(tmp_file_name)
     return True
 
 def shared_database():
