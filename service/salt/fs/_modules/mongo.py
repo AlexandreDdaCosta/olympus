@@ -7,7 +7,8 @@ Tools for handling MongoDB operations
 import argon2, datetime, hashlib
 import olympus.mongodb as mongodb
 
-from olympus import ARGON2_CONFIG, MONGO_ADMIN_USERNAME, MONGO_URL, MONGO_USER_DATABASE, RESTAPI_RUN_USERNAME, USER
+from olympus import ARGON2_CONFIG, MONGODB_SERVICE, RESTAPI_RUN_USERNAME, USER, User
+from olympus.mongodb import MONGO_ADMIN_USERNAME
 
 def insert_object(database,collection,object,user=USER):
     connector = mongodb.Connection(user)
@@ -19,9 +20,9 @@ def insert_update_restapi_user(username,password,defined_routes=None):
     # Hashing parameters based on OWASP cheat sheet recommendations (as of March 2022)
     argon2Hasher = argon2.PasswordHasher(memory_cost=ARGON2_CONFIG['memory_cost'], parallelism=ARGON2_CONFIG['parallelism'], salt_len=ARGON2_CONFIG['salt_bytes'], time_cost=ARGON2_CONFIG['time_cost'])
     hashed_password = argon2Hasher.hash(password)
-    manager = mongodb.Connection(user=RESTAPI_RUN_USERNAME)
-    database = manager.connect(MONGO_USER_DATABASE(RESTAPI_RUN_USERNAME))
-    collection = database['auth_users']
+    connector = mongodb.Connection(RESTAPI_RUN_USERNAME)
+    database_name = connector.user_database_name()
+    collection = connector.connect(database_name,'auth_users')
     find = {"Username":username}
     count = collection.count_documents(find)
     if (count == 0):
@@ -38,7 +39,7 @@ def insert_update_restapi_user(username,password,defined_routes=None):
 def purge_users(valid_users=None):
     if valid_users is None:
         valid_users = []
-    manager = mongodb.Connection(user=MONGO_ADMIN_USERNAME)
+    manager = mongodb.Connection(MONGO_ADMIN_USERNAME)
     database = manager.connect('admin')
     users=database['system.users'].find({},{'_id':0, 'user':1})
     for user in users:
@@ -69,10 +70,11 @@ def user(username,password,admin=False,roles=None):
                 new_roles.append(role_dict)
                 break
         roles = new_roles
-    manager = mongodb.Connection(user=MONGO_ADMIN_USERNAME)
-    database = manager.connect('admin')
+    connector = mongodb.Connection(MONGO_ADMIN_USERNAME)
+    database = connector.connect('admin')
     user_entry=database['system.users'].find_one({"user":username},{'_id':0, 'user':1})
-    manager.rotate_password_file(password,username)
+    user_object = User(username)
+    user_object.rotate_service_password_file(MONGODB_SERVICE,password)
     if user_entry is not None:
         database.command('updateUser',username,pwd=password,roles=roles)
     else:

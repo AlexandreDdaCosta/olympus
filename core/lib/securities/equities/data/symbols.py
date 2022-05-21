@@ -3,7 +3,7 @@ from jsonschema import validate
 
 import olympus.securities.equities.data as data
 
-from olympus import DOWNLOAD_DIR, LOCKFILE_DIR, USER, WORKING_DIR
+from olympus import USER, User
 
 DATA_TYPE = 'symbols'
 JSON_FILE_SUFFIX = '-companylist.json'
@@ -21,14 +21,16 @@ class InitSymbols(data.Connection):
     def __init__(self,user=USER,**kwargs):
         super(InitSymbols,self).__init__(user,DATA_TYPE,**kwargs)
         self.verbose = kwargs.get('verbose',False)
-        self.working_dir = WORKING_DIR(self.user)
+        self.user_object = User(user)
+        self.download_dir = self.user_object.download_directory()
+        self.working_dir = self.user_object.working_directory()
+        self.lockfile = self.user_object.lockfile_directory()+DATA_TYPE+'.pid'
 
     def populate_collections(self):
 
-        if self.verbose is True:
+        if self.verbose:
             print('Setting up environment.')
-        LOCKFILE = LOCKFILE_DIR(self.user)+DATA_TYPE+'.pid'
-        lockfilehandle = open(LOCKFILE,'w')
+        lockfilehandle = open(self.lockfile,'w')
         fcntl.flock(lockfilehandle,fcntl.LOCK_EX|fcntl.LOCK_NB)
         lockfilehandle.write(str(os.getpid()))
         os.chdir(self.working_dir)
@@ -40,7 +42,7 @@ class InitSymbols(data.Connection):
         for urlconf in SYMBOL_DATA_URLS:
             target_file = urlconf['exchange']+JSON_FILE_SUFFIX
             company_files.insert(0,target_file)
-            target_file = DOWNLOAD_DIR(self.user)+target_file
+            target_file = self.download_dir+target_file
             # Download site issues; use existing downloads if not too old
             if os.path.isfile(target_file) and os.stat(target_file).st_size > 1:
                 if epoch_time - os.stat(target_file).st_mtime < 28800:
@@ -77,7 +79,7 @@ class InitSymbols(data.Connection):
             exchange = company_file.rstrip(JSON_FILE_SUFFIX)
             if self.verbose is True:
                 print('Verifying data for exchange "' + exchange + '".')
-            data_file_name = DOWNLOAD_DIR(self.user)+exchange+JSON_FILE_SUFFIX
+            data_file_name = self.download_dir+exchange+JSON_FILE_SUFFIX
             json_data = ''
             try:
                 with open(data_file_name) as data_file:

@@ -2,9 +2,8 @@
 
 import pymongo, unittest
 
+import olympus.mongodb as mongodb
 import olympus.testing as testing
-
-from olympus import MONGO_URL
 
 class TestMongo(testing.Test):
 
@@ -12,8 +11,9 @@ class TestMongo(testing.Test):
         pass
 
     def test_connect(self):
-        client = pymongo.MongoClient(MONGO_URL)
-        test_collection = client.test.pymongo_test
+        connector = mongodb.Connection()
+        database_name = connector.user_database_name()
+        test_collection = connector.connect(database_name,'pymongo_test')
         test_collection.drop()
         delete_result = test_collection.delete_many({})
         self.assertEqual(delete_result.deleted_count,0,'No entries should exist in test database.')

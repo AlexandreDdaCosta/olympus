@@ -2,7 +2,7 @@ import os
 
 import olympus.mongodb as mongodb
 
-from olympus import USER, DOWNLOAD_DIR
+from olympus import USER, User
 
 DATABASE = 'equities'
 INDEX_SUFFIX = '_idx'
@@ -18,6 +18,7 @@ class Connection():
 
     def __init__(self,user=USER,data_type=None,**kwargs):
         self.user = user
+        self.user_object = User(user)
         self.verbose = kwargs.get('verbose',False)
         self.database = DATABASE
         if self.verbose is True:
@@ -28,6 +29,6 @@ class Connection():
         self.data_type = data_type
         if self.data_type is not None:
             try:
-                os.makedirs(DOWNLOAD_DIR(self.user))
+                os.makedirs(self.user_object.download_directory())
             except OSError:
                 pass

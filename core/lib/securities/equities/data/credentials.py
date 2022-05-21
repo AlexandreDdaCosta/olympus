@@ -2,7 +2,7 @@ import fcntl, os, time
 
 import olympus.securities.equities.data as data
 
-from olympus import USER, DOWNLOAD_DIR, LOCKFILE_DIR, WORKING_DIR
+from olympus import USER, User
 
 DATA_TYPE = 'credentials'
 CREDENTIALS_COLLECTION = DATA_TYPE
@@ -12,14 +12,15 @@ class InitCredentials(data.Connection):
     def __init__(self,user=USER,**kwargs):
         super(InitCredentials,self).__init__(user,DATA_TYPE,**kwargs)
         self.verbose = kwargs.get('verbose',False)
-        self.working_dir = WORKING_DIR(self.user)
+        self.user_object = User(user)
+        self.working_dir = self.user_object.working_directory()
+        self.lockfile = self.user_object.lockfile_directory()+DATA_TYPE+'.pid'
 
     def populate_collections(self):
 
         # Set up environment
 
-        LOCKFILE = LOCKFILE_DIR(self.user)+DATA_TYPE+'.pid'
-        lockfilehandle = open(LOCKFILE,'w')
+        lockfilehandle = open(self.lockfile,'w')
         fcntl.flock(lockfilehandle,fcntl.LOCK_EX|fcntl.LOCK_NB)
         lockfilehandle.write(str(os.getpid()))
         os.chdir(self.working_dir)

@@ -5,7 +5,7 @@ from datetime import timedelta
 from dateutil.parser import parse
 from pytz import timezone
 
-from olympus import DOWNLOAD_DIR, USER
+from olympus import USER, User
 
 import olympus.securities.equities.data as data
 import olympus.securities.equities.data.symbols as symbols
@@ -16,6 +16,8 @@ class Quote(data.Connection):
 
     def __init__(self,user=USER,**kwargs):
         super(Quote,self).__init__(user,'quote',**kwargs)
+        self.user_object = User(user)
+        self.download_dir = self.user_object.download_directory()
 
     def daily(self,symbol,**kwargs):
         # Daily price quote series
@@ -60,7 +62,7 @@ class Quote(data.Connection):
             regenerate  = True
         if regen is True or regenerate is True:
             url = data['URLS']['YAHOO_FINANCE'] + str(symbol) + '?period1=0&period2=9999999999&interval=1d&events=history&includeAdjustedClose=true'
-            target_file = DOWNLOAD_DIR(self.user)+str(symbol)+'-daily.csv'
+            target_file = self.download_dir+str(symbol)+'-daily.csv'
             response = urllib.request.urlretrieve(url,target_file)
             with open(target_file,'r') as f:
                 first_line = f.readline()
