@@ -4,7 +4,7 @@ import os, pymongo, shutil, stat
 
 from os.path import isfile
 
-from olympus import MONGODB_SERVICE
+from olympus import MONGODB_SERVICE, User
 
 MONGO_ADMIN_USERNAME = 'mongodb'
 MONGO_URL = 'mongodb://localhost:27017/'
