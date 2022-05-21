@@ -21,10 +21,9 @@ def backend():
             __salt__['data.pop']('frontend_db_key')
     return True
 
-def rotate_restapi_password_file(username,password):
+def rotate_restapi_password_file(username):
     f=open('/tmp/alextest','a')
-    f.write(username+'\n')
-    f.write('credentials.py '+password+'\n')
+    f.write('credentials.py '+username+'\n')
     f.close()
     return True
 

@@ -27,6 +27,13 @@ locate-updatedb:
   cmd.run:
     - name: updatedb
 
+/etc/passwords:
+  file.directory:
+    - group: root
+    - makedirs: False
+    - mode: 0600
+    - user: root
+
 {%- if salt['cmd.shell'](check_mongo_auth_enabled) == 0 %}
 /etc/mongod.conf:
   file.managed:
@@ -154,14 +161,41 @@ mongodb_purge_invalid_users:
 
 # Recognized user passwords for REST API
 
+/etc/passwords/restapi:
+  file.directory:
+    - group: root
+    - makedirs: False
+    - mode: 0600
+    - user: root
+
 {% if grains.get('server') == 'unified' or grains.get('server') == 'supervisor' %}
 {% for username, user in pillar.get('users', {}).items() %}
 {% if 'restapi' in user %}
 
+# Write restapi password to local password file
+{{ username }}_restapi_password_file:
+  file.managed:
+    - context:
+      restapi_password: {{ user['restapi']['password'] }}
+    - group: root
+    - makedirs: False
+    - name: /etc/passwords/restapi/{{ username }}.master
+    - mode: 0600
+    - source: salt://services/files/restapi_password.jinja
+    - template: jinja
+    - user: root
+
+# Trigger all minions to get user password file
+get_{{ username }}_restapi_password_file:
+  cmd.run:
+    - name: salt '*' cp.get_file "salt://{{ grains.get('localhost') }}/etc/passwords/restapi/{{ username }}.master" /etc/passwords/restapi/{{ username }}
+    - require: 
+      - {{ username }}_restapi_password_file
+
 # Call minions to rotate restapi password file (remote module will check if user exists on server)
 {{ username }}_restapi_password_files:
   cmd.run:
-    - name: salt '*' credentials.rotate_restapi_password_file {{ username }} {{ user['restapi']['password'] }}
+    - name: salt '*' credentials.rotate_restapi_password_file {{ username }}
 
 # Update user authorization entry in backend mongodb
 # NOTE: No defined routes implies all available routes, all available verbs
