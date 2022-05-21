@@ -209,12 +209,15 @@ mongodb_purge_invalid_users:
 copy_{{ username }}_restapi_password_file:
   cmd.run:
     - name: salt-cp '*' /etc/passwords/salt/restapi/{{ username }} /etc/passwords/services/restapi/{{ username }}
-    - require: {{ username }}_restapi_password_file
+    - require: 
+      - {{ username }}_restapi_password_file
 
 # Call minions to rotate restapi password file (remote module will check if user exists on server)
 {{ username }}_restapi_password_files:
   cmd.run:
     - name: salt '*' credentials.rotate_restapi_password_file {{ username }}
+    - require: 
+      - copy_{{ username }}_restapi_password_file:
 
 # Update user authorization entry in backend mongodb
 # NOTE: No defined routes implies all available routes, all available verbs
@@ -227,6 +230,8 @@ copy_{{ username }}_restapi_password_file:
 {%- if 'routes' in user['restapi'] %}
       - defined_routes: {{ user['restapi']['routes'] }}
 {%- endif %}
+    - require: 
+      - {{ username }}_restapi_password_files
 
 {% endif %}
 {% endfor %}
