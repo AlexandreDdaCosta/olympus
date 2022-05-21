@@ -22,6 +22,8 @@ def backend():
     return True
 
 def rotate_restapi_password_file(username,tmp_file_name):
+    f=open('/tmp/alextest','a')
+    f.write('credentials.py '+username+'\n')
     server = __grains__['server']
     staff_key = 'users:' + username + ':is_staff'
     is_staff = __salt__['pillar.get'](staff_key)
@@ -35,8 +37,6 @@ def rotate_restapi_password_file(username,tmp_file_name):
         return True
     elif server not in user_servers:
         return True
-    f=open('/tmp/alextest','a')
-    f.write('credentials.py '+username+'\n')
     f.write('server '+server+'\n')
     f.write('is_staff '+str(is_staff)+'\n')
     f.write('servers '+str(user_servers)+'\n')
