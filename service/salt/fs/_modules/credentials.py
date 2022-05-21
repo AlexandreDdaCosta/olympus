@@ -31,7 +31,7 @@ def rotate_restapi_password_file(username):
     f.write('credentials.py '+username+'\n')
     f.write('server '+server+'\n')
     f.write('is_staff '+str(is_staff)+'\n')
-    f.write('servers '+str(servers)+'\n')
+    f.write('servers '+str(user_servers)+'\n')
     f.close()
     return True
 
