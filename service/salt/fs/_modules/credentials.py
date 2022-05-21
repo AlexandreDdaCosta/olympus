@@ -31,7 +31,8 @@ def rotate_restapi_password_file(username):
         user_servers = []
     #if is_staff:
     #    pass
-    if not user_servers:
+    #elif server not in user_servers:
+    if server not in user_servers:
         return True
     f=open('/tmp/alextest','a')
     f.write('credentials.py '+username+'\n')
