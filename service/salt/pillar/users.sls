@@ -79,6 +79,11 @@ users:
       password: {{ salt['cmd.shell'](random_password_generator) }}
       routes:
         - equities: [ 'GET' ]
+    server:
+      - interface
+      - supervisor
+      - unified
+      - worker
     shell: /bin/false
   postgres:
     fullname: PostgreSQL administrator
