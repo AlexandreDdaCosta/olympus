@@ -230,13 +230,3 @@ copy_{{ username }}_restapi_password_file:
 {% endif %}
 {% endfor %}
 {% endif %}
-
-{#
-# ALEX
-  node:
-    restapi:
-      password: {{ salt['cmd.shell'](random_password_generator) }}
-    server:
-      - supervisor
-      - unified
-#}

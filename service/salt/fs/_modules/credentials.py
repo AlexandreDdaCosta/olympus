@@ -22,8 +22,16 @@ def backend():
     return True
 
 def rotate_restapi_password_file(username):
+    server = __grains__['server']
+    staff_key = 'users:' + username + ':is_staff'
+    is_staff = __salt__['pillar.get'](staff_key)
+    servers_key = 'users:' + username + ':server'
+    user_servers = __salt__['pillar.get'](servers_key)
     f=open('/tmp/alextest','a')
     f.write('credentials.py '+username+'\n')
+    f.write('server '+server+'\n')
+    f.write('is_staff '+str(is_staff)+'\n')
+    f.write('servers '+str(servers)+'\n')
     f.close()
     return True
 
