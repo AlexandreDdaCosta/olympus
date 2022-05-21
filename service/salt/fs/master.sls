@@ -1,29 +1,12 @@
 {%- if grains.get('server') == 'supervisor' or grains.get('server') == 'unified' %}
 
-Disable starting services:
-  file.managed:
-    - name: /usr/sbin/policy-rc.d
-    - user: root
-    - group: root
-    - mode: 0755
-    - contents:
-      - '#!/bin/sh'
-      - exit 101
-    # do not touch if already exists
-    - replace: False
-    - prereq:
-      - pkg: salt-master
-
-{% if pillar.pkg_latest is defined and pillar.pkg_latest %}
 salt-master:
+{% if pillar.pkg_latest is defined and pillar.pkg_latest %}
   pkg.latest
+{% else %}
+  pkg.installed:
+    - version: 3004.1+ds-1
 {% endif %}
-
-Enable starting services:
-  file.absent:
-    - name: /usr/sbin/policy-rc.d
-    - onchanges:
-      - pkg: salt-master
 
 /etc/salt/master.d/core.conf:
   file.managed:

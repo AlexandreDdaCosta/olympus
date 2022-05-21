@@ -1,26 +1,9 @@
-{% if pillar.pkg_latest is defined and pillar.pkg_latest %}
-Disable starting services:
-  file.managed:
-    - name: /usr/sbin/policy-rc.d
-    - user: root
-    - group: root
-    - mode: 0755
-    - contents:
-      - '#!/bin/sh'
-      - exit 101
-    # do not touch if already exists
-    - replace: False
-    - prereq:
-      - pkg: salt-minion
-
 salt-minion:
+{% if pillar.pkg_latest is defined and pillar.pkg_latest %}
   pkg.latest
-
-Enable starting services:
-  file.absent:
-    - name: /usr/sbin/policy-rc.d
-    - onchanges:
-      - pkg: salt-minion
+{% else %}
+  pkg.installed:
+    - version: 3004.1+ds-1
 {% endif %}
 
 /etc/salt/minion.d/core.conf:
@@ -47,6 +30,4 @@ salt-minion-service-restart:
     - onchanges:
         - file: /etc/salt/minion.d/core.conf
         - file: /etc/salt/minion.d/{{ server_conf_file  }}.conf
-{% if pillar.pkg_latest is defined and pillar.pkg_latest %}
         - pkg: salt-minion
-{% endif %}
