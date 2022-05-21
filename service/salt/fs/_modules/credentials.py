@@ -41,16 +41,7 @@ def rotate_restapi_password_file(username,tmp_file_name):
         new_password = f.readline().rstrip()
     user = User(username)
     user.rotate_service_password_file(RESTAPI_SERVICE,new_password)
-    f.close()
-    f=open('/tmp/alextest','a')
-    f.write('credentials.py '+username+'\n')
-    f.write('server '+server+'\n')
-    f.write('is_staff '+str(is_staff)+'\n')
-    f.write('servers '+str(user_servers)+'\n')
-    f.write('tmp_file_name '+tmp_file_name+'\n')
-    f.write('new_password '+new_password+'\n')
-    f.close()
-    #os.remove(tmp_file_name)
+    os.remove(tmp_file_name)
     return True
 
 def shared_database():
