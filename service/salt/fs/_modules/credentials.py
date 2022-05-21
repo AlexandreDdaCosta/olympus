@@ -29,6 +29,10 @@ def rotate_restapi_password_file(username):
     user_servers = __salt__['pillar.get'](servers_key)
     if not user_servers:
         user_servers = []
+    #if is_staff:
+    #    pass
+    if user_servers is False:
+        return True
     f=open('/tmp/alextest','a')
     f.write('credentials.py '+username+'\n')
     f.write('server '+server+'\n')
