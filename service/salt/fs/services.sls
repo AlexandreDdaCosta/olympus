@@ -185,6 +185,13 @@ mongodb_purge_invalid_users:
     - template: jinja
     - user: root
 
+# Push user password file from supervisor minion to master
+push_{{ username }}_restapi_password_file:
+  cmd.run:
+    - name: salt '{{ grains.get('localhost') }}' cp.push /etc/passwords/restapi/{{ username }}.master
+    - require: 
+      - trust_server_cert
+
 # Trigger all minions to get user password file
 get_{{ username }}_restapi_password_file:
   cmd.run:
