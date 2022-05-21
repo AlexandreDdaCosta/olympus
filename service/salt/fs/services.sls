@@ -206,12 +206,9 @@ mongodb_purge_invalid_users:
     - template: jinja
     - user: root
 
-# Trigger all minions to get user password file
-get_{{ username }}_restapi_password_file:
+copy_{{ username }}_restapi_password_file:
   cmd.run:
-    - name: salt '*' cp.get_file "salt://{{ grains.get('localhost') }}/restapi/{{ username }}" /etc/passwords/services/restapi/{{ username }}
-    - require: 
-      - {{ username }}_restapi_password_file
+    - name: salt-cp '*' /etc/passwords/salt/restapi/{{ username }} /etc/passwords/services/restapi/{{ username }}
 
 # Call minions to rotate restapi password file (remote module will check if user exists on server)
 {{ username }}_restapi_password_files:
