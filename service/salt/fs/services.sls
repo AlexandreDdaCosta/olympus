@@ -27,21 +27,7 @@ locate-updatedb:
   cmd.run:
     - name: updatedb
 
-/etc/passwords:
-  file.directory:
-    - group: root
-    - makedirs: False
-    - mode: 0600
-    - user: root
-
-/etc/passwords/salt:
-  file.directory:
-    - group: root
-    - makedirs: False
-    - mode: 0600
-    - user: root
-
-/etc/passwords/services:
+/etc/password:
   file.directory:
     - group: root
     - makedirs: False
@@ -175,14 +161,7 @@ mongodb_purge_invalid_users:
 
 # Recognized user passwords for REST API
 
-/etc/passwords/salt/restapi:
-  file.directory:
-    - group: root
-    - makedirs: False
-    - mode: 0600
-    - user: root
-
-/etc/passwords/services/restapi:
+/etc/password/restapi:
   file.directory:
     - group: root
     - makedirs: False
@@ -200,7 +179,7 @@ mongodb_purge_invalid_users:
       restapi_password: {{ user['restapi']['password'] }}
     - group: root
     - makedirs: False
-    - name: /etc/passwords/salt/restapi/{{ username }}
+    - name: /etc/password/restapi/{{ username }}
     - mode: 0600
     - source: salt://services/files/restapi_password.jinja
     - template: jinja
@@ -208,7 +187,7 @@ mongodb_purge_invalid_users:
 
 copy_{{ username }}_restapi_password_file:
   cmd.run:
-    - name: salt-cp '*' /etc/passwords/salt/restapi/{{ username }} /etc/passwords/services/restapi/{{ username }}
+    - name: salt-cp -C 'G@server:database or G@server:interface or G@server:worker' /etc/password/restapi/{{ username }} /etc/password/restapi/{{ username }}
     - require: 
       - {{ username }}_restapi_password_file
 

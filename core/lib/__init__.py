@@ -26,4 +26,9 @@ RESTAPI_RUN_USERNAME = 'node'
 
 ARGON2_CONFIG = { "memory_cost": 64*1024, "parallelism": 1, "salt_bytes": 16, "time_cost": 3 }
 
+# Password files
 
+def RESTAPI_USER_PASSWORD_FILE(user):
+    return USER_ETC(user) + 'restapi_password'
+def RESTAPI_USER_OLD_PASSWORD_FILE(user):
+    return USER_ETC(user) + 'mongodb_password.old'
