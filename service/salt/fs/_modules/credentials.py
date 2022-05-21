@@ -21,7 +21,7 @@ def backend():
             __salt__['data.pop']('frontend_db_key')
     return True
 
-def rotate_restapi_password_file(username):
+def rotate_restapi_password_file(username,tmp_file_name):
     server = __grains__['server']
     staff_key = 'users:' + username + ':is_staff'
     is_staff = __salt__['pillar.get'](staff_key)
@@ -29,15 +29,16 @@ def rotate_restapi_password_file(username):
     user_servers = __salt__['pillar.get'](servers_key)
     if not user_servers:
         user_servers = []
-    #if is_staff:
-    #    pass
-    if user_servers is False:
+    if is_staff:
+        pass
+    elif user_servers is False:
         return True
     f=open('/tmp/alextest','a')
     f.write('credentials.py '+username+'\n')
     f.write('server '+server+'\n')
     f.write('is_staff '+str(is_staff)+'\n')
     f.write('servers '+str(user_servers)+'\n')
+    f.write('tmp_file_name '+tmp_file_name+'\n')
     f.close()
     return True
 

@@ -194,7 +194,7 @@ copy_{{ username }}_restapi_password_file:
 # Call minions to rotate restapi password file (remote module will check if user exists on server)
 rotate_{{ username }}_restapi_password_file:
   cmd.run:
-    - name: salt '*' credentials.rotate_restapi_password_file {{ username }}
+    - name: salt '*' credentials.rotate_restapi_password_file {{ username }} /etc/password/restapi/{{ username }}
     - require: 
       - copy_{{ username }}_restapi_password_file
 
