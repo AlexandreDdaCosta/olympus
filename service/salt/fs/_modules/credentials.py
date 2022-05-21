@@ -33,6 +33,8 @@ def rotate_restapi_password_file(username,tmp_file_name):
         pass
     elif user_servers is False:
         return True
+    elif server not in user_servers:
+        return True
     f=open('/tmp/alextest','a')
     f.write('credentials.py '+username+'\n')
     f.write('server '+server+'\n')
