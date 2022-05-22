@@ -14,6 +14,7 @@
   },
   "mongodb":
   {
+    "collection_auth_users": "auth_users",
     "database_auth": "admin",
     "database_default": "user_node",
     "host": "127.0.0.1",
@@ -22,6 +23,10 @@
     "user": "node"
   },
   "pidfile": "/var/run/node.pid",
+  "restapi":
+  {
+    "password_file": "/home/node/etc/restapi_password"
+  },
   "server":
   {
     "port" : 8889,

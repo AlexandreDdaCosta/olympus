@@ -10,19 +10,20 @@ from olympus import USER, User
 import olympus.securities.equities.data as data
 import olympus.securities.equities.data.symbols as symbols
 
+from olympus.securities.equities.data import URLS
+
 DAILY_PRICE_COLLECTION = 'price_daily'
 
 class Quote(data.Connection):
 
-    def __init__(self,user=USER,**kwargs):
-        super(Quote,self).__init__(user,'quote',**kwargs)
-        self.user_object = User(user)
-        self.download_dir = self.user_object.download_directory()
+    def __init__(self,username=USER,**kwargs):
+        super(Quote,self).__init__(username,**kwargs)
+        self.user_object = User(username)
 
     def daily(self,symbol,**kwargs):
         # Daily price quote series
         symbol = symbol.upper()
-        symbol_reader = symbols.Read(self.user,**kwargs)
+        symbol_reader = symbols.Read(self.username,**kwargs)
         symbol_data = symbol_reader.get_symbol(symbol)
         regen = kwargs.get('regen',False)
         start_date = kwargs.get('start_date',None)
@@ -61,8 +62,8 @@ class Quote(data.Connection):
         elif symbol_db_data is None:
             regenerate  = True
         if regen is True or regenerate is True:
-            url = data['URLS']['YAHOO_FINANCE'] + str(symbol) + '?period1=0&period2=9999999999&interval=1d&events=history&includeAdjustedClose=true'
-            target_file = self.download_dir+str(symbol)+'-daily.csv'
+            url = URLS['YAHOO_FINANCE'] + str(symbol) + '?period1=0&period2=9999999999&interval=1d&events=history&includeAdjustedClose=true'
+            target_file = self.user_object.download_directory()+str(symbol)+'-daily.csv'
             response = urllib.request.urlretrieve(url,target_file)
             with open(target_file,'r') as f:
                 first_line = f.readline()
@@ -110,14 +111,14 @@ class Quote(data.Connection):
         # 
         if interval not in [1,5,15,30,60]:
             raise Exception("If specified, 'interval' must be in the set: 1, 5, 15, 30, 60.")
-        url = data['URLS']['ALPHAVANTAGE'] + 'CHLVRDAEA445JOCB' + '&function=TIME_SERIES_INTRADAY&outputsize=full&symbol=' + str(symbol) + '&interval=' + str(interval) + 'min'
+        url = URLS['ALPHAVANTAGE'] + 'CHLVRDAEA445JOCB' + '&function=TIME_SERIES_INTRADAY&outputsize=full&symbol=' + str(symbol) + '&interval=' + str(interval) + 'min'
         request = urllib.request.urlopen(url)
         json_reply = re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8"))
         return json.loads(json_reply)
 
     def latest(self,symbol,**kwargs):
         # Complete price quote for latest trading day
-        url = data['URLS']['ALPHAVANTAGE'] + 'CHLVRDAEA445JOCB' + '&function=GLOBAL_QUOTE&symbol=' + symbol
+        url = URLS['ALPHAVANTAGE'] + 'CHLVRDAEA445JOCB' + '&function=GLOBAL_QUOTE&symbol=' + symbol
         request = urllib.request.urlopen(url)
         quote = json.loads(re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8")))
         quote = quote['Global Quote']

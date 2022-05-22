@@ -10,7 +10,7 @@ from olympus.securities.equities import *
 class TestSymbols(testing.Test):
 
     def setUp(self):
-        self.init = symbols.Init(verbose=True)
+        self.init = symbols.InitSymbols(verbose=True)
 
     def test_populate_collections(self):
         populate = self.init.populate_collections()

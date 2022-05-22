@@ -5,13 +5,15 @@ import pymongo, unittest
 import olympus.mongodb as mongodb
 import olympus.testing as testing
 
+from olympus import USER
+
 class TestMongo(testing.Test):
 
     def setUp(self):
         pass
 
     def test_connect(self):
-        connector = mongodb.Connection()
+        connector = mongodb.Connection(USER)
         database_name = connector.user_database_name()
         test_collection = connector.connect(database_name,'pymongo_test')
         test_collection.drop()
