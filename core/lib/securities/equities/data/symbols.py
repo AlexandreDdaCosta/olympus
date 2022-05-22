@@ -21,7 +21,7 @@ class InitSymbols(data.Initializer):
         super(InitSymbols,self).__init__(SYMBOL_COLLECTION,username,**kwargs)
 
     def populate_collections(self):
-		self.prepare()
+        self.prepare()
         if self.verbose:
             print('Downloading company data.')
         company_files = []
@@ -123,7 +123,7 @@ class InitSymbols(data.Initializer):
         except:
             self.clean_up()
             raise
-	
+
         self.clean_up()
 
 class Read(data.Connection):

@@ -20,7 +20,7 @@ class InitForm4Indices(data.Initializer):
         super(InitForm4Indices,self).__init__(FORM4_INDEX_COLLECTION_NAME,username,**kwargs)
 
     def populate_collections(self):
-		self.prepare()
+        self.prepare()
         if self.verbose:
             print('Initializing Form4 collection procedure.')
        
@@ -44,7 +44,7 @@ class InitForm4Indices(data.Initializer):
         if self.verbose:
             print('Starting year for init/sync: '+ str(start_year))
 
-		# Download
+        # Download
 
         if self.verbose:
             print('Downloading quarterly index files.')
@@ -131,7 +131,7 @@ class InitForm4Indices(data.Initializer):
                 create_indices = False
 
         # Clean-up
-		
+
         shutil.rmtree(download_directory)
         self.clean_up()
 
