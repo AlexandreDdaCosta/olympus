@@ -22,11 +22,11 @@ class Connection(User):
         else:
             self.client = pymongo.MongoClient(MONGO_URL)
         if database is not None:
-            db = self.client[database]
+            self.db = self.client[database]
             if collection is not None:
-                return db[collection]
+                return self.db[collection]
             else:
-                return db
+                return self.db
         else:
             return self.client
 

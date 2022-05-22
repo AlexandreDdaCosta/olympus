@@ -7,31 +7,22 @@ from xmlschema.validators.exceptions import XMLSchemaValidationError
 
 import olympus.securities.equities.data as data
 
-from olympus import USER, User
+from olympus import USER
 
-DATA_TYPE = 'edgar'
-FORM4_INDEX_COLLECTION_NAME = 'form4_indices'
+FORM4_INDEX_COLLECTION_NAME = 'edgar'
 QUARTERLY_FIRST_YEAR = 2004
 QUARTERLY_ORIGINAL_YEAR = 1993
 QUARTERLY_YEAR_LIST = range(QUARTERLY_FIRST_YEAR,datetime.datetime.now().year+1)
 
-class InitForm4Indices(data.Connection):
+class InitForm4Indices(data.Initializer):
 
-    def __init__(self,user=USER,**kwargs):
-        super(InitForm4Indices,self).__init__(user,DATA_TYPE,**kwargs)
-        self.verbose = kwargs.get('verbose',False)
-        self.user_object = User(user)
-        self.working_dir = self.user_object.working_directory()
-        self.lockfile = self.user_object.lockfile_directory()+DATA_TYPE+'.pid'
+    def __init__(self,username=USER,**kwargs):
+        super(InitForm4Indices,self).__init__(username,FORM4_INDEX_COLLECTION_NAME,**kwargs)
 
     def populate_collections(self):
-
+		self.prepare()
         if self.verbose:
             print('Initializing Form4 collection procedure.')
-        lockfilehandle = open(self.lockfile,'w')
-        fcntl.flock(lockfilehandle,fcntl.LOCK_EX|fcntl.LOCK_NB)
-        lockfilehandle.write(str(os.getpid()))
-        os.chdir(self.working_dir)
        
         # The edgar module retrieves based on a starting year. 
         # Read existing collection, looking for last worked year, in order oldest to newest
@@ -141,25 +132,20 @@ class InitForm4Indices(data.Connection):
 
         # Clean-up
 		
-        if self.verbose:
-            print('Cleaning up.')
         shutil.rmtree(download_directory)
-        lockfilehandle.write('')
-        fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
-        lockfilehandle.close()
+        self.clean_up()
 
 class Form4(data.Connection):
 
     FORM4_SUBMISSIONS_COLLECTION_NAME = 'form4_submissions'
-    ISSUER_COLLECTION_NAME = 'issuer'
-    REPORTING_OWNER_COLLECTION_NAME = 'reporting_owner'
+    ISSUER_COLLECTION_NAME = 'form4_issuer'
+    REPORTING_OWNER_COLLECTION_NAME = 'form4_reporting_owner'
     INIT_SLEEP = 5
     INIT_WAIT = 20
     PROCESSING_BLOCK_SIZE = 100
 
-    def __init__(self,**kwargs):
-        super(Form4,self).__init__('form4_submissions',**kwargs)
-        self.verbose = kwargs.get('verbose',False)
+    def __init__(self,username=USER,**kwargs):
+        super(Form4,self).__init__(username,**kwargs)
 
     def populate_indexed_forms(self,**kwargs):
 

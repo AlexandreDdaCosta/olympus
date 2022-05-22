@@ -1,32 +1,20 @@
-import fcntl, os, time
+import time
 
 import olympus.securities.equities.data as data
 
-from olympus import USER, User
+from olympus import USER
 
-DATA_TYPE = 'credentials'
-CREDENTIALS_COLLECTION = DATA_TYPE
+CREDENTIALS_COLLECTION = 'credentials'
 
-class InitCredentials(data.Connection):
+class InitCredentials(data.Initializer):
 
-    def __init__(self,user=USER,**kwargs):
-        super(InitCredentials,self).__init__(user,DATA_TYPE,**kwargs)
-        self.verbose = kwargs.get('verbose',False)
-        self.user_object = User(user)
-        self.working_dir = self.user_object.working_directory()
-        self.lockfile = self.user_object.lockfile_directory()+DATA_TYPE+'.pid'
+    def __init__(self,username=USER,**kwargs):
+        super(InitCredentials,self).__init__(username,CREDENTIALS_COLLECTION,**kwargs)
 
     def populate_collections(self):
-
-        # Set up environment
-
-        lockfilehandle = open(self.lockfile,'w')
-        fcntl.flock(lockfilehandle,fcntl.LOCK_EX|fcntl.LOCK_NB)
-        lockfilehandle.write(str(os.getpid()))
-        os.chdir(self.working_dir)
-      
-        # Create collection using a dummy entry
-       
+        self.prepare()
+        if self.verbose:
+            print('Creating credentials collection using a dummy entry.')
         collection = self.db[CREDENTIALS_COLLECTION]
         dummy_record = {'DataSource': 'DUMMY', 'KeyName': 'dummy_name', 'Key': 'dummy_key', 'IssueEpochDate': int(time.time())}
         collection.replace_one({'DataSource': 'DUMMY'}, dummy_record, upsert=True)
@@ -37,12 +25,6 @@ class InitCredentials(data.Connection):
                 print('Indexing "DataSource".')
             collection.create_index("DataSource")
         except:
-            self._clean_up(lockfilehandle)
+            self.clean_up()
             raise
-		
-        self._clean_up(lockfilehandle)
-	
-    def _clean_up(self,lockfilehandle):
-        lockfilehandle.write('')
-        fcntl.flock(lockfilehandle,fcntl.LOCK_UN)
-        lockfilehandle.close()
+        self.clean_up()
