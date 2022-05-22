@@ -1,4 +1,4 @@
-import fnctl, os
+import fcntl, os
 
 import olympus.mongodb as mongodb
 

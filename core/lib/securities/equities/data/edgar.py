@@ -1,4 +1,4 @@
-import datetime, fcntl, json, os, re, shutil, sys, time, wget, xmlschema, xmltodict
+import datetime, json, os, re, shutil, time, wget, xmlschema, xmltodict
 import edgar as form4_index_downloader
 import xml.etree.ElementTree as ET
 
