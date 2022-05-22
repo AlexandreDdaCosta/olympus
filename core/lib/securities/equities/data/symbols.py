@@ -18,7 +18,7 @@ SYMBOL_SCHEMA_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpat
 class InitSymbols(data.Initializer):
 
     def __init__(self,username=USER,**kwargs):
-        super(InitSymbols,self).__init__(username,SYMBOL_COLLECTION,**kwargs)
+        super(InitSymbols,self).__init__(SYMBOL_COLLECTION,username,**kwargs)
 
     def populate_collections(self):
 		self.prepare()

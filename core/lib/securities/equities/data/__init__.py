@@ -26,7 +26,7 @@ class Connection(mongodb.Connection):
 
 class Initializer(Connection):
 
-    def __init__(self,username=USER,data_type,**kwargs):
+    def __init__(self,data_type,username=USER,**kwargs):
         super(Initializer,self).__init__(username,**kwargs)
         self.user_object = User(self.username)
         self.download_directory = self.user_object.download_directory()

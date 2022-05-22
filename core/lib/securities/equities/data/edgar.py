@@ -17,7 +17,7 @@ QUARTERLY_YEAR_LIST = range(QUARTERLY_FIRST_YEAR,datetime.datetime.now().year+1)
 class InitForm4Indices(data.Initializer):
 
     def __init__(self,username=USER,**kwargs):
-        super(InitForm4Indices,self).__init__(username,FORM4_INDEX_COLLECTION_NAME,**kwargs)
+        super(InitForm4Indices,self).__init__(FORM4_INDEX_COLLECTION_NAME,username,**kwargs)
 
     def populate_collections(self):
 		self.prepare()

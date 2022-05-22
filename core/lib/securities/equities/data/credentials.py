@@ -9,7 +9,7 @@ CREDENTIALS_COLLECTION = 'credentials'
 class InitCredentials(data.Initializer):
 
     def __init__(self,username=USER,**kwargs):
-        super(InitCredentials,self).__init__(username,CREDENTIALS_COLLECTION,**kwargs)
+        super(InitCredentials,self).__init__(CREDENTIALS_COLLECTION,username,**kwargs)
 
     def populate_collections(self):
         self.prepare()
