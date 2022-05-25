@@ -14,11 +14,76 @@ invaidated and open sessions closed.
 {% set server_cert_chained_file_name = pillar.server_cert_chained_file_name %}
 {% set server_cert_combined_file_name = pillar.server_cert_combined_file_name %}
 {% set server_cert_key_file_name = pillar.server_cert_key_file_name %}
+{% set random_password_generator='echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100)))" | /usr/bin/python3' %}
+{% set check_mongo_certs_available="[ -f \'" + pillar.cert_dir + "/" + pillar.server_cert_combined_file_name + "\' ] && echo \'Yes\' | wc -l" %}
 
 include:
   - base: firewall
   - base: services
   - base: users
+
+/etc/password:
+  file.directory:
+    - group: root
+    - makedirs: False
+    - mode: 0600
+    - user: root
+
+/etc/password/restapi:
+  file.directory:
+    - group: root
+    - makedirs: False
+    - mode: 0600
+    - user: root
+
+openssh-server-service:
+  file.managed:
+    - group: root
+    - mode: 0600
+    - name: /etc/ssh/sshd_config
+    - source: salt://security/files/sshd_config
+    - user: root
+    - require:
+      - pkg: openssh-server
+  service.running:
+    - enable: True
+    - name: sshd
+    - restart: True
+    - watch:
+        - file: /etc/ssh/sshd_config
+        - pkg: openssh-server
+
+fail2ban-service:
+  service.running:
+    - enable: True
+    - name: fail2ban
+    - restart: True
+    - watch:
+        - pkg: fail2ban
+
+sudo-config:
+  file.managed:
+    - group: root
+    - mode: 0440
+    - name: /etc/sudoers.d/olympus
+    - source: salt://security/files/sudoers.d/olympus
+    - user: root
+
+selinux.config:
+  file.managed:
+    - group: root
+    - mode: 0644
+    - name: /etc/selinux/config
+    - source: salt://security/files/selinux/config
+    - user: root
+
+90-nproc.conf:
+  file.managed:
+    - group: root
+    - mode: 0644
+    - name: /etc/security/limits.d/90-nproc.conf
+    - source: salt://security/files/90-nproc.conf
+    - user: root
 
 # BEGIN Server certificates and keys
 
@@ -321,54 +386,131 @@ update_db_credential:
 
 {% endif %}
 
-openssh-server-service:
+# Mongo access passwords, database permissions, and password files 
+
+{% for username, user in pillar.get('users', {}).items() %}
+{% if 'server' not in user or grains.get('server') in user['server'] -%}
+{% if 'is_staff' in user and user['is_staff'] -%}
+
+{{ username }}_mongodb_staff:
+  module.run:
+    - mongo.user:
+      - username: {{ username }}
+      - password: {{ salt['cmd.shell'](random_password_generator) }}
+      - admin: True
+
+{% elif 'mongodb' in user -%}
+{% if 'admin' in user['mongodb'] and user['mongodb']['admin'] -%}
+
+{{ username }}_mongodb_admin:
+  module.run:
+    - mongo.user:
+      - username: {{ username }}
+      - password: {{ salt['cmd.shell'](random_password_generator) }}
+      - admin: True
+
+{% else -%}
+
+{{ username }}_mongodb_user:
+  module.run:
+    - mongo.user:
+      - username: {{ username }}
+      - password: {{ salt['cmd.shell'](random_password_generator) }}
+      - admin: False
+{% if 'roles' in user['mongodb'] %}
+      - roles: {{ user['mongodb']['roles'] }}
+{% endif -%}
+
+{% endif -%}
+{% endif -%}
+{% endif -%}
+{% endfor %}
+
+# With permissions in place, require authorization for mongodb
+
+mongodb_set_authorization:
   file.managed:
+    - context:
+      auth_enabled: true
+      cmd_result: {{ salt['cmd.shell'](check_mongo_certs_available) }}
+{%- if salt['cmd.shell'](check_mongo_certs_available) == '1' %}
+      certs_available: true
+{%- else %}
+      certs_available: false
+{%- endif %}
     - group: root
+    - makedirs: False
+    - mode: 0644
+    - name: /etc/mongod.conf
+    - require: 
+      - mongodb_mongodb_admin
+    - source: salt://services/files/mongod.conf.jinja
+    - template: jinja
+    - user: root
+  cmd.run:
+    - name: service mongod restart; service node status; if [ $? = 0 ]; then service node restart; fi;
+
+{% set mongodb_users = [] %}
+{% for username, user in pillar.get('users', {}).items() %}
+{% if 'is_staff' in user and user['is_staff'] -%}
+{% set mongodb_users = mongodb_users.append(username) %}
+{% elif 'mongodb' in user -%}
+{% set mongodb_users = mongodb_users.append(username) %}
+{% endif %}
+{% endfor %}
+
+mongodb_purge_invalid_users:
+  module.run:
+    - mongo.purge_users:
+      - valid_users: {{ mongodb_users }}
+
+{% if grains.get('server') == 'unified' or grains.get('server') == 'supervisor' %}
+{% for username, user in pillar.get('users', {}).items() %}
+{% if 'restapi' in user %}
+
+# Write restapi password to local password file
+{{ username }}_restapi_password_file:
+  file.managed:
+    - context:
+      restapi_password: {{ user['restapi']['password'] }}
+    - group: root
+    - makedirs: False
+    - name: /etc/password/restapi/{{ username }}
     - mode: 0600
-    - name: /etc/ssh/sshd_config
-    - source: salt://security/files/sshd_config
-    - user: root
-    - require:
-      - pkg: openssh-server
-  service.running:
-    - enable: True
-    - name: sshd
-    - restart: True
-    - watch:
-        - file: /etc/ssh/sshd_config
-        - pkg: openssh-server
-
-fail2ban-service:
-  service.running:
-    - enable: True
-    - name: fail2ban
-    - restart: True
-    - watch:
-        - pkg: fail2ban
-
-sudo-config:
-  file.managed:
-    - group: root
-    - mode: 0440
-    - name: /etc/sudoers.d/olympus
-    - source: salt://security/files/sudoers.d/olympus
+    - source: salt://services/files/restapi_password.jinja
+    - template: jinja
     - user: root
 
-selinux.config:
-  file.managed:
-    - group: root
-    - mode: 0644
-    - name: /etc/selinux/config
-    - source: salt://security/files/selinux/config
-    - user: root
+copy_{{ username }}_restapi_password_file:
+  cmd.run:
+    - name: salt-cp -C 'G@server:database or G@server:interface or G@server:worker' /etc/password/restapi/{{ username }} /etc/password/restapi/{{ username }}
+    - require: 
+      - {{ username }}_restapi_password_file
 
-90-nproc.conf:
-  file.managed:
-    - group: root
-    - mode: 0644
-    - name: /etc/security/limits.d/90-nproc.conf
-    - source: salt://security/files/90-nproc.conf
-    - user: root
+# Call minions to rotate restapi password file (remote module will check if user exists on server)
+rotate_{{ username }}_restapi_password_file:
+  cmd.run:
+    - name: salt '*' credentials.rotate_restapi_password_file {{ username }} /etc/password/restapi/{{ username }}
+    - require: 
+      - copy_{{ username }}_restapi_password_file
+
+# Update user authorization entry in backend mongodb
+# NOTE: No defined routes implies all available routes, all available verbs
+
+{{ username }}_restapi_user:
+  module.run:
+    - mongo.insert_update_restapi_user:
+      - username: {{ username }}
+      - password: {{ user['restapi']['password'] }}
+{%- if 'routes' in user['restapi'] %}
+      - defined_routes: {{ user['restapi']['routes'] }}
+{%- endif %}
+    - require: 
+      - rotate_{{ username }}_restapi_password_file
+
+{% endif %}
+{% endfor %}
+{% endif %}
 
 #random_root_password:
 #  cmd.run:
