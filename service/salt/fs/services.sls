@@ -69,5 +69,7 @@ mongod-service:
   service.running:
     - enable: True
     - name: mongod
+{%- if salt['cmd.shell'](check_mongo_auth_enabled) == 0 %}
     - watch:
       - file: /etc/mongod.conf
+{% endif %}
