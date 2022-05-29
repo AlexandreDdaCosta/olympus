@@ -24,11 +24,7 @@
     "port": 27017,
     "user": "node"
   },
-  "pid":
-  {
-    "file": "/var/run/node.pid",
-    "file_auth": "/var/run/nodeauth.pid"
-  },
+  "pidfile": "/var/run/node.pid",
   "restapi":
   {
     "access_token_secret_file": "/home/node/etc/access_token_secret",
