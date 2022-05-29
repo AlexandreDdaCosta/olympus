@@ -28,14 +28,8 @@ fs.writeFile(config.get('pidfile'), util.format('%s', process.pid), (err) => {
 
 require('mongo_connect').initPool();
 
-//process.env.access_token_secret = fs.readFileSync(config.get('restapi.access_token_secret_file'), 'utf8');
-//process.env.refresh_token_secret = fs.readFileSync(config.get('restapi.refresh_token_secret_file'), 'utf8');
-//console.log('ACCESS SECRET '+process.env.access_token_secret);
-//console.log('REFRESH SECRET '+process.env.refresh_token_secret);
-const access_token_secret = fs.readFileSync(config.get('restapi.access_token_secret_file'), 'utf8');
-const refresh_token_secret = fs.readFileSync(config.get('restapi.refresh_token_secret_file'), 'utf8');
-console.log('ACCESS SECRET '+access_token_secret);
-console.log('REFRESH SECRET '+refresh_token_secret);
+process.env.access_token_secret = fs.readFileSync(config.get('restapi.access_token_secret_file'), 'utf8');
+process.env.refresh_token_secret = fs.readFileSync(config.get('restapi.refresh_token_secret_file'), 'utf8');
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
