@@ -445,7 +445,7 @@ mongodb_set_authorization:
     - name: /etc/mongod.conf
     - require: 
       - mongodb_mongodb_admin
-    - source: salt://services/files/mongod.conf.jinja
+    - source: salt://services/mongod.conf.jinja
     - template: jinja
     - user: root
   cmd.run:
@@ -478,7 +478,7 @@ mongodb_purge_invalid_users:
     - makedirs: False
     - name: /etc/password/restapi/{{ username }}
     - mode: 0600
-    - source: salt://services/files/restapi_password.jinja
+    - source: salt://security/restapi_password.jinja
     - template: jinja
     - user: root
 
@@ -511,6 +511,40 @@ rotate_{{ username }}_restapi_password_file:
 
 {% endif %}
 {% endfor %}
+
+# Create/update restapi secret file. The secret is used to sign and validate all tokens issued by the API.
+
+restapi_access_token_secret:
+  file.managed:
+    - context:
+      token_secret: {{ salt['cmd.shell'](random_token_generator) }}
+    - group: {{ pillar.backend-user }}  
+    - makedirs: False
+    - name: /home/{{ pillar.backend-user }}/etc/access_token_secret
+    - mode: 0600
+    - source: salt://security/token_secret.jinja
+    - template: jinja
+    - user: {{ pillar.backend-user }}  
+
+restapi_refresh_token_secret:
+  file.managed:
+    - context:
+      token_secret: {{ salt['cmd.shell'](random_token_generator) }}
+    - group: {{ pillar.backend-user }}  
+    - makedirs: False
+    - name: /home/{{ pillar.backend-user }}/etc/refresh_token_secret
+    - mode: 0600
+    - require:
+      - restapi_access_token_secret
+    - source: salt://security/token_secret.jinja
+    - template: jinja
+    - user: {{ pillar.backend-user }}  
+
+restapi_tokens_restart:
+  cmd.run:
+    - name: service node status; if [ $? = 0 ]; then service node restart; fi;
+    - require:
+      - restapi_refresh_token_secret
 
 {% endif %}
 
