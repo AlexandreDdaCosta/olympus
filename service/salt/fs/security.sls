@@ -520,7 +520,7 @@ restapi_access_token_secret:
       token_secret: {{ salt['cmd.shell'](random_token_generator) }}
     - group: {{ pillar.backend-user }}  
     - makedirs: False
-    - name: /home/{{ pillar.backend_user }}/etc/access_token_secret
+    - name: /home/{{ pillar.backend-user }}/etc/access_token_secret
     - mode: 0600
     - source: salt://services/backend/token_secret.jinja
     - template: jinja
