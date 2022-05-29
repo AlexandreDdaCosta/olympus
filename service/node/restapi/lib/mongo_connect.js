@@ -37,11 +37,3 @@ function getInstance(callback) {
 MongoPool.initPool = initPool;
 MongoPool.getInstance = getInstance;
 module.exports = MongoPool;
-/*
-const MongoPool = require("mongo-connect");
-MongoPool.getInstance(function (connection){
-  // Query MongoDB using connection
-  db = await connection.db(config.get('mongodb.database_default'));
-  var collection = db.collection(test_collection);
-});
-*/

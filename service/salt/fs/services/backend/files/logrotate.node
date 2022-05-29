@@ -4,7 +4,7 @@
     missingok
     notifempty
     postrotate
-	/usr/sbin/service node restart 2>/dev/null
+	    /usr/sbin/service node restart 2>/dev/null
     rotate 10
     size 1024k
     endscript

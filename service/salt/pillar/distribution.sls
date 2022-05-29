@@ -45,6 +45,10 @@ packages:
     version: 3.9.2-3
   python3-pip:
     version: 20.3.4-4+deb11u1
+  python3-redis:
+    version: 3.5.3-2
+  redis:
+    version: 5:6.0.16-1+deb11u2
   sysfsutils:
     version: 2.1.0+repack-7
   sudo:

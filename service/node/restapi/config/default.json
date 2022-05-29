@@ -10,7 +10,9 @@
   {
     "dir": "/var/log/node",
     "access": "/var/log/node/access.log",
-    "error": "/var/log/node/error.log"
+    "access_auth": "/var/log/node/authaccess.log",
+    "error": "/var/log/node/error.log",
+    "error_auth": "/var/log/node/autherror.log"
   },
   "mongodb":
   {
@@ -22,14 +24,21 @@
     "port": 27017,
     "user": "node"
   },
-  "pidfile": "/var/run/node.pid",
+  "pid":
+  {
+    "file": "/var/run/node.pid",
+    "file_auth": "/var/run/nodeauth.pid"
+  },
   "restapi":
   {
-    "password_file": "/home/node/etc/restapi_password"
+    "access_token_secret_file": "/home/node/etc/access_token_secret",
+    "password_file": "/home/node/etc/restapi_password",
+    "refresh_token_secret_file": "/home/node/etc/refresh_token_secret"
   },
   "server":
   {
+    "host": "127.0.0.1",
     "port" : 8889,
-    "host": "127.0.0.1"
+    "token_port" : 8888
   }
 }

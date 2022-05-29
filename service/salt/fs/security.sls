@@ -15,6 +15,7 @@ invaidated and open sessions closed.
 {% set server_cert_combined_file_name = pillar.server_cert_combined_file_name %}
 {% set server_cert_key_file_name = pillar.server_cert_key_file_name %}
 {% set random_password_generator='echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100)))" | /usr/bin/python3' %}
+{% set random_token_generator='echo "const crypto = require(\'crypto\'); random_string = crypto.randomBytes(64).toString(\'hex\'); console.log(random_string)" | node' %}
 {% set check_mongo_certs_available="[ -f \'" + pillar.cert_dir + "/" + pillar.server_cert_combined_file_name + "\' ] && echo \'Yes\' | wc -l" %}
 
 include:
@@ -360,7 +361,7 @@ cert_mongo_restart:
     - require:
       - regen_trusted_CA
 
-mongo_restart_node_restart:
+cert_mongo_node_restart:
   cmd.run:
     - name: service node status; if [ $? = 0 ]; then service node restart; fi;
     - require:
@@ -510,6 +511,41 @@ rotate_{{ username }}_restapi_password_file:
 
 {% endif %}
 {% endfor %}
+
+# Create/update restapi secret file. The secret is used to sign and validate all tokens issued by the API.
+
+restapi_access_token_secret:
+  file.managed:
+    - context:
+      token_secret: {{ salt['cmd.shell'](random_token_generator) }}
+    - group: {{ pillar.backend_user }}  
+    - makedirs: False
+    - name: /home/{{ pillar.backend_user }}/etc/access_token_secret
+    - mode: 0600
+    - source: salt://services/backend/token_secret.jinja
+    - template: jinja
+    - user: {{ pillar.backend_user }}  
+
+restapi_refresh_token_secret:
+  file.managed:
+    - context:
+      token_secret: {{ salt['cmd.shell'](random_token_generator) }}
+    - group: {{ pillar.backend_user }}  
+    - makedirs: False
+    - name: /home/{{ pillar.backend_user }}/etc/refresh_token_secret
+    - mode: 0600
+    - require:
+      - restapi_access_token_secret
+    - source: salt://services/backend/token_secret.jinja
+    - template: jinja
+    - user: {{ pillar.backend_user }}  
+
+restapi_tokens_restart:
+  cmd.run:
+    - name: service node status; if [ $? = 0 ]; then service node restart; fi;
+    - require:
+      - restapi_refresh_token_secret
+
 {% endif %}
 
 #random_root_password:

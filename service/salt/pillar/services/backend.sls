@@ -33,6 +33,8 @@ backend-npm-packages:
     version: 10.0.1
   jest:
     version: 27.5.1
+  jsonwebtoken:
+    version: 8.5.1
   mongodb:
     version: 4.5.0
   pg:
