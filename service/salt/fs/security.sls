@@ -518,27 +518,27 @@ restapi_access_token_secret:
   file.managed:
     - context:
       token_secret: {{ salt['cmd.shell'](random_token_generator) }}
-    - group: {{ pillar.backend_user }}  
+    - group: {{ pillar.backend-user }}  
     - makedirs: False
     - name: /home/{{ pillar.backend_user }}/etc/access_token_secret
     - mode: 0600
     - source: salt://services/backend/token_secret.jinja
     - template: jinja
-    - user: {{ pillar.backend_user }}  
+    - user: {{ pillar.backend-user }}  
 
 restapi_refresh_token_secret:
   file.managed:
     - context:
       token_secret: {{ salt['cmd.shell'](random_token_generator) }}
-    - group: {{ pillar.backend_user }}  
+    - group: {{ pillar.backend-user }}  
     - makedirs: False
-    - name: /home/{{ pillar.backend_user }}/etc/refresh_token_secret
+    - name: /home/{{ pillar.backend-user }}/etc/refresh_token_secret
     - mode: 0600
     - require:
       - restapi_access_token_secret
     - source: salt://services/backend/token_secret.jinja
     - template: jinja
-    - user: {{ pillar.backend_user }}  
+    - user: {{ pillar.backend-user }}  
 
 restapi_tokens_restart:
   cmd.run:
