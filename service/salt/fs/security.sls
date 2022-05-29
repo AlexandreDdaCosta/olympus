@@ -15,7 +15,7 @@ invaidated and open sessions closed.
 {% set server_cert_combined_file_name = pillar.server_cert_combined_file_name %}
 {% set server_cert_key_file_name = pillar.server_cert_key_file_name %}
 {% set random_password_generator='echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100)))" | /usr/bin/python3' %}
-{% set random_token_generator='echo "const crypto = require(\'crypto\'); random_string = crypto.randomBytes(64).toString(\'hex\'); console.log(random_string)" | node' %}
+{% set random_token_generator='echo "const crypto = require(\'crypto\'); random_string = crypto.randomBytes(64).toString(\'hex\'); process.stdout.write(random_string)" | node' %}
 {% set check_mongo_certs_available="[ -f \'" + pillar.cert_dir + "/" + pillar.server_cert_combined_file_name + "\' ] && echo \'Yes\' | wc -l" %}
 
 include:
