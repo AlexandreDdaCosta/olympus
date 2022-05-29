@@ -34,7 +34,7 @@ locate-updatedb:
     - group: root
     - makedirs: False
     - mode: 0644
-    - source: salt://services/files/mongod.conf.jinja
+    - source: salt://services/mongod.conf.jinja
     - template: jinja
     - user: root
 {%- endif %}
