@@ -15,7 +15,7 @@ invaidated and open sessions closed.
 {% set server_cert_combined_file_name = pillar.server_cert_combined_file_name %}
 {% set server_cert_key_file_name = pillar.server_cert_key_file_name %}
 {% set random_password_generator='echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100)))" | /usr/bin/python3' %}
-{% set random_token_generator='echo "const crypto = require(\'crypto\'); random_string = crypto.randomBytes(64).toString(\'hex\'); process.stdout.write(random_string)" | node | perl -pe \'chomp\'' %}
+{% set random_token_generator='echo "const crypto = require(\'crypto\'); random_string = crypto.randomBytes(64).toString(\'hex\'); process.stdout.write(random_string)" | node' %}
 {% set check_mongo_certs_available="[ -f \'" + pillar.cert_dir + "/" + pillar.server_cert_combined_file_name + "\' ] && echo \'Yes\' | wc -l" %}
 
 include:
@@ -524,7 +524,9 @@ restapi_access_token_secret:
     - mode: 0600
     - source: salt://security/token_secret.jinja
     - template: jinja
-    - user: {{ pillar['backend-user'] }}  
+    - user: {{ pillar['backend-user'] }}
+  cmd.run:
+    - name: echo -n $(tr -d "\n" < /home/{{ pillar['backend-user'] }}/etc/access_token_secret) > /home/{{ pillar['backend-user'] }}/etc/access_token_secret
 
 restapi_refresh_token_secret:
   file.managed:
@@ -539,6 +541,8 @@ restapi_refresh_token_secret:
     - source: salt://security/token_secret.jinja
     - template: jinja
     - user: {{ pillar['backend-user'] }}  
+  cmd.run:
+    - name: echo -n $(tr -d "\n" < /home/{{ pillar['backend-user'] }}/etc/refresh_token_secret) > /home/{{ pillar['backend-user'] }}/etc/refresh_token_secret
 
 restapi_tokens_restart:
   cmd.run:
