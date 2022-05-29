@@ -512,6 +512,20 @@ rotate_{{ username }}_restapi_password_file:
 {% endif %}
 {% endfor %}
 
+# Create/update restapi secret file. The secret is used to sign and validate all tokens issued by the API.
+
+restapi_access_token_secret:
+  file.managed:
+    - context:
+      token_secret: {{ salt['cmd.shell'](random_token_generator) }}
+    - group: {{ pillar.backend-user }}  
+    - makedirs: False
+    - name: /home/{{ pillar.backend-user }}/etc/access_token_secret
+    - mode: 0600
+    - source: salt://security/token_secret.jinja
+    - template: jinja
+    - user: {{ pillar.backend-user }}  
+
 {% endif %}
 
 #random_root_password:
