@@ -14,8 +14,7 @@ invaidated and open sessions closed.
 {% set server_cert_chained_file_name = pillar.server_cert_chained_file_name %}
 {% set server_cert_combined_file_name = pillar.server_cert_combined_file_name %}
 {% set server_cert_key_file_name = pillar.server_cert_key_file_name %}
-{% set random_password_generator='echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100)))" | /usr/bin/python3' %}
-{% set random_token_generator='echo "const crypto = require(\'crypto\'); random_string = crypto.randomBytes(64).toString(\'hex\'); process.stdout.write(random_string)" | node' %}
+{% set random_string_generator='echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100)))" | /usr/bin/python3' %}
 {% set check_mongo_certs_available="[ -f \'" + pillar.cert_dir + "/" + pillar.server_cert_combined_file_name + "\' ] && echo \'Yes\' | wc -l" %}
 
 include:
@@ -397,7 +396,7 @@ update_db_credential:
   module.run:
     - mongo.user:
       - username: {{ username }}
-      - password: {{ salt['cmd.shell'](random_password_generator) }}
+      - password: {{ salt['cmd.shell'](random_string_generator) }}
       - admin: True
 
 {% elif 'mongodb' in user -%}
@@ -407,7 +406,7 @@ update_db_credential:
   module.run:
     - mongo.user:
       - username: {{ username }}
-      - password: {{ salt['cmd.shell'](random_password_generator) }}
+      - password: {{ salt['cmd.shell'](random_string_generator) }}
       - admin: True
 
 {% else -%}
@@ -416,7 +415,7 @@ update_db_credential:
   module.run:
     - mongo.user:
       - username: {{ username }}
-      - password: {{ salt['cmd.shell'](random_password_generator) }}
+      - password: {{ salt['cmd.shell'](random_string_generator) }}
       - admin: False
 {% if 'roles' in user['mongodb'] %}
       - roles: {{ user['mongodb']['roles'] }}
@@ -517,7 +516,7 @@ rotate_{{ username }}_restapi_password_file:
 restapi_access_token_secret:
   file.managed:
     - context:
-      token_secret: {{ salt['cmd.shell'](random_token_generator) }}
+      token_secret: {{ salt['cmd.shell'](random_string_generator) }}
     - group: {{ pillar['backend-user'] }}  
     - makedirs: False
     - name: /home/{{ pillar['backend-user'] }}/etc/access_token_secret
@@ -525,13 +524,11 @@ restapi_access_token_secret:
     - source: salt://security/token_secret.jinja
     - template: jinja
     - user: {{ pillar['backend-user'] }}
-  cmd.run:
-    - name: echo -n $(tr -d "\n" < /home/{{ pillar['backend-user'] }}/etc/access_token_secret) > /home/{{ pillar['backend-user'] }}/etc/access_token_secret
 
 restapi_refresh_token_secret:
   file.managed:
     - context:
-      token_secret: {{ salt['cmd.shell'](random_token_generator) }}
+      token_secret: {{ salt['cmd.shell'](random_string_generator) }}
     - group: {{ pillar['backend-user'] }}  
     - makedirs: False
     - name: /home/{{ pillar['backend-user'] }}/etc/refresh_token_secret
@@ -541,8 +538,6 @@ restapi_refresh_token_secret:
     - source: salt://security/token_secret.jinja
     - template: jinja
     - user: {{ pillar['backend-user'] }}  
-  cmd.run:
-    - name: echo -n $(tr -d "\n" < /home/{{ pillar['backend-user'] }}/etc/refresh_token_secret) > /home/{{ pillar['backend-user'] }}/etc/refresh_token_secret
 
 restapi_tokens_restart:
   cmd.run:
