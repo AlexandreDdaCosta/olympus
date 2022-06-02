@@ -25,18 +25,28 @@ backend-npm-packages:
     version: 4.3.6
   config:
     version: 3.3.7
+  corepack:
+    version: 0.10.0
+  cors:
+    version: 2.8.5
+  crypto:
+    version: 1.0.1
   express:
     version: 4.17.3
   express-generator:
     version: 4.16.1
   fs-extra:
     version: 10.0.1
+  helmet:
+    version: 5.1.0
   jest:
     version: 27.5.1
   jsonwebtoken:
     version: 8.5.1
   mongodb:
     version: 4.5.0
+  npm:
+    version: 8.11.0
   pg:
     version: 8.7.3
   pg-hstore:

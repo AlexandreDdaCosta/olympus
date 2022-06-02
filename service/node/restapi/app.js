@@ -34,6 +34,8 @@ process.env.refresh_token_secret = fs.readFileSync(config.get('restapi.refresh_t
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(helmet());
+app.use(cors());
 
 const routes = require('./api/routes');
 app.use('/', routes);

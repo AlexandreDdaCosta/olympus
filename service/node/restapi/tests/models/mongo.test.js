@@ -7,7 +7,7 @@ const os = require('os');
 
 const test_collection = 'test.models.mongo';
 
-describe('insert', () => {
+describe('Connect to mongo database and execute a variety of document operations.', () => {
   let connection;
   let db;
   let password;
