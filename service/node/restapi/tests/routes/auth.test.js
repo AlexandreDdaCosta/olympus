@@ -1,10 +1,12 @@
 // sudo su -s /bin/bash -c 'source /srv/www/node/restapi/tests/test_source.sh; cd /srv/www/node/restapi; npm test ./tests/routes/auth.test.js' node
 
+const config = require('config');
 const fs = require('fs');
 const os = require('os');
 const https = require('https'); 
 
 describe('Login, refresh token, and logout from node restapi.', () => {
+  let https_request;
   let message;
   let options;
   let password;
@@ -28,11 +30,42 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     process.exit(1);
   }
 
-  it('User authentication, get access and refresh tokens.', async () => {
-    message = 'TEST MESSAGE'
+  it('User authentication, get access and refresh tokens.', async (done) => {
+    message = 'Login';
     options['method'] = 'POST';
-    options['path'] = '/auth';
-    const https_request = https.request(options, (response) => { 
+    options['path'] = '/auth/login';
+    https_request = await https.request(options, (response) => { 
+      expect(response.statusCode).toBe(200);
+      response.on('data', (d) => {
+        jsonobject = JSON.parse(d);
+        expect(jsonobject['message']).toBe(message);
+      });
+    });
+    https_request.end();
+    done();
+  });
+
+  it('User authentication, refresh tokens.', async (done) => {
+    message = 'Refresh';
+    options['method'] = 'POST';
+    options['path'] = '/auth/refresh';
+    https_request = await https.request(options, (response) => { 
+      expect(response.statusCode).toBe(200);
+      response.on('data', (d) => {
+        jsonobject = JSON.parse(d);
+        expect(jsonobject['message']).toBe(message);
+      });
+    });
+    https_request.end();
+    done();
+  });
+
+/*
+  it('User authentication, logout.', async () => {
+    message = 'Logout';
+    options['method'] = 'DELETE';
+    options['path'] = '/auth/logout';
+    const https_request = await https.request(options, (response) => { 
       expect(response.statusCode).toBe(200);
       response.on('data', (d) => {
         jsonobject = JSON.parse(d);
@@ -41,6 +74,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     });
     https_request.end();
   });
+*/
 
 });
 

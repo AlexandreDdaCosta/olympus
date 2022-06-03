@@ -39,8 +39,6 @@ app.use(bodyParser.json());
 app.use(helmet());
 app.use(cors());
 
-const routes = require('./api/routes');
-app.use('/', routes);
-
+require("./routes")(app);
 app.listen(config.get('server.port'));
 console.log('node.js REST API listening on port ' + config.get('server.port'));
