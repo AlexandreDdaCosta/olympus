@@ -35,6 +35,8 @@ backend-npm-packages:
     version: 4.17.3
   express-generator:
     version: 4.16.1
+  express-validator:
+    version: 6.14.1
   fs-extra:
     version: 10.0.1
   helmet:

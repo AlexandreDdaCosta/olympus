@@ -1,13 +1,42 @@
+const UserModel = require("../models/users");
+const { validationResult } = require("express-validator");
+
 const login = (req, res, next) => {
-  console.log('/auth/login auth.js');
-  res.json({ message: 'Login' });   
+  let path = ' /auth/login auth.js ';
+  try {
+    // Suppress sensitive login information in logs and returned messages
+    const myValidationResult = validationResult.withDefaults({
+      formatter: error => {
+        return {
+          location: error.location,
+          msg: error.msg,
+          param: error.param
+        };
+      },
+    });
+    const errors = myValidationResult(req);
+    if (! errors.isEmpty()) {
+      console.log('400'+path+JSON.stringify(errors.array()));
+      return res.status(400).json({
+        message: 'Login failed.',
+        errors: errors.array(),
+      });
+    }
+  } 
+  catch (err) {
+    next(err);
+  }
+  console.log('200'+path);
+  return res.status(200).json({ message: 'Login successful.' });
 };
 const logout = (req, res, next) => {
-  console.log('/auth/logout auth.js');
-  res.json({ message: 'Logout' });   
+  let path = ' /auth/logout auth.js ';
+  console.log('200'+path);
+  return res.status(200).json({ message: 'Logout successful.' });
 };
 const refresh = (req, res, next) => {
-  console.log('/auth/refresh refresh.js');
-  res.json({ message: 'Refresh' });   
+  let path = ' /auth/refresh auth.js ';
+  console.log('200'+path);
+  return res.status(200).json({ message: 'Refresh successful.' });
 };
-module.exports = {login, logout, refresh};
+module.exports = { login, logout, refresh };

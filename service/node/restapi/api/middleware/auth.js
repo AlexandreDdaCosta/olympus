@@ -27,4 +27,4 @@ function passwordUserMatch(req, res, next) {
        });
 };
 
-module.exports = {passwordUserMatch};
+module.exports = { passwordUserMatch };
