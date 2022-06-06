@@ -1,4 +1,7 @@
 const UserModel = require("../models/users");
+const argon2 = require('argon2');
+const config = require('config');
+const hashing_config = { parallelism: config.get('argon2.parallelism'), memoryCost: config.get('argon2.memory_cost'), timeCost: config.get('argon2.time_cost') }
 const { validationResult } = require("express-validator");
 
 const login = (req, res, next) => {
@@ -26,6 +29,17 @@ const login = (req, res, next) => {
   catch (err) {
     next(err);
   }
+  UserModel.findByUsername(req.body.username).then( (user) => {
+    console.log(user);
+    if (! user) {
+      console.log('404'+path);
+      return res.status(404).json({ message: 'Access denied.' });
+    }
+    var hashed_password = user['Password'];
+    console.log(hashed_password);
+    //var password_verification = argon2.verify(hashed_password, restapi_password, hashing_config);
+    //console.log(password_verification);
+  });
   console.log('200'+path);
   return res.status(200).json({ message: 'Login successful.' });
 };
