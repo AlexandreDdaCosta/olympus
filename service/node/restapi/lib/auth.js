@@ -1,37 +1,24 @@
-ALEX
-const jwt = require("jsonwebtoken");
+const UserModel = require('../api/models/users');
+const argon2 = require('argon2');
+const config = require('config');
+const fs = require('fs');
+const hashing_config = { parallelism: config.get('argon2.parallelism'), memoryCost: config.get('argon2.memory_cost'), timeCost: config.get('argon2.time_cost') }
+const jwt = require('jsonwebtoken');
 
-let refreshTokens = []
-
-function generateAccessToken(user) {
-    return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: "15m"})
+async function createTokens(username) {
+  return {
+    access_token: jwt.sign({ username: username }, fs.readFileSync(config.get('restapi.access_token_secret_file'), 'utf8'), { expiresIn: '15m' }),
+    refresh_token: jwt.sign({ username: username }, fs.readFileSync(config.get('restapi.refresh_token_secret_file'), 'utf8'), { expiresIn: 86400 })
+  };
 }
 
-function generateRefreshToken(user) {
-    const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, {expiresIn: "20m"})
-    refreshTokens.push(refreshToken)
-    return refreshToken
+async function passwordUserMatch(username, password) {
+  user = await UserModel.findByUsername(username)
+  if (! user) {
+    return false;
+  }
+  let hashed_password = user['Password'];
+  return await argon2.verify(hashed_password, password, hashing_config);
 }
 
-function validateToken(req, res, next) {
-    const authHeader = req.headers["authorization"];
-    const [identifier, token] = authHeader.split(' ');
-    // The authorization header should contain the structure "Bearer <token>"
-    if (identifier != 'Bearer') {
-        res.sendStatus(400).send("Bad authorization header");
-    }
-    elsif (token == null) {
-        res.sendStatus(400).send("Token not present");
-    }
-    else {
-        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-            if (err) { 
-                res.status(403).send("Token invalid");
-            }
-            else {
-                req.user = user;
-                next();
-            }
-        })
-    }
-}
+module.exports = { createTokens, passwordUserMatch };

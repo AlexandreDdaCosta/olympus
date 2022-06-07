@@ -26,7 +26,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
       process.exit(1);
     }
     try {
-      password = fs.readFileSync(config.get('mongodb.password_file'), 'utf8');
+      password = fs.readFileSync(config.get('restapi.password_file'), 'utf8');
     } catch (err) {
         expect(data.statusCode).toBe(200);
       throw new Error(err);
@@ -59,9 +59,9 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     });
 
     async function do_missing_username_login() {
-        let data = await missingUsernameLoginPromise();
-        expect(data.statusCode).toBe(400);
-	expect(JSON.parse(data.body).message).toEqual('Login failed.');
+      let data = await missingUsernameLoginPromise();
+      expect(data.statusCode).toBe(400);
+      expect(JSON.parse(data.body).message).toEqual('Login failed.');
     }
 
     (async () => await do_missing_username_login())()
@@ -93,11 +93,9 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     });
 
     async function do_bad_username_login() {
-        let data = await badUsernameLoginPromise();
-        expect(data.statusCode).toBe(200);
-	expect(JSON.parse(data.body).message).toEqual('Login successful.');
-        //expect(data.statusCode).toBe(404);
-	//expect(JSON.parse(data.body).message).toEqual('Access denied.');
+      let data = await badUsernameLoginPromise();
+      expect(data.statusCode).toBe(401);
+      expect(JSON.parse(data.body).message).toEqual('Access denied.');
     }
 
     (async () => await do_bad_username_login())()
@@ -127,9 +125,9 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     });
 
     async function do_bad_password_login() {
-        let data = await badPasswordLoginPromise();
-        expect(data.statusCode).toBe(400);
-	expect(JSON.parse(data.body).message).toEqual('Login failed.');
+      let data = await badPasswordLoginPromise();
+      expect(data.statusCode).toBe(400);
+      expect(JSON.parse(data.body).message).toEqual('Login failed.');
     }
 
     (async () => await do_bad_password_login())()
@@ -159,11 +157,9 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     });
 
     async function do_invalid_password_login() {
-        let data = await invalidPasswordLoginPromise();
-        expect(data.statusCode).toBe(200);
-	expect(JSON.parse(data.body).message).toEqual('Login successful.');
-        //expect(data.statusCode).toBe(400);
-	//expect(JSON.parse(data.body).message).toEqual('Login failed.');
+      let data = await invalidPasswordLoginPromise();
+      expect(data.statusCode).toBe(401);
+      expect(JSON.parse(data.body).message).toEqual('Access denied.');
     }
 
     (async () => await do_invalid_password_login())()
@@ -193,9 +189,13 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     });
 
     async function do_login() {
-        let data = await loginPromise();
-        expect(data.statusCode).toBe(200);
-	expect(JSON.parse(data.body).message).toEqual('Login successful.');
+      let data = await loginPromise();
+      expect(data.statusCode).toBe(200);
+      expect(JSON.parse(data.body).message).toEqual('Login successful.');
+      access_token = JSON.parse(data.body).access_token;
+      refresh_token = JSON.parse(data.body).refresh_token;
+      // ALEX console.log(access_token);
+      // ALEX console.log(refresh_token);
     }
 
     (async () => await do_login())()
@@ -225,9 +225,9 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     });
 
     async function do_refresh() {
-        let data = await refreshPromise();
-        expect(data.statusCode).toBe(200);
-	expect(JSON.parse(data.body).message).toEqual('Refresh successful.');
+      let data = await refreshPromise();
+      expect(data.statusCode).toBe(200);
+      expect(JSON.parse(data.body).message).toEqual('Refresh successful.');
     }
 
     (async () => await do_refresh())()
@@ -258,9 +258,9 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     });
 
     async function do_logout() {
-        let data = await logoutPromise();
-        expect(data.statusCode).toBe(200);
-	expect(JSON.parse(data.body).message).toEqual('Logout successful.');
+      let data = await logoutPromise();
+      expect(data.statusCode).toBe(200);
+      expect(JSON.parse(data.body).message).toEqual('Logout successful.');
     }
 
     (async () => await do_logout())()
