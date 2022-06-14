@@ -554,7 +554,7 @@ redis_acl_list:
     - group: redis
     - makedirs: False
     - mode: 0640
-    - name: /etc/redis/users.acl:
+    - name: /etc/redis/users.acl
     - source: salt://security/users.acl.jinja
     - template: jinja
     - user: redis
