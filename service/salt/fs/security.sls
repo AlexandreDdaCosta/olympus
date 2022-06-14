@@ -547,6 +547,24 @@ restapi_tokens_restart:
 
 {% endif %}
 
+# Access control list for redis server
+
+redis_acl_list:
+  file.managed:
+    - group: redis
+    - makedirs: False
+    - mode: 0640
+    - name: /etc/redis/users.acl:
+    - source: salt://security/users.acl.jinja
+    - template: jinja
+    - user: redis
+
+redis_acl_reload:
+  cmd.run:
+    - name: /usr/bin/redis-cli acl load
+    - require:
+      - redis_acl_list
+
 #random_root_password:
 #  cmd.run:
 #    - name: umask 0077; openssl rand -base64 21 > /root/passwd; cat /root/passwd | passwd root --stdin; rm -f /root/passwd

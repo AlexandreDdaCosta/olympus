@@ -73,3 +73,19 @@ mongod-service:
     - watch:
       - file: /etc/mongod.conf
 {% endif %}
+
+/etc/redis/redis.conf:
+  file.managed:
+    - group: redis
+    - makedirs: False
+    - mode: 0640
+    - source: salt://services/files/redis.conf
+    - user: redis
+
+redis-service:
+  service.running:
+    - enable: True
+    - name: redis
+    - watch:
+      - file: /etc/redis/redis.conf
+

@@ -1,0 +1,11 @@
+{% set trim_blocks=True -%}
+
+user test on +@all ~* >foobar1234
+
+{% for username, user in pillar.get('users', {}).items() %}
+{% if 'server' not in user or grains.get('server') in user['server'] -%}
+{% if 'is_staff' in user and user['is_staff'] -%}
+
+{%- endif %}
+{%- endif %}
+{%- endfor %}
