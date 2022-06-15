@@ -16,6 +16,8 @@ invaidated and open sessions closed.
 {% set server_cert_key_file_name = pillar.server_cert_key_file_name %}
 {% set random_string_generator='echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100)))" | /usr/bin/python3' %}
 {% set check_mongo_certs_available="[ -f \'" + pillar.cert_dir + "/" + pillar.server_cert_combined_file_name + "\' ] && echo \'Yes\' | wc -l" %}
+{% set check_redis_default_password="if [ -f /etc/redis/users.acl ]; then password=`grep default /etc/redis/users.acl | sed -e \'s/.*>//\'`; echo $password; else echo \'\'; fi;" %}
+{% set redis_default_password = salt['cmd.shell'](check_redis_default_password) %}
 
 include:
   - base: firewall
@@ -559,11 +561,19 @@ redis_acl_list:
     - template: jinja
     - user: redis
 
+{% if redis_default_password == '' -%}
 redis_acl_reload:
   cmd.run:
     - name: /usr/bin/redis-cli acl load
     - require:
       - redis_acl_list
+{% else -%}
+redis_acl_reload:
+  cmd.run:
+    - name: REDIS_PASS=`cat /home/redis/etc/redis_password`; echo -e "auth default $REDIS_PASS\nacl load" | /usr/bin/redis-cli
+    - require:
+      - redis_acl_list
+{% endif -%}
 
 #random_root_password:
 #  cmd.run:
