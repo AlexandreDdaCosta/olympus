@@ -591,7 +591,7 @@ redis_acl_reload:
 {% else -%}
 redis_acl_reload:
   cmd.run:
-    - name: salt-call cmd.run 'echo -e "auth default {{ old_redis_default_password }}\\nacl load" | /usr/bin/redis-cli'
+    - name: salt-call --local cmd.run 'echo -e "auth default {{ old_redis_default_password }}\\nacl load" | /usr/bin/redis-cli' python_shell=True
     - require:
       - redis_acl_list
 {% endif -%}
