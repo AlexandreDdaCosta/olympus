@@ -585,7 +585,7 @@ redis_acl_list:
 /usr/local/bin/load_redis_acl.sh:
   file.managed:
     - group: root
-    - mode: 0600
+    - mode: 0700
     - source: salt://security/files/load_redis_acl.sh
     - user: root
 
