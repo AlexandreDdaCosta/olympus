@@ -7,7 +7,7 @@
 
 {% for username, user in pillar.get('users', {}).items() %}
 {% if 'server' not in user or grains.get('server') in user['server'] -%}
-{{ username }}:
+user_{{ username }}:
 
   group:
     - name: {{ username }}
