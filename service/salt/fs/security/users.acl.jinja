@@ -11,4 +11,4 @@ user {{ username }} on +@all ~user_{{ username }}: >{{ user['redis']['password']
 {% endif -%}
 {% endif -%}
 {% endif -%}
-{% endfor -%}
+{%- endfor -%}

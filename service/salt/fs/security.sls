@@ -17,7 +17,7 @@ invaidated and open sessions closed.
 {% set random_string_generator='echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100)))" | /usr/bin/python3' %}
 {% set check_mongo_certs_available="[ -f \'" + pillar.cert_dir + "/" + pillar.server_cert_combined_file_name + "\' ] && echo \'Yes\' | wc -l" %}
 {% set check_redis_default_password="if [ -f /etc/redis/users.acl ]; then password=`grep default /etc/redis/users.acl | sed -e \'s/.*>//\'`; echo $password; else echo \'\'; fi;" %}
-{% set redis_default_password = salt['cmd.shell'](check_redis_default_password) %}
+{% set old_redis_default_password = salt['cmd.shell'](check_redis_default_password) %}
 
 include:
   - base: firewall
@@ -474,12 +474,12 @@ mongodb_purge_invalid_users:
 {{ username }}_restapi_password_file:
   file.managed:
     - context:
-      restapi_password: {{ user['restapi']['password'] }}
+      secret: {{ user['restapi']['password'] }}
     - group: root
     - makedirs: False
     - name: /etc/password/restapi/{{ username }}
     - mode: 0600
-    - source: salt://security/restapi_password.jinja
+    - source: salt://security/secret.jinja
     - template: jinja
     - user: root
 
@@ -518,26 +518,26 @@ rotate_{{ username }}_restapi_password_file:
 restapi_access_token_secret:
   file.managed:
     - context:
-      token_secret: {{ salt['cmd.shell'](random_string_generator) }}
+      secret: {{ salt['cmd.shell'](random_string_generator) }}
     - group: {{ pillar['backend-user'] }}  
     - makedirs: False
     - name: /home/{{ pillar['backend-user'] }}/etc/access_token_secret
     - mode: 0600
-    - source: salt://security/token_secret.jinja
+    - source: salt://security/secret.jinja
     - template: jinja
     - user: {{ pillar['backend-user'] }}
 
 restapi_refresh_token_secret:
   file.managed:
     - context:
-      token_secret: {{ salt['cmd.shell'](random_string_generator) }}
+      secret: {{ salt['cmd.shell'](random_string_generator) }}
     - group: {{ pillar['backend-user'] }}  
     - makedirs: False
     - name: /home/{{ pillar['backend-user'] }}/etc/refresh_token_secret
     - mode: 0600
     - require:
       - restapi_access_token_secret
-    - source: salt://security/token_secret.jinja
+    - source: salt://security/secret.jinja
     - template: jinja
     - user: {{ pillar['backend-user'] }}  
 
@@ -561,7 +561,28 @@ redis_acl_list:
     - template: jinja
     - user: redis
 
-{% if redis_default_password == '' -%}
+# Write redis password to local password file
+{% for username, user in pillar.get('users', {}).items() -%}
+{% if 'server' not in user or grains.get('server') in user['server'] -%}
+{% if 'redis' in user -%}
+
+{{ username }}_redis_password_file:
+  file.managed:
+    - context:
+      secret: {{ user['redis']['password'] }}
+    - group: {{ username }}
+    - makedirs: False
+    - name: /home/{{ username }}/etc/redis_password
+    - mode: 0600
+    - source: salt://security/secret.jinja
+    - template: jinja
+    - user: {{ username }}
+
+{% endif -%}
+{% endif -%}
+{%- endfor -%}
+
+{% if old_redis_default_password == '' -%}
 redis_acl_reload:
   cmd.run:
     - name: /usr/bin/redis-cli acl load
@@ -570,11 +591,12 @@ redis_acl_reload:
 {% else -%}
 redis_acl_reload:
   cmd.run:
-    - name: REDIS_PASS=`cat /home/redis/etc/redis_password`; echo -e "auth default $REDIS_PASS\nacl load" | /usr/bin/redis-cli
+    - name: echo -e "auth default {{ old_redis_default_password }}\nacl load" | /usr/bin/redis-cli
     - require:
       - redis_acl_list
 {% endif -%}
 
+#    - name: REDIS_PASS=`cat /home/redis/etc/redis_password`; echo -e "auth default $REDIS_PASS\nacl load" | /usr/bin/redis-cli
 #random_root_password:
 #  cmd.run:
 #    - name: umask 0077; openssl rand -base64 21 > /root/passwd; cat /root/passwd | passwd root --stdin; rm -f /root/passwd
