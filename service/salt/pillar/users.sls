@@ -100,7 +100,7 @@ users:
       - unified
   redis:
     createhome: True
-    edit_precommand: homedir=`echo ~redis`; if [ $homedir == '/var/lib/redis' ]; then service redis stop; usermod --home /home/redis redis; service redis start; fi;
+    edit_precommand: homedir=`echo ~redis`; if [ $homedir == \'/var/lib/redis\' ]; then service redis stop; usermod --home /home/redis redis; service redis start; fi;
     fullname: Redis services
     redis:
       password: {{ salt['cmd.shell'](random_password_generator) }}
