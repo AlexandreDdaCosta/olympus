@@ -584,13 +584,13 @@ redis_acl_list:
 
 {% if old_redis_default_password == '' -%}
 redis_acl_reload:
-  cmd.shell:
+  cmd.run:
     - name: /usr/bin/redis-cli acl load
     - require:
       - redis_acl_list
 {% else -%}
 redis_acl_reload:
-  cmd.shell:
+  cmd.run:
     - name: echo -e \"auth default {{ old_redis_default_password }}\\nacl load\" | /usr/bin/redis-cli
     - require:
       - redis_acl_list
