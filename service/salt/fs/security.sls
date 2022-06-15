@@ -557,7 +557,7 @@ redis_acl_list:
     - makedirs: False
     - mode: 0640
     - name: /etc/redis/users.acl
-    - source: salt://security/users.acl.jinja
+    - source: salt://security/redis/users.acl.jinja
     - template: jinja
     - user: redis
 
@@ -582,21 +582,33 @@ redis_acl_list:
 {% endif -%}
 {%- endfor -%}
 
-{% if old_redis_default_password == '' -%}
-redis_acl_reload:
-  cmd.run:
-    - name: /usr/bin/redis-cli acl load
-    - require:
-      - redis_acl_list
-{% else -%}
-redis_acl_reload:
-  cmd.run:
-    - name: salt-call --local cmd.run 'echo -e "auth default {{ old_redis_default_password }}\\nacl load" | /usr/bin/redis-cli' python_shell=True
-    - require:
-      - redis_acl_list
-{% endif -%}
+/usr/local/bin/load_redis_acl.sh
+  file.managed:
+    - group: root
+    - mode: 0600
+    - source: salt://security/files/load_redis_acl.sh
+    - user: root
 
-#    - name: REDIS_PASS=`cat /home/redis/etc/redis_password`; echo -e "auth default $REDIS_PASS\nacl load" | /usr/bin/redis-cli
+redis_acl_reload:
+  cmd.run:
+    - name: /usr/local/bin/load_redis_acl.sh
+    - require:
+      - redis_acl_list
+
+#{% if old_redis_default_password == '' -%}
+#redis_acl_reload:
+#  cmd.run:
+#    - name: /usr/bin/redis-cli acl load
+#    - require:
+#      - redis_acl_list
+#{% else -%}
+#redis_acl_reload:
+#  cmd.run:
+#    - name: env PASSWD={{ old_redis_default_password }} /usr/local/bin/load_redis_acl.sh
+#    - require:
+#      - redis_acl_list
+#{% endif -%}
+
 #random_root_password:
 #  cmd.run:
 #    - name: umask 0077; openssl rand -base64 21 > /root/passwd; cat /root/passwd | passwd root --stdin; rm -f /root/passwd
