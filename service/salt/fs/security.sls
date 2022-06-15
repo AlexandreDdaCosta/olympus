@@ -547,7 +547,7 @@ restapi_tokens_restart:
 
 {% endif %}
 
-# Access control list for redis server
+# Access control for redis server
 
 redis_acl_list:
   file.managed:
