@@ -582,7 +582,7 @@ redis_acl_list:
 {% endif -%}
 {%- endfor -%}
 
-/usr/local/bin/load_redis_acl.sh
+/usr/local/bin/load_redis_acl.sh:
   file.managed:
     - group: root
     - mode: 0600
