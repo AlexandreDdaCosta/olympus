@@ -74,11 +74,17 @@ mongod-service:
       - file: /etc/mongod.conf
 {% endif %}
 
+verify_redis_acl_file:
+  cmd.run:
+    - name: touch /etc/redis/users.acl
+
 /etc/redis/redis.conf:
   file.managed:
     - group: redis
     - makedirs: False
     - mode: 0640
+    - require:
+      - verify_redis_acl_file
     - source: salt://services/files/redis.conf
     - user: redis
 
