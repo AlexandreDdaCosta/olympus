@@ -98,3 +98,9 @@ users:
     server:
       - supervisor
       - unified
+  redis:
+    createhome: True
+    fullname: Redis services
+    redis:
+      password: {{ salt['cmd.shell'](random_password_generator) }}
+    shell: /usr/sbin/nologin
