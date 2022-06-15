@@ -591,7 +591,7 @@ redis_acl_list:
 
 redis_acl_reload:
   cmd.run:
-    - name: env REDIS_DEFAULT_PASSWD={{ old_redis_default_password }} /usr/local/bin/load_redis_acl.sh
+    - name: env REDIS_DEFAULT_PASSWORD={{ old_redis_default_password }} /usr/local/bin/load_redis_acl.sh
     - require:
       - redis_acl_list
 
