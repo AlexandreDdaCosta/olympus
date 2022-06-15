@@ -7,6 +7,12 @@
 
 {% for username, user in pillar.get('users', {}).items() %}
 {% if 'server' not in user or grains.get('server') in user['server'] -%}
+{% if 'edit_precommand' in user -%}
+edit_precommand_{{ username }}:
+  cmd.run:
+    - name: {{ user['edit_precommand'] }}
+{% endif -%}
+
 user_{{ username }}:
 
   group:
