@@ -49,9 +49,14 @@ const logout = async (request, result, next) => {
   console.log('200'+path);
   return result.status(200).json({ message: 'Logout successful.' });
 };
+const ping = async (request, result, next) => {
+  let path = ' /auth/ping auth.js ';
+  console.log('200'+path);
+  return result.status(200).json({ message: 'Give me a ping, Vasili. One ping only, please.' });
+};
 const refresh = async (request, result, next) => {
   let path = ' /auth/refresh auth.js ';
   console.log('200'+path);
   return result.status(200).json({ message: 'Refresh successful.' });
 };
-module.exports = { login, logout, refresh };
+module.exports = { login, logout, ping, refresh };

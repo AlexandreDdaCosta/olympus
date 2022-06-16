@@ -9,7 +9,6 @@ const redis = require('redis');
 describe('Login, refresh token, and logout from node restapi.', () => {
 
   let access_token;
-  let client;
   let options;
   let password;
   let refresh_token;
@@ -23,11 +22,6 @@ describe('Login, refresh token, and logout from node restapi.', () => {
   }; 
 
   beforeAll(async () => {
-    client = redis.createClient({
-      url: 'redis://node:GdRSsUGfAYah1jtGrPK9a6pYhZegRNVBXDqq79vjURJh72DMgTbJQggbrqhacpXHcYs7CefHfIpkmKRQRCc5oYeVub9S90NV7QP2@127.0.0.1:6379'
-    });
-    await client.connect();
-
     if (os.userInfo().username != config.get('mongodb.user')) {
       throw new Error('Test must be run under run user '+config.get('mongodb.user'));
       process.exit(1);
@@ -39,29 +33,6 @@ describe('Login, refresh token, and logout from node restapi.', () => {
       throw new Error(err);
       process.exit(1);
     }
-  });
-
-  afterAll(async () => {
-    const dateObj = new Date();
-    await client.set('user_node:test.routes.auth', dateObj.toDateString());
-    let value = await client.get('user_node:test.routes.auth');
-    console.log(value);
-    await client.del('user_node:test.routes.auth');
-    value = await client.get('user_node:test.routes.auth');
-    console.log(value);
-    value = await client.get('user_node:test.routes.auth.access_token');
-    console.log(value);
-    value = await client.get('user_node:test.routes.auth.refresh_token');
-    console.log(value);
-/*
-    await client.del('user_node:test.routes.auth.access_token');
-    await client.del('user_node:test.routes.auth.refrsh_token');
-    value = await client.get('user_node:test.routes.auth.access_token');
-    console.log(value);
-    value = await client.get('user_node:test.routes.auth.refresh_token');
-    console.log(value);
-*/
-    await client.disconnect();
   });
 
   it('User authentication, missing user name.', async () => {
@@ -88,13 +59,9 @@ describe('Login, refresh token, and logout from node restapi.', () => {
       });
     });
 
-    async function do_missing_username_login() {
-      let data = await missingUsernameLoginPromise();
-      expect(data.statusCode).toBe(400);
-      expect(JSON.parse(data.body).message).toEqual('Login failed.');
-    }
-
-    (async () => await do_missing_username_login())()
+    let data = await missingUsernameLoginPromise();
+    expect(data.statusCode).toBe(400);
+    expect(JSON.parse(data.body).message).toEqual('Login failed.');
   });
 
   it('User authentication, invalid user name.', async () => {
@@ -122,13 +89,9 @@ describe('Login, refresh token, and logout from node restapi.', () => {
       });
     });
 
-    async function do_bad_username_login() {
-      let data = await badUsernameLoginPromise();
-      expect(data.statusCode).toBe(401);
-      expect(JSON.parse(data.body).message).toEqual('Access denied.');
-    }
-
-    (async () => await do_bad_username_login())()
+    let data = await badUsernameLoginPromise();
+    expect(data.statusCode).toBe(401);
+    expect(JSON.parse(data.body).message).toEqual('Access denied.');
   });
 
   it('User authentication, bad password.', async () => {
@@ -154,13 +117,9 @@ describe('Login, refresh token, and logout from node restapi.', () => {
       });
     });
 
-    async function do_bad_password_login() {
-      let data = await badPasswordLoginPromise();
-      expect(data.statusCode).toBe(400);
-      expect(JSON.parse(data.body).message).toEqual('Login failed.');
-    }
-
-    (async () => await do_bad_password_login())()
+    let data = await badPasswordLoginPromise();
+    expect(data.statusCode).toBe(400);
+    expect(JSON.parse(data.body).message).toEqual('Login failed.');
   });
 
   it('User authentication, invalid password.', async () => {
@@ -186,13 +145,9 @@ describe('Login, refresh token, and logout from node restapi.', () => {
       });
     });
 
-    async function do_invalid_password_login() {
-      let data = await invalidPasswordLoginPromise();
-      expect(data.statusCode).toBe(401);
-      expect(JSON.parse(data.body).message).toEqual('Access denied.');
-    }
-
-    (async () => await do_invalid_password_login())()
+    let data = await invalidPasswordLoginPromise();
+    expect(data.statusCode).toBe(401);
+    expect(JSON.parse(data.body).message).toEqual('Access denied.');
   });
 
   it('User authentication, get access and refresh tokens.', async () => {
@@ -206,6 +161,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
           'Content-Type': 'application/json',
           'Content-Length': login_data.length
         };
+        options['path'] = '/auth/login';
         const req = https.request(options, (res) => {
           let body = '';
           res.on('data', (chunk) => (body += chunk.toString()));
@@ -218,30 +174,50 @@ describe('Login, refresh token, and logout from node restapi.', () => {
       });
     });
 
-    async function do_login() {
-      let data = await loginPromise();
-      expect(data.statusCode).toBe(200);
-      expect(JSON.parse(data.body).message).toEqual('Login successful.');
-      access_token = JSON.parse(data.body).access_token;
-      refresh_token = JSON.parse(data.body).refresh_token;
-      await client.set('user_node:test.routes.auth.access_token', access_token);
-      await client.set('user_node:test.routes.auth.refresh_token', refresh_token);
-      // ALEX
-    }
+    let data = await loginPromise();
+    expect(data.statusCode).toBe(200);
+    expect(JSON.parse(data.body).message).toEqual('Login successful.');
+    access_token = JSON.parse(data.body).access_token;
+    refresh_token = JSON.parse(data.body).refresh_token;
+  });
 
-    (async () => await do_login())()
+  it('User authentication, access test with valid access token.', async () => {
+    let pingPromise = ((data) => {
+      return new Promise((resolve, reject) => {
+        options['headers'] = {
+          'Authorization': 'Bearer '+access_token,
+          'Content-Type': 'application/json'
+        };
+        options['method'] = 'GET';
+        options['path'] = '/auth/ping';
+        const req = https.request(options, (res) => {
+          let body = '';
+          res.on('data', (chunk) => (body += chunk.toString()));
+          res.on('error', reject);
+          res.on('end', () => { resolve({ statusCode: res.statusCode, body: body }); });
+        });
+        req.on('error', reject);
+        req.end();
+      });
+    });
+
+    let data = await pingPromise();
+    expect(data.statusCode).toBe(200);
+    expect(JSON.parse(data.body).message).toEqual('Give me a ping, Vasili. One ping only, please.');
   });
 
   it('User authentication, refresh tokens.', async () => {
     let refreshPromise = ((data) => {
       return new Promise((resolve, reject) => {
         let refresh_data = JSON.stringify({
+          refresh_token: refresh_token,
           username: config.get('mongodb.user')
         });
         options['headers'] = {
           'Content-Type': 'application/json',
           'Content-Length': refresh_data.length
         };
+        options['method'] = 'POST';
         options['path'] = '/auth/refresh';
         const req = https.request(options, (res) => {
           let body = '';
@@ -255,13 +231,9 @@ describe('Login, refresh token, and logout from node restapi.', () => {
       });
     });
 
-    async function do_refresh() {
-      let data = await refreshPromise();
-      expect(data.statusCode).toBe(200);
-      expect(JSON.parse(data.body).message).toEqual('Refresh successful.');
-    }
-
-    (async () => await do_refresh())()
+    let data = await refreshPromise();
+    expect(data.statusCode).toBe(200);
+    expect(JSON.parse(data.body).message).toEqual('Refresh successful.');
   });
 
   it('User authentication, logout.', async () => {
@@ -288,13 +260,9 @@ describe('Login, refresh token, and logout from node restapi.', () => {
       });
     });
 
-    async function do_logout() {
-      let data = await logoutPromise();
-      expect(data.statusCode).toBe(200);
-      expect(JSON.parse(data.body).message).toEqual('Logout successful.');
-    }
-
-    (async () => await do_logout())()
+    let data = await logoutPromise();
+    expect(data.statusCode).toBe(200);
+    expect(JSON.parse(data.body).message).toEqual('Logout successful.');
   });
 
 });
