@@ -55,6 +55,8 @@ backend-npm-packages:
     version: 2.3.4
   pm2:
     version: 5.2.0
+  redis:
+    version: 4.1.0
   request:
     version: 2.88.2
   sequelize:
