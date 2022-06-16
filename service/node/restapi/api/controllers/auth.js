@@ -1,11 +1,11 @@
-const UserModel = require("../models/users");
-const argon2 = require('argon2');
+const auth = require('../../lib/auth.js');
 const config = require('config');
-const hashing_config = { parallelism: config.get('argon2.parallelism'), memoryCost: config.get('argon2.memory_cost'), timeCost: config.get('argon2.time_cost') }
-const { validationResult } = require("express-validator");
+const { validationResult } = require('express-validator');
 
-const login = (req, res, next) => {
+const login = async (request, result, next) => {
   let path = ' /auth/login auth.js ';
+  let tokens;
+
   try {
     // Suppress sensitive login information in logs and returned messages
     const myValidationResult = validationResult.withDefaults({
@@ -17,10 +17,10 @@ const login = (req, res, next) => {
         };
       },
     });
-    const errors = myValidationResult(req);
+    const errors = myValidationResult(request);
     if (! errors.isEmpty()) {
       console.log('400'+path+JSON.stringify(errors.array()));
-      return res.status(400).json({
+      return result.status(400).json({
         message: 'Login failed.',
         errors: errors.array(),
       });
@@ -29,28 +29,29 @@ const login = (req, res, next) => {
   catch (err) {
     next(err);
   }
-  UserModel.findByUsername(req.body.username).then( (user) => {
-    console.log(user);
-    if (! user) {
-      console.log('404'+path);
-      return res.status(404).json({ message: 'Access denied.' });
+
+  try {
+    if (! await auth.passwordUserMatch(request.body.username,request.body.password)) {
+      console.log('401'+path);
+      return result.status(401).json({ message: 'Access denied.' });
     }
-    var hashed_password = user['Password'];
-    console.log(hashed_password);
-    //var password_verification = argon2.verify(hashed_password, restapi_password, hashing_config);
-    //console.log(password_verification);
-  });
+    tokens = await auth.createTokens(request.body.username);
+  }
+  catch (err) {
+    next(err);
+  }
+
   console.log('200'+path);
-  return res.status(200).json({ message: 'Login successful.' });
+  return result.status(200).json({ message: 'Login successful.', access_token: tokens.access_token, refresh_token: tokens.refresh_token });
 };
-const logout = (req, res, next) => {
+const logout = async (request, result, next) => {
   let path = ' /auth/logout auth.js ';
   console.log('200'+path);
-  return res.status(200).json({ message: 'Logout successful.' });
+  return result.status(200).json({ message: 'Logout successful.' });
 };
-const refresh = (req, res, next) => {
+const refresh = async (request, result, next) => {
   let path = ' /auth/refresh auth.js ';
   console.log('200'+path);
-  return res.status(200).json({ message: 'Refresh successful.' });
+  return result.status(200).json({ message: 'Refresh successful.' });
 };
 module.exports = { login, logout, refresh };

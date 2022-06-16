@@ -31,6 +31,8 @@ function getInstance(callback) {
   else {
     if (callback && typeof(callback) == 'function')
       callback(pool_connection);
+    else
+      return pool_connection;
   }
 }
 
