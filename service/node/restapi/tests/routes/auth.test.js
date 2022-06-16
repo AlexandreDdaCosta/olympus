@@ -181,6 +181,31 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     refresh_token = JSON.parse(data.body).refresh_token;
   });
 
+  it('User authentication, access test without invalid access token.', async () => {
+    let badPingPromise = ((data) => {
+      return new Promise((resolve, reject) => {
+        options['headers'] = {
+          'Authorization': 'Bearer 1234567890',
+          'Content-Type': 'application/json'
+        };
+        options['method'] = 'GET';
+        options['path'] = '/auth/ping';
+        const req = https.request(options, (res) => {
+          let body = '';
+          res.on('data', (chunk) => (body += chunk.toString()));
+          res.on('error', reject);
+          res.on('end', () => { resolve({ statusCode: res.statusCode, body: body }); });
+        });
+        req.on('error', reject);
+        req.end();
+      });
+    });
+
+    let data = await badPingPromise();
+    expect(data.statusCode).toBe(401);
+    expect(JSON.parse(data.body).message).toEqual('Access denied.');
+  });
+
   it('User authentication, access test with valid access token.', async () => {
     let pingPromise = ((data) => {
       return new Promise((resolve, reject) => {
