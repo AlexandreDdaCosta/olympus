@@ -4,7 +4,6 @@ const config = require('config');
 const fs = require('fs');
 const https = require('https');
 const os = require('os');
-const redis = require('redis');
 
 describe('Login, refresh token, and logout from node restapi.', () => {
 

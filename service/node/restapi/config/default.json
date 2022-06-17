@@ -27,7 +27,9 @@
   "pidfile": "/var/run/node.pid",
   "redis":
   {
+    "host": "127.0.0.1",
     "password_file": "/home/node/etc/redis_password",
+    "port": 6379,
     "user": "node"
   },
   "restapi":
