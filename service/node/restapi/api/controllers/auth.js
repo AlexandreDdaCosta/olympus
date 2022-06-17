@@ -3,7 +3,6 @@ const config = require('config');
 const { validationResult } = require('express-validator');
 
 const login = async (request, result, next) => {
-  let path = ' /auth/login auth.js ';
   let tokens;
 
   try {
@@ -19,7 +18,7 @@ const login = async (request, result, next) => {
     });
     const errors = myValidationResult(request);
     if (! errors.isEmpty()) {
-      console.log('400'+path+JSON.stringify(errors.array()));
+      console.log('400 '+request.url+' '+JSON.stringify(errors.array()));
       return result.status(400).json({
         message: 'Login failed.',
         errors: errors.array(),
@@ -32,7 +31,7 @@ const login = async (request, result, next) => {
 
   try {
     if (! await auth.passwordUserMatch(request.body.username,request.body.password)) {
-      console.log('401'+path);
+      console.log('401 '+request.url);
       return result.status(401).json({ message: 'Access denied.' });
     }
     tokens = await auth.createTokens(request.body.username);
@@ -41,22 +40,19 @@ const login = async (request, result, next) => {
     next(err);
   }
 
-  console.log('200'+path);
+  console.log('200 '+request.url);
   return result.status(200).json({ message: 'Login successful.', access_token: tokens.access_token, refresh_token: tokens.refresh_token });
 };
 const logout = async (request, result, next) => {
-  let path = ' /auth/logout auth.js ';
-  console.log('200'+path);
+  console.log('200 '+request.url);
   return result.status(200).json({ message: 'Logout successful.' });
 };
 const ping = async (request, result, next) => {
-  let path = ' /auth/ping auth.js ';
-  console.log('200'+path);
+  console.log('200 '+request.url);
   return result.status(200).json({ message: 'Give me a ping, Vasili. One ping only, please.' });
 };
 const refresh = async (request, result, next) => {
-  let path = ' /auth/refresh auth.js ';
-  console.log('200'+path);
+  console.log('200 '+request.url);
   return result.status(200).json({ message: 'Refresh successful.' });
 };
 module.exports = { login, logout, ping, refresh };

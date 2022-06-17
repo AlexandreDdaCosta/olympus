@@ -181,15 +181,60 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     refresh_token = JSON.parse(data.body).refresh_token;
   });
 
-  it('User authentication, access test without invalid access token.', async () => {
+  it('User authentication, access test with missing authorization header.', async () => {
+    let missingPingPromise = ((data) => {
+      return new Promise((resolve, reject) => {
+        options['headers'] = {
+          'Content-Type': 'application/json'
+        };
+        options['method'] = 'GET';
+        options['path'] = '/auth/ping';
+        const req = https.request(options, (res) => {
+          let body = '';
+          res.on('data', (chunk) => (body += chunk.toString()));
+          res.on('error', reject);
+          res.on('end', () => { resolve({ statusCode: res.statusCode, body: body }); });
+        });
+        req.on('error', reject);
+        req.end();
+      });
+    });
+
+    let data = await missingPingPromise();
+    expect(data.statusCode).toBe(401);
+    expect(JSON.parse(data.body).message).toEqual('Access denied.');
+  });
+
+  it('User authentication, access test with bad authorization header.', async () => {
+    let incompletePingPromise = ((data) => {
+      return new Promise((resolve, reject) => {
+        options['headers'] = {
+          'Authorization': 'Bearing gifts',
+          'Content-Type': 'application/json'
+        };
+        const req = https.request(options, (res) => {
+          let body = '';
+          res.on('data', (chunk) => (body += chunk.toString()));
+          res.on('error', reject);
+          res.on('end', () => { resolve({ statusCode: res.statusCode, body: body }); });
+        });
+        req.on('error', reject);
+        req.end();
+      });
+    });
+
+    let data = await incompletePingPromise();
+    expect(data.statusCode).toBe(401);
+    expect(JSON.parse(data.body).message).toEqual('Access denied.');
+  });
+
+  it('User authentication, access test with invalid access token.', async () => {
     let badPingPromise = ((data) => {
       return new Promise((resolve, reject) => {
         options['headers'] = {
           'Authorization': 'Bearer 1234567890',
           'Content-Type': 'application/json'
         };
-        options['method'] = 'GET';
-        options['path'] = '/auth/ping';
         const req = https.request(options, (res) => {
           let body = '';
           res.on('data', (chunk) => (body += chunk.toString()));
@@ -213,8 +258,6 @@ describe('Login, refresh token, and logout from node restapi.', () => {
           'Authorization': 'Bearer '+access_token,
           'Content-Type': 'application/json'
         };
-        options['method'] = 'GET';
-        options['path'] = '/auth/ping';
         const req = https.request(options, (res) => {
           let body = '';
           res.on('data', (chunk) => (body += chunk.toString()));

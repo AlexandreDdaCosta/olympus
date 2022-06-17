@@ -1,18 +1,20 @@
-const { body } = require("express-validator");
+const { check } = require("express-validator");
 
 const loginValidate = [
-  body("username")
-    .exists({ checkFalsy: true })
-    .withMessage('Parameter "username" is required.')
+  check("username")
     .isString()
-    .withMessage('User name should be string.'),
-  body("password")
-    .exists()
-    .withMessage('Parameter "password" is required.')
+    .withMessage('Parameter "username" is required and must be a string.'),
+  check("password")
     .isString()
-    .withMessage('Password should be a string.')
+    .withMessage('Parameter "password" is required and must be a string.')
     .isLength({ min: 100, max: 100 })
     .withMessage('Password should be 100 characters.'),
 ];
 
-module.exports = { loginValidate };
+const tokenValidate = [
+  check("Authorization")
+    .matches(/^Bearer .*$/)
+    .withMessage('Authorization header is required and should be of the format "Bearer <access token>".'),
+];
+
+module.exports = { loginValidate, tokenValidate };
