@@ -25,11 +25,17 @@
     "user": "node"
   },
   "pidfile": "/var/run/node.pid",
+  "redis":
+  {
+    "password_file": "/home/node/etc/redis_password",
+    "user": "node"
+  },
   "restapi":
   {
     "access_token_secret_file": "/home/node/etc/access_token_secret",
     "password_file": "/home/node/etc/restapi_password",
-    "refresh_token_secret_file": "/home/node/etc/refresh_token_secret"
+    "refresh_token_secret_file": "/home/node/etc/refresh_token_secret",
+    "user": "node"
   },
   "server":
   {

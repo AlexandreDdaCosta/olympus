@@ -33,6 +33,7 @@ fs.writeFile(config.get('pidfile'), util.format('%s', process.pid), (err) => {
 });
 
 require('mongo_connect').initPool();
+//require('redis_connect').initPool();
 
 process.env.access_token_secret = fs.readFileSync(config.get('restapi.access_token_secret_file'), 'utf8');
 process.env.refresh_token_secret = fs.readFileSync(config.get('restapi.refresh_token_secret_file'), 'utf8');

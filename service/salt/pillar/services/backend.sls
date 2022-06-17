@@ -57,6 +57,8 @@ backend-npm-packages:
     version: 5.2.0
   redis:
     version: 4.1.0
+  redis-connection-pool:
+    version: 2.0.3
   request:
     version: 2.88.2
   sequelize:

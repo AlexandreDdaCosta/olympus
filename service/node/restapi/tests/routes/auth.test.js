@@ -22,8 +22,8 @@ describe('Login, refresh token, and logout from node restapi.', () => {
   }; 
 
   beforeAll(async () => {
-    if (os.userInfo().username != config.get('mongodb.user')) {
-      throw new Error('Test must be run under run user '+config.get('mongodb.user'));
+    if (os.userInfo().username != config.get('restapi.user')) {
+      throw new Error('Test must be run under run user '+config.get('restapi.user'));
       process.exit(1);
     }
     try {
@@ -98,7 +98,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     let badPasswordLoginPromise = ((data) => {
       return new Promise((resolve, reject) => {
         let login_data = JSON.stringify({
-          username: config.get('mongodb.user'),
+          username: config.get('restapi.user'),
           password: 'foobar'
         });
         options['headers'] = {
@@ -126,7 +126,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     let invalidPasswordLoginPromise = ((data) => {
       return new Promise((resolve, reject) => {
         let login_data = JSON.stringify({
-          username: config.get('mongodb.user'),
+          username: config.get('restapi.user'),
           password: '1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890'
         });
         options['headers'] = {
@@ -154,7 +154,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     let loginPromise = ((data) => {
       return new Promise((resolve, reject) => {
         let login_data = JSON.stringify({
-          username: config.get('mongodb.user'),
+          username: config.get('restapi.user'),
           password: password
         });
         options['headers'] = {
@@ -279,7 +279,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
       return new Promise((resolve, reject) => {
         let refresh_data = JSON.stringify({
           refresh_token: refresh_token,
-          username: config.get('mongodb.user')
+          username: config.get('restapi.user')
         });
         options['headers'] = {
           'Content-Type': 'application/json',
@@ -308,7 +308,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     let logoutPromise = ((data) => {
       return new Promise((resolve, reject) => {
         let logout_data = JSON.stringify({
-          username: config.get('mongodb.user')
+          username: config.get('restapi.user')
         });
         options['headers'] = {
           'Content-Type': 'application/json',
