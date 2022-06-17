@@ -1,13 +1,13 @@
-const express = require('express');
-const router = express.Router();
-const authController = require('../controllers/auth');
-const authDataValidate = require("../validations/auth");
-const authMiddleware = require("../middleware/auth");
-
 const path = '/auth';
 
-router.post(path+'/login', authDataValidate.loginValidate, authController.login);
-router.delete(path+'/logout', authController.logout);
-router.get(path+'/ping', authDataValidate.tokenValidate, authMiddleware.verifyAccessToken, authController.ping);
-router.post(path+'/refresh', authController.refresh);
+const express = require('express');
+const router = express.Router();
+const controller = require('../controllers'+path);
+const dataValidate = require('../validations'+path);
+const middleware = require("../middleware"+path);
+
+router.post(path+'/login', dataValidate.loginValidate, controller.login);
+router.delete(path+'/logout', controller.logout);
+router.get(path+'/ping', middleware.verifyAccessToken, controller.ping);
+router.post(path+'/refresh', controller.refresh);
 module.exports = router; 

@@ -1,14 +1,23 @@
-const { check, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 
 const verifyAccessToken = (request, result, next) => {
-  const errors = validationResult(request);
-  if (! errors.isEmpty()) {
-    console.log('401 '+request.url+' '+JSON.stringify(errors.array()));
+  if (! request.headers || ! request.headers.authorization || request.headers.authorization.split(' ')[0] != 'Bearer') {
+    console.result(401,request.url,'Bad authorization header for "Bearer <access token>" ['+request.headers.authorization+']');
     result.status(401).json({ message: 'Access denied.' }).send();
   }
   else {
-    next();
+    const token = request.headers.authorization.split(" ")[1];
+    jwt.verify(token, process.env.access_token_secret, (err, user) => {
+      if (err) {
+        console.result(401,request.url,'Invalid token ['+request.headers.authorization+']');
+        result.status(401).json({ message: 'Access denied.' }).send();
+      }
+      else {
+        request.user = user;
+        console.log(user);
+        next();
+      }
+    })
   }
 };
 module.exports = { verifyAccessToken };

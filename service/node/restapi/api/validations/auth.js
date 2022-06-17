@@ -11,10 +11,4 @@ const loginValidate = [
     .withMessage('Password should be 100 characters.'),
 ];
 
-const tokenValidate = [
-  check("Authorization")
-    .matches(/^Bearer .*$/)
-    .withMessage('Authorization header is required and should be of the format "Bearer <access token>".'),
-];
-
-module.exports = { loginValidate, tokenValidate };
+module.exports = { loginValidate };

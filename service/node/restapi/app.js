@@ -11,6 +11,10 @@ const access = fs.createWriteStream(config.get('log.access'), { flags: 'a' });
 const error = fs.createWriteStream(config.get('log.error'), { flags: 'a' });
 process.stdout.write = access.write.bind(access);
 process.stderr.write = error.write.bind(error);
+console.result = function (code, url, message) {
+  var now = new Date();
+  process.stdout.write(now.toJSON() + ' ' + code.toString() + ' ' + url +' ' + message +'\n');
+}
 console.log = function () {
   var now = new Date();
   process.stdout.write(now.toJSON() + ' ' + util.format.apply(null, arguments) + '\n');
