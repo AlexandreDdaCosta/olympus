@@ -39,6 +39,8 @@ backend-npm-packages:
     version: 6.14.1
   fs-extra:
     version: 10.0.1
+  generic-pool:
+    version: 3.8.2
   helmet:
     version: 5.1.0
   jest:
@@ -57,8 +59,6 @@ backend-npm-packages:
     version: 5.2.0
   redis:
     version: 4.1.0
-  redis-connection-pool:
-    version: 2.0.3
   request:
     version: 2.88.2
   sequelize:

@@ -4,6 +4,7 @@ const config = require('config');
 const fs = require('fs');
 const https = require('https');
 const os = require('os');
+const redis = require('redis');
 
 describe('Login, refresh token, and logout from node restapi.', () => {
 
@@ -35,7 +36,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
   });
 
   it('User authentication, missing user name.', async () => {
-    let missingUsernameLoginPromise = ((data) => {
+    let loginPromise = ((data) => {
       return new Promise((resolve, reject) => {
         let login_data = JSON.stringify({
           password: password
@@ -58,13 +59,13 @@ describe('Login, refresh token, and logout from node restapi.', () => {
       });
     });
 
-    let data = await missingUsernameLoginPromise();
+    let data = await loginPromise();
     expect(data.statusCode).toBe(400);
     expect(JSON.parse(data.body).message).toEqual('Login failed.');
   });
 
   it('User authentication, invalid user name.', async () => {
-    let badUsernameLoginPromise = ((data) => {
+    let loginPromise = ((data) => {
       return new Promise((resolve, reject) => {
         let login_data = JSON.stringify({
           username: 'foobar',
@@ -88,13 +89,13 @@ describe('Login, refresh token, and logout from node restapi.', () => {
       });
     });
 
-    let data = await badUsernameLoginPromise();
+    let data = await loginPromise();
     expect(data.statusCode).toBe(401);
     expect(JSON.parse(data.body).message).toEqual('Access denied.');
   });
 
   it('User authentication, bad password.', async () => {
-    let badPasswordLoginPromise = ((data) => {
+    let loginPromise = ((data) => {
       return new Promise((resolve, reject) => {
         let login_data = JSON.stringify({
           username: config.get('restapi.user'),
@@ -116,13 +117,13 @@ describe('Login, refresh token, and logout from node restapi.', () => {
       });
     });
 
-    let data = await badPasswordLoginPromise();
+    let data = await loginPromise();
     expect(data.statusCode).toBe(400);
     expect(JSON.parse(data.body).message).toEqual('Login failed.');
   });
 
   it('User authentication, invalid password.', async () => {
-    let invalidPasswordLoginPromise = ((data) => {
+    let loginPromise = ((data) => {
       return new Promise((resolve, reject) => {
         let login_data = JSON.stringify({
           username: config.get('restapi.user'),
@@ -144,7 +145,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
       });
     });
 
-    let data = await invalidPasswordLoginPromise();
+    let data = await loginPromise();
     expect(data.statusCode).toBe(401);
     expect(JSON.parse(data.body).message).toEqual('Access denied.');
   });
@@ -181,7 +182,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
   });
 
   it('User authentication, access test with missing authorization header.', async () => {
-    let missingPingPromise = ((data) => {
+    let pingPromise = ((data) => {
       return new Promise((resolve, reject) => {
         options['headers'] = {
           'Content-Type': 'application/json'
@@ -199,13 +200,13 @@ describe('Login, refresh token, and logout from node restapi.', () => {
       });
     });
 
-    let data = await missingPingPromise();
+    let data = await pingPromise();
     expect(data.statusCode).toBe(401);
     expect(JSON.parse(data.body).message).toEqual('Access denied.');
   });
 
   it('User authentication, access test with bad authorization header.', async () => {
-    let incompletePingPromise = ((data) => {
+    let pingPromise = ((data) => {
       return new Promise((resolve, reject) => {
         options['headers'] = {
           'Authorization': 'Bearing gifts',
@@ -222,13 +223,13 @@ describe('Login, refresh token, and logout from node restapi.', () => {
       });
     });
 
-    let data = await incompletePingPromise();
+    let data = await pingPromise();
     expect(data.statusCode).toBe(401);
     expect(JSON.parse(data.body).message).toEqual('Access denied.');
   });
 
   it('User authentication, access test with invalid access token.', async () => {
-    let badPingPromise = ((data) => {
+    let pingPromise = ((data) => {
       return new Promise((resolve, reject) => {
         options['headers'] = {
           'Authorization': 'Bearer 1234567890',
@@ -245,7 +246,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
       });
     });
 
-    let data = await badPingPromise();
+    let data = await pingPromise();
     expect(data.statusCode).toBe(401);
     expect(JSON.parse(data.body).message).toEqual('Access denied.');
   });
@@ -254,7 +255,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     let pingPromise = ((data) => {
       return new Promise((resolve, reject) => {
         options['headers'] = {
-          'Authorization': 'Bearer '+access_token,
+          'Authorization': 'Bearer ' + access_token,
           'Content-Type': 'application/json'
         };
         const req = https.request(options, (res) => {
@@ -273,19 +274,125 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     expect(JSON.parse(data.body).message).toEqual('Give me a ping, Vasili. One ping only, please.');
   });
 
-  it('User authentication, refresh tokens.', async () => {
+  it('User authentication, refresh tokens, missing user name.', async () => {
+    let refreshPromise = ((data) => {
+      return new Promise((resolve, reject) => {
+        options['headers'] = {
+          'Authorization': 'Bearer ' + refresh_token,
+          'Content-Type': 'application/json'
+        };
+        options['method'] = 'POST';
+        options['path'] = '/auth/refresh';
+        const req = https.request(options, (res) => {
+          let body = '';
+          res.on('data', (chunk) => (body += chunk.toString()));
+          res.on('error', reject);
+          res.on('end', () => { resolve({ statusCode: res.statusCode, headers: res.headers, body: body }); });
+        });
+        req.on('error', reject);
+        req.end();
+      });
+    });
+
+    let data = await refreshPromise();
+    expect(data.statusCode).toBe(400);
+    expect(JSON.parse(data.body).message).toEqual('Refresh failed.');
+  });
+
+  it('User authentication, refresh tokens, missing token.', async () => {
     let refreshPromise = ((data) => {
       return new Promise((resolve, reject) => {
         let refresh_data = JSON.stringify({
-          refresh_token: refresh_token,
           username: config.get('restapi.user')
         });
         options['headers'] = {
           'Content-Type': 'application/json',
           'Content-Length': refresh_data.length
         };
-        options['method'] = 'POST';
-        options['path'] = '/auth/refresh';
+        const req = https.request(options, (res) => {
+          let body = '';
+          res.on('data', (chunk) => (body += chunk.toString()));
+          res.on('error', reject);
+          res.on('end', () => { resolve({ statusCode: res.statusCode, headers: res.headers, body: body }); });
+        });
+        req.on('error', reject);
+        req.write(refresh_data);
+        req.end();
+      });
+    });
+
+    let data = await refreshPromise();
+    expect(data.statusCode).toBe(401);
+    expect(JSON.parse(data.body).message).toEqual('Access denied.');
+  });
+
+  it('User authentication, refresh tokens, token/username mismatch.', async () => {
+    let refreshPromise = ((data) => {
+      return new Promise((resolve, reject) => {
+        let refresh_data = JSON.stringify({
+          username: 'foobar'
+        });
+        options['headers'] = {
+          'Authorization': 'Bearer ' + refresh_token,
+          'Content-Type': 'application/json',
+          'Content-Length': refresh_data.length
+        };
+        const req = https.request(options, (res) => {
+          let body = '';
+          res.on('data', (chunk) => (body += chunk.toString()));
+          res.on('error', reject);
+          res.on('end', () => { resolve({ statusCode: res.statusCode, headers: res.headers, body: body }); });
+        });
+        req.on('error', reject);
+        req.write(refresh_data);
+        req.end();
+      });
+    });
+
+    let data = await refreshPromise();
+    expect(data.statusCode).toBe(401);
+    expect(JSON.parse(data.body).message).toEqual('Access denied.');
+  });
+
+  it('User authentication, refresh tokens, mixed up token.', async () => {
+    let refreshPromise = ((data) => {
+      return new Promise((resolve, reject) => {
+        let refresh_data = JSON.stringify({
+          username: config.get('restapi.user')
+        });
+        options['headers'] = {
+          'Authorization': 'Bearer ' + access_token,
+          'Content-Type': 'application/json',
+          'Content-Length': refresh_data.length
+        };
+        const req = https.request(options, (res) => {
+          let body = '';
+          res.on('data', (chunk) => (body += chunk.toString()));
+          res.on('error', reject);
+          res.on('end', () => { resolve({ statusCode: res.statusCode, headers: res.headers, body: body }); });
+        });
+        req.on('error', reject);
+        req.write(refresh_data);
+        req.end();
+      });
+    });
+
+    let data = await refreshPromise();
+    expect(data.statusCode).toBe(401);
+    expect(JSON.parse(data.body).message).toEqual('Access denied.');
+  });
+
+  it('User authentication, refresh tokens.', async () => {
+    let refreshPromise = ((data) => {
+      return new Promise((resolve, reject) => {
+        let refresh_data = JSON.stringify({
+          username: config.get('restapi.user')
+        });
+        options['headers'] = {
+          'Authorization': 'Bearer ' + refresh_token,
+          'Content-Type': 'application/json',
+          'Content-Length': refresh_data.length
+        };
         const req = https.request(options, (res) => {
           let body = '';
           res.on('data', (chunk) => (body += chunk.toString()));
@@ -306,12 +413,9 @@ describe('Login, refresh token, and logout from node restapi.', () => {
   it('User authentication, logout.', async () => {
     let logoutPromise = ((data) => {
       return new Promise((resolve, reject) => {
-        let logout_data = JSON.stringify({
-          username: config.get('restapi.user')
-        });
         options['headers'] = {
-          'Content-Type': 'application/json',
-          'Content-Length': logout_data.length
+          'Authorization': 'Bearer ' + access_token,
+          'Content-Type': 'application/json'
         };
         options['method'] = 'DELETE';
         options['path'] = '/auth/logout';
@@ -322,7 +426,6 @@ describe('Login, refresh token, and logout from node restapi.', () => {
           res.on('end', () => { resolve({ statusCode: res.statusCode, headers: res.headers, body: body }); });
         });
         req.on('error', reject);
-        req.write(logout_data);
         req.end();
       });
     });

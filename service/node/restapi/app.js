@@ -13,7 +13,14 @@ process.stdout.write = access.write.bind(access);
 process.stderr.write = error.write.bind(error);
 console.result = function (code, url, message) {
   var now = new Date();
-  process.stdout.write(now.toJSON() + ' ' + code.toString() + ' ' + url +' ' + message +'\n');
+  let string = now.toJSON() + ' ' + code.toString() + ' ' + url;
+  if (! message || message.length == 0) {
+    string = string + '\n';
+  }
+  else {
+    string = string + ' ' + message +'\n';
+  }
+  process.stdout.write(string);
 }
 console.log = function () {
   var now = new Date();

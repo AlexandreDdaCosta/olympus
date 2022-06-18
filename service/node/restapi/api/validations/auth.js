@@ -11,4 +11,10 @@ const loginValidate = [
     .withMessage('Password should be 100 characters.'),
 ];
 
-module.exports = { loginValidate };
+const refreshValidate = [
+  check("username")
+    .isString()
+    .withMessage('Parameter "username" is required and must be a string.'),
+];
+
+module.exports = { loginValidate, refreshValidate };
