@@ -496,7 +496,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     expect(JSON.parse(data.body).message).toEqual('Access denied.');
   });
 
-  it('User authentication, logout.', async () => {
+  it('Logout.', async () => {
     let logoutPromise = ((data) => {
       return new Promise((resolve, reject) => {
         options['headers'] = {
