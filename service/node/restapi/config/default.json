@@ -6,6 +6,11 @@
     "salt_bytes" : 16,
     "time_cost" : 3
   },
+  "locale":
+  {
+    "language": "en-US",
+    "timezone": "America/New_York"
+  },
   "log":
   {
     "dir": "/var/log/node",

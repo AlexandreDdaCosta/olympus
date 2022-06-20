@@ -13,7 +13,7 @@ process.stdout.write = access.write.bind(access);
 process.stderr.write = error.write.bind(error);
 console.result = function (code, url, message) {
   var now = new Date();
-  let string = now.toJSON() + ' ' + code.toString() + ' ' + url;
+  let string = now.toLocaleString(config.get('locale.language'), { timeZone: config.get('locale.timezone') }).replace(/\s/g,'') + ' ' + code.toString() + ' ' + url;
   if (! message || message.length == 0) {
     string = string + '\n';
   }
@@ -24,11 +24,13 @@ console.result = function (code, url, message) {
 }
 console.log = function () {
   var now = new Date();
-  process.stdout.write(now.toJSON() + ' ' + util.format.apply(null, arguments) + '\n');
+  let string = now.toLocaleString(config.get('locale.language'), { timeZone: config.get('locale.timezone') }).replace(/\s/g,'');
+  process.stdout.write(string + ' ' + util.format.apply(null, arguments) + '\n');
 }
 console.error = function () {
   var now = new Date();
-  process.stderr.write(now.toJSON() + ' ' + util.format.apply(null, arguments) + '\n');
+  let string = now.toLocaleString(config.get('locale.language'), { timeZone: config.get('locale.timezone') }).replace(/\s/g,'');
+  process.stderr.write(string + ' ' + util.format.apply(null, arguments) + '\n');
 }
 
 let data = util.format('%s', process.pid);

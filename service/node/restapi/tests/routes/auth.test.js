@@ -9,6 +9,8 @@ const redis = require('redis');
 describe('Login, refresh token, and logout from node restapi.', () => {
 
   let access_token;
+  let old_access_token;
+  let old_refresh_token;
   let options;
   let password;
   let refresh_token;
@@ -35,7 +37,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     }
   });
 
-  it('User authentication, missing user name.', async () => {
+  it('Missing user name.', async () => {
     let loginPromise = ((data) => {
       return new Promise((resolve, reject) => {
         let login_data = JSON.stringify({
@@ -64,7 +66,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     expect(JSON.parse(data.body).message).toEqual('Login failed.');
   });
 
-  it('User authentication, invalid user name.', async () => {
+  it('Invalid user name.', async () => {
     let loginPromise = ((data) => {
       return new Promise((resolve, reject) => {
         let login_data = JSON.stringify({
@@ -94,7 +96,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     expect(JSON.parse(data.body).message).toEqual('Access denied.');
   });
 
-  it('User authentication, bad password.', async () => {
+  it('Bad password.', async () => {
     let loginPromise = ((data) => {
       return new Promise((resolve, reject) => {
         let login_data = JSON.stringify({
@@ -122,7 +124,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     expect(JSON.parse(data.body).message).toEqual('Login failed.');
   });
 
-  it('User authentication, invalid password.', async () => {
+  it('Invalid password.', async () => {
     let loginPromise = ((data) => {
       return new Promise((resolve, reject) => {
         let login_data = JSON.stringify({
@@ -150,7 +152,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     expect(JSON.parse(data.body).message).toEqual('Access denied.');
   });
 
-  it('User authentication, get access and refresh tokens.', async () => {
+  it('Login, get access and refresh tokens.', async () => {
     let loginPromise = ((data) => {
       return new Promise((resolve, reject) => {
         let login_data = JSON.stringify({
@@ -181,7 +183,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     refresh_token = JSON.parse(data.body).refresh_token;
   });
 
-  it('User authentication, access test with missing authorization header.', async () => {
+  it('Access with missing authorization header.', async () => {
     let pingPromise = ((data) => {
       return new Promise((resolve, reject) => {
         options['headers'] = {
@@ -205,7 +207,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     expect(JSON.parse(data.body).message).toEqual('Access denied.');
   });
 
-  it('User authentication, access test with bad authorization header.', async () => {
+  it('Access with bad authorization header.', async () => {
     let pingPromise = ((data) => {
       return new Promise((resolve, reject) => {
         options['headers'] = {
@@ -228,7 +230,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     expect(JSON.parse(data.body).message).toEqual('Access denied.');
   });
 
-  it('User authentication, access test with invalid access token.', async () => {
+  it('Access with invalid access token.', async () => {
     let pingPromise = ((data) => {
       return new Promise((resolve, reject) => {
         options['headers'] = {
@@ -251,7 +253,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     expect(JSON.parse(data.body).message).toEqual('Access denied.');
   });
 
-  it('User authentication, access test with valid access token.', async () => {
+  it('Access with valid access token.', async () => {
     let pingPromise = ((data) => {
       return new Promise((resolve, reject) => {
         options['headers'] = {
@@ -274,7 +276,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     expect(JSON.parse(data.body).message).toEqual('Give me a ping, Vasili. One ping only, please.');
   });
 
-  it('User authentication, refresh tokens, missing user name.', async () => {
+  it('Refresh tokens, missing user name.', async () => {
     let refreshPromise = ((data) => {
       return new Promise((resolve, reject) => {
         options['headers'] = {
@@ -299,7 +301,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     expect(JSON.parse(data.body).message).toEqual('Refresh failed.');
   });
 
-  it('User authentication, refresh tokens, missing token.', async () => {
+  it('Refresh tokens, missing token.', async () => {
     let refreshPromise = ((data) => {
       return new Promise((resolve, reject) => {
         let refresh_data = JSON.stringify({
@@ -326,7 +328,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     expect(JSON.parse(data.body).message).toEqual('Access denied.');
   });
 
-  it('User authentication, refresh tokens, token/username mismatch.', async () => {
+  it('Refresh tokens, token/username mismatch.', async () => {
     let refreshPromise = ((data) => {
       return new Promise((resolve, reject) => {
         let refresh_data = JSON.stringify({
@@ -354,7 +356,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     expect(JSON.parse(data.body).message).toEqual('Access denied.');
   });
 
-  it('User authentication, refresh tokens, mixed up token.', async () => {
+  it('Refresh tokens, mixed up token.', async () => {
     let refreshPromise = ((data) => {
       return new Promise((resolve, reject) => {
         let refresh_data = JSON.stringify({
@@ -382,7 +384,7 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     expect(JSON.parse(data.body).message).toEqual('Access denied.');
   });
 
-  it('User authentication, refresh tokens.', async () => {
+  it('Refresh tokens.', async () => {
     let refreshPromise = ((data) => {
       return new Promise((resolve, reject) => {
         let refresh_data = JSON.stringify({
@@ -405,16 +407,100 @@ describe('Login, refresh token, and logout from node restapi.', () => {
       });
     });
 
+    // Here we pause execution for a second which is the time resolution for all tokens.
+    // Without a pause, the new tokens may be identical to the old ones!
+    function freeze(time) {
+      const stop = new Date().getTime() + time;
+      while(new Date().getTime() < stop);       
+    }
+    freeze(1000);
     let data = await refreshPromise();
     expect(data.statusCode).toBe(200);
     expect(JSON.parse(data.body).message).toEqual('Refresh successful.');
+    old_access_token = access_token;
+    old_refresh_token = refresh_token;
+    access_token = JSON.parse(data.body).access_token;
+    refresh_token = JSON.parse(data.body).refresh_token;
+  });
+
+  it('Access with old access token (after refresh).', async () => {
+    let pingPromise = ((data) => {
+      return new Promise((resolve, reject) => {
+        options['headers'] = {
+          'Authorization': 'Bearer ' + old_access_token,
+          'Content-Type': 'application/json'
+        };
+        options['method'] = 'GET';
+        options['path'] = '/auth/ping';
+        const req = https.request(options, (res) => {
+          let body = '';
+          res.on('data', (chunk) => (body += chunk.toString()));
+          res.on('error', reject);
+          res.on('end', () => { resolve({ statusCode: res.statusCode, body: body }); });
+        });
+        req.on('error', reject);
+        req.end();
+      });
+    });
+
+    let data = await pingPromise();
+    expect(data.statusCode).toBe(401);
+    expect(JSON.parse(data.body).message).toEqual('Access denied.');
+  });
+
+  it('Access with valid new access token.', async () => {
+    let pingPromise = ((data) => {
+      return new Promise((resolve, reject) => {
+        options['headers'] = {
+          'Authorization': 'Bearer ' + access_token,
+          'Content-Type': 'application/json'
+        };
+        const req = https.request(options, (res) => {
+          let body = '';
+          res.on('data', (chunk) => (body += chunk.toString()));
+          res.on('error', reject);
+          res.on('end', () => { resolve({ statusCode: res.statusCode, body: body }); });
+        });
+        req.on('error', reject);
+        req.end();
+      });
+    });
+
+    let data = await pingPromise();
+    expect(data.statusCode).toBe(200);
+    expect(JSON.parse(data.body).message).toEqual('Give me a ping, Vasili. One ping only, please.');
+  });
+
+  it('Logout with invalid token (old refresh token).', async () => {
+    let logoutPromise = ((data) => {
+      return new Promise((resolve, reject) => {
+        options['headers'] = {
+          'Authorization': 'Bearer ' + old_refresh_token,
+          'Content-Type': 'application/json'
+        };
+        options['method'] = 'DELETE';
+        options['path'] = '/auth/logout';
+        const req = https.request(options, (res) => {
+          let body = '';
+          res.on('data', (chunk) => (body += chunk.toString()));
+          res.on('error', reject);
+          res.on('end', () => { resolve({ statusCode: res.statusCode, headers: res.headers, body: body }); });
+        });
+        req.on('error', reject);
+        req.end();
+      });
+    });
+
+    let data = await logoutPromise();
+    expect(data.statusCode).toBe(401);
+    expect(JSON.parse(data.body).message).toEqual('Access denied.');
   });
 
   it('User authentication, logout.', async () => {
     let logoutPromise = ((data) => {
       return new Promise((resolve, reject) => {
         options['headers'] = {
-          'Authorization': 'Bearer ' + access_token,
+          'Authorization': 'Bearer ' + refresh_token,
           'Content-Type': 'application/json'
         };
         options['method'] = 'DELETE';
@@ -433,6 +519,56 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     let data = await logoutPromise();
     expect(data.statusCode).toBe(200);
     expect(JSON.parse(data.body).message).toEqual('Logout successful.');
+  });
+
+  it('Access after logout with invalidated access token.', async () => {
+    let pingPromise = ((data) => {
+      return new Promise((resolve, reject) => {
+        options['headers'] = {
+          'Authorization': 'Bearer ' + access_token,
+          'Content-Type': 'application/json'
+        };
+        options['method'] = 'GET';
+        options['path'] = '/auth/ping';
+        const req = https.request(options, (res) => {
+          let body = '';
+          res.on('data', (chunk) => (body += chunk.toString()));
+          res.on('error', reject);
+          res.on('end', () => { resolve({ statusCode: res.statusCode, body: body }); });
+        });
+        req.on('error', reject);
+        req.end();
+      });
+    });
+
+    let data = await pingPromise();
+    expect(data.statusCode).toBe(401);
+    expect(JSON.parse(data.body).message).toEqual('Access denied.');
+  });
+
+  it('Logout with invalid token (refresh token).', async () => {
+    let logoutPromise = ((data) => {
+      return new Promise((resolve, reject) => {
+        options['headers'] = {
+          'Authorization': 'Bearer ' + refresh_token,
+          'Content-Type': 'application/json'
+        };
+        options['method'] = 'DELETE';
+        options['path'] = '/auth/logout';
+        const req = https.request(options, (res) => {
+          let body = '';
+          res.on('data', (chunk) => (body += chunk.toString()));
+          res.on('error', reject);
+          res.on('end', () => { resolve({ statusCode: res.statusCode, headers: res.headers, body: body }); });
+        });
+        req.on('error', reject);
+        req.end();
+      });
+    });
+
+    let data = await logoutPromise();
+    expect(data.statusCode).toBe(401);
+    expect(JSON.parse(data.body).message).toEqual('Access denied.');
   });
 
 });
