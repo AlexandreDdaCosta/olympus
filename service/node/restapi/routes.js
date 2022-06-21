@@ -6,6 +6,6 @@ var authRouter = require("./api/routes/auth");
 module.exports = function(app) {
   app.use(express.json());
   app.use("/", indexRouter);
-  app.use("/", authRouter);
+  app.use("/auth", authRouter);
 };
 

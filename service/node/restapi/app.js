@@ -11,15 +11,20 @@ const access = fs.createWriteStream(config.get('log.access'), { flags: 'a' });
 const error = fs.createWriteStream(config.get('log.error'), { flags: 'a' });
 process.stdout.write = access.write.bind(access);
 process.stderr.write = error.write.bind(error);
-console.result = function (code, url, message) {
-  var now = new Date();
-  let string = now.toLocaleString(config.get('locale.language'), { timeZone: config.get('locale.timezone') }).replace(/\s/g,'') + ' ' + code.toString() + ' ' + url;
-  if (! message || message.length == 0) {
-    string = string + '\n';
+console.result = function (res, req) {
+  let now = new Date();
+  let message = '';
+  if (res.locals.message) {
+    message = res.locals.message;
   }
   else {
-    string = string + ' ' + message +'\n';
+    message = res.statusMessage;
   }
+  let user = '?';
+  if (req.user) {
+    user = req.user;
+  }
+  let string = now.toLocaleString(config.get('locale.language'), { timeZone: config.get('locale.timezone') }).replace(/\s/g,'') + ' ' + res.statusCode + ' ' + user + ' ' + req.originalUrl + ' ' + message +'\n';
   process.stdout.write(string);
 }
 console.log = function () {

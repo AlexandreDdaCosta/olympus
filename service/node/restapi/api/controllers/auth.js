@@ -19,21 +19,21 @@ const login = async (req, res, next) => {
     });
     const errors = myValidationResult(req);
     if (! errors.isEmpty()) {
-      console.result(400,req.url,JSON.stringify(errors.array()));
-      return res.status(400).json({ message: 'Login failed.', errors: errors.array() });
+      next();
+      res.locals.message = 'Login failed: '+JSON.stringify(errors.array());
+      return res.status(400).json({ message: 'Login failed.', errors: JSON.stringify(errors.array()) }).send();
     }
   } 
   catch (err) {
     next(err);
-    console.result(500,req.url,err);
-    return res.status(500).json({ message: 'Internal server error.' });
+    return res.status(500).json({ message: 'Internal server error.' }).send();
   }
 
   try {
     if (! await auth.passwordUserMatch(req.body.username,req.body.password)) {
-      console.result(401,req.url,'Bad user/password match');
       next();
-      return res.status(401).json({ message: 'Access denied.' });
+      res.locals.message = 'Bad user/password match';
+      return res.status(401).json({ message: 'Access denied.' }).send();
     }
     tokens = await auth.createTokens(req.body.username);
     let poolConnection = redisConnection.getInstance();
@@ -44,19 +44,17 @@ const login = async (req, res, next) => {
         client.hSet('user_node:auth:'+req.body.username, "access_token", tokens.access_token);
         client.hSet('user_node:auth:'+req.body.username, "refresh_token", tokens.refresh_token);
         poolConnection.release(client);
-        console.result(200,req.url);
-        return res.status(200).json({ message: 'Login successful.', access_token: tokens.access_token, refresh_token: tokens.refresh_token });
+        next();
+        return res.status(200).json({ message: 'Login successful.', access_token: tokens.access_token, refresh_token: tokens.refresh_token }).send();
       })
       .catch(function(err) {
 	next(err);
-        console.result(500,req.url,err);
-        return res.status(500).json({ message: 'Internal server error.' });
+        return res.status(500).json({ message: 'Internal server error.' }).send();
       });
   }
   catch (err) {
     next(err);
-    console.result(500,req.url,err);
-    return res.status(500).json({ message: 'Internal server error.' });
+    return res.status(500).json({ message: 'Internal server error.' }).send();
   }
 };
 const logout = async (req, res, next) => {
@@ -67,34 +65,35 @@ const logout = async (req, res, next) => {
       .then(function(client) {
         client.del('user_node:auth:'+req.user);
         poolConnection.release(client);
-        console.result(200,req.url);
-        return res.status(200).json({ message: 'Logout successful.' });
+	next();
+        return res.status(200).json({ message: 'Logout successful.' }).send();
       })
       .catch(function(err) {
 	next(err);
-        console.result(500,req.url,err);
-        return res.status(500).json({ message: 'Internal server error.' });
+        return res.status(500).json({ message: 'Internal server error.' }).send();
       });
   } 
   catch (err) {
-    console.result(500,req.url,err);
-    return res.status(500).json({ message: 'Internal server error.' });
+    next(err);
+    return res.status(500).json({ message: 'Internal server error.' }).send();
   }
 };
 const ping = async (req, res, next) => {
-  console.result(200,req.url);
-  return res.status(200).json({ message: 'Give me a ping, Vasili. One ping only, please.' });
+  next();
+  return res.status(200).json({ message: 'Give me a ping, Vasili. One ping only, please.' }).send();
 };
 const refresh = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (! errors.isEmpty()) {
-      console.result(400,req.url,JSON.stringify(errors.array()));
-      return res.status(400).json({ message: 'Refresh failed.', errors: errors.array() });
+      next();
+      res.locals.message = 'Refresh failed: '+JSON.stringify(errors.array());
+      return res.status(400).json({ message: 'Refresh failed.', errors: errors.array() }).send();
     }
     if (req.body.username != req.user) {
-      console.result(401,req.url,'Bad username in body');
-      return res.status(401).json({ message: 'Access denied.' });
+      next();
+      res.locals.message = 'Bad username in body';
+      return res.status(401).json({ message: 'Access denied.' }).send();
     }
     tokens = await auth.createTokens(req.body.username);
     let poolConnection = redisConnection.getInstance();
@@ -105,18 +104,17 @@ const refresh = async (req, res, next) => {
         client.hSet('user_node:auth:'+req.body.username, "access_token", tokens.access_token);
         client.hSet('user_node:auth:'+req.body.username, "refresh_token", tokens.refresh_token);
         poolConnection.release(client);
-        console.result(200,req.url);
-        return res.status(200).json({ message: 'Refresh successful.', access_token: tokens.access_token, refresh_token: tokens.refresh_token });
+        next();
+        return res.status(200).json({ message: 'Refresh successful.', access_token: tokens.access_token, refresh_token: tokens.refresh_token }).send();
       })
       .catch(function(err) {
 	next(err);
-        console.result(500,req.url,err);
-        return res.status(500).json({ message: 'Internal server error.' });
+        return res.status(500).json({ message: 'Internal server error.' }).send();
       });
   } 
   catch (err) {
-    console.result(500,req.url,err);
-    return res.status(500).json({ message: 'Internal server error.' });
+    next(err);
+    return res.status(500).json({ message: 'Internal server error.' }).send();
   }
 };
 module.exports = { login, logout, ping, refresh };
