@@ -6,6 +6,8 @@
 user default on +@all allkeys >{{ user['redis']['password'] }}
 {% elif 'is_staff' in user and user['is_staff'] -%}
 user {{ username }} on +@all allkeys >{{ user['redis']['password'] }}
+{% elif 'keys' in user['redis'] and user['redis']['keys'] -%}
+user {{ username }} on +@all ~user:{{ username }}:* {% for key in user['redis']['keys'] %}~{{ key }}:* {% endfor %}>{{ user['redis']['password'] }}
 {% else -%}
 user {{ username }} on +@all ~user:{{ username }}:* >{{ user['redis']['password'] }}
 {% endif -%}
