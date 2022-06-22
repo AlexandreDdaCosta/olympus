@@ -31,4 +31,4 @@ class Connection(User):
             return self.client
 
     def user_database_name(self):
-        return 'user_' + self.username
+        return 'user:' + self.username

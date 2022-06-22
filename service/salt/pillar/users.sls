@@ -59,7 +59,8 @@ users:
     mongodb:
       roles:
         - equities: read
-        - user_node: readWrite
+        - user:node: readWrite
+        - restapi: readWrite
     redis:
       keys:
         - restapi
@@ -80,7 +81,7 @@ users:
     mongodb:
       roles:
         - equities: readWrite
-        - user_olympus: readWrite
+        - user:olympus: readWrite
     redis:
       password: {{ salt['cmd.shell'](random_password_generator) }}
     restapi:

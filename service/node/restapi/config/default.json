@@ -23,7 +23,7 @@
   {
     "collection_auth_users": "auth_users",
     "database_auth": "admin",
-    "database_default": "user_node",
+    "database_default": "restapi",
     "host": "127.0.0.1",
     "password_file": "/home/node/etc/mongodb_password",
     "port": 27017,

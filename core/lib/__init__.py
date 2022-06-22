@@ -86,7 +86,7 @@ class User():
         return '/home/' + self.username +'/'
 
     def mongo_database(self):
-        return 'user_' + self.username
+        return 'user:' + self.username
 
     def lockfile_directory(self):
         return self.working_directory()
