@@ -21,8 +21,7 @@ def insert_update_restapi_user(username,password,defined_routes=None):
     argon2Hasher = argon2.PasswordHasher(memory_cost=ARGON2_CONFIG['memory_cost'], parallelism=ARGON2_CONFIG['parallelism'], salt_len=ARGON2_CONFIG['salt_bytes'], time_cost=ARGON2_CONFIG['time_cost'])
     hashed_password = argon2Hasher.hash(password)
     connector = mongodb.Connection(RESTAPI_RUN_USERNAME)
-    database_name = connector.user_database_name()
-    collection = connector.connect(database_name,'auth_users')
+    collection = connector.connect('restapi','auth_users')
     find = {"Username":username}
     count = collection.count_documents(find)
     if (count == 0):
