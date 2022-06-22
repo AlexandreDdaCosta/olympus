@@ -40,9 +40,9 @@ const login = async (req, res, next) => {
     let resourcePromise = poolConnection.acquire();
     resourcePromise
       .then(function(client) {
-        client.hSet('user_node:auth:'+req.body.username, "date", Date.now());
-        client.hSet('user_node:auth:'+req.body.username, "access_token", tokens.access_token);
-        client.hSet('user_node:auth:'+req.body.username, "refresh_token", tokens.refresh_token);
+        client.hSet('restapi:auth:'+req.body.username, "date", Date.now());
+        client.hSet('restapi:auth:'+req.body.username, "access_token", tokens.access_token);
+        client.hSet('restapi:auth:'+req.body.username, "refresh_token", tokens.refresh_token);
         poolConnection.release(client);
         next();
         return res.status(200).json({ message: 'Login successful.', access_token: tokens.access_token, refresh_token: tokens.refresh_token }).send();
@@ -63,7 +63,7 @@ const logout = async (req, res, next) => {
     let resourcePromise = poolConnection.acquire();
     resourcePromise
       .then(function(client) {
-        client.del('user_node:auth:'+req.user);
+        client.del('restapi:auth:'+req.user);
         poolConnection.release(client);
 	next();
         return res.status(200).json({ message: 'Logout successful.' }).send();
@@ -100,9 +100,9 @@ const refresh = async (req, res, next) => {
     let resourcePromise = poolConnection.acquire();
     resourcePromise
       .then(function(client) {
-        client.hSet('user_node:auth:'+req.body.username, "date", Date.now());
-        client.hSet('user_node:auth:'+req.body.username, "access_token", tokens.access_token);
-        client.hSet('user_node:auth:'+req.body.username, "refresh_token", tokens.refresh_token);
+        client.hSet('restapi:auth:'+req.body.username, "date", Date.now());
+        client.hSet('restapi:auth:'+req.body.username, "access_token", tokens.access_token);
+        client.hSet('restapi:auth:'+req.body.username, "refresh_token", tokens.refresh_token);
         poolConnection.release(client);
         next();
         return res.status(200).json({ message: 'Refresh successful.', access_token: tokens.access_token, refresh_token: tokens.refresh_token }).send();

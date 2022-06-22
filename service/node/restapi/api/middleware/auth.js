@@ -19,7 +19,7 @@ const verifyAccessToken = (req, res, next) => {
         req.user = user.username;
         let poolConnection = redisConnection.getInstance();
         let resourcePromise = poolConnection.acquire();
-	let key = 'user_node:auth:' + req.user;
+	let key = 'restapi:auth:' + req.user;
         resourcePromise
           .then(function(client) {
             let lastToken = client.hGet(key,'access_token');
@@ -69,7 +69,7 @@ const verifyRefreshToken = (req, res, next) => {
         req.user = user.username;
         let poolConnection = redisConnection.getInstance();
         let resourcePromise = poolConnection.acquire();
-	let key = 'user_node:auth:' + req.user;
+	let key = 'restapi:auth:' + req.user;
         resourcePromise
           .then(function(client) {
             let lastToken = client.hGet(key,'refresh_token');

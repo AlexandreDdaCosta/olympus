@@ -55,7 +55,7 @@ module.exports = RedisPool;
   const resourcePromise = poolConnection.acquire();
   resourcePromise
     .then(function(client) {
-      client.set('user_node:test', 'SUCCESSFUL');
+      client.set('restapi:test', 'SUCCESSFUL');
       poolConnection.release(client);
     })
     .catch(function(err) {
