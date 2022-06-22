@@ -61,6 +61,8 @@ users:
         - equities: read
         - user_node: readWrite
     redis:
+      keys:
+        - restapi
       password: {{ salt['cmd.shell'](random_password_generator) }}
     restapi:
       password: {{ salt['cmd.shell'](random_password_generator) }}
@@ -80,6 +82,8 @@ users:
         - equities: readWrite
         - user_olympus: readWrite
     redis:
+      keys:
+        - olympus
       password: {{ salt['cmd.shell'](random_password_generator) }}
     restapi:
       password: {{ salt['cmd.shell'](random_password_generator) }}
