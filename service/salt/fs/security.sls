@@ -362,12 +362,6 @@ cert_mongo_restart:
     - require:
       - regen_trusted_CA
 
-cert_mongo_node_restart:
-  cmd.run:
-    - name: service node status; if [ $? = 0 ]; then service node restart; fi;
-    - require:
-      - cert_mongo_restart
-
 # END Server certificates and keys
 
 # BEGIN Shared credentials
@@ -450,7 +444,7 @@ mongodb_set_authorization:
     - template: jinja
     - user: root
   cmd.run:
-    - name: service mongod restart; service node status; if [ $? = 0 ]; then service node restart; fi;
+    - name: service mongod restart
 
 {% set mongodb_users = [] %}
 {% for username, user in pillar.get('users', {}).items() %}
@@ -541,13 +535,11 @@ restapi_refresh_token_secret:
     - template: jinja
     - user: {{ pillar['backend-user'] }}  
 
-restapi_tokens_restart:
+{% endif %}
+
+security_node_restart:
   cmd.run:
     - name: service node status; if [ $? = 0 ]; then service node restart; fi;
-    - require:
-      - restapi_refresh_token_secret
-
-{% endif %}
 
 # Access control for redis server
 
