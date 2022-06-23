@@ -62,7 +62,7 @@ class Quote(data.Connection):
         elif symbol_db_data is None:
             regenerate  = True
         if regen is True or regenerate is True:
-            url = URLS['YAHOO_FINANCE'] + str(symbol) + '?period1=0&period2=9999999999&interval=1d&events=history&includeAdjustedClose=true'
+            url = URLS['YahooFinance'] + str(symbol) + '?period1=0&period2=9999999999&interval=1d&events=history&includeAdjustedClose=true'
             target_file = self.user_object.download_directory()+str(symbol)+'-daily.csv'
             response = urllib.request.urlretrieve(url,target_file)
             with open(target_file,'r') as f:
@@ -111,14 +111,14 @@ class Quote(data.Connection):
         # 
         if interval not in [1,5,15,30,60]:
             raise Exception("If specified, 'interval' must be in the set: 1, 5, 15, 30, 60.")
-        url = URLS['ALPHAVANTAGE'] + 'CHLVRDAEA445JOCB' + '&function=TIME_SERIES_INTRADAY&outputsize=full&symbol=' + str(symbol) + '&interval=' + str(interval) + 'min'
+        url = URLS['AlphaVantage'] + 'CHLVRDAEA445JOCB' + '&function=TIME_SERIES_INTRADAY&outputsize=full&symbol=' + str(symbol) + '&interval=' + str(interval) + 'min'
         request = urllib.request.urlopen(url)
         json_reply = re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8"))
         return json.loads(json_reply)
 
     def latest(self,symbol,**kwargs):
         # Complete price quote for latest trading day
-        url = URLS['ALPHAVANTAGE'] + 'CHLVRDAEA445JOCB' + '&function=GLOBAL_QUOTE&symbol=' + symbol
+        url = URLS['AlphaVantage'] + 'CHLVRDAEA445JOCB' + '&function=GLOBAL_QUOTE&symbol=' + symbol
         request = urllib.request.urlopen(url)
         quote = json.loads(re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8")))
         quote = quote['Global Quote']

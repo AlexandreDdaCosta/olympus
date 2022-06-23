@@ -7,9 +7,9 @@ from olympus import USER, User
 DATABASE = 'equities'
 INDEX_SUFFIX = '_idx'
 URLS = {
-   "ALPHAVANTAGE": "https://www.alphavantage.co/query?apikey=",
-   "YAHOO_FINANCE": "https://query1.finance.yahoo.com/v7/finance/download/",
-   "TD_AMERITRADE": "https://api.tdameritrade.com/v1/"
+   "AlphaVantage": "https://www.alphavantage.co/query?apikey=",
+   "YahooFinance": "https://query1.finance.yahoo.com/v7/finance/download/",
+   "TDAmeritrade": "https://api.tdameritrade.com/v1/"
 }
 
 # Collections
