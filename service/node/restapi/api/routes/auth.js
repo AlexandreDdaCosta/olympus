@@ -13,4 +13,9 @@ router.use((req, res, next) => {
     console.result(res,req);
   });
 });
+router.all('', (req, res) => {
+  console.log('FOO');
+  res.status(404);
+  res.end();
+})
 module.exports = router; 

@@ -14,8 +14,8 @@ process.stderr.write = error.write.bind(error);
 console.result = function (res, req) {
   let now = new Date();
   let message = '';
-  if (res.locals.message) {
-    message = res.locals.message;
+  if (res.locals.statusMessage) {
+    message = res.locals.statusMessage;
   }
   else {
     message = res.statusMessage;

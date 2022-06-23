@@ -20,7 +20,7 @@ const login = async (req, res, next) => {
     const errors = myValidationResult(req);
     if (! errors.isEmpty()) {
       next();
-      res.locals.message = 'Login failed: '+JSON.stringify(errors.array());
+      res.locals.statusMessage = 'Login failed: '+JSON.stringify(errors.array());
       return res.status(400).json({ message: 'Login failed.', errors: JSON.stringify(errors.array()) }).send();
     }
   } 
@@ -32,7 +32,7 @@ const login = async (req, res, next) => {
   try {
     if (! await auth.passwordUserMatch(req.body.username,req.body.password)) {
       next();
-      res.locals.message = 'Bad user/password match';
+      res.locals.statusMessage = 'Bad user/password match';
       return res.status(401).json({ message: 'Access denied.' }).send();
     }
     tokens = await auth.createTokens(req.body.username);
@@ -87,12 +87,12 @@ const refresh = async (req, res, next) => {
     const errors = validationResult(req);
     if (! errors.isEmpty()) {
       next();
-      res.locals.message = 'Refresh failed: '+JSON.stringify(errors.array());
+      res.locals.statusMessage = 'Refresh failed: '+JSON.stringify(errors.array());
       return res.status(400).json({ message: 'Refresh failed.', errors: errors.array() }).send();
     }
     if (req.body.username != req.user) {
       next();
-      res.locals.message = 'Bad username in body';
+      res.locals.statusMessage = 'Bad username in body';
       return res.status(401).json({ message: 'Access denied.' }).send();
     }
     tokens = await auth.createTokens(req.body.username);
