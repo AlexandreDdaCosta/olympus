@@ -35,6 +35,7 @@ const login = async (req, res, next) => {
       res.locals.statusMessage = 'Bad user/password match';
       return res.status(401).json({ message: 'Access denied.' }).send();
     }
+    req.user = req.body.username;
     tokens = await auth.createTokens(req.body.username);
     let poolConnection = redisConnection.getInstance();
     let resourcePromise = poolConnection.acquire();

@@ -18,9 +18,8 @@ const token = async (req, res, next) => {
     return res.status(500).json({ message: 'Internal server error.' }).send();
   }
 
-  next('route');
-  now = new Date();
-  return res.status(200).json({ message: 'Request successful.', provider_token: providerToken, expiration_date: now }).send();
+  next();
+  res.status(200).json({ message: 'Request successful.', provider_token: 'foo', expiration_date: 'bar' });
 };
 
 module.exports = { token };

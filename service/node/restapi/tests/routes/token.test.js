@@ -35,19 +35,21 @@ describe('Access tokens for various data providers.', () => {
     }
   });
 
+/*
   afterAll(async () => {
-        options['headers'] = {
-          'Content-Type': 'application/json'
-        };
-        options['method'] = 'GET';
-        options['path'] = '/auth';
-        let req = https.request(options, (res) => {
-          let body = '';
-          res.on('data', (chunk) => (body += chunk.toString()));
-          res.on('end', () => { console.log(res.statusCode); });
-        });
-        req.end();
+      options['headers'] = {
+        'Content-Type': 'application/json'
+      };
+      options['method'] = 'GET';
+      options['path'] = '/auth';
+      let req = https.request(options, (res) => {
+        let body = '';
+        res.on('data', (chunk) => (body += chunk.toString()));
+        res.on('end', () => { console.log(res.statusCode); });
+      });
+      req.end();
   });
+*/
 
   it('Login, get access and refresh tokens.', async () => {
     let loginPromise = ((data) => {
