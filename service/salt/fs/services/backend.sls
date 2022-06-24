@@ -215,20 +215,24 @@ initialize_olympus_equities:
     - require: 
       - node-backend
 
-{% for datasource_name, datasource in pillar.get('equities_credentials', {}).items() %}
+{% for datasource_name, datasource in pillar.get('equities_datasources', {}).items() %}
 
 {{ datasource_name }}_remove:
   module.run:
     - mongo.remove_object:
       - database: equities
-      - collection: credentials
-      - query: { "DataSource": "{{ datasource_name }}", "KeyName": "{{ datasource["KeyName"] }}" }
+      - collection: datasources
+      - query: { "DataSource": "{{ datasource_name }}" }
 
 {{ datasource_name }}_insert:
   module.run:
     - mongo.insert_object:
       - database: equities
-      - collection: credentials
-      - object: { "DataSource": "{{ datasource_name }}", "KeyName": "{{ datasource["KeyName"] }}", "Key": "{{ datasource["Key"] }}", "IssueEpochDate": {{ datasource["IssueEpochDate"] }} }
+      - collection: datasources
+{% if 'KeyName' in datasource -%}
+      - object: { "DataSource": "{{ datasource_name }}", "KeyName": "{{ datasource["KeyName"] }}", "Key": "{{ datasource["Key"] }}", "IssueEpochDate": {{ datasource["IssueEpochDate"] }}, "Url": "{{ datasource["Url"] }}" }
+{% else -%}
+      - object: { "DataSource": "{{ datasource_name }}", "Url": "{{ datasource["Url"] }}" }
+{% endif -%}
 
 {% endfor %}
