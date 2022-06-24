@@ -130,10 +130,47 @@ describe('Access tokens for various data providers.', () => {
     let data = await tokenPromise();
     expect(data.statusCode).toBe(200);
     expect(JSON.parse(data.body).message).toEqual('Request successful.');
-    provider_token = JSON.parse(data.body).provider_token;
-    console.log(provider_token);
-    expiration_date = JSON.parse(data.body).expiration_date;
-    console.log(expiration_date);
+    let dataSource = JSON.parse(data.body).dataSource;
+    console.log(dataSource);
+    let url = JSON.parse(data.body).url;
+    console.log(url);
+    let token = JSON.parse(data.body).token;
+    console.log(token);
+    let expiration = JSON.parse(data.body).expiration;
+    console.log(expiration);
+  });
+
+  it('Get TD Ameritrade access key.', async () => {
+    let tokenPromise = ((data) => {
+      return new Promise((resolve, reject) => {
+        options['headers'] = {
+          'Authorization': 'Bearer ' + access_token,
+          'Content-Type': 'application/json'
+        };
+        options['method'] = 'GET';
+        options['path'] = '/token/TDAmeritrade';
+        const req = https.request(options, (res) => {
+          let body = '';
+          res.on('data', (chunk) => (body += chunk.toString()));
+          res.on('error', reject);
+          res.on('end', () => { resolve({ statusCode: res.statusCode, body: body }); });
+        });
+        req.on('error', reject);
+        req.end();
+      });
+    });
+
+    let data = await tokenPromise();
+    expect(data.statusCode).toBe(200);
+    expect(JSON.parse(data.body).message).toEqual('Request successful.');
+    let dataSource = JSON.parse(data.body).dataSource;
+    console.log(dataSource);
+    let url = JSON.parse(data.body).url;
+    console.log(url);
+    let token = JSON.parse(data.body).token;
+    console.log(token);
+    let expiration = JSON.parse(data.body).expiration;
+    console.log(expiration);
   });
 
   it('Logout.', async () => {

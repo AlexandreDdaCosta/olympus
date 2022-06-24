@@ -1,4 +1,4 @@
-const UserModel = require('../api/models/users');
+const restapiModel = require('../api/models/restapi');
 const argon2 = require('argon2');
 const config = require('config');
 const fs = require('fs');
@@ -13,7 +13,7 @@ async function createTokens(username) {
 }
 
 async function passwordUserMatch(username, password) {
-  user = await UserModel.findByUsername(username)
+  user = await restapiModel.findByUsername(username)
   if (! user) {
     return false;
   }
