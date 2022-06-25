@@ -91,7 +91,7 @@ describe('Access tokens for various data providers.', () => {
           'Content-Type': 'application/json'
         };
         options['method'] = 'GET';
-        options['path'] = '/token';
+        options['path'] = '/token/equities';
         const req = https.request(options, (res) => {
           let body = '';
           res.on('data', (chunk) => (body += chunk.toString()));
@@ -115,7 +115,7 @@ describe('Access tokens for various data providers.', () => {
           'Content-Type': 'application/json'
         };
         options['method'] = 'GET';
-        options['path'] = '/token/AlphaVantage';
+        options['path'] = '/token/equities/AlphaVantage';
         const req = https.request(options, (res) => {
           let body = '';
           res.on('data', (chunk) => (body += chunk.toString()));
@@ -148,7 +148,7 @@ describe('Access tokens for various data providers.', () => {
           'Content-Type': 'application/json'
         };
         options['method'] = 'GET';
-        options['path'] = '/token/TDAmeritrade';
+        options['path'] = '/token/equities/TDAmeritrade';
         const req = https.request(options, (res) => {
           let body = '';
           res.on('data', (chunk) => (body += chunk.toString()));

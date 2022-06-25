@@ -230,7 +230,7 @@ initialize_olympus_equities:
       - database: equities
       - collection: datasources
 {% if 'KeyName' in datasource %}
-      - object: { "DataSource": "{{ datasource_name }}", "KeyName": "{{ datasource["KeyName"] }}", "Key": "{{ datasource["Key"] }}", "IssueEpochDate": {{ datasource["IssueEpochDate"] }}, "Url": "{{ datasource["Url"] }}" }
+      - object: { "DataSource": "{{ datasource_name }}", "KeyName": "{{ datasource["KeyName"] }}", "Token": "{{ datasource["Token"] }}", "IssueEpochDate": {{ datasource["IssueEpochDate"] }}, "Url": "{{ datasource["Url"] }}" }
 {% else %}
       - object: { "DataSource": "{{ datasource_name }}", "Url": "{{ datasource["Url"] }}" }
 {% endif %}
