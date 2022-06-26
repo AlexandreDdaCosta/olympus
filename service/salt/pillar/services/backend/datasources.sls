@@ -12,7 +12,7 @@ equities_datasources:
     Protocol: https
     RedirectUrl: https://127.0.0.1
     ClientID: ZW44GWR4U1YPJXZBIN49TXRVPCUSMAMS
-    Url: api.tdameritrade.com/v1/
+    Url: api.tdameritrade.com
   YahooFinance:
     Protocol: https
     Url: query1.finance.yahoo.com/v7/finance/download/
