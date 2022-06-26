@@ -23,16 +23,15 @@ const equities = async (req, res, next) => {
 
   try {
     dataSource = await equitiesModel.findDatasourceByName(req.params.dataSource);
+    if (equitiesLib.hasOwnProperty(dataSource.DataSource)) {
+      dataSource = await equitiesLib[dataSource.DataSource](dataSource);
+    } 
   }
   catch (err) {
     next(err);
     return res.status(500).json({ message: 'Internal server error.' }).send();
   }
 
-  if (equitiesLib.hasOwnProperty(dataSource.DataSource)) {
-    dataSource = await equitiesLib[dataSource.DataSource](dataSource);
-    console.log(dataSource);
-  } 
   next();
   res.status(200).json({ message: 'Request successful.', dataSource: dataSource.DataSource, expiration: dataSource.Expiration, token: dataSource.Token, url: dataSource.Url });
 };

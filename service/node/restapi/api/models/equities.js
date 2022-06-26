@@ -1,11 +1,5 @@
 var mongoConnection = require("mongo_connect");
 
-async function addEquityTokenDocument(dataSource, tokenDocument) {
-  const connection = await mongoConnection.getInstance();
-  let db = connection.db('restapi');
-  return await db.collection('token').updateOne( { DataSource: dataSource, Category: 'equities' }, { $set: { TokenDocument: tokenDocument } }, { upsert: true });
-}
-
 async function findDatasourceByName(dataSource) {
   const connection = await mongoConnection.getInstance();
   let db = connection.db('equities');
@@ -22,4 +16,10 @@ async function findEquityTokenDocument(dataSource) {
   return document['TokenDocument'];
 }
 
-module.exports = { addEquityTokenDocument, findDatasourceByName, findEquityTokenDocument }
+async function updateEquityTokenDocument(dataSource, tokenDocument) {
+  const connection = await mongoConnection.getInstance();
+  let db = connection.db('restapi');
+  return await db.collection('token').updateOne( { DataSource: dataSource, Category: 'equities' }, { $set: { TokenDocument: tokenDocument } }, { upsert: true });
+}
+
+module.exports = { findDatasourceByName, findEquityTokenDocument, updateEquityTokenDocument }
