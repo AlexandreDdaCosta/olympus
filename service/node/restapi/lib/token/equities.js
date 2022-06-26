@@ -34,19 +34,21 @@ async function TDAmeritrade(dataSource) {
         // Cannot re-use one-time tokens
 	throw Error('Stale one-time authorization code for TD Ameritrade; must regenerate manually.');
       }
-      let redirectUrl = encodeURIComponent('https://127.0.0.1');
-      let data = '&access_type=offline&client_id=ZW44GWR4U1YPJXZBIN49TXRVPCUSMAMS&code=foo&grant_type=authorization_code&redirect_url=' + redirectUrl;
+      //let code = 'ALEX';
+      let code = dataSource.Token;
+      let redirectUrl = encodeURIComponent(dataSource.RedirectUrl);
+      let data = '&access_type=offline&client_id=' + dataSource.ClientID + '&code=' + code + '&grant_type=authorization_code&redirect_url=' + redirectUrl;
+      console.log(data);
       let options = {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'Content-Length': data.length
         },
-        hostname: 'api.tdameritrade.com',
+        hostname: dataSource.Url,
         method: 'POST',
         path: '/v1/oauth2/token',
         port: 443
       };
-      //options['hostname'] = dataSource.Url;
       function getAmeritradeToken(options, data) {
         return new Promise((resolve, reject) => {
           const req = https.request(options, (res) => {
@@ -60,14 +62,31 @@ async function TDAmeritrade(dataSource) {
           req.end();
         });
       };
-      console.log(data);
       let res = await getAmeritradeToken(options, data);
+      if (res.error) {
+	throw Error('TD Ameritrade API error for ' + options['path'] + ': ' + res.error);
+      }
       console.log(res);
+      console.log(res.access_token);
+      console.log(res.expires_in);
+      console.log(res.refresh_token);
+      console.log(res.refresh_token_expires_in);
+      tokenDocument.authorizationCode == dataSource.Token;
+      now = new Date().getTime();
+      if (res.refresh_token) {
+        tokenDocument.refreshToken = res.refresh_token;
+        tokenDocument.refreshTokenExpiration = res.refresh_token_expires_in + now;
+      }
+      if (res.access_token) {
+        tokenDocument.accessToken = res.access_token;
+        tokenDocument.accessTokenExpiration = res.expires_in + now;
+      }
+      dataSource.Token = tokenDocument.access_token;
+      dataSource.Expiration = tokenDocument.accessTokenExpiration;
     }
   }
-  console.log(tokenDocument.authorizationCode);
-  console.log(dataSource.Token);
-  console.log(now);
+  console.log(tokenDocument);
+  console.log(dataSource);
 
   await equitiesModel.updateEquityTokenDocument('TDAmeritrade',tokenDocument);
   return dataSource;
