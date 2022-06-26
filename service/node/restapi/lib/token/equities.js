@@ -34,37 +34,35 @@ async function TDAmeritrade(dataSource) {
         // Cannot re-use one-time tokens
 	throw Error('Stale one-time authorization code for TD Ameritrade; must regenerate manually.');
       }
-      console.log('PREPROMISE');
-      let AmeritradePromise = ((data) => {
+      let redirectUrl = encodeURIComponent('https://127.0.0.1');
+      let data = '&access_type=offline&client_id=ZW44GWR4U1YPJXZBIN49TXRVPCUSMAMS&code=foo&grant_type=authorization_code&redirect_url=' + redirectUrl;
+      let options = {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Length': data.length
+        },
+        hostname: 'api.tdameritrade.com',
+        method: 'POST',
+        path: '/v1/oauth2/token',
+        port: 443
+      };
+      //options['hostname'] = dataSource.Url;
+      function getAmeritradeToken(options, data) {
         return new Promise((resolve, reject) => {
-          let request_data = JSON.stringify({
-	    access_type: 'offline',
-	    code: 'foo',
-	    client_id: 'ZW44GWR4U1YPJXZBIN49TXRVPCUSMAMS',
-	    grant_type: 'authorization_code',
-	    redirect_url: 'https://127.0.0.1'
-          });
-          let options = {};
-          options['headers'] = {
-            'Content-Length': request_data.length,
-            'Content-Type': 'application/json'
-          };
-          options['hostname'] = 'https://api.tdameritrade.com'
-          //options['hostname'] = dataSource.Url,
-          options['method'] = 'POST';
-	  options['path'] = '/vi/oauth2/token';
           const req = https.request(options, (res) => {
+            res.setEncoding('utf8');
             let body = '';
-            res.on('data', (chunk) => (body += chunk.toString()));
-            res.on('error', reject);
-            res.on('end', () => { resolve({ body: body }); });
+            res.on('data', (chunk) => { body += chunk; });
+            res.on('end', () => { resolve(JSON.parse(body)); });
           });
-          req.on('error', reject);
+          req.on('error', (err) => { reject(err); });
+          req.write(data)
           req.end();
         });
-      });
-      let data = await AmeritradePromise();
+      };
       console.log(data);
+      let res = await getAmeritradeToken(options, data);
+      console.log(res);
     }
   }
   console.log(tokenDocument.authorizationCode);
