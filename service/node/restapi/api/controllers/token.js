@@ -33,7 +33,7 @@ const equities = async (req, res, next) => {
   }
 
   next();
-  res.status(200).json({ message: 'Request successful.', dataSource: dataSource.DataSource, expiration: dataSource.Expiration, token: dataSource.Token, url: dataSource.Url });
+  res.status(200).json({ message: 'Request successful.', dataSource: dataSource.DataSource, expiration: dataSource.Expiration, protocol: dataSource.Protocol, token: dataSource.Token, url: dataSource.Url });
 };
 
 module.exports = { equities };

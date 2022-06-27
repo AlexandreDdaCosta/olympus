@@ -7,7 +7,6 @@ async function TDAmeritrade(dataSource,localAccessToken) {
   let options;
   let redirectUri = encodeURIComponent(dataSource.RedirectUri);
   let result;
-  localAccessToken = true;
 
   if (dataSource.KeyName != 'authorization_code') {
     return dataSource;
@@ -19,7 +18,7 @@ async function TDAmeritrade(dataSource,localAccessToken) {
   if (tokenDocument == null || tokenDocument.refreshToken == null || tokenDocument.refreshTokenExpiration == null || tokenDocument.refreshTokenExpiration < now) {
     // With no valid refresh token, use authorization code to generate new tokens
     if (tokenDocument != null && tokenDocument.authorizationCode != null && tokenDocument.authorizationCode == dataSource.Token) {
-      // Cannot re-use one-time tokens
+      // Cannot re-use one-time authorization code
       throw Error('Stale one-time authorization code for TD Ameritrade; must regenerate manually.');
     }
 
@@ -63,7 +62,6 @@ async function TDAmeritrade(dataSource,localAccessToken) {
 
   if (tokenDocument.refreshTokenExpiration < (now + 604800)) {
     // Get a new access + refresh token if a valid refresh token exists and expires in less than one week
-    // Put new access/refresh token code here
     let encodedToken = encodeURIComponent(tokenDocument.refreshToken);
     data = 'grant_type=refresh_token&refresh_token=' + encodedToken + '&access_type=offline&client_id=' + dataSource.ClientID + '&redirect_uri=' + redirectUri;
     options = {
@@ -98,7 +96,7 @@ async function TDAmeritrade(dataSource,localAccessToken) {
     tokenDocument.localAccessTokenExpiration = result.expires_in + now;
     tokenDocument.refreshToken = result.refresh_token;
     tokenDocument.refreshTokenExpiration = result.refresh_token_expires_in + now;
-    dataSource.Token = tokenDocument.locaSccessToken;
+    dataSource.Token = tokenDocument.localAccessToken;
     dataSource.Expiration = tokenDocument.localAccessTokenExpiration;
   }
 

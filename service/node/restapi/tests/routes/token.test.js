@@ -9,9 +9,14 @@ const redis = require('redis');
 describe('Access tokens for various data providers.', () => {
 
   let access_token;
+  let expiration;
   let options;
   let password;
+  let protocol;
   let refresh_token;
+  let token;
+  let url;
+  let verifyOptions;
 
   options = { 
     hostname: 'zeus', 
@@ -130,14 +135,10 @@ describe('Access tokens for various data providers.', () => {
     let data = await tokenPromise();
     expect(data.statusCode).toBe(200);
     expect(JSON.parse(data.body).message).toEqual('Request successful.');
-    let dataSource = JSON.parse(data.body).dataSource;
-    console.log(dataSource);
-    let url = JSON.parse(data.body).url;
-    console.log(url);
-    let token = JSON.parse(data.body).token;
-    console.log(token);
-    let expiration = JSON.parse(data.body).expiration;
-    console.log(expiration);
+    protocol = JSON.parse(data.body).protocol;
+    url = JSON.parse(data.body).url;
+    token = JSON.parse(data.body).token;
+    expiration = JSON.parse(data.body).expiration;
   });
 
   it('Get TD Ameritrade access key.', async () => {
@@ -163,14 +164,38 @@ describe('Access tokens for various data providers.', () => {
     let data = await tokenPromise();
     expect(data.statusCode).toBe(200);
     expect(JSON.parse(data.body).message).toEqual('Request successful.');
-    let dataSource = JSON.parse(data.body).dataSource;
-    console.log(dataSource);
-    let url = JSON.parse(data.body).url;
-    console.log(url);
-    let token = JSON.parse(data.body).token;
-    console.log(token);
-    let expiration = JSON.parse(data.body).expiration;
-    console.log(expiration);
+    protocol = JSON.parse(data.body).protocol;
+    url = JSON.parse(data.body).url;
+    token = JSON.parse(data.body).token;
+    expiration = JSON.parse(data.body).expiration;
+  });
+
+  it('Test TD Ameritrade access key with connection.', async () => {
+    let dataPromise = ((data) => {
+      return new Promise((resolve, reject) => {
+        let connectOptions = { 
+	  headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+          },
+          hostname: url, 
+          method: 'GET',
+          path: '/v1/marketdata/$COMPX/movers?direction=up&change=percent',
+          port: 443 
+        };
+        const req = https.request(connectOptions, (res) => {
+          let body = '';
+          res.on('data', (chunk) => (body += chunk.toString()));
+          res.on('error', reject);
+          res.on('end', () => { resolve({ statusCode: res.statusCode, body: body }); });
+        });
+        req.on('error', reject);
+        req.end();
+      });
+    });
+
+    let data = await dataPromise();
+    expect(data.statusCode).toBe(200);
   });
 
   it('Logout.', async () => {
