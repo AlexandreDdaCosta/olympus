@@ -7,6 +7,7 @@ async function TDAmeritrade(dataSource,localAccessToken) {
   let options;
   let redirectUri = encodeURIComponent(dataSource.RedirectUri);
   let result;
+  localAccessToken = true;
 
   if (dataSource.KeyName != 'authorization_code') {
     return dataSource;
@@ -24,7 +25,6 @@ async function TDAmeritrade(dataSource,localAccessToken) {
 
     let code = dataSource.Token; // Already url encoded
     data = 'grant_type=authorization_code&refresh_token=&access_type=offline&code=' + code + '&client_id=' + dataSource.ClientID + '&redirect_uri=' + redirectUri;
-    console.log(data);
     options = {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -48,15 +48,7 @@ async function TDAmeritrade(dataSource,localAccessToken) {
         req.end();
       });
     };
-    //result = await initAmeritradeTokens(options, data);
-    result = {
-  access_token: 'BP95E6QzFNTAwlsHB5+6jCFNu3tAyGWboC+2sPlC/bdYBBxF2Su0JL4MNy5Nc/jCYXNh1IDPk42PzRtSc+EW3cte0L1DgU6esgmcjglwPQKmNv917C1algail0yvCNvGACi5QVQwYDn4wkgykCzdghBxT+TQmoHK9daLTAhFzIYJt6xYsEt9cP3HH/EIQwbjROOFfkw7yCbaVa/Z1BciCUr8pRnhZSf0hYlpRZQc/WFbsHEtxc4kKquZHSS+0bvBzQ8ds3Ybn7Qs5BjpDVecpJMgmwN3tfr7u/O41+juGW35n85uHXFWz0iMexoJSrbIwHnFZ0fZVsubZhZC4g95GnkIVMOiA8CPnurexaSXM8Fxh9GIFPJmWJHVskEHsdzl0Pag2exyEYOYKjwjVGfVJPY33MX5kZZkNHeB2+wTXwTBrS+NPJTO2kWtTEASkZP0ZOpK5Q1URxEVA3P+zILnWEA/a8xf9s4ftV3+Ny5x9C5CdMPKUgzpwYnto2f97/WPV4tlf7O6XACIlChrhhWcCQ27ljdnOXpZYMYCUmAXs5AZvAoiTA2axqa/ZoiUq14eztiNr8jzFDd3Lfr7i8337ZWFzcvfIis2rAmAw100MQuG4LYrgoVi/JHHvlV/yVx9yqjkswm4ZAcXqdt3dUxOOPFBt38ld7xqCWhfQMhnHc3FlaTocMvN8dOgWpcTBnHvLks2SDBixXvmvcKk2LeCJHgT2zkgjbSB/Sr9Gh87m+szsWBwIN/GVF66OUB+9oZrQE2guxynNEktOdYxScnsqauSmx+hxlNosszklBD6+KIj6wCutvNF6WQew0NbNvQ0vvK+qxCFpfj8tb/525PECvGc4ZdUWm0ppz7mfpIkFFdIPkW+g2kPJTBmWqmXzLeqsZULACjXNFNCC92HYyXi/sAkwXfe38OQgHagQLo/cJ96RCCo6AbN9AjrKAy5Ly8faRIF+YUGWO+SB6oB9GRPLpNVInRkSSTazh8AAgtgULQ5SGF58+dZkoKcTR8HE0u4vd7M+bMnndtjb2btcRZ+b/u7FIEqQpBtE/htUdVGJ28Vj5H8ub0Vpnjwen+pDkXP7DsVsC9hMx2NfX+LiMd4MrL0aycdrb/d1llXAfyZstsCKrW88HKsjYm9GzPasp7YJNlq7xDoMq+eDUGBAUhpiOpoxCiJyOHXnq4UAjVW2OEkdnkh863OguupjxJ3OhogIxfrcihjfMbRHlpx/To9Vk50YYlaW0PQ212FD3x19z9sWBHDJACbC00B75E',
-  refresh_token: 'ilriWmwS+eSMk7642P+t0rJ8A65LNlJX3zglOa1DebDo0TrC2yA13nY7gkUsSIs+e94pwYw63FasL2UqY4hviI6GSj3BIh8+ZEh858j1CSPxrrgks68Q11xWKBdAAEdoy6XdXcNV3wKIVYviPyvoPgJm++9UGMKCA51iWTwMQlnMyxYRU6jbxp7rTIezBjLXrTmpLmghhmp291La7CqdVPfUjcHlSUZILGq/D5ezyfR9SEU93mZnodoZK75kY1acBmvxUKbYJDJyAhLH2cStW/Zr44xNP2gje2bNNGANlssJXuV1AGfAGTz+JC7neajhpXj32GGv7Q7fH2Atg4Qp8RrEObruZxxStnxPGCiv6pcLl6x6xI5xGglmrh4sZX4xVSFxgfd2rsAgdmsEEPLYV0o84Nhm+TWxSHPtvlGA4r2B8iZOSUqozl/lnHC100MQuG4LYrgoVi/JHHvlmG+5osnjglcp7z46GeV6fuo4WMnyczAhH8sr1Qae5rck5WeNOdBRBGBOXGUlhbW4Gj/G/hiwffFQBprFEpTW//3IqUYysYiV0XXSlk+0S/RytVxlcdBqcAkKY1/fojw/1KlAqEiz2H0mhkOLzRbBvMRB3jOxrRaNyODKw4YIJPeAAtg1J9gX09/gelwl5tMoB5Hy5x64+pd0+L9LDYgKjFFzSOy7THqwJkeHEq5DeUnwKmTFuLkW5szXMUkEa6/3XTbgfyd8Q405O06EmX0MW8710pOk3xt05yLl0eo3GpUkrgmSPq9MtgARprV3eS9dKpR2COq/4gsRskht+ROPxEAoo4PXIN3HQjhpe+yuDBk5oSubCUBzX1EDQgSWohFX61Qe/3iSM0OAd4GSuh4nrp4aEk+XRlKX4IZCZ2RQtSWvG9pX4NhN+DTJpPs=212FD3x19z9sWBHDJACbC00B75E',
-  scope: 'PlaceTrades AccountAccess MoveMoney',
-  expires_in: 1800,
-  refresh_token_expires_in: 7776000,
-  token_type: 'Bearer'
-};
+    result = await initAmeritradeTokens(options, data);
     if (result.error) {
       throw Error('TD Ameritrade API error for ' + options['path'] + ': ' + result.error);
     }
@@ -111,7 +103,7 @@ async function TDAmeritrade(dataSource,localAccessToken) {
   }
 
   now = parseInt(new Date().getTime()/1000);
-  if (localAccessToken && (now < (tokenDocument.accessTokenExpiration - 300))) {
+  if (localAccessToken && (now < (tokenDocument.localAccessTokenExpiration - 300))) {
     dataSource.Token = tokenDocument.localAccessToken;
     dataSource.Expiration = tokenDocument.localAccessTokenExpiration;
   }
