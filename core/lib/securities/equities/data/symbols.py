@@ -1,10 +1,15 @@
-import json, jsonschema, os, re, subprocess, time
+import codecs, csv, json, jsonschema, os, re, subprocess, time
 from jsonschema import validate
 
 import olympus.securities.equities.data as data
 
 from olympus import USER
 
+COMPANY_SYMBOL_SCHEMA_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/nasdaqSymbolList.json'
+ETFINDEX_DATA_FILE_NAME = 'usexchange-etf+indexlist.csv'
+ETFINDEX_DATA_URL = 'http://masterdatareports.com/Download-Files/AllTypes.csv'
+ETFINDEX_JSON_FILE_NAME = 'usexchange-etf+indexlist.json'
+ETFINDEX_SYMBOL_SCHEMA_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/ETFIndexSymbolList.json'
 JSON_FILE_SUFFIX = '-companylist.json'
 NORMALIZE_CAP_REGEX = re.compile('[^0-9\.]')
 SYMBOL_COLLECTION = 'symbols'
@@ -13,7 +18,6 @@ SYMBOL_DATA_URLS = [
 {'exchange':'nasdaq','url':'https://api.nasdaq.com/api/screener/stocks?exchange=nasdaq&download=true'},
 {'exchange':'nyse','url':'https://api.nasdaq.com/api/screener/stocks?exchange=nyse&download=true'}
 ]
-SYMBOL_SCHEMA_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/nasdaqSymbolList.json'
 
 class InitSymbols(data.Initializer):
 
@@ -44,6 +48,30 @@ class InitSymbols(data.Initializer):
             try:
                 # None of the python options works, even when specifying user-agent
                 subprocess.run(['wget "'+urlconf['url']+'" --timeout=10 --user-agent=' + self.username + ' --output-document='+target_file], shell=True)
+                subprocess.run(['touch '+target_file], shell=True)
+            except Exception as e:
+                self.clean_up()
+                raise
+        if self.verbose:
+            print('Downloading ETF and index data.')
+        epoch_time = int(time.time())
+        target_file = self.download_directory+ETFINDEX_DATA_FILE_NAME
+        # Use existing downloads if not too old
+        download_etf_list = True
+        if os.path.isfile(target_file) and os.stat(target_file).st_size > 1:
+            if epoch_time - os.stat(target_file).st_mtime < 28800:
+                print('Using existing ETF/index list: Less than eight hours old.')
+                download_etf_list = False
+        if (download_etf_list is True):
+            if self.verbose:
+                print('Downloading ETF/index list.')
+            try:
+                os.remove(target_file)
+            except OSError:
+                pass
+            try:
+                subprocess.run(['wget ' + ETFINDEX_DATA_URL + ' --timeout=10 --user-agent=' + self.username + ' --output-document='+target_file], shell=True)
+                subprocess.run(['touch '+target_file], shell=True)
             except Exception as e:
                 self.clean_up()
                 raise
@@ -54,9 +82,9 @@ class InitSymbols(data.Initializer):
         collection.drop()
 
         if self.verbose:
-            print('Verifying and importing downloaded data.')
+            print('Verifying and importing downloaded company symbol data.')
         try:
-            with open(SYMBOL_SCHEMA_FILE) as schema_file:
+            with open(COMPANY_SYMBOL_SCHEMA_FILE) as schema_file:
                 validation_schema = json.load(schema_file)
         except:
             self.clean_up()
@@ -98,12 +126,65 @@ class InitSymbols(data.Initializer):
                     company['IPO Year'] = company.pop('ipoyear')
                     company['Name'] = company.pop('name')
                     company['Sector'] = company.pop('sector')
+                    company['SecurityClass'] = 'Stock'
                     company['Symbol'] = company.pop('symbol')
                     json_write.append(company)
                 collection.insert_many(json_write)
             except:
                 self.clean_up()
                 raise
+
+        if self.verbose:
+            print('Verifying and importing downloaded ETF and index symbol data.')
+        try:
+            with open(ETFINDEX_SYMBOL_SCHEMA_FILE) as schema_file:
+                validation_schema = json.load(schema_file)
+        except:
+            self.clean_up()
+            raise
+        # For proper conversion, modify first line of downloaded file with hash keys
+        data_file_name = self.download_directory+ETFINDEX_DATA_FILE_NAME
+        json_file_name = self.download_directory+ETFINDEX_JSON_FILE_NAME
+        with codecs.open(data_file_name, 'r', encoding='ISO-8859-1') as f:
+            lines = f.readlines()
+        lines[0] = "Name,Symbol,Category,Trash\n"
+        with open(data_file_name, "w") as f:
+            f.writelines(lines)
+        # CSV to JSON
+        json_array = []
+        with open(data_file_name, encoding='utf-8') as csvf: 
+            csv_reader = csv.DictReader(csvf) 
+            for row in csv_reader: 
+                json_array.append(row)
+        with open(json_file_name, 'w', encoding='utf-8') as json_file: 
+            json_string = json.dumps(json_array, indent=4)
+            json_file.write(json_string)
+        json_data = ''
+        try:
+            with open(json_file_name) as json_file:
+                json_data = json.load(json_file)
+                validate(instance=json_data,schema=validation_schema)
+        except:
+            self.clean_up()
+            raise
+
+        if self.verbose:
+            print('Importing ETF/index symbol data.')
+        try:
+            json_write = []
+            for entry in json_data:
+                entry.pop('Trash',None)
+                if (re.search("Index", entry['Category'])):
+                    entry['SecurityClass'] = 'Index'
+                    entry['OriginalSymbol'] = entry.pop('Symbol')
+                    entry['Symbol'] = re.sub("^\.", "", entry['OriginalSymbol'])
+                else:
+                    entry['SecurityClass'] = 'ETF'
+                json_write.append(entry)
+            collection.insert_many(json_write)
+        except:
+            self.clean_up()
+            raise
 
         if self.verbose:
             print('Indexing updated collection.')
@@ -123,7 +204,6 @@ class InitSymbols(data.Initializer):
         except:
             self.clean_up()
             raise
-
         self.clean_up()
 
 class Read(data.Connection):
