@@ -117,7 +117,7 @@ selinux.config:
     - template: jinja
     - user: root
   cmd.run:
-    - name: 'openssl req -new -x509 -days 9999 -config {{ cert_dir }}/ca.cnf -extensions v3_req -keyout {{ cert_dir }}/ca-key.pem -out {{ cert_dir }}/{{ server_cert_authority_file_name }}'
+    - name: 'openssl req -new -x509 -days 9999 -config {{ cert_dir }}/ca.cnf -keyout {{ cert_dir }}/ca-key.pem -out {{ cert_dir }}/{{ server_cert_authority_file_name }}'
     - onchanges:
       - file: {{ cert_dir }}/ca.cnf
 
@@ -159,12 +159,12 @@ selinux.config:
   cmd.run:
     - onchanges:
       - file: {{ dir }}/client.cnf
-    - name: 'openssl req -new -config {{ dir }}/client.cnf -extensions v3_req -key {{ dir }}/client-key.pem -out {{ dir }}/client-csr.pem'
-    - name: 'openssl req -new -x509 -days 9999 -config {{ cert_dir }}/ca.cnf -extensions v3_req -keyout {{ cert_dir }}/ca-key.pem -out {{ cert_dir }}/{{ server_cert_authority_file_name }}'
+    - name: 'openssl req -new -config {{ dir }}/client.cnf -key {{ dir }}/client-key.pem -out {{ dir }}/client-csr.pem'
+    - name: 'openssl req -new -x509 -days 9999 -config {{ cert_dir }}/ca.cnf -keyout {{ cert_dir }}/ca-key.pem -out {{ cert_dir }}/{{ server_cert_authority_file_name }}'
 
 {{ host }}_client-csr.pem_sign:
   cmd.run:
-    - name: openssl x509 -req -extfile {{ dir }}/client.cnf -extensions v3_req -days 999 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in {{ dir }}/client-csr.pem -CA {{ cert_dir }}/{{ server_cert_authority_file_name }} -CAkey {{ cert_dir }}/ca-key.pem -CAcreateserial -out {{ dir }}/client-crt.pem
+    - name: openssl x509 -req -extfile {{ dir }}/client.cnf -days 999 -passin "pass:{{ pillar['random_key']['ca_key'] }}" -in {{ dir }}/client-csr.pem -CA {{ cert_dir }}/{{ server_cert_authority_file_name }} -CAkey {{ cert_dir }}/ca-key.pem -CAcreateserial -out {{ dir }}/client-crt.pem
 
 {{ host }}_client-key-crt.pem:
   cmd.run:
