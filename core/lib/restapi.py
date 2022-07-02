@@ -25,5 +25,5 @@ class Connection(User):
                 }
         )
         '''
-        response = requests.get('https://zeus:4443/')
-        print('RESPONSE '+str(response))
+        response = requests.get('https://zeus:4443/', cert='/etc/ssl/localcerts/client-key-crt.pem')
+        print('RESPONSE '+str(response.content))
