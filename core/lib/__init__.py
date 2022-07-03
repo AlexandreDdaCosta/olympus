@@ -9,10 +9,11 @@ USER = 'olympus'
 ARGON2_CONFIG = { "memory_cost": 64*1024, "parallelism": 1, "salt_bytes": 16, "time_cost": 3 }
 CLIENT_CERT='/etc/ssl/localcerts/client-key-crt.pem'
 MONGODB_SERVICE = 'mongodb'
+REDIS_SERVICE = 'redis'
 RESTAPI_RUN_USERNAME = 'node'
 RESTAPI_SERVICE = 'restapi'
 
-PASSWORD_ENABLED_SERVICES = [ MONGODB_SERVICE, RESTAPI_SERVICE ]
+PASSWORD_ENABLED_SERVICES = [ MONGODB_SERVICE, REDIS_SERVICE, RESTAPI_SERVICE ]
 
 class User():
 

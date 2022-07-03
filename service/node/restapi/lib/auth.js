@@ -7,7 +7,9 @@ const jwt = require('jsonwebtoken');
 
 async function createTokens(username) {
   return {
+    access_token_expiration: parseInt(new Date().getTime()/1000) + 900,
     access_token: jwt.sign({ username: username }, fs.readFileSync(config.get('restapi.access_token_secret_file'), 'utf8'), { expiresIn: '15m' }),
+    refresh_token_expiration: parseInt(new Date().getTime()/1000) + 86400,
     refresh_token: jwt.sign({ username: username }, fs.readFileSync(config.get('restapi.refresh_token_secret_file'), 'utf8'), { expiresIn: 86400 })
   };
 }

@@ -41,12 +41,19 @@ const login = async (req, res, next) => {
     let resourcePromise = poolConnection.acquire();
     resourcePromise
       .then(function(client) {
-        client.hSet('restapi:auth:'+req.body.username, "date", Date.now());
-        client.hSet('restapi:auth:'+req.body.username, "access_token", tokens.access_token);
-        client.hSet('restapi:auth:'+req.body.username, "refresh_token", tokens.refresh_token);
+        client.hSet('restapi:auth:'+req.body.username+':'+req.headers.host, "access_token", tokens.access_token);
+        client.hSet('restapi:auth:'+req.body.username+':'+req.headers.host, "access_token_expiration", tokens.access_token_expiration);
+        client.hSet('restapi:auth:'+req.body.username+':'+req.headers.host, "refresh_token", tokens.refresh_token);
+        client.hSet('restapi:auth:'+req.body.username+':'+req.headers.host, "refresh_token_expiration", tokens.refresh_token_expiration);
         poolConnection.release(client);
         next();
-        return res.status(200).json({ message: 'Login successful.', access_token: tokens.access_token, refresh_token: tokens.refresh_token }).send();
+        return res.status(200).json({ 
+	  message: 'Login successful.', 
+	  access_token: tokens.access_token, 
+	  access_token_expiration: tokens.access_token_expiration,
+	  refresh_token: tokens.refresh_token,
+	  refresh_token_expiration: tokens.refresh_token_expiration
+	}).send();
       })
       .catch(function(err) {
 	next(err);
@@ -64,7 +71,7 @@ const logout = async (req, res, next) => {
     let resourcePromise = poolConnection.acquire();
     resourcePromise
       .then(function(client) {
-        client.del('restapi:auth:'+req.user);
+        client.del('restapi:auth:'+req.user+':'+req.headers.host);
         poolConnection.release(client);
 	next();
         return res.status(200).json({ message: 'Logout successful.' }).send();
@@ -101,12 +108,19 @@ const refresh = async (req, res, next) => {
     let resourcePromise = poolConnection.acquire();
     resourcePromise
       .then(function(client) {
-        client.hSet('restapi:auth:'+req.body.username, "date", Date.now());
-        client.hSet('restapi:auth:'+req.body.username, "access_token", tokens.access_token);
-        client.hSet('restapi:auth:'+req.body.username, "refresh_token", tokens.refresh_token);
+        client.hSet('restapi:auth:'+req.body.username+':'+req.headers.host, "access_token", tokens.access_token);
+        client.hSet('restapi:auth:'+req.body.username+':'+req.headers.host, "access_token_expiration", tokens.access_token_expiration);
+        client.hSet('restapi:auth:'+req.body.username+':'+req.headers.host, "refresh_token", tokens.refresh_token);
+        client.hSet('restapi:auth:'+req.body.username+':'+req.headers.host, "refresh_token_expiration", tokens.refresh_token_expiration);
         poolConnection.release(client);
         next();
-        return res.status(200).json({ message: 'Refresh successful.', access_token: tokens.access_token, refresh_token: tokens.refresh_token }).send();
+        return res.status(200).json({ 
+	  message: 'Refresh successful.', 
+	  access_token: tokens.access_token, 
+	  access_token_expiration: tokens.access_token_expiration,
+	  refresh_token: tokens.refresh_token,
+	  refresh_token_expiration: tokens.refresh_token_expiration
+	}).send();
       })
       .catch(function(err) {
 	next(err);

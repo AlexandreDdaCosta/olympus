@@ -19,7 +19,7 @@ const verifyAccessToken = (req, res, next) => {
         req.user = user.username;
         let poolConnection = redisConnection.getInstance();
         let resourcePromise = poolConnection.acquire();
-	let key = 'restapi:auth:' + req.user;
+	let key = 'restapi:auth:' + req.user + ':' + req.headers.host;
         resourcePromise
           .then(function(client) {
             let lastToken = client.hGet(key,'access_token');
@@ -66,10 +66,11 @@ const verifyRefreshToken = (req, res, next) => {
         res.status(401).json({ message: 'Access denied.' }).send();
       }
       else {
+	console.log(req.headers);
         req.user = user.username;
         let poolConnection = redisConnection.getInstance();
         let resourcePromise = poolConnection.acquire();
-	let key = 'restapi:auth:' + req.user;
+	let key = 'restapi:auth:' + req.user + ':' + req.headers.host;
         resourcePromise
           .then(function(client) {
             let lastToken = client.hGet(key,'refresh_token');

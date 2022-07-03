@@ -28,13 +28,16 @@ class Initializer(Connection):
 
     def __init__(self,data_type,username=USER,**kwargs):
         super(Initializer,self).__init__(username,**kwargs)
-        self.user_object = User(self.username)
-        self.download_directory = self.user_object.download_directory()
-        self.working_directory = self.user_object.working_directory()
-        self.lockfile = self.user_object.lockfile_directory()+data_type+'.pid'
+        #self.user_object = User(self.username)
+        #self.download_directory = self.user_object.download_directory()
+        #self.working_directory = self.user_object.working_directory()
+        #self.lockfile = self.user_object.lockfile_directory()+data_type+'.pid'
+        #self.download_directory = self.download_directory()
+        #self.working_directory = self.working_directory()
+        self.lockfile = self.lockfile_directory()+data_type+'.pid'
         self.data_type = data_type
         try:
-            os.makedirs(self.download_directory)
+            os.makedirs(self.download_directory())
         except OSError:
             pass
 
@@ -52,4 +55,4 @@ class Initializer(Connection):
         self.lockfilehandle = open(self.lockfile,'w')
         fcntl.flock(self.lockfilehandle,fcntl.LOCK_EX|fcntl.LOCK_NB)
         self.lockfilehandle.write(str(os.getpid()))
-        os.chdir(self.working_directory)
+        os.chdir(self.working_directory())

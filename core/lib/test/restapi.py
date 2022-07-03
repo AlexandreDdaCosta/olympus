@@ -22,8 +22,8 @@ class TestRestapi(testing.Test):
         self.connector = restapi.Connection(self.username)
 
     def test_connect(self):
-        access_token = self.connector.connect()
-
+        access_token = self.connector.token()
+        print(access_token)
         #self.assertTrue(insert_many_result.acknowledged,'Result should be an acknowledged write operation.')
         #self.assertEqual(test_collection.count_documents({}),4,'Four entries should exist in test database.')
         #self.assertEqual(len(insert_many_result.inserted_ids),4,'Four entries should exist in test database.')
