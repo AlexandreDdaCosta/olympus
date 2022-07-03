@@ -66,7 +66,6 @@ const verifyRefreshToken = (req, res, next) => {
         res.status(401).json({ message: 'Access denied.' }).send();
       }
       else {
-	console.log(req.headers);
         req.user = user.username;
         let poolConnection = redisConnection.getInstance();
         let resourcePromise = poolConnection.acquire();
