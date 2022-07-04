@@ -68,8 +68,10 @@ users:
     restapi:
       password: {{ salt['cmd.shell'](random_password_generator) }}
       routes:
-        - /equities: GET
-        - /token/equities: GET
+        /equities/: 
+          - GET
+        /token/equities/:
+          - GET
     server:
       - supervisor
       - unified
@@ -88,8 +90,8 @@ users:
     restapi:
       password: {{ salt['cmd.shell'](random_password_generator) }}
       routes:
-        - /equities: GET
-        - /token/equities: GET
+        - /equities/: GET
+        - /token/equities/: GET
     server:
       - interface
       - supervisor
