@@ -33,7 +33,7 @@ class InitSymbols(data.Initializer):
         for urlconf in SYMBOL_DATA_URLS:
             target_file = urlconf['exchange']+JSON_FILE_SUFFIX
             company_files.insert(0,target_file)
-            target_file = self.download_directory+target_file
+            target_file = self.download_directory()+target_file
             # Download site issues; use existing downloads if not too old
             if os.path.isfile(target_file) and os.stat(target_file).st_size > 1:
                 if epoch_time - os.stat(target_file).st_mtime < 28800:
@@ -55,7 +55,7 @@ class InitSymbols(data.Initializer):
         if self.verbose:
             print('Downloading ETF and index data.')
         epoch_time = int(time.time())
-        target_file = self.download_directory+ETFINDEX_DATA_FILE_NAME
+        target_file = self.download_directory()+ETFINDEX_DATA_FILE_NAME
         # Use existing downloads if not too old
         download_etf_list = True
         if os.path.isfile(target_file) and os.stat(target_file).st_size > 1:
@@ -93,7 +93,7 @@ class InitSymbols(data.Initializer):
             exchange = company_file.rstrip(JSON_FILE_SUFFIX)
             if self.verbose:
                 print('Verifying data for exchange "' + exchange + '".')
-            data_file_name = self.download_directory+exchange+JSON_FILE_SUFFIX
+            data_file_name = self.download_directory()+exchange+JSON_FILE_SUFFIX
             json_data = ''
             try:
                 with open(data_file_name) as data_file:
@@ -143,8 +143,8 @@ class InitSymbols(data.Initializer):
             self.clean_up()
             raise
         # For proper conversion, modify first line of downloaded file with hash keys
-        data_file_name = self.download_directory+ETFINDEX_DATA_FILE_NAME
-        json_file_name = self.download_directory+ETFINDEX_JSON_FILE_NAME
+        data_file_name = self.download_directory()+ETFINDEX_DATA_FILE_NAME
+        json_file_name = self.download_directory()+ETFINDEX_JSON_FILE_NAME
         with codecs.open(data_file_name, 'r', encoding='ISO-8859-1') as f:
             lines = f.readlines()
         lines[0] = "Name,Symbol,Category,Trash\n"
