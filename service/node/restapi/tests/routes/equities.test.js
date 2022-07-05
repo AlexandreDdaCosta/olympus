@@ -1,4 +1,4 @@
-// sudo su -s /bin/bash -c 'source /srv/www/node/restapi/tests/test_source.sh; cd /srv/www/node/restapi; npm test ./tests/routes/auth.test.js' node
+// sudo su -s /bin/bash -c 'source /srv/www/node/restapi/tests/test_source.sh; cd /srv/www/node/restapi; npm test ./tests/routes/equities.test.js' node
 
 const config = require('config');
 const fs = require('fs');
@@ -6,7 +6,7 @@ const https = require('https');
 const os = require('os');
 const redis = require('redis');
 
-describe('Access tokens for various data providers.', () => {
+describe('Equities data.', () => {
 
   let access_token;
   let expiration;
@@ -14,6 +14,7 @@ describe('Access tokens for various data providers.', () => {
   let password;
   let protocol;
   let refresh_token;
+  let test_symbol = 'AAPL';
   let token;
   let url;
   let verifyOptions;
@@ -72,15 +73,15 @@ describe('Access tokens for various data providers.', () => {
     refresh_token = JSON.parse(data.body).refresh_token;
   });
 
-  it('Omit provider name.', async () => {
-    let tokenPromise = ((data) => {
+  it('Omit symbol.', async () => {
+    let symbolPromise = ((data) => {
       return new Promise((resolve, reject) => {
         options['headers'] = {
           'Authorization': 'Bearer ' + access_token,
           'Content-Type': 'application/json'
         };
         options['method'] = 'GET';
-        options['path'] = '/token/equities';
+        options['path'] = '/equities/symbol';
         const req = https.request(options, (res) => {
           let body = '';
           res.on('data', (chunk) => (body += chunk.toString()));
@@ -92,19 +93,19 @@ describe('Access tokens for various data providers.', () => {
       });
     });
 
-    let data = await tokenPromise();
+    let data = await symbolPromise();
     expect(data.statusCode).toBe(404);
   });
 
-  it('Get Alpha Vantage access key.', async () => {
-    let tokenPromise = ((data) => {
+  it('Bad symbol.', async () => {
+    let symbolPromise = ((data) => {
       return new Promise((resolve, reject) => {
         options['headers'] = {
           'Authorization': 'Bearer ' + access_token,
           'Content-Type': 'application/json'
         };
         options['method'] = 'GET';
-        options['path'] = '/token/equities/AlphaVantage';
+        options['path'] = '/equities/symbol/BADSYMBOL';
         const req = https.request(options, (res) => {
           let body = '';
           res.on('data', (chunk) => (body += chunk.toString()));
@@ -116,24 +117,21 @@ describe('Access tokens for various data providers.', () => {
       });
     });
 
-    let data = await tokenPromise();
-    expect(data.statusCode).toBe(200);
-    expect(JSON.parse(data.body).message).toEqual('Request successful.');
-    protocol = JSON.parse(data.body).protocol;
-    url = JSON.parse(data.body).url;
-    token = JSON.parse(data.body).token;
-    expiration = JSON.parse(data.body).expiration;
+    let data = await symbolPromise();
+    expect(data.statusCode).toBe(404);
+    expect(JSON.parse(data.body).message).toEqual('Symbol not found.');
+    console.log(data.body);
   });
 
-  it('Get TD Ameritrade access key.', async () => {
-    let tokenPromise = ((data) => {
+  it('Get symbol data.', async () => {
+    let symbolPromise = ((data) => {
       return new Promise((resolve, reject) => {
         options['headers'] = {
           'Authorization': 'Bearer ' + access_token,
           'Content-Type': 'application/json'
         };
         options['method'] = 'GET';
-        options['path'] = '/token/equities/TDAmeritrade';
+        options['path'] = '/equities/symbol/' + test_symbol;
         const req = https.request(options, (res) => {
           let body = '';
           res.on('data', (chunk) => (body += chunk.toString()));
@@ -145,41 +143,11 @@ describe('Access tokens for various data providers.', () => {
       });
     });
 
-    let data = await tokenPromise();
+    let data = await symbolPromise();
     expect(data.statusCode).toBe(200);
+    console.log(data.body);
     expect(JSON.parse(data.body).message).toEqual('Request successful.');
-    protocol = JSON.parse(data.body).protocol;
-    url = JSON.parse(data.body).url;
-    token = JSON.parse(data.body).token;
-    expiration = JSON.parse(data.body).expiration;
-  });
-
-  it('Test TD Ameritrade access key with connection.', async () => {
-    let dataPromise = ((data) => {
-      return new Promise((resolve, reject) => {
-        let connectOptions = { 
-	  headers: {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json'
-          },
-          hostname: url, 
-          method: 'GET',
-          path: '/v1/marketdata/$COMPX/movers?direction=up&change=percent',
-          port: 443 
-        };
-        const req = https.request(connectOptions, (res) => {
-          let body = '';
-          res.on('data', (chunk) => (body += chunk.toString()));
-          res.on('error', reject);
-          res.on('end', () => { resolve({ statusCode: res.statusCode, body: body }); });
-        });
-        req.on('error', reject);
-        req.end();
-      });
-    });
-
-    let data = await dataPromise();
-    expect(data.statusCode).toBe(200);
+    expect(JSON.parse(data.body).data.Symbol).toEqual(test_symbol);
   });
 
   it('Logout.', async () => {

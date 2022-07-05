@@ -51,6 +51,42 @@ const verifyAccessToken = (req, res, next) => {
   }
 };
 
+const verifyEndpointPermission = (req, res, next) => {
+  let poolConnection = redisConnection.getInstance();
+  let resourcePromise = poolConnection.acquire();
+  let key = 'restapi:endpoints:' + req.user + ':' + req.headers.host;
+  resourcePromise
+    .then(function(client) {
+      let endpoints = client.hGetAll(key);
+      endpoints
+        .then(function(paths) {
+          for (var startPath in paths) {
+	    cutLength = startPath.length
+	    testPath = req.originalUrl.substr(0,cutLength);
+	    if ( (testPath == startPath) && (req.method = paths[startPath] || paths[startPath] == 'ALL') ) {
+	      console.log('User ' + req.user + ' permitted for ' + req.originalUrl + ' ' + req.method);
+              poolConnection.release(client);
+              next();
+	      return;
+	    }
+          }
+          next('route');
+          res.locals.statusMessage = 'User ' + req.user + ' denied access to requested endpoint ' + req.path + ', method ' + req.methodi + '.';
+          res.status(401).json({ message: 'Access denied.' }).send();
+        })
+        .catch(function(err) {
+           next('route');
+           res.locals.statusMessage = err;
+           res.status(500).json({ message: 'Internal server error.' }).send();
+        });
+    })
+    .catch(function(err) {
+      next('route');
+      res.locals.statusMessage = err;
+      res.status(500).json({ message: 'Internal server error.' }).send();
+    });
+};
+
 const verifyRefreshToken = (req, res, next) => {
   if (! req.headers || ! req.headers.authorization || req.headers.authorization.split(' ')[0] != 'Bearer') {
     next('route');
@@ -101,4 +137,4 @@ const verifyRefreshToken = (req, res, next) => {
   }
 };
 
-module.exports = { verifyAccessToken, verifyRefreshToken };
+module.exports = { verifyAccessToken, verifyEndpointPermission, verifyRefreshToken };

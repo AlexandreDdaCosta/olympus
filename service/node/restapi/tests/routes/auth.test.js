@@ -16,11 +16,11 @@ describe('Login, refresh token, and logout from node restapi.', () => {
   let refresh_token;
 
   options = { 
-    hostname: 'zeus', 
-    port: 4443, 
-    key: fs.readFileSync('/etc/ssl/localcerts/client-key.pem'), 
-    cert: fs.readFileSync('/etc/ssl/localcerts/client-crt.pem'), 
-    ca: fs.readFileSync('/etc/ssl/certs/ca-crt-supervisor.pem.pem')
+    ca: fs.readFileSync(config.get('ssl_server.ca_file')),
+    cert: fs.readFileSync(config.get('ssl_server.client_cert_file')),
+    hostname: config.get('ssl_server.host'),
+    key: fs.readFileSync(config.get('ssl_server.client_key_file')),
+    port: config.get('ssl_server.port')
   }; 
 
   beforeAll(async () => {

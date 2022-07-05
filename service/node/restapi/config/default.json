@@ -47,7 +47,14 @@
   "server":
   {
     "host": "127.0.0.1",
-    "port" : 8889,
-    "token_port" : 8888
+    "port" : 8889
+  },
+  "ssl_server":
+  {
+    "ca_file": "/etc/ssl/certs/ca-crt-supervisor.pem.pem",
+    "client_cert_file": "/etc/ssl/localcerts/client-crt.pem",
+    "client_key_file": "/etc/ssl/localcerts/client-key.pem",
+    "host": "zeus",
+    "port" : 4443
   }
 }

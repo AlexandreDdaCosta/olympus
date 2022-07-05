@@ -20,7 +20,10 @@ async function passwordUserMatch(username, password) {
     return false;
   }
   let hashed_password = user['Password'];
-  return await argon2.verify(hashed_password, password, hashing_config);
+  if (await argon2.verify(hashed_password, password, hashing_config)) {
+    return user;
+  }
+  return false;
 }
 
 module.exports = { createTokens, passwordUserMatch };

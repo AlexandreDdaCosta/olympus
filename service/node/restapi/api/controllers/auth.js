@@ -30,7 +30,8 @@ const login = async (req, res, next) => {
   }
 
   try {
-    if (! await auth.passwordUserMatch(req.body.username,req.body.password)) {
+    userRecord = await auth.passwordUserMatch(req.body.username,req.body.password);
+    if (! userRecord) {
       next();
       res.locals.statusMessage = 'Bad user/password match';
       return res.status(401).json({ message: 'Access denied.' }).send();
@@ -45,6 +46,19 @@ const login = async (req, res, next) => {
         client.hSet('restapi:auth:'+req.body.username+':'+req.headers.host, "access_token_expiration", tokens.access_token_expiration);
         client.hSet('restapi:auth:'+req.body.username+':'+req.headers.host, "refresh_token", tokens.refresh_token);
         client.hSet('restapi:auth:'+req.body.username+':'+req.headers.host, "refresh_token_expiration", tokens.refresh_token_expiration);
+        if (Object.keys(userRecord).includes('DefinedRoutes')) {
+	  if (! userRecord['DefinedRoutes']) {
+            client.hSet('restapi:endpoints:'+req.body.username+':'+req.headers.host, '/', 'ALL');
+	  }
+	  else {
+            routes = Object.keys(userRecord['DefinedRoutes']);
+            for (var route of routes) {
+	      for (var method of userRecord['DefinedRoutes'][route] ) {
+                client.hSet('restapi:endpoints:'+req.body.username+':'+req.headers.host, route, method);
+	      }
+            }
+	  }
+        }
         poolConnection.release(client);
         next();
         return res.status(200).json({ 
@@ -72,6 +86,7 @@ const logout = async (req, res, next) => {
     resourcePromise
       .then(function(client) {
         client.del('restapi:auth:'+req.user+':'+req.headers.host);
+        client.del('restapi:endpoints:'+req.user+':'+req.headers.host);
         poolConnection.release(client);
 	next();
         return res.status(200).json({ message: 'Logout successful.' }).send();

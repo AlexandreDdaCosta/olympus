@@ -1,7 +1,8 @@
 // sudo su -s /bin/bash -c 'source /srv/www/node/restapi/tests/test_source.sh; cd /srv/www/node/restapi; npm test ./tests/routes/index.test.js' node
 
+const config = require('config');
 const request = require('request');
-const url = 'http://zeus:8889/';
+const url = 'http://' + config.get('server.host') + ':' + config.get('server.port') + '/';
 const message = 'Olympus back-end API listening for requests via express/node.js.'
 
 /*
@@ -27,13 +28,13 @@ Command line: openssl s_client -connect zeus:4443 -cert /etc/ssl/localcerts/clie
 const fs = require('fs'); 
 const https = require('https'); 
 const options = { 
-    hostname: 'zeus', 
-    port: 4443, 
-    path: '/', 
+    ca: fs.readFileSync(config.get('ssl_server.ca_file')),
+    cert: fs.readFileSync(config.get('ssl_server.client_cert_file')),
+    hostname: config.get('ssl_server.host'),
+    key: fs.readFileSync(config.get('ssl_server.client_key_file')),
     method: 'GET',
-    key: fs.readFileSync('/etc/ssl/localcerts/client-key.pem'), 
-    cert: fs.readFileSync('/etc/ssl/localcerts/client-crt.pem'), 
-    ca: fs.readFileSync('/etc/ssl/certs/ca-crt-supervisor.pem.pem')
+    path: '/', 
+    port: config.get('ssl_server.port')
 }; 
 describe('Connection to HTTPS index page of API', () => {
   test('Should return HTTP code 200 with JSON reply including a "message" key.', () => {
