@@ -276,6 +276,30 @@ describe('Login, refresh token, and logout from node restapi.', () => {
     expect(JSON.parse(data.body).message).toEqual('Give me a ping, Vasili. One ping only, please.');
   });
 
+  it('Access with valid refresh token.', async () => {
+    let pingPromise = ((data) => {
+      return new Promise((resolve, reject) => {
+        options['headers'] = {
+          'Authorization': 'Bearer ' + refresh_token,
+          'Content-Type': 'application/json'
+        };
+        options['path'] = '/auth/pingr';
+        const req = https.request(options, (res) => {
+          let body = '';
+          res.on('data', (chunk) => (body += chunk.toString()));
+          res.on('error', reject);
+          res.on('end', () => { resolve({ statusCode: res.statusCode, body: body }); });
+        });
+        req.on('error', reject);
+        req.end();
+      });
+    });
+
+    let data = await pingPromise();
+    expect(data.statusCode).toBe(200);
+    expect(JSON.parse(data.body).message).toEqual('Give me a ping, Vasili. One ping only, please.');
+  });
+
   it('Refresh tokens, missing user name.', async () => {
     let refreshPromise = ((data) => {
       return new Promise((resolve, reject) => {

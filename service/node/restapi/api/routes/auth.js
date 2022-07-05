@@ -7,6 +7,7 @@ const middleware = require('../middleware/auth');
 router.post('/login', dataValidate.loginValidate, controller.login);
 router.delete('/logout', middleware.verifyRefreshToken, controller.logout);
 router.get('/ping', middleware.verifyAccessToken, controller.ping);
+router.get('/pingr', middleware.verifyRefreshToken, controller.ping);
 router.post('/refresh', dataValidate.refreshValidate, middleware.verifyRefreshToken, controller.refresh);
 router.use((req, res, next) => {
   res.on('finish', () => {

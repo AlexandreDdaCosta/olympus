@@ -1,6 +1,7 @@
 import codecs, csv, json, jsonschema, os, re, subprocess, time
 from jsonschema import validate
 
+import olympus.restapi as restapi
 import olympus.securities.equities.data as data
 
 from olympus import USER
@@ -206,20 +207,18 @@ class InitSymbols(data.Initializer):
             raise
         self.clean_up()
 
-class Read(data.Connection):
+class Read(restapi.Connection):
 
     def __init__(self,username=USER,**kwargs):
         super(Read,self).__init__(username,**kwargs)
-        if SYMBOL_COLLECTION not in self.db.list_collection_names():
-            raise Exception('Symbol collection "' + SYMBOL_COLLECTION + '" not located in database "' + self.database + '". Collections located: ' + str(self.db.list_collection_names()))
-        self.collection = self.db[SYMBOL_COLLECTION]
 
     def get_symbol(self,symbol,**kwargs):
         symbol = symbol.upper()
-        result = self.collection.find_one({"Symbol":symbol})
-        if result is None:
-            raise SymbolNotFoundError(symbol)
-        return result
+        response = self.call('/equities/symbol/'+symbol)
+        if (response.status_code == 404):
+           raise SymbolNotFoundError(symbol)
+        content = json.loads(response.content)
+        return content['data']
 
 class SymbolNotFoundError(Exception):
     """ Raised for non-existent symbol
