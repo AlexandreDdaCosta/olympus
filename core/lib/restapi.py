@@ -10,7 +10,7 @@ RESTAPI_URL = 'https://zeus:4443'
 
 class Connection(redis.Connection):
 
-    def __init__(self,username=USER):
+    def __init__(self,username=USER,**kwargs):
         super(Connection,self).__init__(username)
         self.username = username
         self.token_lockfile = self.lockfile_directory()+'redis.token.pid'
@@ -31,25 +31,22 @@ class Connection(redis.Connection):
             headers = headers
         )
         if (response.status_code == 401):
-            print('ALEX 401')
             # If unauthorized, could be invalidated tokens.
-            # Wipe out local tokens as precaution, then retry
-            self.client().delete('user:' + self.username + ':restapi:token')
+            # Wipe out local token as precaution, then retry
             if hasattr(self,'access_token'):
                 delattr(self,'access_token')
             if hasattr(self,'access_token_expiration'):
                 delattr(self,'access_token_expiration')
-            headers['Authorization'] = 'Bearer ' + self.token()
+            headers['Authorization'] = 'Bearer ' + self.token(True)
             return func(
                 RESTAPI_URL+endpoint,
                 cert = CLIENT_CERT,
                 data = data,
                 headers = headers
             )
-        print('ALEX OK')
         return response
 
-    def token(self):
+    def token(self,test_access=False):
         # 1. Current object instance has valid access token?
         if (hasattr(self,'access_token') and hasattr(self,'access_token_expiration') and int(self.access_token_expiration) < int(time.time()) + 30):
             return self.access_token
@@ -58,9 +55,12 @@ class Connection(redis.Connection):
         redis_stored_tokens = redis_client.hgetall('user:' + self.username + ':restapi:token')
         if redis_stored_tokens is not None:
             if ('access_token_expiration' in redis_stored_tokens and int(redis_stored_tokens['access_token_expiration']) > int(time.time()) + 30):
-                self.access_token = redis_stored_tokens['access_token']
-                self.access_token_expiration = redis_stored_tokens['access_token_expiration']
-                return self.access_token;
+                if ( (test_access is True) and (not self.test_token(redis_stored_tokens['access_token'])) ):
+                    pass
+                else:
+                    self.access_token = redis_stored_tokens['access_token']
+                    self.access_token_expiration = redis_stored_tokens['access_token_expiration']
+                    return self.access_token;
         # 3. Current and valid refresh token in redis?
             elif ('refresh_token_expiration' in redis_stored_tokens and int(redis_stored_tokens['refresh_token_expiration']) > int(time.time()) + 30):
                 refresh_token = redis_stored_tokens['refresh_token']
@@ -70,10 +70,13 @@ class Connection(redis.Connection):
                 redis_stored_tokens = redis_client.hgetall('user:' + self.username + ':restapi:token')
                 if redis_stored_tokens is not None:
                     if ('access_token_expiration' in redis_stored_tokens and int(redis_stored_tokens['access_token_expiration']) > int(time.time()) + 30):
-                        self.access_token = redis_stored_tokens['access_token']
-                        self.access_token_expiration = redis_stored_tokens['access_token_expiration']
-                        lockfilehandle.close()
-                        return self.access_token;
+                        if ( (test_access is True) and (not self.test_token(redis_stored_tokens['access_token'])) ):
+                            pass
+                        else:
+                            self.access_token = redis_stored_tokens['access_token']
+                            self.access_token_expiration = redis_stored_tokens['access_token_expiration']
+                            lockfilehandle.close()
+                            return self.access_token;
                 # 3c.  Query back end
                 data = json.dumps({ 'username': self.username })
                 response = requests.post(

@@ -18,7 +18,6 @@ class Quote(data.Connection):
 
     def __init__(self,username=USER,**kwargs):
         super(Quote,self).__init__(username,**kwargs)
-        self.user_object = User(username)
 
     def daily(self,symbol,**kwargs):
         # Daily price quote series
@@ -63,7 +62,7 @@ class Quote(data.Connection):
             regenerate  = True
         if regen is True or regenerate is True:
             url = URLS['YahooFinance'] + str(symbol) + '?period1=0&period2=9999999999&interval=1d&events=history&includeAdjustedClose=true'
-            target_file = self.user_object.download_directory()+str(symbol)+'-daily.csv'
+            target_file = self.download_directory()+str(symbol)+'-daily.csv'
             response = urllib.request.urlretrieve(url,target_file)
             with open(target_file,'r') as f:
                 first_line = f.readline()
@@ -106,8 +105,8 @@ class Quote(data.Connection):
     def intraday(self,symbol,interval=1,**kwargs):
         # Interval results:
         # 
-        # 1: 2 weeks
-        # 5, 15, 30, 60: 10 weeks
+        # 1 minute intervals: 2 weeks
+        # 5, 15, 30, or 60 minute intervals: 10 weeks
         # 
         if interval not in [1,5,15,30,60]:
             raise Exception("If specified, 'interval' must be in the set: 1, 5, 15, 30, 60.")

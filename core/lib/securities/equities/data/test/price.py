@@ -28,15 +28,13 @@ class TestPrice(testing.Test):
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.quote.daily(TEST_SYMBOL_FAKE)
         quotes = self.quote.daily(TEST_SYMBOL_ONE,regen=True)
-        print(json.dumps(quotes,indent=4,sort_keys=True))
-        quotes = self.quote.daily(TEST_SYMBOL_ONE)
-        print(json.dumps(quotes,indent=4,sort_keys=True))
+        quotes_noregen = self.quote.daily(TEST_SYMBOL_ONE)
 
     def test_intra_day(self):
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.quote.daily(TEST_SYMBOL_FAKE)
-        quote = self.quote.intraday(TEST_SYMBOL_ONE)
-        print(json.dumps(quote,indent=4,sort_keys=True))
+        quotes = self.quote.intraday(TEST_SYMBOL_ONE)
+        quotes_noregen = self.quote.intraday(TEST_SYMBOL_ONE)
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
