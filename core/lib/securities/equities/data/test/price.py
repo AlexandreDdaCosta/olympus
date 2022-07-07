@@ -23,6 +23,7 @@ class TestPrice(testing.Test):
         else:
             username = self.validRunUser(USER)
         self.quote = price.Quote(username)
+        self.intraday = price.Intraday(username)
 
     def test_daily(self):
         with self.assertRaises(SymbolNotFoundError):
@@ -31,10 +32,7 @@ class TestPrice(testing.Test):
         quotes_noregen = self.quote.daily(TEST_SYMBOL_ONE)
 
     def test_intra_day(self):
-        with self.assertRaises(SymbolNotFoundError):
-            quotes = self.quote.daily(TEST_SYMBOL_FAKE)
-        quotes = self.quote.intraday(TEST_SYMBOL_ONE)
-        quotes_noregen = self.quote.intraday(TEST_SYMBOL_ONE)
+        quotes = self.intraday.quote(TEST_SYMBOL_ONE)
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:

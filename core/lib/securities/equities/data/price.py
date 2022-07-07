@@ -8,6 +8,7 @@ from pytz import timezone
 from olympus import USER, User
 
 import olympus.securities.equities.data as data
+import olympus.securities.equities.data.alphavantage as alphavantage
 import olympus.securities.equities.data.symbols as symbols
 
 from olympus.securities.equities.data import URLS
@@ -102,19 +103,6 @@ class Quote(data.Connection):
             returndata = {key: value for key, value in returndata.items() if dt.strptime(key,"%Y-%m-%d") < end_date}
         return collections.OrderedDict(sorted(returndata.items()))
 
-    def intraday(self,symbol,interval=1,**kwargs):
-        # Interval results:
-        # 
-        # 1 minute intervals: 2 weeks
-        # 5, 15, 30, or 60 minute intervals: 10 weeks
-        # 
-        if interval not in [1,5,15,30,60]:
-            raise Exception("If specified, 'interval' must be in the set: 1, 5, 15, 30, 60.")
-        url = URLS['AlphaVantage'] + 'CHLVRDAEA445JOCB' + '&function=TIME_SERIES_INTRADAY&outputsize=full&symbol=' + str(symbol) + '&interval=' + str(interval) + 'min'
-        request = urllib.request.urlopen(url)
-        json_reply = re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8"))
-        return json.loads(json_reply)
-
     def latest(self,symbol,**kwargs):
         # Complete price quote for latest trading day
         url = URLS['AlphaVantage'] + 'CHLVRDAEA445JOCB' + '&function=GLOBAL_QUOTE&symbol=' + symbol
@@ -134,3 +122,23 @@ class Quote(data.Connection):
         latest['symbol'] = symbol
         latest['volume'] = quote['06. volume']
         return latest
+
+class Intraday(alphavantage.Connection):
+
+    def __init__(self,username=USER,**kwargs):
+        super(Intraday,self).__init__(username,**kwargs)
+        self.data_writer = data.Connection(self.username,**kwargs)
+
+    def quote(self,symbol,interval=1,**kwargs):
+        # Interval results:
+        # 
+        # 1 minute intervals: 2 weeks
+        # 5, 15, 30, or 60 minute intervals: 10 weeks
+        #
+        data = {
+            'interval': str(interval) + 'min',
+            'outputsize': 'full',
+            'symbol': str(symbol).upper()
+        }
+        response = self.request('TIME_SERIES_INTRADAY',data)
+        return response

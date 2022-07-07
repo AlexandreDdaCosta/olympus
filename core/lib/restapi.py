@@ -12,12 +12,11 @@ class Connection(redis.Connection):
 
     def __init__(self,username=USER,**kwargs):
         super(Connection,self).__init__(username)
-        self.username = username
         self.token_lockfile = self.lockfile_directory()+'redis.token.pid'
 
     def call(self,endpoint,method='get',data=None):
         headers={
-            'Authorization': 'Bearer ' + self.token(),
+            'Authorization': 'Bearer ' + self._token(),
             'Content-Type': 'application/json'
         }
         if (data is not None):
@@ -37,7 +36,7 @@ class Connection(redis.Connection):
                 delattr(self,'access_token')
             if hasattr(self,'access_token_expiration'):
                 delattr(self,'access_token_expiration')
-            headers['Authorization'] = 'Bearer ' + self.token(True)
+            headers['Authorization'] = 'Bearer ' + self._token(True)
             return func(
                 RESTAPI_URL+endpoint,
                 cert = CLIENT_CERT,
@@ -46,7 +45,7 @@ class Connection(redis.Connection):
             )
         return response
 
-    def token(self,test_access=False):
+    def _token(self,test_access=False):
         # 1. Current object instance has valid access token?
         if (hasattr(self,'access_token') and hasattr(self,'access_token_expiration') and int(self.access_token_expiration) < int(time.time()) + 30):
             return self.access_token
@@ -55,7 +54,7 @@ class Connection(redis.Connection):
         redis_stored_tokens = redis_client.hgetall('user:' + self.username + ':restapi:token')
         if redis_stored_tokens is not None:
             if ('access_token_expiration' in redis_stored_tokens and int(redis_stored_tokens['access_token_expiration']) > int(time.time()) + 30):
-                if ( (test_access is True) and (not self.test_token(redis_stored_tokens['access_token'])) ):
+                if ( (test_access is True) and (not self._test_token(redis_stored_tokens['access_token'])) ):
                     pass
                 else:
                     self.access_token = redis_stored_tokens['access_token']
@@ -70,7 +69,7 @@ class Connection(redis.Connection):
                 redis_stored_tokens = redis_client.hgetall('user:' + self.username + ':restapi:token')
                 if redis_stored_tokens is not None:
                     if ('access_token_expiration' in redis_stored_tokens and int(redis_stored_tokens['access_token_expiration']) > int(time.time()) + 30):
-                        if ( (test_access is True) and (not self.test_token(redis_stored_tokens['access_token'])) ):
+                        if ( (test_access is True) and (not self._test_token(redis_stored_tokens['access_token'])) ):
                             pass
                         else:
                             self.access_token = redis_stored_tokens['access_token']
@@ -151,7 +150,7 @@ class Connection(redis.Connection):
         self.access_token_expiration = content['access_token_expiration']
         return self.access_token;
 
-    def test_token(self,token,refresh=False):
+    def _test_token(self,token,refresh=False):
         url = RESTAPI_URL+'/auth/ping'
         if (refresh is True):
             url += 'r'
