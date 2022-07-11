@@ -25,10 +25,11 @@ class TestPrice(testing.Test):
             username = self.validRunUser(USER)
         self.daily = price.Daily(username)
         self.intraday = price.Intraday(username)
+        self.latest = price.Latest(username)
         self.mongo_data = data.Connection(username)
 
     def test_daily(self):
-        TEST_SYMBOL_ONE = 'ZIM'
+        return # ALEX
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.daily.quote(TEST_SYMBOL_FAKE)
         quotes = self.daily.quote(TEST_SYMBOL_ONE,regen=True)
@@ -43,14 +44,28 @@ class TestPrice(testing.Test):
             if last_date is None or last_date < quote_date:
                 last_date = quote_date
         if previous_date is not None:
+            last_quote_saved = interval_data['Quotes'][last_date]
+            # Test for proper regeneration of missing dates by simulating the result from one day ago after doing full regen
             year,month,day = map(int,previous_date.split('-'))
             time_string = "%d-%02d-%02d 00:00:00.000000-04:00" % (year,month,day)
             collection.update_one({ 'Interval': '1d' },{ "$unset": { 'Quotes.'+last_date: 1 }})
             collection.update_one({ 'Interval': '1d' },{ "$set":  { 'End Date': previous_date, 'Time': time_string }})
-        #quotes_noregen = self.daily.quote(TEST_SYMBOL_ONE)
+            interval_data = collection.find_one({ 'Interval': '1d',  },{ '_id': 0, 'Interval': 0 })
+            self.assertTrue(previous_date in interval_data['Quotes']);
+            self.assertFalse(last_date in interval_data['Quotes']);
+            quotes_noregen = self.daily.quote(TEST_SYMBOL_ONE)
+            self.assertTrue(last_date in quotes_noregen);
+            for key in last_quote_saved:
+                self.assertTrue(last_quote_saved[key] == quotes_noregen[last_date][key])
     
-    #def test_intra_day(self):
-    #    quotes = self.intraday.quote(TEST_SYMBOL_ONE)
+    def test_latest(self):
+        print('LATEST')
+        quote = self.latest.quote(TEST_SYMBOL_ONE)
+        print(quote)
+
+    def test_intra_day(self):
+        return # ALEX
+        quotes = self.intraday.quote(TEST_SYMBOL_ONE)
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:

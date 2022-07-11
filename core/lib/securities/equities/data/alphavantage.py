@@ -18,5 +18,4 @@ class Connection(provider.Connection):
                 url += '&' + key + '=' + str(data[key])
         request = urllib.request.urlopen(url)
         response = json.loads(re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8")))
-        print(str(response['Meta Data']))
         return response

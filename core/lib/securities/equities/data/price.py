@@ -181,31 +181,18 @@ class Daily(data.Connection):
             json_quote['Adjusted Low'] = str("%.2f" % (float(pieces[3]) * adjustment))
         return json_quote, interval_date
 
-class Latest(data.Connection):
+class Latest(alphavantage.Connection):
 
     def __init__(self,username=USER,**kwargs):
-        super(Daily,self).__init__(username,**kwargs)
-        self.symbol_reader = symbols.Read(username,**kwargs)
+        super(Latest,self).__init__(username,**kwargs)
+        self.data_writer = data.Connection(self.username,**kwargs)
 
     def quote(self,symbol,**kwargs):
-        # Complete price quote for latest trading day
-        url = URLS['AlphaVantage'] + 'CHLVRDAEA445JOCB' + '&function=GLOBAL_QUOTE&symbol=' + symbol
-        request = urllib.request.urlopen(url)
-        quote = json.loads(re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8")))
-        quote = quote['Global Quote']
-        latest = {}
-        latest['Change'] = quote['09. change']
-        latest['Change Percent'] = quote['10. change percent']
-        latest['Close'] = quote['05. price']
-        latest['Date'] = quote['07. latest trading day']
-        latest['Last'] = quote['05. price']
-        latest['Low'] = quote['04. low']
-        latest['High'] = quote['03. high']
-        latest['Open'] = quote['02. open']
-        latest['Previous'] = quote['08. previous close']
-        latest['Symbol'] = symbol
-        latest['Volume'] = quote['06. volume']
-        return latest
+        data = {
+            'symbol': str(symbol).upper()
+        }
+        response = self.request('GLOBAL_QUOTE',data)
+        return response
 
 class Intraday(alphavantage.Connection):
 

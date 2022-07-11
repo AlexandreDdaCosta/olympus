@@ -25,7 +25,7 @@ class Connection(restapi.Connection):
                 self.expiration = redis_stored_tokens['expiration']
                 return self.token
         # 3. Refresh/create via restapi query
-        lockfilehandle = self._token_lock()
+        lockfilehandle = self._provider_token_lock()
         redis_stored_tokens = redis_client.hgetall('user:' + self.username + ':equities:token:' + self.provider)
         if redis_stored_tokens is not None:
             if ('expiration' in redis_stored_tokens and int(redis_stored_tokens['expiration']) > int(time.time()) + 30):
@@ -55,7 +55,7 @@ class Connection(restapi.Connection):
         lockfilehandle.close()
         return self.token
 
-    def _token_lock(self):
+    def _provider_token_lock(self):
         for i in range(5):
             try:
                 lockfilehandle = open(self.provider_lockfile,'w')
