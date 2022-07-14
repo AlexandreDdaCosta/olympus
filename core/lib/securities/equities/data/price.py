@@ -8,6 +8,7 @@ from olympus import USER, User
 
 import olympus.securities.equities.data as data
 import olympus.securities.equities.data.alphavantage as alphavantage
+import olympus.securities.equities.data.tdameritrade as ameritrade
 import olympus.securities.equities.data.symbols as symbols
 
 '''
@@ -18,7 +19,7 @@ collection are arranged as follows:
 {
     "_id" : ObjectId("################"),
     "Time" : "<Last update time>"
-    "Interval": "<Interval of series. Available: 1m/5m/30m/60m (minutes), 1d (day)>"
+    "Interval": "<Interval of series. Available: 1m/60m (minutes), 1d (day)>"
     "Start Time": "<Time stamp for first interval stored. One minute resolution.>"
     "End Time": "<Time stamp for last interval stored. One minute resolution.>"
     "Quotes" : {
@@ -33,7 +34,7 @@ collection are arranged as follows:
             "Adjusted High" : <quote>,
             "Adjusted Low" : <quote>,
             ]
-            "Volume" : "6629600"
+            "Volume" : "<integer>"
 },
 <more intervals>
 ...,
@@ -181,24 +182,51 @@ class Daily(data.Connection):
             json_quote['Adjusted Low'] = str("%.2f" % (float(pieces[3]) * adjustment))
         return json_quote, interval_date
 
-class Latest(alphavantage.Connection):
+class Latest(ameritrade.Connection):
 
     def __init__(self,username=USER,**kwargs):
         super(Latest,self).__init__(username,**kwargs)
-        self.data_writer = data.Connection(self.username,**kwargs)
+        self.symbol_reader = symbols.Read(username,**kwargs)
 
     def quote(self,symbol,**kwargs):
-        data = {
-            'symbol': str(symbol).upper()
-        }
-        response = self.request('GLOBAL_QUOTE',data)
-        return response
+        params = {}
+        unknown_symbols = []
+        unquoted_symbols = []
+        # Symbol can be a string or array (list of symbols)
+        if isinstance(symbol,str):
+            symbol = symbol.upper()
+            try:
+                symbol_data = self.symbol_reader.get_symbol(symbol)
+            except symbols.SymbolNotFoundError:
+                unknown_symbols.append(symbol)
+            except:
+                raise
+            params['symbol'] = symbol
+        elif isinstance(symbol,list):
+            # ALEX: Here add multiple-symbol retrieval from restapi with check similar to above
+            upper_case_symbol = [x.upper() for x in symbol]
+            symbol = upper_case_symbol
+            params['symbol'] = ','.join(symbol)
+        response = self.request('v1/marketdata/quotes','GET',params,with_apikey=True)
+        if isinstance(symbol,str):
+            if symbol not in response and symbol not in unknown_symbols:
+                unquoted_symbols.append(symbol)
+        elif isinstance(symbol,list):
+            for uc_symbol in symbol:
+                if uc_symbol not in response and uc_symbol not in unknown_symbols:
+                    unquoted_symbols.append(uc_symbol)
+        reply = { 'quotes': response }
+        if unknown_symbols:
+            reply['unknown_symbols'] = unknown_symbols
+        if unquoted_symbols:
+            reply['unquoted_symbols'] = unquoted_symbols
+        return reply
 
 class Intraday(alphavantage.Connection):
 
     def __init__(self,username=USER,**kwargs):
         super(Intraday,self).__init__(username,**kwargs)
-        self.data_writer = data.Connection(self.username,**kwargs)
+        self.data_readwriter = data.Connection(self.username,**kwargs)
 
     def quote(self,symbol,interval=1,**kwargs):
         # Interval results:

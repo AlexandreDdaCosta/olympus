@@ -12,7 +12,7 @@ class Connection(restapi.Connection):
         self.verbose = kwargs.get('verbose',False)
         self.provider_lockfile = self.lockfile_directory()+'token.'+provider_name+'.pid'
 
-    def token(self):
+    def access_key(self):
         # 1. Current object instance has valid api key?
         if (hasattr(self,'token') and hasattr(self,'expiration') and int(self.expiration) < int(time.time()) + 30):
             return self.token

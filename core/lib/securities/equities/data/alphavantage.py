@@ -8,7 +8,6 @@ class Connection(provider.Connection):
 
     def __init__(self,username=USER,**kwargs):
         super(Connection,self).__init__('AlphaVantage',username,**kwargs)
-        self.verbose = kwargs.get('verbose',False)
 
     def request(self,function,data=None):
         token = self.token()

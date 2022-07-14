@@ -59,8 +59,9 @@ class TestPrice(testing.Test):
                 self.assertTrue(last_quote_saved[key] == quotes_noregen[last_date][key])
     
     def test_latest(self):
-        print('LATEST')
-        quote = self.latest.quote(TEST_SYMBOL_ONE)
+        quote = self.latest.quote('ZIM')
+        print(quote)
+        quote = self.latest.quote(['ba','aapl'])
         print(quote)
 
     def test_intra_day(self):
