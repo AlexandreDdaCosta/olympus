@@ -15,6 +15,9 @@ describe('Equities data.', () => {
   let protocol;
   let refresh_token;
   let test_symbol = 'AAPL';
+  let test_symbol_bad = 'aapl';
+  let test_symbol_2 = 'BA';
+  let test_symbol_3 = 'JNJ';
   let token;
   let url;
   let verifyOptions;
@@ -120,7 +123,31 @@ describe('Equities data.', () => {
     let data = await symbolPromise();
     expect(data.statusCode).toBe(404);
     expect(JSON.parse(data.body).message).toEqual('Symbol not found.');
-    console.log(data.body);
+  });
+
+  it('Badly formatted symbol.', async () => {
+    let symbolPromise = ((data) => {
+      return new Promise((resolve, reject) => {
+        options['headers'] = {
+          'Authorization': 'Bearer ' + access_token,
+          'Content-Type': 'application/json'
+        };
+        options['method'] = 'GET';
+        options['path'] = '/equities/symbol/' + test_symbol_bad;
+        const req = https.request(options, (res) => {
+          let body = '';
+          res.on('data', (chunk) => (body += chunk.toString()));
+          res.on('error', reject);
+          res.on('end', () => { resolve({ statusCode: res.statusCode, body: body }); });
+        });
+        req.on('error', reject);
+        req.end();
+      });
+    });
+
+    let data = await symbolPromise();
+    expect(data.statusCode).toBe(400);
+    expect(JSON.parse(data.body).message).toEqual('Request failed.');
   });
 
   it('Get symbol data.', async () => {
@@ -145,9 +172,62 @@ describe('Equities data.', () => {
 
     let data = await symbolPromise();
     expect(data.statusCode).toBe(200);
-    console.log(data.body);
     expect(JSON.parse(data.body).message).toEqual('Request successful.');
-    expect(JSON.parse(data.body).data.Symbol).toEqual(test_symbol);
+    expect(JSON.parse(data.body).symbol.Symbol).toEqual(test_symbol);
+  });
+
+  it('Get multiple symbol data.', async () => {
+    let symbolPromise = ((data) => {
+      return new Promise((resolve, reject) => {
+        options['headers'] = {
+          'Authorization': 'Bearer ' + access_token,
+          'Content-Type': 'application/json'
+        };
+        options['method'] = 'GET';
+        options['path'] = '/equities/symbols/' + test_symbol + ',' + test_symbol_2;
+        const req = https.request(options, (res) => {
+          let body = '';
+          res.on('data', (chunk) => (body += chunk.toString()));
+          res.on('error', reject);
+          res.on('end', () => { resolve({ statusCode: res.statusCode, body: body }); });
+        });
+        req.on('error', reject);
+        req.end();
+      });
+    });
+
+    let data = await symbolPromise();
+    expect(data.statusCode).toBe(200);
+    expect(JSON.parse(data.body).message).toEqual('Request successful.');
+    expect(JSON.parse(data.body).symbols[test_symbol]['Symbol']).toEqual(test_symbol);
+    expect(JSON.parse(data.body).symbols[test_symbol_2]['Symbol']).toEqual(test_symbol_2);
+  });
+
+  it('Get multiple symbol data with a bad symbol.', async () => {
+    let symbolPromise = ((data) => {
+      return new Promise((resolve, reject) => {
+        options['headers'] = {
+          'Authorization': 'Bearer ' + access_token,
+          'Content-Type': 'application/json'
+        };
+        options['method'] = 'GET';
+        options['path'] = '/equities/symbols/' + test_symbol + ',BADSYMBOL';
+        const req = https.request(options, (res) => {
+          let body = '';
+          res.on('data', (chunk) => (body += chunk.toString()));
+          res.on('error', reject);
+          res.on('end', () => { resolve({ statusCode: res.statusCode, body: body }); });
+        });
+        req.on('error', reject);
+        req.end();
+      });
+    });
+
+    let data = await symbolPromise();
+    expect(data.statusCode).toBe(200);
+    expect(JSON.parse(data.body).message).toEqual('Request successful.');
+    expect(JSON.parse(data.body).symbols[test_symbol]['Symbol']).toEqual(test_symbol);
+    expect(JSON.parse(data.body).unknownSymbols[0]).toEqual('BADSYMBOL');
   });
 
   it('Logout.', async () => {

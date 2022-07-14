@@ -218,7 +218,14 @@ class Read(restapi.Connection):
         if (response.status_code == 404):
            raise SymbolNotFoundError(symbol)
         content = json.loads(response.content)
-        return content['data']
+        return content['symbol']
+
+    def get_symbols(self,symbols,**kwargs):
+        symbol_string = ','.join([symbol.upper() for symbol in symbols])
+        response = self.call('/equities/symbols/'+symbol_string)
+        content = json.loads(response.content)
+        print(content)
+        return content
 
 class SymbolNotFoundError(Exception):
     """ Raised for non-existent symbol

@@ -204,6 +204,7 @@ class Latest(ameritrade.Connection):
             params['symbol'] = symbol
         elif isinstance(symbol,list):
             # ALEX: Here add multiple-symbol retrieval from restapi with check similar to above
+            symbol_data = self.symbol_reader.get_symbols(symbol)
             upper_case_symbol = [x.upper() for x in symbol]
             symbol = upper_case_symbol
             params['symbol'] = ','.join(symbol)

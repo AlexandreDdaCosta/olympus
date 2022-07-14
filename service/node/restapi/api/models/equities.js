@@ -22,10 +22,16 @@ async function findSymbol(symbol) {
   return await db.collection('symbols').findOne({ 'Symbol': symbol }, { projection: { _id: 0 }});
 }
 
+async function findSymbols(symbolList) {
+  const connection = await mongoConnection.getInstance();
+  let db = connection.db('equities');
+  return await db.collection('symbols').find({ 'Symbol': { "$in": symbolList } }, { projection: { _id: 0 }}).toArray();
+}
+
 async function updateEquityTokenDocument(dataSource, tokenDocument) {
   const connection = await mongoConnection.getInstance();
   let db = connection.db('restapi');
   return await db.collection('token').updateOne( { DataSource: dataSource, Category: 'equities' }, { $set: { TokenDocument: tokenDocument } }, { upsert: true });
 }
 
-module.exports = { findDatasourceByName, findEquityTokenDocument, findSymbol, updateEquityTokenDocument }
+module.exports = { findDatasourceByName, findEquityTokenDocument, findSymbol, findSymbols, updateEquityTokenDocument }
