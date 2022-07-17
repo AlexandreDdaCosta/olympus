@@ -10,6 +10,13 @@ import olympus.mongodb as mongodb
 from olympus import ARGON2_CONFIG, MONGODB_SERVICE, RESTAPI_RUN_USERNAME, USER, User
 from olympus.mongodb import MONGO_ADMIN_USERNAME
 
+def insert_missing_object(database,collection,query,object,user=USER):
+    connector = mongodb.Connection(user)
+    coll = connector.connect(database,collection)
+    if (coll.find_one(query) is not None):
+        recid = coll.insert_one(object)
+    return True
+
 def insert_object(database,collection,object,user=USER):
     connector = mongodb.Connection(user)
     coll = connector.connect(database,collection)
@@ -35,6 +42,9 @@ def insert_update_restapi_user(username,password,defined_routes=None):
         collection.update_one(filter, { "$set": object })
     return True
 
+def manage_symbol_watchlist(watchlist_name,symbols=[]):
+    return True
+
 def purge_users(valid_users=None):
     if valid_users is None:
         valid_users = []
@@ -50,6 +60,12 @@ def remove_object(database,collection,query,user=USER):
     connector = mongodb.Connection(user)
     coll = connector.connect(database,collection)
     recid = coll.delete_one(query)
+    return True
+
+def update_object(database,collection,query,keyvals,user=USER):
+    connector = mongodb.Connection(user)
+    coll = connector.connect(database,collection)
+    recid = coll.update_one(query,{ "$set": keyvals })
     return True
 
 def user(username,password,admin=False,roles=None):

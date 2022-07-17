@@ -206,7 +206,7 @@ node-backend:
     - require:
       - sls: services/web
 
-# START equities project backend section
+# START equities application backend section
 
 initialize_olympus_equities:
   cmd.run:
@@ -214,6 +214,32 @@ initialize_olympus_equities:
     - user: root
     - require: 
       - node-backend
+
+{% for equity_symbol, symbol_data in pillar.get('equity_symbol_corrections', {}).items() %}
+
+{% if symbol_data['action'] == 'insert' %}
+
+{{ equity_symbol }}_insert_missing:
+  module.run:
+    - mongo.insert_missing_object:
+      - database: equities
+      - collection: symbols
+      - query: { "Symbol": "{{ equity_symbol }}", "SecurityClass": "{{ symbol_data['security_class'] }}" }
+      - object: { "Symbol": "{{ equity_symbol }}", "SecurityClass": "{{ symbol_data['security_class'] }}", {% for key, value in symbol_data['what'].items() %} "{{ key }}": "{{ value }}", {% endfor %} }
+
+{% elif symbol_data['action'] == 'update' %}
+
+{{ equity_symbol }}_update_object:
+  module.run:
+    - mongo.update_object:
+      - database: equities
+      - collection: symbols
+      - query: { "Symbol": "{{ equity_symbol }}", "SecurityClass": "{{ symbol_data['security_class'] }}" }
+      - keyvals: { {% for key, value in symbol_data['what'].items() %} "{{ key }}": "{{ value }}", {% endfor %} }
+
+{% endif %}
+
+{% endfor %}
 
 {% for datasource_name, datasource in pillar.get('equities_datasources', {}).items() %}
 
@@ -230,5 +256,15 @@ initialize_olympus_equities:
       - database: equities
       - collection: datasources
       - object: { {% for key, value in datasource.items() %} "{{ key }}": "{{ value }}", {% endfor %} "DataSource": "{{ datasource_name }}" }
+
+{% endfor %}
+
+{% for watchlist_name, symbols in pillar.get('equities_watchlists', {}).items() %}
+
+manage_watchlist_{{ watchlist_name }}:
+  module.run:
+    - mongo.manage_symbol_watchlist:
+      - watchlist_name: {{ watchlist_name }}
+      - symbols: {{ symbols }}
 
 {% endfor %}
