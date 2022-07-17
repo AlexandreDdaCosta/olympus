@@ -13,7 +13,7 @@ from olympus.mongodb import MONGO_ADMIN_USERNAME
 def insert_missing_object(database,collection,query,object,user=USER):
     connector = mongodb.Connection(user)
     coll = connector.connect(database,collection)
-    if (coll.find_one(query) is not None):
+    if (coll.find_one(query) is None):
         recid = coll.insert_one(object)
     return True
 
