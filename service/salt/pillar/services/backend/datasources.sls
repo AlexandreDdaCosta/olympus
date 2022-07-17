@@ -17,7 +17,7 @@ equities_datasources:
     Protocol: https
     Url: query1.finance.yahoo.com/v7/finance/download/
 
-equity_symbol_corrections:
+symbol_corrections:
   RGLD:
     action: update
     security_class: Stock
@@ -39,7 +39,7 @@ equity_symbol_corrections:
       Industry: Precious Metals
       Sector: Basic Materials
 
-equity_watchlists:
+symbol_watchlists:
   olympus: 
     - ARCB
     - COIN

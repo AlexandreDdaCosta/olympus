@@ -215,7 +215,7 @@ initialize_olympus_equities:
     - require: 
       - node-backend
 
-{% for equity_symbol, symbol_data in pillar.get('equity_symbol_corrections', {}).items() %}
+{% for equity_symbol, symbol_data in pillar.get('symbol_corrections', {}).items() %}
 
 {% if symbol_data['action'] == 'insert' %}
 
@@ -259,7 +259,7 @@ initialize_olympus_equities:
 
 {% endfor %}
 
-{% for watchlist_name, symbols in pillar.get('equities_watchlists', {}).items() %}
+{% for watchlist_name, symbols in pillar.get('symbol_watchlists', {}).items() %}
 
 manage_watchlist_{{ watchlist_name }}:
   module.run:
