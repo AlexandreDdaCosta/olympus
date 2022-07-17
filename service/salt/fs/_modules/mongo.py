@@ -44,7 +44,7 @@ def insert_update_restapi_user(username,password,defined_routes=None):
 
 def manage_symbol_watchlist(watchlist_name,symbols=[]):
     with open('/tmp/foofru','w') as f:
-        f.write(watchlist)
+        f.write(watchlist_name)
         f.write(symbols)
     return True
 
