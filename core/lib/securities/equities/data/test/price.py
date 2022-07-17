@@ -29,7 +29,6 @@ class TestPrice(testing.Test):
         self.mongo_data = data.Connection(username)
 
     def test_daily(self):
-        return # ALEX
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.daily.quote(TEST_SYMBOL_FAKE)
         quotes = self.daily.quote(TEST_SYMBOL_ONE,regen=True)
@@ -59,10 +58,29 @@ class TestPrice(testing.Test):
                 self.assertTrue(last_quote_saved[key] == quotes_noregen[last_date][key])
     
     def test_latest(self):
-        quote = self.latest.quote('ZIM')
-        print(quote)
-        quote = self.latest.quote(['ba','aapl'])
-        print(quote)
+        # "quotekeys" not a comprehensive list; only thekey price items get verified
+        quotekeys = ['symbol','description','bidPrice','bidSize','askPrice','askSize','lastPrice','lastSize','openPrice','highPrice','lowPrice','closePrice','netChange','totalVolume']
+        quote = self.latest.quote(TEST_SYMBOL_ONE)
+        self.assertTrue('quotes' in quote)
+        self.assertTrue(TEST_SYMBOL_ONE in quote['quotes'])
+        self.assertEqual(quote['quotes'][TEST_SYMBOL_ONE]['symbol'], TEST_SYMBOL_ONE)
+        for key in quotekeys:
+            self.assertTrue(key in quote['quotes'][TEST_SYMBOL_ONE])
+        quote = self.latest.quote([TEST_SYMBOL_ONE.lower(),TEST_SYMBOL_TWO,TEST_SYMBOL_FAKE.lower()])
+        self.assertTrue('quotes' in quote)
+        self.assertTrue(TEST_SYMBOL_ONE.upper() in quote['quotes'])
+        self.assertEqual(quote['quotes'][TEST_SYMBOL_ONE.upper()]['symbol'], TEST_SYMBOL_ONE.upper())
+        for key in quotekeys:
+            self.assertTrue(key in quote['quotes'][TEST_SYMBOL_ONE.upper()])
+        self.assertTrue(TEST_SYMBOL_TWO in quote['quotes'])
+        self.assertEqual(quote['quotes'][TEST_SYMBOL_TWO]['symbol'], TEST_SYMBOL_TWO)
+        for key in quotekeys:
+            self.assertTrue(key in quote['quotes'][TEST_SYMBOL_TWO])
+        self.assertTrue(TEST_SYMBOL_FAKE.upper() in quote['unknown_symbols'])
+        quote = self.latest.quote([TEST_SYMBOL_FAKE,TEST_SYMBOL_FAKE_TWO.lower()])
+        self.assertFalse('quotes' in quote)
+        self.assertTrue(TEST_SYMBOL_FAKE in quote['unknown_symbols'])
+        self.assertTrue(TEST_SYMBOL_FAKE_TWO.upper() in quote['unknown_symbols'])
 
     def test_intra_day(self):
         return # ALEX

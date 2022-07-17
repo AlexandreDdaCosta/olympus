@@ -199,15 +199,20 @@ class Latest(ameritrade.Connection):
                 symbol_data = self.symbol_reader.get_symbol(symbol)
             except symbols.SymbolNotFoundError:
                 unknown_symbols.append(symbol)
+                reply = { 'unknown_symbols': unknown_symbols }
+                return reply
             except:
                 raise
             params['symbol'] = symbol
         elif isinstance(symbol,list):
-            # ALEX: Here add multiple-symbol retrieval from restapi with check similar to above
+            symbol = [x.upper() for x in symbol]
             symbol_data = self.symbol_reader.get_symbols(symbol)
-            upper_case_symbol = [x.upper() for x in symbol]
-            symbol = upper_case_symbol
-            params['symbol'] = ','.join(symbol)
+            unknown_symbols = symbol_data['unknownSymbols']
+            quote_symbols = symbol_data['symbols'].keys()
+            if (not quote_symbols):
+                reply = { 'unknown_symbols': unknown_symbols }
+                return reply
+            params['symbol'] = ','.join(quote_symbols)
         response = self.request('v1/marketdata/quotes','GET',params,with_apikey=True)
         if isinstance(symbol,str):
             if symbol not in response and symbol not in unknown_symbols:

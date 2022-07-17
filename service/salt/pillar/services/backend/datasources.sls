@@ -16,3 +16,50 @@ equities_datasources:
   YahooFinance:
     Protocol: https
     Url: query1.finance.yahoo.com/v7/finance/download/
+
+equity_symbol_corrections:
+  RGLD:
+    action: update
+    security_class: Stock
+    what:
+      Industry: Precious Metals
+      Sector: Basic Materials
+  META:
+    action: update
+    security_class: ETF
+    what:
+      Symbol: METV
+  WPM:
+    action: insert
+    security_class: Stock
+    what:
+      Country: United States
+      Exchange: nyse
+      Name: Wheaton Precious Metals Corp.
+      Industry: Precious Metals
+      Sector: Basic Materials
+
+equity_watchlist:
+  - ARCB
+  - COIN
+  - DASH
+  - EWZ
+  - FAZ
+  - GDX
+  - GME
+  - NET
+  - RBLX
+  - RIVN
+  - SCO
+  - SLB
+  - SNAP
+  - SNBR
+  - TGT
+  - TQQQ
+  - TWLO
+  - UGA
+  - UGL
+  - UNG
+  - USO
+  - UUP
+  - WEAT

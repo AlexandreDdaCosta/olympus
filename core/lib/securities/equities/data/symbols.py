@@ -224,7 +224,6 @@ class Read(restapi.Connection):
         symbol_string = ','.join([symbol.upper() for symbol in symbols])
         response = self.call('/equities/symbols/'+symbol_string)
         content = json.loads(response.content)
-        print(content)
         return content
 
 class SymbolNotFoundError(Exception):
