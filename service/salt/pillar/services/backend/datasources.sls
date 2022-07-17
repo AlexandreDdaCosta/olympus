@@ -33,7 +33,7 @@ equity_symbol_corrections:
     action: insert
     security_class: Stock
     what:
-      Country: United States
+      Country: Canada
       Exchange: nyse
       Name: Wheaton Precious Metals Corp.
       Industry: Precious Metals
