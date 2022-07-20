@@ -6,12 +6,16 @@ import olympus.securities.equities.data as data
 
 from olympus import USER
 
-COMPANY_SYMBOL_SCHEMA_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/nasdaqSymbolList.json'
-ETFINDEX_DATA_FILE_NAME = 'usexchange-etf+indexlist.csv'
-ETFINDEX_DATA_URL = 'http://masterdatareports.com/Download-Files/AllTypes.csv'
-ETFINDEX_JSON_FILE_NAME = 'usexchange-etf+indexlist.json'
-ETFINDEX_SYMBOL_SCHEMA_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/ETFIndexSymbolList.json'
+COMPANY_SYMBOL_SCHEMA_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/NasdaqSymbolList.json'
+ETF_INDEX_DATA_FILE_NAME = 'usexchange-etf+indexlist.csv'
+ETF_INDEX_DATA_URL = 'http://masterdatareports.com/Download-Files/AllTypes.csv'
+ETF_INDEX_JSON_FILE_NAME = 'usexchange-etf+indexlist.json'
+ETF_INDEX_SYMBOL_SCHEMA_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/ETFIndexSymbolList.json'
 JSON_FILE_SUFFIX = '-companylist.json'
+NASDAQ_TRADED_DATA_FILE_NAME = 'nasdaqtraded.txt'
+NASDAQ_TRADED_DATA_URL = 'ftp://ftp.nasdaqtrader.com/SymbolDirectory/nasdaqtraded.txt'
+NASDAQ_TRADED_JSON_FILE_NAME = 'nasdaqtraded.json'
+NASDAQ_TRADED_SYMBOL_SCHEMA_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/NasdaqTradedSymbolList.json'
 NORMALIZE_CAP_REGEX = re.compile('[^0-9\.]')
 SYMBOL_COLLECTION = 'symbols'
 SYMBOL_DATA_URLS = [
@@ -28,59 +32,20 @@ class InitSymbols(data.Initializer):
     def populate_collections(self):
         self.prepare()
         if self.verbose:
-            print('Downloading company data.')
+            print('Downloading exchange listed symbol data.')
         company_files = []
-        epoch_time = int(time.time())
         for urlconf in SYMBOL_DATA_URLS:
             target_file = urlconf['exchange']+JSON_FILE_SUFFIX
             company_files.insert(0,target_file)
-            target_file = self.download_directory()+target_file
-            # Download site issues; use existing downloads if not too old
-            if os.path.isfile(target_file) and os.stat(target_file).st_size > 1:
-                if epoch_time - os.stat(target_file).st_mtime < 28800:
-                    print('Using existing company list for ' + urlconf['exchange'] + ': Less than eight hours old.')
-                    continue
-            if self.verbose:
-                print('Downloading data for exchange ' + urlconf['exchange'] + ', URL ' + urlconf['url'])
-            try:
-                os.remove(target_file)
-            except OSError:
-                pass
-            try:
-                # None of the python options works, even when specifying user-agent
-                subprocess.run(['wget "'+urlconf['url']+'" --timeout=10 --user-agent=' + self.username + ' --output-document='+target_file], shell=True)
-                subprocess.run(['touch '+target_file], shell=True)
-            except Exception as e:
-                self.clean_up()
-                raise
-        if self.verbose:
-            print('Downloading ETF and index data.')
-        epoch_time = int(time.time())
-        target_file = self.download_directory()+ETFINDEX_DATA_FILE_NAME
-        # Use existing downloads if not too old
-        download_etf_list = True
-        if os.path.isfile(target_file) and os.stat(target_file).st_size > 1:
-            if epoch_time - os.stat(target_file).st_mtime < 28800:
-                print('Using existing ETF/index list: Less than eight hours old.')
-                download_etf_list = False
-        if (download_etf_list is True):
-            if self.verbose:
-                print('Downloading ETF/index list.')
-            try:
-                os.remove(target_file)
-            except OSError:
-                pass
-            try:
-                subprocess.run(['wget ' + ETFINDEX_DATA_URL + ' --timeout=10 --user-agent=' + self.username + ' --output-document='+target_file], shell=True)
-                subprocess.run(['touch '+target_file], shell=True)
-            except Exception as e:
-                self.clean_up()
-                raise
-
+            self._download_symbol_file(target_file,urlconf['url'],'Verifying data for '+urlconf['exchange']+'.','Using existing company list for '+urlconf['exchange']+'.','Downloading data for '+urlconf['exchange']+'.')
+        self._download_symbol_file(ETF_INDEX_DATA_FILE_NAME,ETF_INDEX_DATA_URL,'Verifying ETF and index data.','Using existing ETF/index list.','Downloading ETF/index list.')
+        self._download_symbol_file(NASDAQ_TRADED_DATA_FILE_NAME,NASDAQ_TRADED_DATA_URL,'Verifying Nasdaq traded data.','Using existing Nasdaq traded download.','Downloading Nasdaq traded symbols list.')
+    
         if self.verbose:
             print('Creating unified symbol collection.')
         collection = self.db[SYMBOL_COLLECTION]
         collection.drop()
+        added_symbols = {}
 
         if self.verbose:
             print('Verifying and importing downloaded company symbol data.')
@@ -129,6 +94,7 @@ class InitSymbols(data.Initializer):
                     company['Sector'] = company.pop('sector')
                     company['SecurityClass'] = 'Stock'
                     company['Symbol'] = company.pop('symbol')
+                    added_symbols[company['Symbol']] = True
                     json_write.append(company)
                 collection.insert_many(json_write)
             except:
@@ -136,16 +102,16 @@ class InitSymbols(data.Initializer):
                 raise
 
         if self.verbose:
-            print('Verifying and importing downloaded ETF and index symbol data.')
+            print('Verifying downloaded ETF and index symbol data.')
         try:
-            with open(ETFINDEX_SYMBOL_SCHEMA_FILE) as schema_file:
+            with open(ETF_INDEX_SYMBOL_SCHEMA_FILE) as schema_file:
                 validation_schema = json.load(schema_file)
         except:
             self.clean_up()
             raise
         # For proper conversion, modify first line of downloaded file with hash keys
-        data_file_name = self.download_directory()+ETFINDEX_DATA_FILE_NAME
-        json_file_name = self.download_directory()+ETFINDEX_JSON_FILE_NAME
+        data_file_name = self.download_directory()+ETF_INDEX_DATA_FILE_NAME
+        json_file_name = self.download_directory()+ETF_INDEX_JSON_FILE_NAME
         with codecs.open(data_file_name, 'r', encoding='ISO-8859-1') as f:
             lines = f.readlines()
         lines[0] = "Name,Symbol,Category,Trash\n"
@@ -181,12 +147,73 @@ class InitSymbols(data.Initializer):
                     entry['Symbol'] = re.sub("^\.", "", entry['OriginalSymbol'])
                 else:
                     entry['SecurityClass'] = 'ETF'
+                if entry['Symbol'] in added_symbols:
+                    next
+                added_symbols[entry['Symbol']] = True
                 json_write.append(entry)
             collection.insert_many(json_write)
         except:
             self.clean_up()
             raise
 
+        if self.verbose:
+            print('Verifying downloaded Nasdaq traded symbol data.')
+        try:
+            with open(NASDAQ_TRADED_SYMBOL_SCHEMA_FILE) as schema_file:
+                validation_schema = json.load(schema_file)
+        except:
+            self.clean_up()
+            raise
+
+        '''
+        # For proper conversion, modify first line of downloaded file with hash keys
+        data_file_name = self.download_directory()+ETF_INDEX_DATA_FILE_NAME
+        json_file_name = self.download_directory()+ETF_INDEX_JSON_FILE_NAME
+        with codecs.open(data_file_name, 'r', encoding='ISO-8859-1') as f:
+            lines = f.readlines()
+        lines[0] = "Name,Symbol,Category,Trash\n"
+        with open(data_file_name, "w") as f:
+            f.writelines(lines)
+        # CSV to JSON
+        json_array = []
+        with open(data_file_name, encoding='utf-8') as csvf: 
+            csv_reader = csv.DictReader(csvf) 
+            for row in csv_reader: 
+                json_array.append(row)
+        with open(json_file_name, 'w', encoding='utf-8') as json_file: 
+            json_string = json.dumps(json_array, indent=4)
+            json_file.write(json_string)
+        json_data = ''
+        try:
+            with open(json_file_name) as json_file:
+                json_data = json.load(json_file)
+                validate(instance=json_data,schema=validation_schema)
+        except:
+            self.clean_up()
+            raise
+
+        if self.verbose:
+            print('Importing ETF/index symbol data.')
+        try:
+            json_write = []
+            for entry in json_data:
+                entry.pop('Trash',None)
+                if (re.search("Index", entry['Category'])):
+                    entry['SecurityClass'] = 'Index'
+                    entry['OriginalSymbol'] = entry.pop('Symbol')
+                    entry['Symbol'] = re.sub("^\.", "", entry['OriginalSymbol'])
+                else:
+                    entry['SecurityClass'] = 'ETF'
+                if entry['Symbol'] in added_symbols:
+                    next
+                added_symbols[entry['Symbol']] = True
+                json_write.append(entry)
+            collection.insert_many(json_write)
+        except:
+            self.clean_up()
+            raise
+
+        '''
         if self.verbose:
             print('Indexing updated collection.')
         try:
@@ -206,6 +233,29 @@ class InitSymbols(data.Initializer):
             self.clean_up()
             raise
         self.clean_up()
+
+    def _download_symbol_file(self,target_file,url,verbose_title,verbose_nodownload,verbose_download_symbol_file):
+        if self.verbose:
+            print(verbose_title)
+        epoch_time = int(time.time())
+        target_file = self.download_directory() + target_file
+        # Use existing downloads if less than eight hours old
+        if os.path.isfile(target_file) and os.stat(target_file).st_size > 1:
+            if epoch_time - os.stat(target_file).st_mtime < 28800:
+                print(verbose_nodownload)
+                return
+        if self.verbose:
+            print(verbose_download_symbol_file)
+        try:
+            os.remove(target_file)
+        except OSError:
+            pass
+        try:
+            subprocess.run(['wget "' + url + '" --timeout=10 --user-agent=' + self.username + ' --output-document='+target_file], shell=True)
+            subprocess.run(['touch '+target_file], shell=True)
+        except Exception as e:
+            self.clean_up()
+            raise
 
 class Read(restapi.Connection):
 
