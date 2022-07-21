@@ -268,5 +268,3 @@ initialize_olympus_equities:
     - user: root
 #  module.run:
 #    - mongo.manage_symbol_watchlist:
-
-{% endfor %}
