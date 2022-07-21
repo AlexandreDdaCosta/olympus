@@ -24,18 +24,22 @@ symbol_corrections:
     what:
       Industry: Precious Metals
       Sector: Basic Materials
-  META:
+  SA:
     action: update
-    security_class: ETF
-    what:
-      Symbol: METV
-  WPM:
-    action: insert
     security_class: Stock
     what:
-      Country: Canada
-      Exchange: nyse
-      Name: Wheaton Precious Metals Corp.
+      Industry: Precious Metals
+      Sector: Basic Materials
+  SSRM:
+    action: update
+    security_class: Stock
+    what:
+      Industry: Precious Metals
+      Sector: Basic Materials
+  WPM:
+    action: update
+    security_class: Stock
+    what:
       Industry: Precious Metals
       Sector: Basic Materials
 
