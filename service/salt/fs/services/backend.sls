@@ -259,12 +259,14 @@ initialize_olympus_equities:
 
 {% endfor %}
 
-{% for watchlist_name, symbols in pillar.get('symbol_watchlists', {}).items() %}
-
-manage_watchlist_{{ watchlist_name }}:
-  module.run:
-    - mongo.manage_symbol_watchlist:
-      - watchlist_name: {{ watchlist_name }}
-      - symbols: {{ symbols }}
+/usr/local/lib/python3.9/dist-packages/olympus/securities/equities/config/symbol_watchlists.json
+  file.managed:
+    - group: root
+    - mode: 0644
+    - source: salt://services/backend/symbol_watchlists.json.jinja
+    - template: jinja
+    - user: root
+#  module.run:
+#    - mongo.manage_symbol_watchlist:
 
 {% endfor %}

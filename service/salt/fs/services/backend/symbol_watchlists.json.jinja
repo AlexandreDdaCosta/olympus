@@ -1,0 +1,5 @@
+{
+{%- for watchlist_name, entries in pillar.get('symbol_watchlists', {}).items() -%}
+    "{{ watchlist_name }}": [ {{ entries }} ],
+{% endfor %}
+}
