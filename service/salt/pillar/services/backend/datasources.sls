@@ -44,7 +44,7 @@ symbol_corrections:
       Sector: Basic Materials
 
 symbol_watchlists:
-  olympus: 
+  trade: 
     - ARCB
     - COIN
     - DASH
@@ -71,3 +71,9 @@ symbol_watchlists:
     - USO
     - UUP
     - WEAT
+  bear:
+    - SQQQ
+    - SPXS
+  bull:
+    - TQQQ
+    - SPXL
