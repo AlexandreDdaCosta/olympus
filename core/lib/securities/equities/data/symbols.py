@@ -100,7 +100,6 @@ class InitSymbols(data.Initializer):
             except:
                 self.clean_up()
                 raise
-
         if self.verbose:
             print('Verifying downloaded ETF and index symbol data.')
         try:
@@ -111,15 +110,16 @@ class InitSymbols(data.Initializer):
             raise
         # For proper conversion, modify first line of downloaded file with hash keys
         data_file_name = self.download_directory()+ETF_INDEX_DATA_FILE_NAME
+        data_file_name_utf8 = self.download_directory()+ETF_INDEX_DATA_FILE_NAME+'.utf8'
         json_file_name = self.download_directory()+ETF_INDEX_JSON_FILE_NAME
         with codecs.open(data_file_name, 'r', encoding='ISO-8859-1') as f:
             lines = f.readlines()
         lines[0] = "Name,Symbol,Category,Trash\n"
-        with open(data_file_name, "w") as f:
+        with open(data_file_name_utf8, "w") as f:
             f.writelines(lines)
         # CSV to JSON
         json_array = []
-        with open(data_file_name, encoding='utf-8') as csvf: 
+        with open(data_file_name_utf8, encoding='utf-8') as csvf: 
             csv_reader = csv.DictReader(csvf) 
             for row in csv_reader: 
                 json_array.append(row)
@@ -148,7 +148,7 @@ class InitSymbols(data.Initializer):
                 else:
                     entry['SecurityClass'] = 'ETF'
                 if entry['Symbol'] in added_symbols:
-                    next
+                    continue
                 added_symbols[entry['Symbol']] = True
                 json_write.append(entry)
             collection.insert_many(json_write)
@@ -165,20 +165,22 @@ class InitSymbols(data.Initializer):
             self.clean_up()
             raise
 
-        '''
-        # For proper conversion, modify first line of downloaded file with hash keys
-        data_file_name = self.download_directory()+ETF_INDEX_DATA_FILE_NAME
-        json_file_name = self.download_directory()+ETF_INDEX_JSON_FILE_NAME
-        with codecs.open(data_file_name, 'r', encoding='ISO-8859-1') as f:
-            lines = f.readlines()
-        lines[0] = "Name,Symbol,Category,Trash\n"
-        with open(data_file_name, "w") as f:
-            f.writelines(lines)
+        data_file_name = self.download_directory() + NASDAQ_TRADED_DATA_FILE_NAME
+        json_file_name = self.download_directory() + NASDAQ_TRADED_JSON_FILE_NAME
         # CSV to JSON
         json_array = []
         with open(data_file_name, encoding='utf-8') as csvf: 
-            csv_reader = csv.DictReader(csvf) 
-            for row in csv_reader: 
+            csv_reader = csv.DictReader(csvf,delimiter = "|") 
+            for row in csv_reader:
+                if re.match('.*[.$].*',row['Symbol']):
+                    continue
+                if not row['Symbol']:
+                    continue
+                if row['Symbol'] in added_symbols:
+                    continue
+                if row['Test Issue'] == 'Y':
+                    continue
+                added_symbols[row['Symbol']] = True
                 json_array.append(row)
         with open(json_file_name, 'w', encoding='utf-8') as json_file: 
             json_string = json.dumps(json_array, indent=4)
@@ -193,27 +195,31 @@ class InitSymbols(data.Initializer):
             raise
 
         if self.verbose:
-            print('Importing ETF/index symbol data.')
+            print('Importing Nasdaq traded symbol data.')
         try:
             json_write = []
             for entry in json_data:
-                entry.pop('Trash',None)
-                if (re.search("Index", entry['Category'])):
-                    entry['SecurityClass'] = 'Index'
-                    entry['OriginalSymbol'] = entry.pop('Symbol')
-                    entry['Symbol'] = re.sub("^\.", "", entry['OriginalSymbol'])
-                else:
+                entry.pop('CQS Symbol')
+                entry.pop('Financial Status')
+                entry.pop('Market Category')
+                entry.pop('Nasdaq Traded')
+                entry.pop('NextShares')
+                entry.pop('Round Lot Size')
+                entry.pop('Symbol')
+                entry.pop('Test Issue')
+                entry['Exchange'] = entry.pop('Listing Exchange')
+                entry['Name'] = entry.pop('Security Name')
+                entry['Symbol'] = entry.pop('NASDAQ Symbol')
+                if entry.pop('ETF') == 'Y':
                     entry['SecurityClass'] = 'ETF'
-                if entry['Symbol'] in added_symbols:
-                    next
-                added_symbols[entry['Symbol']] = True
+                else:
+                    entry['SecurityClass'] = 'Stock'
                 json_write.append(entry)
             collection.insert_many(json_write)
         except:
             self.clean_up()
             raise
 
-        '''
         if self.verbose:
             print('Indexing updated collection.')
         try:

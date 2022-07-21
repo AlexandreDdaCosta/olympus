@@ -5,23 +5,55 @@
     {
       "type": "object",
       "properties": {
-        "Name": {
+        "CQS Symbol": {
+          "type": "string"
+        },
+        "ETF": {
+          "type": "string",
+	  "pattern": "^[NY]$"
+        },
+        "Category": {
+          "type": "string"
+        },
+        "Financial Status": {
+          "type": "string"
+        },
+        "Listing Exchange": {
+          "type": "string"
+        },
+        "Market Category": {
+          "type": "string"
+        },
+        "NASDAQ Symbol": {
+          "type": "string"
+        },
+        "Nasdaq Traded": {
+          "type": "string",
+	  "pattern": "^[NY]$"
+        },
+        "NextShares": {
+          "type": "string",
+	  "pattern": "^[NY]$"
+        },
+        "Round Lot Size": {
+          "type": "string"
+        },
+        "Security Name": {
           "type": "string"
         },
         "Symbol": {
           "type": "string"
         },
-        "Category": {
-          "type": "string"
-        },
-        "Trash": {
-          "type": "string"
+        "Test Issue": {
+          "type": "string",
+	  "pattern": "^[NY]$"
         }
       },
       "required": [
-        "Name",
-        "Symbol",
-        "Category"
+        "ETF",
+        "NASDAQ Symbol",
+        "Security Name",
+	"Symbol"
       ]
     }
   ]
