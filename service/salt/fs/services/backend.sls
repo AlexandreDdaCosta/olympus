@@ -208,39 +208,6 @@ node-backend:
 
 # START equities application backend section
 
-initialize_olympus_equities:
-  cmd.run:
-    - name: "su -s /bin/bash -c '/usr/local/bin/olympus/securities/equities/init_equities.py' {{ pillar['core-app-user'] }}"
-    - user: root
-    - require: 
-      - node-backend
-
-{% for equity_symbol, symbol_data in pillar.get('symbol_corrections', {}).items() %}
-
-{% if symbol_data['action'] == 'insert' %}
-
-{{ equity_symbol }}_insert_missing:
-  module.run:
-    - mongo.insert_missing_object:
-      - database: equities
-      - collection: symbols
-      - query: { "Symbol": "{{ equity_symbol }}", "SecurityClass": "{{ symbol_data['security_class'] }}" }
-      - object: { "Symbol": "{{ equity_symbol }}", "SecurityClass": "{{ symbol_data['security_class'] }}", {% for key, value in symbol_data['what'].items() %} "{{ key }}": "{{ value }}", {% endfor %} }
-
-{% elif symbol_data['action'] == 'update' %}
-
-{{ equity_symbol }}_update_object:
-  module.run:
-    - mongo.update_object:
-      - database: equities
-      - collection: symbols
-      - query: { "Symbol": "{{ equity_symbol }}", "SecurityClass": "{{ symbol_data['security_class'] }}" }
-      - keyvals: { {% for key, value in symbol_data['what'].items() %} "{{ key }}": "{{ value }}", {% endfor %} }
-
-{% endif %}
-
-{% endfor %}
-
 {% for datasource_name, datasource in pillar.get('equities_datasources', {}).items() %}
 
 {{ datasource_name }}_remove:
@@ -259,6 +226,18 @@ initialize_olympus_equities:
 
 {% endfor %}
 
+/usr/local/lib/python3.9/dist-packages/olympus/securities/equities/config/symbol_corrections.json:
+  file.managed:
+    - group: root
+    - mode: 0644
+    - source: salt://services/backend/symbol_corrections.json.jinja
+    - template: jinja
+    - user: root
+#{{ equity_symbol }}_insert_missing:
+#  module.run:
+#    - mongo.insert_missing_object:
+#    - mongo.update_object:
+
 /usr/local/lib/python3.9/dist-packages/olympus/securities/equities/config/symbol_watchlists.json:
   file.managed:
     - group: root
@@ -268,3 +247,11 @@ initialize_olympus_equities:
     - user: root
 #  module.run:
 #    - mongo.manage_symbol_watchlist:
+
+initialize_olympus_equities:
+  cmd.run:
+    - name: "su -s /bin/bash -c '/usr/local/bin/olympus/securities/equities/init_equities.py' {{ pillar['core-app-user'] }}"
+    - user: root
+    - require: 
+      - node-backend
+

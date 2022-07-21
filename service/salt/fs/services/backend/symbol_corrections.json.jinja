@@ -1,17 +1,18 @@
+{% set trim_blocks=True -%}
+{% set corrections_count=pillar.get('symbol_corrections', {}).items()|length -%}
 {
-    "dependencies": {
-{%- for packagename, package in pillar.get('backend-npm-packages', {}).items() -%}
-      {%- if 'last_entry' in package and package['last_entry'] %}
-      "{{ packagename }}": "{{ package['version'] }}"
-      {%- else %}
-      "{{ packagename }}": "{{ package['version'] }}",
-      {%- endif -%}
+{%- for symbol, details in pillar.get('symbol_corrections', {}).items() %}
+{%- set what_count=details['what']|length %}
+    "{{ symbol }}":
+    {
+        "Action": "{{ details['action'] }}",
+        "SecurityClass": "{{ details['security_class'] }}",
+        "What":
+        {
+            {%- for key, value in details['what'] %}
+            "{{ key }}": "{{ value }}"{% if loop.index < what_count %},{% endif -%}
+            {% endfor -%}
+        }
+    }{% if loop.index < corrections_count %},{% endif -%}
 {% endfor %}
-    },
-    "main": "app.js",
-    "name": "restapi",
-    "scripts": {
-        "test": "jest"
-    },
-    "version": "{{ pillar['backend-version'] }}"
 }
