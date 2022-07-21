@@ -1,7 +1,8 @@
 {% set trim_blocks=True -%}
 {
 {% for watchlist_name, entries in pillar.get('symbol_watchlists', {}).items() %}
-    {{ entries|length }}
+    {{ pillar.get('symbol_watchlists', {}).items()|length }}
+    {{ loop.index }}]
     "{{ watchlist_name }}": {{ entries }},
 {% endfor %}
 }
