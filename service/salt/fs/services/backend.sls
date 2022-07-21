@@ -259,7 +259,7 @@ initialize_olympus_equities:
 
 {% endfor %}
 
-/usr/local/lib/python3.9/dist-packages/olympus/securities/equities/config/symbol_watchlists.json
+/usr/local/lib/python3.9/dist-packages/olympus/securities/equities/config/symbol_watchlists.json:
   file.managed:
     - group: root
     - mode: 0644
