@@ -3,9 +3,10 @@
 {
 {%- for watchlist_name, entries in pillar.get('symbol_watchlists', {}).items() %}
     "{{ watchlist_name }}": 
-    [{% for entry in entries %}
+    [
+    {%- for entry in entries %}
         "{{ entry }}", 
-    {% endfor %}
+    {%- endfor %}
     ]{% if loop.index < watchlist_count %},{% endif -%}
 {% endfor %}
 }
