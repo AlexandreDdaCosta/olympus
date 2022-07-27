@@ -11,6 +11,8 @@ import olympus.securities.equities.data.alphavantage as alphavantage
 import olympus.securities.equities.data.tdameritrade as ameritrade
 import olympus.securities.equities.data.symbols as symbols
 
+STORED_PRICE_FORMAT = [ "Open", "High", "Low", "Close", "Volume", "Adjusted Close", "Adjusted Open", "Adjusted High", "Adjusted Low" ]
+
 '''
 When stored in the database, price data is split into separate collection by symbol
 with the naming convention "price.<symbol>". The documents stored within each
@@ -24,17 +26,17 @@ collection are arranged as follows:
     "End Time": "<Time stamp for last interval stored. One minute resolution.>"
     "Quotes" : {
         "<Time stamp, one minute resolution" : {
-            "Open" : <quote>,
-            "High" : <quote>,
-            "Low" : <quote>,
-            "Close" : <quote>,
-            "Adjusted Close" : <quote>,
+            "Open" : "<quote>",
+            "High" : "<quote>",
+            "Low" : "<quote>",
+            "Close" : "<quote>",
+            "Volume" : "<integer>",
+            "Adjusted Close" : "<quote>",
             [
-            "Adjusted Open" : <quote>,
-            "Adjusted High" : <quote>,
-            "Adjusted Low" : <quote>,
+            "Adjusted Open" : "<quote>",
+            "Adjusted High" : "<quote>",
+            "Adjusted Low" : "<quote>",
             ]
-            "Volume" : "<integer>"
 },
 <more intervals>
 ...,
@@ -115,7 +117,7 @@ class Daily(data.Connection):
                 if self.end_date_stored is not None:
                     compare_line = f.readline().rstrip()
                     pieces = compare_line.rstrip().split(',')
-                    if interval_data['Quotes'][self.end_date_stored]['Adjusted Close'] != str("%.2f" % float(pieces[5])):
+                    if interval_data['Quotes'][self.end_date_stored][5] != str("%.2f" % float(pieces[5])):
                         # There's been a price adjustment, regenerate everything
                         regen = True
                 if regen is False:
@@ -141,6 +143,7 @@ class Daily(data.Connection):
                 write_dict = {}
                 write_dict['Time'] = str(now)
                 write_dict['Interval'] = '1d'
+                write_dict['Format'] = STORED_PRICE_FORMAT
                 write_dict['Start Date'] = self.start_date_stored
                 write_dict['End Date'] = self.end_date_stored
                 write_dict['Quotes'] = json_quotes
@@ -152,34 +155,46 @@ class Daily(data.Connection):
 
         if returndata is None:
             returndata = interval_data['Quotes']
+        # Trim data outside of requested date range
         if start_date is not None:
             start_date = dt.strptime(start_date,"%Y-%m-%d")
             returndata = {key: value for key, value in returndata.items() if dt.strptime(key,"%Y-%m-%d") > start_date}
         if end_date is not None:
             end_date = dt.strptime(end_date,"%Y-%m-%d")
             returndata = {key: value for key, value in returndata.items() if dt.strptime(key,"%Y-%m-%d") < end_date}
-        return collections.OrderedDict(sorted(returndata.items()))
+        # Format returned data using data headers
+        formatted_returndata = {}
+        details_length = len(STORED_PRICE_FORMAT)
+        for quote_date in returndata:
+            formatted_returndata[quote_date] = {}
+            quote_length = len(returndata[quote_date])
+            for index in range(0, details_length):
+                if index >= quote_length:
+                    formatted_returndata[quote_date][STORED_PRICE_FORMAT[index]] = returndata[quote_date][index-6]
+                else:
+                    formatted_returndata[quote_date][STORED_PRICE_FORMAT[index]] = returndata[quote_date][index]
+        return collections.OrderedDict(sorted(formatted_returndata.items()))
 
     def _parse(self,line):
         line = line.rstrip()
         pieces = line.rstrip().split(',')
-        json_quote = {}
         interval_date = str(pieces[0])
         if (self.start_date_stored is None or self.start_date_stored >= interval_date):
             self.start_date_stored = interval_date
         if (self.end_date_stored is None or self.end_date_stored <= interval_date):
             self.end_date_stored = interval_date
-        json_quote['Open'] = str("%.2f" % float(pieces[1]))
-        json_quote['High'] = str("%.2f" % float(pieces[2]))
-        json_quote['Low'] = str("%.2f" % float(pieces[3]))
-        json_quote['Close'] = str("%.2f" % float(pieces[4]))
-        json_quote['Volume'] = pieces[6]
-        json_quote['Adjusted Close'] = str("%.2f" % float(pieces[5]))
+        json_quote = []
+        json_quote.append(str("%.2f" % float(pieces[1])))
+        json_quote.append(str("%.2f" % float(pieces[2])))
+        json_quote.append(str("%.2f" % float(pieces[3])))
+        json_quote.append(str("%.2f" % float(pieces[4])))
+        json_quote.append(pieces[6])
+        json_quote.append(str("%.2f" % float(pieces[5])))
         if (float(pieces[4]) != float(pieces[5])):
             adjustment = float(pieces[5]) / float(pieces[4])
-            json_quote['Adjusted Open'] = str("%.2f" % (float(pieces[1]) * adjustment))
-            json_quote['Adjusted High'] = str("%.2f" % (float(pieces[2]) * adjustment))
-            json_quote['Adjusted Low'] = str("%.2f" % (float(pieces[3]) * adjustment))
+            json_quote.append(str("%.2f" % (float(pieces[1]) * adjustment)))
+            json_quote.append(str("%.2f" % (float(pieces[2]) * adjustment)))
+            json_quote.append(str("%.2f" % (float(pieces[3]) * adjustment)))
         return json_quote, interval_date
 
 class Latest(ameritrade.Connection):
