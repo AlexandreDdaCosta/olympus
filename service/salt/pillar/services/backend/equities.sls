@@ -66,7 +66,3 @@ symbol_watchlists:
     - TWLO
     - UNG
     - UUP
-  commodity: 
-    - CORN
-    - SOYB
-    - WEAT
