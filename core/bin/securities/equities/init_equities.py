@@ -15,6 +15,7 @@ if args.verbose == True:
 print("Begin symbol import.")
 process = InitSymbols(verbose=args.verbose)
 process.populate_collections()
+process.post_populate_collections()
 print("Ended symbol import.")
 if args.verbose == True:
     end = time.time()

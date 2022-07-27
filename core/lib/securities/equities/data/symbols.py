@@ -18,11 +18,13 @@ NASDAQ_TRADED_JSON_FILE_NAME = 'nasdaqtraded.json'
 NASDAQ_TRADED_SYMBOL_SCHEMA_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/NasdaqTradedSymbolList.json'
 NORMALIZE_CAP_REGEX = re.compile('[^0-9\.]')
 SYMBOL_COLLECTION = 'symbols'
+SYMBOL_CORRECTIONS_CONFIG_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'config/symbol_corrections.json'
 SYMBOL_DATA_URLS = [
 {'exchange':'amex','url':'https://api.nasdaq.com/api/screener/stocks?exchange=amex&download=true'},
 {'exchange':'nasdaq','url':'https://api.nasdaq.com/api/screener/stocks?exchange=nasdaq&download=true'},
 {'exchange':'nyse','url':'https://api.nasdaq.com/api/screener/stocks?exchange=nyse&download=true'}
 ]
+WATCHLIST_CONFIG_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'config/symbol_watchlists.json'
 
 class InitSymbols(data.Initializer):
 
@@ -239,6 +241,23 @@ class InitSymbols(data.Initializer):
             self.clean_up()
             raise
         self.clean_up()
+
+    def post_populate_collections(self):
+        if self.verbose:
+            print('Modifying stored symbol collections via configuration files.')
+        # Individual symbol data
+        if os.path.isfile(SYMBOL_CORRECTIONS_CONFIG_FILE):
+            #with open(SYMBOL_CORRECTIONS_CONFIG_FILE) as corrections_file:
+            #    corrections = json.load(corrections_file)
+            #print(corrections)
+            pass
+        # Watchlists
+        if os.path.isfile(WATCHLIST_CONFIG_FILE):
+            #with open(WATCHLIST_CONFIG_FILE) as watchlist_file:
+            #    watchlists = json.load(watchlist_file)
+            #print(watchlists)
+            pass
+        # ALEX
 
     def _download_symbol_file(self,target_file,url,verbose_title,verbose_nodownload,verbose_download_symbol_file):
         if self.verbose:
