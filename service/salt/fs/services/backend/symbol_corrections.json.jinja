@@ -7,12 +7,7 @@
     {
         "Action": "{{ details['action'] }}",
         "SecurityClass": "{{ details['security_class'] }}",
-        "What":
-        {
-            {%- for key, value in details['what'] %}
-            "{{ key }}": "{{ value }}"{% if loop.index < what_count %},{% endif -%}
-            {% endfor -%}
-        }
+        "What": "{{ details['what'] }}"
     }{% if loop.index < corrections_count %},{% endif -%}
 {% endfor %}
 }
