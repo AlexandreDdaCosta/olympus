@@ -253,10 +253,9 @@ class InitSymbols(data.Initializer):
             pass
         # Watchlists
         if os.path.isfile(WATCHLIST_CONFIG_FILE):
-            #with open(WATCHLIST_CONFIG_FILE) as watchlist_file:
-            #    watchlists = json.load(watchlist_file)
-            #print(watchlists)
-            pass
+            with open(WATCHLIST_CONFIG_FILE) as watchlist_file:
+                watchlists = json.load(watchlist_file)
+            print(watchlists)
         # ALEX
 
     def _download_symbol_file(self,target_file,url,verbose_title,verbose_nodownload,verbose_download_symbol_file):
