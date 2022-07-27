@@ -51,23 +51,22 @@ symbol_watchlists:
     - EWZ
     - FAZ
     - GDX
-    - GME
     - IWM
     - NET
     - QQQ
     - RBLX
     - RIVN
-    - SCO
     - SLB
     - SNAP
     - SNBR
     - SPY
+    - SQQQ
     - TGT
     - TQQQ
     - TWLO
-    - UGA
-    - UGL
     - UNG
-    - USO
     - UUP
+  commodity: 
+    - CORN
+    - SOYB
     - WEAT
