@@ -5,7 +5,7 @@
     "{{ watchlist_name }}": 
     [
     {%- for entry in entries %}
-        "{{ entry }}", 
+        "{{ entry }}"{% if loop.index < entries|length %},{% endif %}
     {%- endfor %}
     ]{% if loop.index < watchlist_count %},{% endif -%}
 {% endfor %}
