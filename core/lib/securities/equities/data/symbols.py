@@ -245,17 +245,47 @@ class InitSymbols(data.Initializer):
     def post_populate_collections(self):
         if self.verbose:
             print('Modifying stored symbol collections via configuration files.')
-        # Individual symbol data
+        collection = self.db[SYMBOL_COLLECTION]
+        unknown_symbols = []
+        # Symbol details
         if os.path.isfile(SYMBOL_CORRECTIONS_CONFIG_FILE):
             with open(SYMBOL_CORRECTIONS_CONFIG_FILE) as corrections_file:
                 corrections = json.load(corrections_file)
-            print(corrections)
+            for symbol in corrections:
+                if (corrections[symbol]['Action'] == 'update'):
+                    existing_symbol=collection.find_one({ "Symbol": symbol, "SecurityClass": corrections[symbol]['SecurityClass'] })
+                    if existing_symbol is None:
+                        unknown_symbols.append(symbol)
+                        continue
+                    recid = collection.update_one({ "Symbol": symbol, "SecurityClass": corrections[symbol]['SecurityClass'] },{ "$set": corrections[symbol]['What'] })
+                else:
+                    raise Exception('Unknown operation ' + corrections[symbol]['Action'] + ' requested during symbol post population.')
         # Watchlists
         if os.path.isfile(WATCHLIST_CONFIG_FILE):
             with open(WATCHLIST_CONFIG_FILE) as watchlist_file:
                 watchlists = json.load(watchlist_file)
-            print(watchlists)
-        # ALEX
+            for watchlist_name in watchlists:
+                existing_watchlist_symbols=collection.find({ "Watchlists": watchlist_name })
+                for watchlist_symbol in existing_watchlist_symbols:
+                    if (watchlist_symbol['Symbol'] in watchlists[watchlist_name]):
+                        watchlists[watchlist_name].remove(watchlist_symbol['Symbol'])
+                    else:
+                        symbol_watchlists = watchlist_symbol['Watchlists']
+                        symbol_watchlists.remove(watchlist_name)
+                        collection.update_one({ "Symbol": watchlist_symbol['Symbol'] }, { "$set": { "Watchlists": symbol_watchlists } })
+                for symbol in watchlists[watchlist_name]:
+                    existing_symbol=collection.find_one({ "Symbol": symbol })
+                    if existing_symbol is None:
+                        unknown_symbols.append(symbol)
+                        continue
+                    if 'Watchlists' not in existing_symbol:
+                        symbol_watchlists = [ watchlist_name ]
+                    else:
+                        symbol_watchlists = existing_symbol['Watchlists']
+                        symbol_watchlists.append(watchlist_name)
+                    collection.update_one({ "Symbol": symbol }, { "$set": { "Watchlists": symbol_watchlists } })
+        if unknown_symbols:
+            raise Exception('Unknown symbols detected during post population: '+str(unknown_symbols))
 
     def _download_symbol_file(self,target_file,url,verbose_title,verbose_nodownload,verbose_download_symbol_file):
         if self.verbose:
