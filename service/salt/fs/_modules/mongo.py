@@ -42,34 +42,6 @@ def insert_update_restapi_user(username,password,defined_routes=None):
         collection.update_one(filter, { "$set": object })
     return True
 
-def manage_symbol_watchlist(watchlist_name,symbols=[],user=USER):
-    connector = mongodb.Connection(user)
-    collection = connector.connect('equities','symbols')
-    existing_watchlist_symbols=collection.find({ "Watchlists": watchlist_name })
-    print(str(symbols))
-    for watchlist_symbol in existing_watchlist_symbols:
-        if (watchlist_symbol['Symbol'] in symbols):
-            symbols.remove(watchlist_symbol['Symbol'])
-        else:
-            watchlists = watchlist_symbol['Watchlists']
-            watchlists.remove(watchlist_name)
-            collection.update_one({ "Symbol": watchlist_symbol['Symbol'] }, { "$set": { "Watchlists": watchlists } })
-    watchlists = [ watchlist_name ]
-    unknown_symbols = []
-    for symbol in symbols:
-        existing_symbol=collection.find_one({ "Symbol": symbol })
-        if existing_symbol is None:
-            unknown_symbols.append(symbol)
-        elif 'Watchlists' not in existing_symbol:
-            watchlists = [ watchlist_name ]
-        else:
-            watchlists = existing_symbol['Watchlists']
-            watchlists.append(watchlist_name)
-        collection.update_one({ "Symbol": symbol }, { "$set": { "Watchlists": watchlists } })
-    if unknown_symbols:
-        raise Exception('Unknown symbols during watchlist update: '+str(unknown_symbols))
-    return True
-
 def purge_users(valid_users=None):
     if valid_users is None:
         valid_users = []

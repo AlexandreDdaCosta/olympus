@@ -233,9 +233,6 @@ node-backend:
     - source: salt://services/backend/symbol_corrections.json.jinja
     - template: jinja
     - user: root
-#    - mongo.insert_missing_object:
-#    - mongo.update_object:
-#    - mongo.manage_symbol_watchlist:
 
 /usr/local/lib/python3.9/dist-packages/olympus/securities/equities/config/symbol_watchlists.json:
   file.managed:

@@ -12,7 +12,7 @@ base:
   'server:(unified|backend)':
     - match: grain_pcre
     - services.backend
-    - services.backend.datasources
+    - services.backend.equities
   'server:(unified|frontend)':
     - match: grain_pcre
     - services.frontend
