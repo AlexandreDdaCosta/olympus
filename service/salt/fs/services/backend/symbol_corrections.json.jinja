@@ -7,7 +7,12 @@
     {
         "Action": "{{ details['action'] }}",
         "SecurityClass": "{{ details['security_class'] }}",
-        "What": {{ details['what'] }}
+        "What":
+        {
+            {%- set what_keys = details['what'].keys() | list %}
+            {{ what_keys }}
+            {{ details['what'] }}
+        {
     }{% if loop.index < corrections_count %},{% endif -%}
 {% endfor %}
 }
