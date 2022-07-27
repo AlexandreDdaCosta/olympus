@@ -249,14 +249,17 @@ class Intraday(alphavantage.Connection):
         super(Intraday,self).__init__(username,**kwargs)
         self.data_readwriter = data.Connection(self.username,**kwargs)
 
-    def quote(self,symbol,interval=1,**kwargs):
+    def quote(self,symbol,interval='1',**kwargs):
         # Interval results:
         # 
         # 1 minute intervals: 2 weeks
-        # 5, [15], 30, or 60 minute intervals: 10 weeks ( [##] = disabled)
+        # [5], [15], [30], or 60 minute intervals: 10 weeks ( [#] = disabled)
         #
+        valid_intervals = ['1','60']
+        if interval not in valid_intervals:
+            raise Exception('Invalid interval specified for intraday quote.')
         data = {
-            'interval': str(interval) + 'min',
+            'interval': interval,
             'outputsize': 'full',
             'symbol': str(symbol).upper()
         }

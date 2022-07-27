@@ -29,6 +29,7 @@ class TestPrice(testing.Test):
         self.mongo_data = data.Connection(username)
 
     def test_daily(self):
+        return # ALEX
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.daily.quote(TEST_SYMBOL_FAKE)
         quotes = self.daily.quote(TEST_SYMBOL_ONE,regen=True)
@@ -56,9 +57,11 @@ class TestPrice(testing.Test):
             self.assertTrue(last_date in quotes_noregen);
     
     def test_latest(self):
-        # "quotekeys" not a comprehensive list; only thekey price items get verified
+        return # ALEX
+        # "quotekeys" not a comprehensive list; only key price items get verified
         quotekeys = ['symbol','description','bidPrice','bidSize','askPrice','askSize','lastPrice','lastSize','openPrice','highPrice','lowPrice','closePrice','netChange','totalVolume']
         quote = self.latest.quote(TEST_SYMBOL_ONE)
+        print(quote)
         self.assertTrue('quotes' in quote)
         self.assertTrue(TEST_SYMBOL_ONE in quote['quotes'])
         self.assertEqual(quote['quotes'][TEST_SYMBOL_ONE]['symbol'], TEST_SYMBOL_ONE)
@@ -81,7 +84,6 @@ class TestPrice(testing.Test):
         self.assertTrue(TEST_SYMBOL_FAKE_TWO.upper() in quote['unknown_symbols'])
 
     def test_intra_day(self):
-        return # ALEX
         quotes = self.intraday.quote(TEST_SYMBOL_ONE)
 
 if __name__ == '__main__':
