@@ -10,8 +10,7 @@
         "What":
         {
             {%- set what_keys = details['what'].keys() | list %}
-            {{ what_keys }}
-            {{ details['what'] }}
+            {%- for key in what_keys %}"{{ key }}": "{{ details['what'][key] }}",
         {
     }{% if loop.index < corrections_count %},{% endif -%}
 {% endfor %}
