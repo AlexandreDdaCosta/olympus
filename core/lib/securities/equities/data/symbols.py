@@ -247,10 +247,9 @@ class InitSymbols(data.Initializer):
             print('Modifying stored symbol collections via configuration files.')
         # Individual symbol data
         if os.path.isfile(SYMBOL_CORRECTIONS_CONFIG_FILE):
-            #with open(SYMBOL_CORRECTIONS_CONFIG_FILE) as corrections_file:
-            #    corrections = json.load(corrections_file)
-            #print(corrections)
-            pass
+            with open(SYMBOL_CORRECTIONS_CONFIG_FILE) as corrections_file:
+                corrections = json.load(corrections_file)
+            print(corrections)
         # Watchlists
         if os.path.isfile(WATCHLIST_CONFIG_FILE):
             with open(WATCHLIST_CONFIG_FILE) as watchlist_file:
