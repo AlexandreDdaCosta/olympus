@@ -97,8 +97,14 @@ Notes:
 
 class Adjustments(data.Connection):
     '''
-Yahoo! Finance historical quotes are the data source for split history due to the data
+Yahoo! Finance historical quotes are the data source for split and dividend history due to the data
 being free and having a deep history.
+
+DIVIDENDS
+---------
+
+Yahoo! Finance records split-adjusted dividends. It's therefore necessary to get split information
+before dividend data in order to calculate the original value of recorded dividends. 
 
 SPLITS
 ------
@@ -134,9 +140,94 @@ date more recent than or matching the date of the most recent split is therefore
         super(Adjustments,self).__init__(username,**kwargs)
         self.symbol_reader = symbols.Read(username,**kwargs)
 
-    def splits(self,symbol,**kwargs):
+    def adjust_value(self,symbol,value_type,value_date,value,**kwargs):
+        # ALEX
+        regen = kwargs.get('regen',False)
+        return_factor = kwargs.get('return_factor',False)
+        symbol_verify = kwargs.get('symbol_verify',True)
+        unadjust = kwargs.get('unadjust',False)
+        return value
+
+    def dividends(self,symbol,**kwargs):
         symbol = str(symbol).upper()
         symbol_data = self.symbol_reader.get_symbol(symbol)
+        regen = kwargs.get('regen',False)
+        dividend_collection = 'price.' + symbol
+        target_file = self.download_directory()+symbol+'-dividends.csv'
+        collection = self.db[dividend_collection]
+        dividend_data = collection.find_one({ 'Adjustment': 'Dividends' },{ '_id': 0 })
+        stale = False
+        start_dividend_date = None
+        end_dividend_date = None
+        if dividend_data is not None:
+            start_dividend_date = dividend_data['Start Date']
+            end_dividend_date = dividend_data['End Date']
+        if regen is False and dividend_data is not None:
+            stale = self._is_stale_data(dividend_data['Time'])
+        elif dividend_data is None:
+            regen = True
+        returndata = None
+        if stale is True or regen is True:
+            url = 'https://query1.finance.yahoo.com/v7/finance/download/' + symbol + '?period1=0&period2=9999999999&events=div'
+            # ALEX response = urllib.request.urlretrieve(url,target_file)
+            json_dividends = None
+            with open(target_file,'r') as f:
+                if not re.match(r'^Date,Dividends',f.readline()):
+                    raise Exception('First line of symbol dividend data .csv file does not match expected format.')
+                for line in f:
+                    json_dividend = []
+                    line = line.rstrip()
+                    pieces = line.rstrip().split(',')
+                    dividend_date = pieces[0]
+                    adjusted_dividend = pieces[1]
+                    if (start_dividend_date is None or start_dividend_date >= dividend_date):
+                        start_dividend_date = dividend_date
+                    if (end_dividend_date is None or end_dividend_date <= dividend_date):
+                        end_dividend_date = dividend_date
+                    # Here we have the dividend adjusted for any subsequent or concurrent splits.
+                    # Determine the unadjusted value, and store that.
+                    # If the adjusted value is different, store that as well.
+                    unadjusted_dividend = self.adjust_value(symbol,'dividend',dividend_date,adjusted_dividend,regen=regen,symbol_verify=False,unadjust=True)
+                    json_dividend.append(unadjusted_dividend)
+                    if unadjusted_dividend != adjusted_dividend:
+                        json_dividend.append(adjusted_dividend)
+                    if json_dividends is None:
+                        json_dividends = {}
+                    json_dividends[dividend_date] = json_dividend
+                write_dict = {}
+                write_dict['Time'] = str(dt.now().astimezone())
+                write_dict['Adjustment'] = 'Dividends'
+                write_dict['Format'] = STORED_DIVIDEND_FORMAT
+                write_dict['Start Date'] = start_dividend_date
+                write_dict['End Date'] = end_dividend_date
+                write_dict['Dividends'] = json_dividends
+                collection.delete_many({ 'Adjustment': 'Dividends' })
+                collection.insert_one(write_dict)
+                returndata = write_dict['Dividends']
+            # ALEX os.remove(target_file)
+
+        if returndata is None:
+            returndata = dividend_data['Dividends']
+        # Format returned data using data headers
+        formatted_returndata = {}
+        details_length = len(STORED_DIVIDEND_FORMAT)
+        if returndata is not None:
+            for dividend_date in returndata:
+                formatted_returndata[dividend_date] = {}
+                dividend_length = len(returndata[dividend_date])
+                for index in range(0, details_length):
+                    if index >= dividend_length:
+                        formatted_returndata[dividend_date][STORED_DIVIDEND_FORMAT[index]] = returndata[dividend_date][index-1]
+                    else:
+                        formatted_returndata[dividend_date][STORED_DIVIDEND_FORMAT[index]] = returndata[dividend_date][index]
+            return collections.OrderedDict(sorted(formatted_returndata.items()))
+        return None
+
+    def splits(self,symbol,**kwargs):
+        symbol = str(symbol).upper()
+        symbol_verify = kwargs.get('symbol_verify',True)
+        if symbol_verify is True:
+            symbol_data = self.symbol_reader.get_symbol(symbol)
         regen = kwargs.get('regen',False)
         split_collection = 'price.' + symbol
         target_file = self.download_directory()+symbol+'-splits.csv'
@@ -145,7 +236,6 @@ date more recent than or matching the date of the most recent split is therefore
         stale = False
         start_split_date = None
         end_split_date = None
-        now = dt.now().astimezone()
         if split_data is not None:
             start_split_date = split_data['Start Date']
             end_split_date = split_data['End Date']
@@ -190,7 +280,7 @@ date more recent than or matching the date of the most recent split is therefore
                     json_splits = {}
                 json_splits[split_date] = json_split
             write_dict = {}
-            write_dict['Time'] = str(now)
+            write_dict['Time'] = str(dt.now().astimezone())
             write_dict['Adjustment'] = 'Splits'
             write_dict['Format'] = STORED_SPLIT_FORMAT
             write_dict['Start Date'] = start_split_date
@@ -222,6 +312,7 @@ date more recent than or matching the date of the most recent split is therefore
         # If now is a weekend day, generated before 4:00 last Friday
         stale = False
         refresh_date_object = parse(refresh_date)
+        now = dt.now().astimezone()
         weekday_no = now.weekday()
         if weekday_no < 5:
             # weekday

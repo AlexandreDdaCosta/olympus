@@ -30,12 +30,16 @@ class TestPrice(testing.Test):
         self.mongo_data = data.Connection(username)
 
     def test_adjustments(self):
-        with self.assertRaises(SymbolNotFoundError):
-            splits = self.adjustments.splits(TEST_SYMBOL_FAKE)
-        splits = self.adjustments.splits(TEST_SYMBOL_TWO,regen=True)
-        print(splits)
-        splits = self.adjustments.splits('ZIM',regen=True)
-        print(splits)
+        #with self.assertRaises(SymbolNotFoundError):
+        #    splits = self.adjustments.splits(TEST_SYMBOL_FAKE)
+        #splits = self.adjustments.splits(TEST_SYMBOL_TWO)
+        #print(splits)
+        #splits = self.adjustments.splits('ZIM',regen=True)
+        #print(splits)
+        dividends = self.adjustments.dividends(TEST_SYMBOL_TWO,regen=True)
+        print(dividends)
+        #regen_splits = self.adjustments.splits(TEST_SYMBOL_TWO,regen=True)
+        #print(regen_splits)
 
     def test_daily(self):
         return # ALEX
