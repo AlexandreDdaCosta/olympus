@@ -23,10 +23,19 @@ class TestPrice(testing.Test):
             username = self.validRunUser(sys.argv[1])
         else:
             username = self.validRunUser(USER)
+        self.adjustments = price.Adjustments(username)
         self.daily = price.Daily(username)
         self.intraday = price.Intraday(username)
         self.latest = price.Latest(username)
         self.mongo_data = data.Connection(username)
+
+    def test_adjustments(self):
+        with self.assertRaises(SymbolNotFoundError):
+            splits = self.adjustments.splits(TEST_SYMBOL_FAKE)
+        splits = self.adjustments.splits(TEST_SYMBOL_TWO,regen=True)
+        print(splits)
+        splits = self.adjustments.splits('ZIM',regen=True)
+        print(splits)
 
     def test_daily(self):
         return # ALEX
@@ -84,6 +93,7 @@ class TestPrice(testing.Test):
         self.assertTrue(TEST_SYMBOL_FAKE_TWO.upper() in quote['unknown_symbols'])
 
     def test_intra_day(self):
+        return # ALEX
         quotes = self.intraday.quote(TEST_SYMBOL_ONE)
 
 if __name__ == '__main__':
