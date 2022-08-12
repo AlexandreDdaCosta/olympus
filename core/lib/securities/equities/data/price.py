@@ -1,4 +1,4 @@
-import collections, datetime, json, os, re, urllib.request, wget
+import collections, datetime, json, os, re, time, urllib.request, wget
 
 from datetime import datetime as dt
 from datetime import timedelta
@@ -139,14 +139,8 @@ date more recent than or matching the date of the most recent split is therefore
     def __init__(self,username=USER,**kwargs):
         super(Adjustments,self).__init__(username,**kwargs)
         self.symbol_reader = symbols.Read(username,**kwargs)
-
-    def adjust_value(self,symbol,value_type,value_date,value,**kwargs):
-        # ALEX
-        regen = kwargs.get('regen',False)
-        return_factor = kwargs.get('return_factor',False)
-        symbol_verify = kwargs.get('symbol_verify',True)
-        unadjust = kwargs.get('unadjust',False)
-        return value
+        self.split_adjusted_symbol = None
+        self.split_data_date = None
 
     def dividends(self,symbol,**kwargs):
         symbol = str(symbol).upper()
@@ -169,7 +163,7 @@ date more recent than or matching the date of the most recent split is therefore
         returndata = None
         if stale is True or regen is True:
             url = 'https://query1.finance.yahoo.com/v7/finance/download/' + symbol + '?period1=0&period2=9999999999&events=div'
-            # ALEX response = urllib.request.urlretrieve(url,target_file)
+            response = urllib.request.urlretrieve(url,target_file)
             json_dividends = None
             with open(target_file,'r') as f:
                 if not re.match(r'^Date,Dividends',f.readline()):
@@ -179,7 +173,7 @@ date more recent than or matching the date of the most recent split is therefore
                     line = line.rstrip()
                     pieces = line.rstrip().split(',')
                     dividend_date = pieces[0]
-                    adjusted_dividend = pieces[1]
+                    adjusted_dividend = float(pieces[1])
                     if (start_dividend_date is None or start_dividend_date >= dividend_date):
                         start_dividend_date = dividend_date
                     if (end_dividend_date is None or end_dividend_date <= dividend_date):
@@ -187,10 +181,11 @@ date more recent than or matching the date of the most recent split is therefore
                     # Here we have the dividend adjusted for any subsequent or concurrent splits.
                     # Determine the unadjusted value, and store that.
                     # If the adjusted value is different, store that as well.
-                    unadjusted_dividend = self.adjust_value(symbol,'dividend',dividend_date,adjusted_dividend,regen=regen,symbol_verify=False,unadjust=True)
-                    json_dividend.append(unadjusted_dividend)
-                    if unadjusted_dividend != adjusted_dividend:
-                        json_dividend.append(adjusted_dividend)
+                    adjustment_factors = self.split_adjustment(symbol,dividend_date,regen=regen,symbol_verify=False)
+                    if adjustment_factors is not None:
+                        # Use the reciprocal of the price/dividend adjustment to undo the split adjustment on the dividend
+                        json_dividend.append(round(1/float(adjustment_factors['Price/Dividend Adjustment']) * adjusted_dividend,2))
+                    json_dividend.append(adjusted_dividend)
                     if json_dividends is None:
                         json_dividends = {}
                     json_dividends[dividend_date] = json_dividend
@@ -204,7 +199,7 @@ date more recent than or matching the date of the most recent split is therefore
                 collection.delete_many({ 'Adjustment': 'Dividends' })
                 collection.insert_one(write_dict)
                 returndata = write_dict['Dividends']
-            # ALEX os.remove(target_file)
+            os.remove(target_file)
 
         if returndata is None:
             returndata = dividend_data['Dividends']
@@ -264,8 +259,8 @@ date more recent than or matching the date of the most recent split is therefore
                 if (end_split_date is None or end_split_date <= split_date):
                     end_split_date = split_date
                 (numerator,denominator) = splits[split_date].rstrip().split(':')
-                json_split.append(numerator)
-                json_split.append(denominator)
+                json_split.append(int(numerator))
+                json_split.append(int(denominator))
                 numerator = float(numerator)
                 denominator = float(denominator)
                 price_dividend_adjustment = (denominator/numerator)
@@ -304,6 +299,21 @@ date more recent than or matching the date of the most recent split is therefore
                     formatted_returndata[quote_date][STORED_SPLIT_FORMAT[index]] = returndata[quote_date][index]
             return collections.OrderedDict(sorted(formatted_returndata.items()))
         return None
+
+    def split_adjustment(self,symbol,value_date=None,**kwargs):
+        # Returns split adjustment values for unadjusted prices on a given date
+        symbol = str(symbol).upper()
+        if self.split_adjusted_symbol is None or self.split_adjusted_symbol != symbol or self.split_data_date is None or self.split_data_date < time.time() - 3600:
+            self.split_adjustment_data = self.splits(symbol,**kwargs) 
+            self.split_adjusted_symbol = symbol
+            self.split_data_date = time.time()
+        if value_date is not None:
+            for adjustment_date in self.split_adjustment_data:
+                if value_date < adjustment_date:
+                    return(self.split_adjustment_data[adjustment_date])
+            return None
+        else:
+            return self.split_adjustment_data
 
     def _is_stale_data(self,refresh_date):
         # Query source:
