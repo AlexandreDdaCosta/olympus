@@ -1,8 +1,9 @@
-import collections, datetime, json, os, re, time, urllib.request, wget
+import collections, datetime, json, os, re, shutil, subprocess, time, urllib.request, wget
 
 from datetime import datetime as dt
 from datetime import timedelta
 from dateutil.parser import parse
+from file_read_backwards import FileReadBackwards
 
 from olympus import USER, User
 
@@ -86,12 +87,15 @@ Price quotes:
 Notes:
 
 1. Unless so labeled, price and volume data are "as traded".
-2. Split adjustments are cumulative, starting from the most recent date and extended into the past
+2. Adjustments are stored to facilitate the most common use case. Data sources are adjusted for
+   splits, so adjustments are principally set up to UNDO data sources adjustments to retrieve as-traded
+   prices, dividends, and volumes.
+3. Split adjustments are cumulative, starting from the most recent date and extended into the past
    to the first recorded split. This allows for simple calculations when doing related price, volume,
    and dividend adjustments. Note that price and dividend adjustments are identical. Also note
    that adjustments begin on the date they are recorded.
-3. Adjusted dividend numbers are included only when adjusted for splits.
-4. Adjusted price figures within brackets are included only when they differ from as-traded numbers.
+4. Adjusted dividend numbers are included only when adjusted for splits.
+5. Adjusted price figures within brackets are included only when they differ from as-traded numbers.
 
 '''
 
@@ -139,23 +143,74 @@ date more recent than or matching the date of the most recent split is therefore
     def __init__(self,username=USER,**kwargs):
         super(Adjustments,self).__init__(username,**kwargs)
         self.symbol_reader = symbols.Read(username,**kwargs)
+        self.adjustment_dividend_date = None
+        self.adjustment_split_date = None
+        self.adjusted_symbol = None
+        self.adjustment_data = None
         self.split_adjusted_symbol = None
         self.split_data_date = None
 
+    def adjustments(self,symbol,**kwargs):
+        # Returns all split and dividend adjustments for an equity's as-traded prices.
+        # Adjustments are returned as a date-ordered array, with the most recent date first.
+        symbol = str(symbol).upper()
+        merge_data = False
+        reset_data = False
+        if self.adjusted_symbol is None or self.adjusted_symbol != symbol:
+            reset_data = True
+        if reset_data is True or self.adjustment_split_date is None or self._is_stale_data(self.adjustment_split_date):
+            try:
+               (self.adjustment_split_data,self.adjustment_split_date) = self.splits(symbol,return_date=True,**kwargs)
+            except:
+                self.adjusted_symbol = None
+                raise
+            merge_data = True
+        if reset_data is True or self.adjustment_dividend_date is None or self._is_stale_data(self.adjustment_dividend_date):
+            try:
+                (self.adjustment_dividend_data,self.adjustment_dividend_date) = self.dividends(symbol,return_date=True,**kwargs) 
+            except:
+                self.adjusted_symbol = None
+                raise
+            merge_data = True
+        if merge_data is True:
+            self.adjustment_data = {}
+            if self.adjustment_split_data is not None:
+                split_entries = list(self.adjustment_split_data.items())
+                split_count = len(list(self.adjustment_split_data.items()))
+                split_index = 0
+                latest_split_date = split_entries[split_index][0]
+                latest_split_dict = split_entries[split_index][1]
+                print(latest_split_date)
+                print(latest_split_dict)
+            if self.adjustment_dividend_data is not None:
+                for dividend_date, dividend_dict in self.adjustment_dividend_data.items():
+                    if self.adjustment_split_data is not None:
+                        # ALEXHERE
+                        pass
+                    print(dividend_date)
+                    print(dividend_dict)
+        self.adjusted_symbol = symbol
+        return self.adjustment_data
+
     def dividends(self,symbol,**kwargs):
         symbol = str(symbol).upper()
-        symbol_data = self.symbol_reader.get_symbol(symbol)
+        symbol_verify = kwargs.get('symbol_verify',True)
+        if symbol_verify is True:
+            symbol_data = self.symbol_reader.get_symbol(symbol)
         regen = kwargs.get('regen',False)
+        return_date = kwargs.get('return_date',False)
         dividend_collection = 'price.' + symbol
         target_file = self.download_directory()+symbol+'-dividends.csv'
         collection = self.db[dividend_collection]
         dividend_data = collection.find_one({ 'Adjustment': 'Dividends' },{ '_id': 0 })
+        query_date = None
         stale = False
         start_dividend_date = None
         end_dividend_date = None
         if dividend_data is not None:
             start_dividend_date = dividend_data['Start Date']
             end_dividend_date = dividend_data['End Date']
+            query_date = dividend_data['Time']
         if regen is False and dividend_data is not None:
             stale = self._is_stale_data(dividend_data['Time'])
         elif dividend_data is None:
@@ -184,7 +239,7 @@ date more recent than or matching the date of the most recent split is therefore
                     adjustment_factors = self.split_adjustment(symbol,dividend_date,regen=regen,symbol_verify=False)
                     if adjustment_factors is not None:
                         # Use the reciprocal of the price/dividend adjustment to undo the split adjustment on the dividend
-                        json_dividend.append(round(1/float(adjustment_factors['Price/Dividend Adjustment']) * adjusted_dividend,2))
+                        json_dividend.append(round(float(adjustment_factors['Price/Dividend Adjustment']) * adjusted_dividend,2))
                     json_dividend.append(adjusted_dividend)
                     if json_dividends is None:
                         json_dividends = {}
@@ -198,10 +253,11 @@ date more recent than or matching the date of the most recent split is therefore
                 write_dict['Dividends'] = json_dividends
                 collection.delete_many({ 'Adjustment': 'Dividends' })
                 collection.insert_one(write_dict)
+                query_date = write_dict['Time']
                 returndata = write_dict['Dividends']
             os.remove(target_file)
 
-        if returndata is None:
+        if returndata is None and dividend_data is not None:
             returndata = dividend_data['Dividends']
         # Format returned data using data headers
         formatted_returndata = {}
@@ -215,8 +271,14 @@ date more recent than or matching the date of the most recent split is therefore
                         formatted_returndata[dividend_date][STORED_DIVIDEND_FORMAT[index]] = returndata[dividend_date][index-1]
                     else:
                         formatted_returndata[dividend_date][STORED_DIVIDEND_FORMAT[index]] = returndata[dividend_date][index]
-            return collections.OrderedDict(sorted(formatted_returndata.items()))
-        return None
+            if return_date is False:
+                return collections.OrderedDict(sorted(formatted_returndata.items(),reverse=True))
+            else:
+                return (collections.OrderedDict(sorted(formatted_returndata.items(),reverse=True)),query_date)
+        if return_date is False:
+            return None
+        else:
+            return (None,query_date)
 
     def splits(self,symbol,**kwargs):
         symbol = str(symbol).upper()
@@ -224,14 +286,17 @@ date more recent than or matching the date of the most recent split is therefore
         if symbol_verify is True:
             symbol_data = self.symbol_reader.get_symbol(symbol)
         regen = kwargs.get('regen',False)
+        return_date = kwargs.get('return_date',False)
         split_collection = 'price.' + symbol
         target_file = self.download_directory()+symbol+'-splits.csv'
         collection = self.db[split_collection]
         split_data = collection.find_one({ 'Adjustment': 'Splits' },{ '_id': 0 })
+        query_date = None
         stale = False
         start_split_date = None
         end_split_date = None
         if split_data is not None:
+            query_date = split_data['Time']
             start_split_date = split_data['Start Date']
             end_split_date = split_data['End Date']
         if regen is False and split_data is not None:
@@ -263,8 +328,8 @@ date more recent than or matching the date of the most recent split is therefore
                 json_split.append(int(denominator))
                 numerator = float(numerator)
                 denominator = float(denominator)
-                price_dividend_adjustment = (denominator/numerator)
-                volume_adjustment = (numerator/denominator)
+                price_dividend_adjustment = (numerator/denominator)
+                volume_adjustment = (denominator/numerator)
                 if last_split is not None:
                     price_dividend_adjustment = price_dividend_adjustment * float(last_split[2])
                     volume_adjustment = volume_adjustment * float(last_split[3])
@@ -283,10 +348,11 @@ date more recent than or matching the date of the most recent split is therefore
             write_dict['Splits'] = json_splits
             collection.delete_many({ 'Adjustment': 'Splits' })
             collection.insert_one(write_dict)
+            query_date = write_dict['Time']
             returndata = write_dict['Splits']
             os.remove(target_file)
 
-        if returndata is None:
+        if returndata is None and split_data is not None:
             returndata = split_data['Splits']
         # Format returned data using data headers
         formatted_returndata = {}
@@ -297,23 +363,26 @@ date more recent than or matching the date of the most recent split is therefore
                 quote_length = len(returndata[quote_date])
                 for index in range(0, details_length):
                     formatted_returndata[quote_date][STORED_SPLIT_FORMAT[index]] = returndata[quote_date][index]
-            return collections.OrderedDict(sorted(formatted_returndata.items()))
-        return None
-
-    def split_adjustment(self,symbol,value_date=None,**kwargs):
-        # Returns split adjustment values for unadjusted prices on a given date
-        symbol = str(symbol).upper()
-        if self.split_adjusted_symbol is None or self.split_adjusted_symbol != symbol or self.split_data_date is None or self.split_data_date < time.time() - 3600:
-            self.split_adjustment_data = self.splits(symbol,**kwargs) 
-            self.split_adjusted_symbol = symbol
-            self.split_data_date = time.time()
-        if value_date is not None:
-            for adjustment_date in self.split_adjustment_data:
-                if value_date < adjustment_date:
-                    return(self.split_adjustment_data[adjustment_date])
+            if return_date is False:
+                return collections.OrderedDict(sorted(formatted_returndata.items(),reverse=True))
+            else:
+                return (collections.OrderedDict(sorted(formatted_returndata.items(),reverse=True)),query_date)
+        if return_date is False:
             return None
         else:
-            return self.split_adjustment_data
+            return (None,query_date)
+
+    def split_adjustment(self,symbol,value_date,**kwargs):
+        # Returns split adjustment values for unadjusted prices on a given date
+        symbol = str(symbol).upper()
+        if self.split_adjusted_symbol is None or self.split_adjusted_symbol != symbol or self.split_data_date is None or self._is_stale_data(self.split_data_date):
+            (self.split_adjustment_data,self.split_data_date) = self.splits(symbol,return_date=True,**kwargs) 
+            self.split_adjusted_symbol = symbol
+        if self.split_adjustment_data is not None:
+            for adjustment_date in reversed(self.split_adjustment_data):
+                if value_date < adjustment_date:
+                    return(self.split_adjustment_data[adjustment_date])
+        return None
 
     def _is_stale_data(self,refresh_date):
         # Query source:
@@ -355,33 +424,18 @@ This was done for the following considerations:
 
 Peculiarities:
 
-1. Prices are all adjusted. Yahoo!'s plain "open/high/low/close/volume" figures are adjusted for stock splits only.
-   Available data also includes an "adjusted close", but not any other adjusted data. By calculating an
-   "adjustment coefficient" using "close" and "adjusted close", it's possible to determine the remaining
-   adjusted data EXCEPT for volume, which is only adjusted for stock splits.  The "adjusted close" is adjusted for
-   both stock splits and dividends.
+1. Prices are all adjusted. Yahoo!'s plain "Open/High/Low/Close/Volume" figures are adjusted for stock splits only.
 2. Based on the formatting of the price data, daily data is therefore saved as follows:
-   a. Maintain up-to-date records of a symbol's historical price splits, also available for download from Yahoo!
-      Finance historical quotes.
-   b. "Adjusted Close/Open/High/Low" are stored as the true adjusted data, without alterations. "Volume" is 
-      stored as the true adjusted volume.
-   c. To derive as-traded prices, take "Open/High/Low/Close" and compensate for stock splits by dividing the 
-      numerator by the denominator used in the split specification. For example, if a split is 2 for 1 (2:1),
-      2/1 = 2, so multiply all quotes by 2 to get the correct price. Continuing this example:
-      1) After the Yahoo! adjustment, a company shares are quoted as trading 50 pre-split.
-      2) 50 * 2 = 100, which was the as-traded price of the shares pre-split.
-   d. To derive as-traded volume, take "Volume" and compensate for stock splits by dividing the denominator by
-      the numerator. Continuing the previous example:
-      1) After the Yahoo! adjustment, a company is recorded as trading 1000 shares pre-split.
-      2) 1000 * (1/2) = 500, which was the as-traded volume of the shares pre-split.
-3. When adjusted for a series of splits, the compensation factor is cumulative. For example, when adjusted for
-   two 2:1 splits, the price adjustment would be:
-   (2/1) * (2/1) = 4
-   So if a company's shares are quoted as trading 50 before both splits, the as-traded price would be 50 * 4 = 200
-   The volume adjustment for two 2:1 splits would be:
-   (1/2) * (1/2)  = 1/4
-   So if a company is recorded as trading 1000 shares before both splits, the as-traded volume would be
-   1000 * (1/4) = 250 shares.
+   a. Maintain up-to-date records of a symbol's historical price splits and dividends, also available for download
+      from Yahoo! Finance historical quotes. These records include "Price/Dividend Adjustment" and
+      "Volume Adjustment" factors.
+   b. To derive as-traded prices and volume, take "Open/High/Low/Close/Volume" and multiply by the reciprocal
+      of the split adjustment factor.
+   c. To derive split- and dividend-adjusted prices, start with as-traded data. Then apply:
+      (1) Split adjustment
+      (2) Split-adjusted dividend adjustment (for prices only)
+      Apply these adjustments for each date sequentially. For efficiency, start with the most recent as-traded
+      data along with the most recent adjustment data and work backwards simultaneously with both data sets
 
 I have confirmed that procedure generates price and volume data that tolerably match across a number of different
 stock price and volume quoting services:
@@ -433,24 +487,27 @@ my current judgment is that these differences will not grossly affect the desire
             self.start_date_daily = interval_data['Start Date']
             self.end_date_daily = interval_data['End Date']
         if regen is False and interval_data is not None:
-            stale = self._is_stale_data(split_data['Time'])
+            stale = self._is_stale_data(interval_data['Time'])
         elif interval_data is None:
             regen = True
         if regen is False and stale is True:
             if self.end_date_daily is not None:
                 year,month,day = map(int,self.end_date_daily.rstrip().split('-'))
                 period1 = str(int(dt(year, month, day, 0, 0, 0).timestamp()))
-            url = 'https://query1.finance.yahoo.com/v7/finance/download/' + symbol + '?period1=' + period1 + '&period2=' + period2 + '&interval=1d&events=history&includeAdjustedClose=true'
+            url = 'https://query1.finance.yahoo.com/v7/finance/download/' + symbol + '?period1=' + period1 + '&period2=' + period2 + '&interval=1d&events=history'
             target_file = self.download_directory()+symbol+'-daily.csv'
             response = urllib.request.urlretrieve(url,target_file)
             with open(target_file,'r') as f:
                 self._verify_csv_daily_format(f.readline())
+                '''
+                ALEX
                 if self.end_date_daily is not None:
                     compare_line = f.readline().rstrip()
                     pieces = compare_line.rstrip().split(',')
                     if interval_data['Quotes'][self.end_date_daily][5] != str("%.2f" % float(pieces[5])):
                         # There's been a price adjustment, regenerate everything
                         regen = True
+                '''
                 if regen is False:
                     for line in f:
                         (json_quote,interval_date) = self._parse_daily(line)
@@ -459,27 +516,45 @@ my current judgment is that these differences will not grossly affect the desire
                     collection.update_one({'Interval': '1d'},{ "$set":  {'End Date': self.end_date_daily, 'Start Date': self.start_date_daily, 'Time': str(now)}})
             os.remove(target_file)
         if regen is True:
-            url = 'https://query1.finance.yahoo.com/v7/finance/download/' + symbol + '?period1=0&period2=' + period2 + '&interval=1d&events=history&includeAdjustedClose=true'
+            price_adjustments = self.adjustments(symbol,regen=regen,symbol_verify=False)
+            print(price_adjustments)
+            url = 'https://query1.finance.yahoo.com/v7/finance/download/' + symbol + '?period1=0&period2=' + period2 + '&interval=1d&events=history'
             target_file = self.download_directory()+symbol+'-daily.csv'
-            response = urllib.request.urlretrieve(url,target_file)
+            # Temporary testing code
+            old_target_file = self.download_directory()+symbol+'-daily.csv.OLD' # ALEX
+            shutil.copy(old_target_file,target_file) # ALEX
+            #response = urllib.request.urlretrieve(url,target_file)
+            # The initial response contains split-only adjusted prices, ordered from oldest to newest.
             with open(target_file,'r') as f:
                 self._verify_csv_daily_format(f.readline())
-                json_quotes = {}
+            # Remove the first line of the target file prior to reading price data in reverse.
+            subprocess.check_output("/usr/bin/sed -i '1d' " + target_file, shell=True)
+            # Read file line-by-line in reverse (newest to oldest), since adjustments occur from
+            # the most recent data (always as-traded).
+            with FileReadBackwards(target_file, encoding="utf-8") as f:
                 for line in f:
-                    (json_quote,interval_date) = self._parse_daily(line)
-                    json_quotes[interval_date] = json_quote
-                write_dict = {}
-                write_dict['Time'] = str(now)
-                write_dict['Interval'] = '1d'
-                write_dict['Format'] = STORED_PRICE_FORMAT
-                write_dict['Start Date'] = self.start_date_daily
-                write_dict['End Date'] = self.end_date_daily
-                write_dict['Quotes'] = json_quotes
-                collection.delete_many({ 'Interval': '1d' })
-                collection.insert_one(write_dict)
-                interval_data = collection.find_one({ 'Interval': '1d'})
-                returndata = write_dict['Quotes']
-            os.remove(target_file)
+                    pass
+            '''
+            ALEXHERE
+            with open(target_file,'r') as f:
+                quotes = {}
+                for line in f:
+                    (quote,interval_date) = self._parse_daily_split_adjusted(line)
+                    quotes[interval_date] = quote
+            '''
+
+            write_dict = {}
+            write_dict['Time'] = str(now)
+            write_dict['Interval'] = '1d'
+            write_dict['Format'] = STORED_PRICE_FORMAT
+            write_dict['Start Date'] = self.start_date_daily
+            write_dict['End Date'] = self.end_date_daily
+            write_dict['Quotes'] = json_quotes
+            collection.delete_many({ 'Interval': '1d' })
+            collection.insert_one(write_dict)
+            interval_data = collection.find_one({ 'Interval': '1d'})
+            returndata = write_dict['Quotes']
+            # ALEX os.remove(target_file)
 
         if returndata is None:
             returndata = interval_data['Quotes']
@@ -503,7 +578,7 @@ my current judgment is that these differences will not grossly affect the desire
                     formatted_returndata[quote_date][STORED_PRICE_FORMAT[index]] = returndata[quote_date][index]
         return collections.OrderedDict(sorted(formatted_returndata.items()))
 
-    def _parse_daily(self,line):
+    def _parse_daily_split_adjusted(self,line):
         line = line.rstrip()
         pieces = line.rstrip().split(',')
         interval_date = str(pieces[0])
@@ -511,19 +586,22 @@ my current judgment is that these differences will not grossly affect the desire
             self.start_date_daily = interval_date
         if (self.end_date_daily is None or self.end_date_daily <= interval_date):
             self.end_date_daily = interval_date
-        json_quote = []
-        json_quote.append(str("%.2f" % float(pieces[1])))
-        json_quote.append(str("%.2f" % float(pieces[2])))
-        json_quote.append(str("%.2f" % float(pieces[3])))
-        json_quote.append(str("%.2f" % float(pieces[4])))
-        json_quote.append(pieces[6])
+        quote = {}
+        quote['Open'] = float(pieces[1])
+        quote['High'] = float(pieces[2])
+        quote['Low'] = float(pieces[3])
+        quote['Close'] = float(pieces[4])
+        quote['Volume'] = int(pieces[6])
+
+        '''
         json_quote.append(str("%.2f" % float(pieces[5])))
         if (float(pieces[4]) != float(pieces[5])):
             adjustment = float(pieces[5]) / float(pieces[4])
             json_quote.append(str("%.2f" % (float(pieces[1]) * adjustment)))
             json_quote.append(str("%.2f" % (float(pieces[2]) * adjustment)))
             json_quote.append(str("%.2f" % (float(pieces[3]) * adjustment)))
-        return json_quote, interval_date
+        '''
+        return quote, interval_date
 
     def _verify_csv_daily_format(self,first_line):
         if not re.match(r'^Date,Open,High,Low,Close,Adj Close,Volume',first_line):
