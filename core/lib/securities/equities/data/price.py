@@ -176,7 +176,7 @@ date more recent than or matching the date of the most recent split is therefore
             self.adjustment_data = {}
             if self.adjustment_split_data is not None:
                 split_entries = list(self.adjustment_split_data.items())
-                split_count = len(list(self.adjustment_split_data.items()))
+                split_count = len(split_entries)
                 split_index = 0
                 latest_split_date = split_entries[split_index][0]
                 latest_split_dict = split_entries[split_index][1]
