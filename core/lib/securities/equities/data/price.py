@@ -13,7 +13,7 @@ import olympus.securities.equities.data.tdameritrade as ameritrade
 import olympus.securities.equities.data.symbols as symbols
 
 STORED_DIVIDEND_FORMAT = [ "Dividend", "Adjusted Dividend" ]
-STORED_PRICE_FORMAT = [ "Open", "High", "Low", "Close", "Volume", "Adjusted Close", "Adjusted Open", "Adjusted High", "Adjusted Low" ]
+STORED_PRICE_FORMAT = [ "Open", "High", "Low", "Close", "Volume", "Adjusted Open", "Adjusted High", "Adjusted Low", "Adjusted Close", "Adjusted Volume" ]
 STORED_SPLIT_FORMAT = [ "Numerator", "Denominator", "Price/Dividend Adjustment", "Volume Adjustment" ]
 
 '''
@@ -31,10 +31,10 @@ Splits:
     "End Time": "<Time stamp for end of split records. One minute resolution.>",
     "Splits" : {
         "<Time stamp, one minute resolution>" : {
-            "Numerator" : "<integer>",
-            "Denominator" : "<integer>",
-            "Price/Dividend Adjustment" : "<float>",
-            "Volume Adjustment" : "<float>"
+            "Numerator" : <integer>,
+            "Denominator" : <integer>,
+            "Price/Dividend Adjustment" : <float>,
+            "Volume Adjustment" : <float>
         },
         <more splits>
     }
@@ -50,10 +50,28 @@ Dividends:
     "End Time": "<Time stamp for end of dividend records. One minute resolution.>",
     "Dividends" : {
         "<Time stamp, one minute resolution>" : {
-            "Dividend" : "<float>"[,
-            "Adjusted Dividend" : "<float>"]
+            "Dividend" : <float>[,
+            "Adjusted Dividend" : <float>]
         },
         <more dividends>
+    }
+}
+
+Date-merged splits and dividends:
+
+{
+    "_id" : ObjectId("################"),
+    "Time" : "<Last update time>",
+	"Adjustment" : "Merged",
+	"Time Dividends" : "<Dividend update time for this record>",
+	"Time Splits" : "<SPlit update time for this record>",
+	"Adjustments" : {
+        "<Time stamp, one minute resolution>" : {
+			["Price Adjustment" : <integer>,
+			"Volume Adjustment" : <float>][,]
+			["Dividend Adjustment" : <float>]
+        },
+        <more adjustments>
     }
 }
 
@@ -96,6 +114,10 @@ Notes:
    that adjustments begin on the date they are recorded.
 4. Adjusted dividend numbers are included only when adjusted for splits.
 5. Adjusted price figures within brackets are included only when they differ from as-traded numbers.
+6. Merged adjustment data in brackets for a specific date will only appear when such data exists for
+   that specific date.
+7. Split ("Splits"), dividend ("Dividends"), and merged ("Adjustments") data will be null (None) when
+   no data exists.
 
 '''
 
@@ -154,43 +176,67 @@ date more recent than or matching the date of the most recent split is therefore
         # Returns all split and dividend adjustments for an equity's as-traded prices.
         # Adjustments are returned as a date-ordered array, with the most recent date first.
         symbol = str(symbol).upper()
-        merge_data = False
-        reset_data = False
-        if self.adjusted_symbol is None or self.adjusted_symbol != symbol:
-            reset_data = True
-        if reset_data is True or self.adjustment_split_date is None or self._is_stale_data(self.adjustment_split_date):
-            try:
-               (self.adjustment_split_data,self.adjustment_split_date) = self.splits(symbol,return_date=True,**kwargs)
-            except:
-                self.adjusted_symbol = None
-                raise
-            merge_data = True
-        if reset_data is True or self.adjustment_dividend_date is None or self._is_stale_data(self.adjustment_dividend_date):
-            try:
-                (self.adjustment_dividend_data,self.adjustment_dividend_date) = self.dividends(symbol,return_date=True,**kwargs) 
-            except:
-                self.adjusted_symbol = None
-                raise
-            merge_data = True
-        if merge_data is True:
-            self.adjustment_data = {}
-            if self.adjustment_split_data is not None:
-                split_entries = list(self.adjustment_split_data.items())
+        symbol_verify = kwargs.get('symbol_verify',True)
+        if symbol_verify is True:
+            symbol_data = self.symbol_reader.get_symbol(symbol)
+        regen = kwargs.get('regen',False)
+        adjustments_collection = 'price.' + symbol
+        collection = self.db[adjustments_collection]
+        adjustments_data = collection.find_one({ 'Adjustment': 'Merged' },{ '_id': 0 })
+        if adjustments_data is None:
+            regen = True
+        if regen is True or self._is_stale_data(adjustments_data['Time Dividends']) or self._is_stale_data(adjustments_data['Time Splits']):
+            (splits_data,splits_date) = self.splits(symbol,return_date=True,**kwargs)
+            (dividends_data,dividends_date) = self.dividends(symbol,return_date=True,**kwargs) 
+            adjustments = []
+            if splits_data is not None:
+                split_entries = list(splits_data.items())
                 split_count = len(split_entries)
                 split_index = 0
-                latest_split_date = split_entries[split_index][0]
-                latest_split_dict = split_entries[split_index][1]
-                print(latest_split_date)
-                print(latest_split_dict)
-            if self.adjustment_dividend_data is not None:
-                for dividend_date, dividend_dict in self.adjustment_dividend_data.items():
-                    if self.adjustment_split_data is not None:
-                        # ALEXHERE
-                        pass
-                    print(dividend_date)
-                    print(dividend_dict)
-        self.adjusted_symbol = symbol
-        return self.adjustment_data
+            if dividends_data is not None:
+                total_dividend_adjustment = 0.0
+                for dividend_date, dividend_dict in dividends_data.items():
+                    total_dividend_adjustment = total_dividend_adjustment + dividend_dict['Adjusted Dividend']
+                    if splits_data is not None and split_index < split_count:
+                        loop_index = split_index
+                        dividend_written = False
+                        for index in range(loop_index, split_count):
+                            split_date = split_entries[index][0]
+                            split_dict = split_entries[index][1]
+                            if dividend_date > split_date:
+                                adjustments.append({ 'Date': dividend_date, 'Dividend Adjustment': total_dividend_adjustment })
+                                dividend_written = True
+                                break
+                            elif dividend_date == split_date:
+                                adjustments.append({ 'Date': dividend_date, 'Dividend Adjustment': total_dividend_adjustment, 'Price Adjustment': split_dict['Price/Dividend Adjustment'], 'Volume Adjustment': split_dict['Volume Adjustment'] })
+                                split_index = split_index + 1
+                                dividend_written = True
+                                break
+                            else: # dividend_date < split_date
+                                adjustments.append({ 'Date': split_date, 'Price Adjustment': split_dict['Price/Dividend Adjustment'], 'Volume Adjustment': split_dict['Volume Adjustment'] })
+                                split_index = split_index + 1
+                        if dividend_written is False:
+                            adjustments.append({ 'Date': dividend_date, 'Dividend Adjustment': total_dividend_adjustment })
+                    else:
+                        adjustments.append({ 'Date': dividend_date, 'Dividend Adjustment': total_dividend_adjustment })
+            if splits_data is not None:
+                for index in range(split_index, split_count):
+                    split_date = split_entries[split_index][0]
+                    split_dict = split_entries[split_index][1]
+                    adjustments.append({ 'Date': split_date, 'Price Adjustment': split_dict['Price/Dividend Adjustment'], 'Volume Adjustment': split_dict['Volume Adjustment'] })
+            if len(adjustments) == 0:
+                adjustments = None
+            write_dict = {}
+            write_dict['Time'] = str(dt.now().astimezone())
+            write_dict['Adjustment'] = 'Merged'
+            write_dict['Time Dividends'] = dividends_date
+            write_dict['Time Splits'] = splits_date
+            write_dict['Adjustments'] = adjustments
+            collection.delete_many({ 'Adjustment': 'Merged' })
+            collection.insert_one(write_dict)
+            return adjustments
+        else:
+            return adjustments_data['Adjustments']
 
     def dividends(self,symbol,**kwargs):
         symbol = str(symbol).upper()
@@ -469,6 +515,10 @@ my current judgment is that these differences will not grossly affect the desire
         symbol = str(symbol).upper()
         symbol_data = self.symbol_reader.get_symbol(symbol)
         regen = kwargs.get('regen',False)
+        if regen is True:
+            regen_adjustments = True
+        else:
+            regen_adjustments = False
         start_date = kwargs.get('start_date',None)
         end_date = kwargs.get('end_date',None)
         now = dt.now().astimezone()
@@ -490,6 +540,7 @@ my current judgment is that these differences will not grossly affect the desire
             stale = self._is_stale_data(interval_data['Time'])
         elif interval_data is None:
             regen = True
+        regen = True # ALEX
         if regen is False and stale is True:
             if self.end_date_daily is not None:
                 year,month,day = map(int,self.end_date_daily.rstrip().split('-'))
@@ -516,8 +567,7 @@ my current judgment is that these differences will not grossly affect the desire
                     collection.update_one({'Interval': '1d'},{ "$set":  {'End Date': self.end_date_daily, 'Start Date': self.start_date_daily, 'Time': str(now)}})
             os.remove(target_file)
         if regen is True:
-            price_adjustments = self.adjustments(symbol,regen=regen,symbol_verify=False)
-            print(price_adjustments)
+            adjustments = self.adjustments(symbol,regen=regen_adjustments,symbol_verify=False)
             url = 'https://query1.finance.yahoo.com/v7/finance/download/' + symbol + '?period1=0&period2=' + period2 + '&interval=1d&events=history'
             target_file = self.download_directory()+symbol+'-daily.csv'
             # Temporary testing code
@@ -532,17 +582,39 @@ my current judgment is that these differences will not grossly affect the desire
             # Read file line-by-line in reverse (newest to oldest), since adjustments occur from
             # the most recent data (always as-traded).
             with FileReadBackwards(target_file, encoding="utf-8") as f:
+                if adjustments is not None:
+                    adjustments_length = len(adjustments)
+                    adjustments_index = 0
+                json_quotes = {}
                 for line in f:
-                    pass
-            '''
-            ALEXHERE
-            with open(target_file,'r') as f:
-                quotes = {}
-                for line in f:
-                    (quote,interval_date) = self._parse_daily_split_adjusted(line)
-                    quotes[interval_date] = quote
-            '''
-
+                    # Received data is split-adjusted only, excluding adjusted close. Therefore:
+                    # 1. Ignore the reported "Adjusted Close"
+                    # 2. Remove split adjustments for price and volume to get as-traded prices and volumes
+                    # 3. Apply dividend adjustments to price to get split- and dvidend-adjusted prices.
+                    # 4. Use reported volume as adjusted volume.
+                    line = line.rstrip()
+                    pieces = line.rstrip().split(',')
+                    interval_date = str(pieces[0])
+                    if (self.start_date_daily is None or self.start_date_daily >= interval_date):
+                        self.start_date_daily = interval_date
+                    if (self.end_date_daily is None or self.end_date_daily <= interval_date):
+                        self.end_date_daily = interval_date
+                    quote = []
+                    if adjustments is None:
+                        quote.append(round(float(pieces[1]),2)) # Open
+                        quote.append(round(float(pieces[2]),2)) # High
+                        quote.append(round(float(pieces[3]),2)) # Low
+                        quote.append(round(float(pieces[4]),2)) # Close
+                        quote.append(int(pieces[6])) # Volume
+                    else:
+                        # ALEXHERE
+                        # STORED_PRICE_FORMAT = [ "Open", "High", "Low", "Close", "Volume", "Adjusted Open", "Adjusted High", "Adjusted Low", "Adjusted Close", "Adjusted Volume" ]
+                        quote.append(round(float(pieces[1]),2)) # Open
+                        quote.append(round(float(pieces[2]),2)) # High
+                        quote.append(round(float(pieces[3]),2)) # Low
+                        quote.append(round(float(pieces[4]),2)) # Close
+                        quote.append(int(pieces[6])) # Volume
+                    json_quotes[interval_date] = quote
             write_dict = {}
             write_dict['Time'] = str(now)
             write_dict['Interval'] = '1d'
@@ -552,7 +624,7 @@ my current judgment is that these differences will not grossly affect the desire
             write_dict['Quotes'] = json_quotes
             collection.delete_many({ 'Interval': '1d' })
             collection.insert_one(write_dict)
-            interval_data = collection.find_one({ 'Interval': '1d'})
+            interval_data = write_dict
             returndata = write_dict['Quotes']
             # ALEX os.remove(target_file)
 
@@ -573,7 +645,7 @@ my current judgment is that these differences will not grossly affect the desire
             quote_length = len(returndata[quote_date])
             for index in range(0, details_length):
                 if index >= quote_length:
-                    formatted_returndata[quote_date][STORED_PRICE_FORMAT[index]] = returndata[quote_date][index-6]
+                    formatted_returndata[quote_date][STORED_PRICE_FORMAT[index]] = returndata[quote_date][index-5]
                 else:
                     formatted_returndata[quote_date][STORED_PRICE_FORMAT[index]] = returndata[quote_date][index]
         return collections.OrderedDict(sorted(formatted_returndata.items()))
