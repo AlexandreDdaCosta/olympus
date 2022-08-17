@@ -46,7 +46,8 @@ class TestPrice(testing.Test):
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.daily.quote(TEST_SYMBOL_FAKE)
         quotes = self.daily.quote(TEST_SYMBOL_TWO)
-        # quotes = self.daily.quote(TEST_SYMBOL_TWO,regen=True,start_date='2020-08-24',end_date='2020-09-09')
+        #quotes = self.daily.quote(TEST_SYMBOL_TWO,regen=True,start_date='2020-08-24',end_date='2020-09-09')
+        #quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date='2020-08-24',end_date='2020-09-09')
         data = json.dumps(quotes,indent=4)
         print(data)
         # Remove the last price record by date, then get the quote again. Check that the record was restored.

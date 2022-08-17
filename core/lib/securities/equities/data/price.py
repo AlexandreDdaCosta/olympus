@@ -585,10 +585,14 @@ my current judgment is that these differences will not grossly affect the desire
                 if adjustments is not None:
                     adjustments_length = len(adjustments)
                     adjustments_index = 0
+                    next_adjustment = adjustments[adjustments_index]
+                    dividend_adjustment = None
+                    price_adjustment = None
+                    volume_adjustment = None
                 json_quotes = {}
                 for line in f:
                     # Received data is split-adjusted only, excluding adjusted close. Therefore:
-                    # 1. Ignore the reported "Adjusted Close"
+                    # 1. Ignore the reported "Adjusted Close" in all lines (pieces[5])
                     # 2. Remove split adjustments for price and volume to get as-traded prices and volumes
                     # 3. Apply dividend adjustments to price to get split- and dvidend-adjusted prices.
                     # 4. Use reported volume as adjusted volume.
@@ -609,11 +613,56 @@ my current judgment is that these differences will not grossly affect the desire
                     else:
                         # ALEXHERE
                         # STORED_PRICE_FORMAT = [ "Open", "High", "Low", "Close", "Volume", "Adjusted Open", "Adjusted High", "Adjusted Low", "Adjusted Close", "Adjusted Volume" ]
-                        quote.append(round(float(pieces[1]),2)) # Open
-                        quote.append(round(float(pieces[2]),2)) # High
-                        quote.append(round(float(pieces[3]),2)) # Low
-                        quote.append(round(float(pieces[4]),2)) # Close
-                        quote.append(int(pieces[6])) # Volume
+                        if next_adjustment is not None and interval_date < next_adjustment['Date']:
+                            if 'Dividend Adjustment' in next_adjustment:
+                                dividend_adjustment = next_adjustment['Dividend Adjustment']
+                            if 'Price Adjustment' in next_adjustment:
+                                # These two always show up together (reciprocals)
+                                price_adjustment = next_adjustment['Price Adjustment']
+                                volume_adjustment = next_adjustment['Volume Adjustment']
+                            adjustments_index = adjustments_index + 1
+                            if adjustments_index < adjustments_length:
+                                next_adjustment = adjustments[adjustments_index]
+                            else:
+                                next_adjustment = None
+                        if dividend_adjustment is None and price_adjustment is None:
+                            quote.append(round(float(pieces[1]),2)) # Open
+                            quote.append(round(float(pieces[2]),2)) # High
+                            quote.append(round(float(pieces[3]),2)) # Low
+                            quote.append(round(float(pieces[4]),2)) # Close
+                            quote.append(int(pieces[6])) # Volume
+                        else:
+                            open_price = float(pieces[1])
+                            high_price = float(pieces[2])
+                            low_price = float(pieces[3])
+                            close_price = float(pieces[4])
+                            volume = int(pieces[6])
+                            adjusted_open = float(pieces[1])
+                            adjusted_high = float(pieces[2])
+                            adjusted_low = float(pieces[3])
+                            adjusted_close = float(pieces[4])
+                            adjusted_volume = int(pieces[6])
+                            if price_adjustment is not None:
+                                open_price = open_price * float(price_adjustment)
+                                high_price = high_price * float(price_adjustment)
+                                low_price = low_price * float(price_adjustment)
+                                close_price = close_price * float(price_adjustment)
+                                volume = int(volume * float(volume_adjustment))
+                            if dividend_adjustment is not None:
+                                adjusted_open = adjusted_open - dividend_adjustment
+                                adjusted_high = adjusted_high - dividend_adjustment
+                                adjusted_low = adjusted_low - dividend_adjustment
+                                adjusted_close = adjusted_close - dividend_adjustment
+                            quote.append(round(open_price,2))
+                            quote.append(round(high_price,2))
+                            quote.append(round(low_price,2))
+                            quote.append(round(close_price,2))
+                            quote.append(volume)
+                            quote.append(round(adjusted_open,2))
+                            quote.append(round(adjusted_high,2))
+                            quote.append(round(adjusted_low,2))
+                            quote.append(round(adjusted_close,2))
+                            quote.append(adjusted_volume)
                     json_quotes[interval_date] = quote
             write_dict = {}
             write_dict['Time'] = str(now)
