@@ -41,17 +41,22 @@ class TestPrice(testing.Test):
         #print(dividends)
         #regen_splits = self.adjustments.splits(TEST_SYMBOL_TWO,regen=True)
         #print(regen_splits)
+        #regen_dividends = self.adjustments.dividends(TEST_SYMBOL_TWO,regen=True)
+        #print(regen_dividends)
+        adjustments = self.adjustments.adjustments(TEST_SYMBOL_TWO,regen=True)
+        print(adjustments)
 
     def test_daily(self):
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.daily.quote(TEST_SYMBOL_FAKE)
-        quotes = self.daily.quote(TEST_SYMBOL_TWO)
+        quotes = self.daily.quote(TEST_SYMBOL_TWO,regen=True)
+        #quotes = self.daily.quote(TEST_SYMBOL_TWO)
         #quotes = self.daily.quote(TEST_SYMBOL_TWO,regen=True,start_date='2020-08-24',end_date='2020-09-09')
         #quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date='2020-08-24',end_date='2020-09-09')
-        data = json.dumps(quotes,indent=4)
-        print(data)
+        #data = json.dumps(quotes,indent=4)
+        #print(data)
         # Remove the last price record by date, then get the quote again. Check that the record was restored.
-        '''
+        # ALEXHERE
         price_collection = 'price.' + TEST_SYMBOL_TWO
         collection = self.mongo_data.db[price_collection]
         interval_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0 })
@@ -69,11 +74,12 @@ class TestPrice(testing.Test):
             collection.update_one({ 'Interval': '1d' },{ "$unset": { 'Quotes.'+last_date: 1 }})
             collection.update_one({ 'Interval': '1d' },{ "$set":  { 'End Date': previous_date, 'Time': time_string }})
             interval_data = collection.find_one({ 'Interval': '1d',  },{ '_id': 0, 'Interval': 0 })
+            print(last_date)
+            print(previous_date)
             self.assertTrue(previous_date in interval_data['Quotes']);
             self.assertFalse(last_date in interval_data['Quotes']);
             quotes_noregen = self.daily.quote(TEST_SYMBOL_TWO)
             self.assertTrue(last_date in quotes_noregen);
-        '''
     
     def test_latest(self):
         return # ALEX
