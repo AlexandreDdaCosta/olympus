@@ -544,26 +544,26 @@ my current judgment is that these differences will not grossly affect the desire
                 period1 = str(int(dt(year, month, day, 0, 0, 0).timestamp()))
             url = self._daily_quote_url(symbol,period1)
             response = urllib.request.urlretrieve(url,target_file)
-            # ALEXHERE
             with open(target_file,'r') as f:
                 self._verify_csv_daily_format(f.readline())
                 if self.end_date_daily is not None:
                     compare_line = f.readline().rstrip()
                     pieces = compare_line.rstrip().split(',')
-                    if interval_data['Quotes'][self.end_date_daily][5] != str("%.2f" % float(pieces[5])):
+                    if round(interval_data['Quotes'][self.end_date_daily][3],2) != round(float(pieces[5]),2):
                         # There's been a price adjustment, regenerate everything
                         regen = True
             if regen is False:
+                adjustments = self._init_adjustments(symbol,regen_adjustments)
                 subprocess.check_output("/usr/bin/sed -i '1d' " + target_file, shell=True)
                 with FileReadBackwards(target_file, encoding="utf-8") as f:
                     for line in f:
-                        (json_quote,interval_date) = self._parse_daily(line)
+                        (json_quote,interval_date) = self._parse_daily(line,adjustments)
                         collection.update_one({'Interval': '1d'},{ "$set": {'Quotes.'+interval_date: json_quote}}, upsert=True)
                         interval_data['Quotes'][interval_date] = json_quote
                     collection.update_one({'Interval': '1d'},{ "$set":  {'End Date': self.end_date_daily, 'Start Date': self.start_date_daily, 'Time': str(now)}})
             os.remove(target_file)
         if regen is True:
-            adjustments = self.adjustments(symbol,regen=regen_adjustments,symbol_verify=False)
+            adjustments = self._init_adjustments(symbol,regen_adjustments)
             url = self._daily_quote_url(symbol)
             response = urllib.request.urlretrieve(url,target_file)
             # The initial response contains split-only adjusted prices, ordered from oldest to newest.
@@ -574,13 +574,6 @@ my current judgment is that these differences will not grossly affect the desire
             # Read file line-by-line in reverse (newest to oldest), since adjustments occur from
             # the most recent data (always as-traded).
             with FileReadBackwards(target_file, encoding="utf-8") as f:
-                if adjustments is not None:
-                    self.adjustments_length = len(adjustments)
-                    self.adjustments_index = 0
-                    self.next_adjustment = adjustments[self.adjustments_index]
-                    self.dividend_adjustment = 1.0
-                    self.price_adjustment = 1
-                    self.volume_adjustment = 1.0
                 json_quotes = {}
                 for line in f:
                     (json_quote,interval_date) = self._parse_daily(line,adjustments)
@@ -591,7 +584,7 @@ my current judgment is that these differences will not grossly affect the desire
             write_dict['Format'] = STORED_PRICE_FORMAT
             write_dict['Start Date'] = self.start_date_daily
             write_dict['End Date'] = self.end_date_daily
-            write_dict['Quotes'] = json_quotes
+            write_dict['Quotes'] = {key:json_quotes[key] for key in sorted(json_quotes)}
             collection.delete_many({ 'Interval': '1d' })
             collection.insert_one(write_dict)
             interval_data = write_dict
@@ -623,6 +616,17 @@ my current judgment is that these differences will not grossly affect the desire
     def _daily_quote_url(self,symbol,period1='0'):
         period2 = '9999999999' # To the present day, and beyooond
         return 'https://query1.finance.yahoo.com/v7/finance/download/' + symbol + '?period1=' + period1 + '&period2=' + period2 + '&interval=1d&events=history'
+
+    def _init_adjustments(self,symbol,regen):
+        adjustments = self.adjustments(symbol,regen=regen,symbol_verify=False)
+        if adjustments is not None:
+            self.adjustments_length = len(adjustments)
+            self.adjustments_index = 0
+            self.next_adjustment = adjustments[self.adjustments_index]
+            self.dividend_adjustment = 1.0
+            self.price_adjustment = 1
+            self.volume_adjustment = 1.0
+        return adjustments
 
     def _parse_daily(self,line,adjustments):
         # Received data is split-adjusted only, excluding adjusted close. Therefore:
