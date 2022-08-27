@@ -1,4 +1,5 @@
 import codecs, csv, json, jsonschema, os, re, subprocess, time
+
 from jsonschema import validate
 
 import olympus.restapi as restapi
@@ -66,7 +67,6 @@ class InitSymbols(data.Initializer):
             try:
                 with open(data_file_name) as data_file:
                     json_data = json.load(data_file)
-                    data_file.close()
                     validate(instance=json_data,schema=validation_schema)
             except:
                 self.clean_up()

@@ -1,0 +1,211 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "52WkHigh": {
+      "type": "number"
+    },
+    "52WkLow": {
+      "type": "number"
+    },
+    "askId": {
+      "pattern": "^[A-Z]{1}$",
+      "type": "string"
+    },
+    "askPrice": {
+      "type": "number"
+    },
+    "askSize": {
+      "type": "integer"
+    },
+    "assetMainType": {
+      "pattern": "^EQUITY$",
+      "type": "string"
+    },
+    "assetSubType": {
+      "type": "string"
+    },
+    "assetType": {
+      "pattern": "^EQUITY$",
+      "type": "string"
+    },
+    "bidId": {
+      "pattern": "^[A-Z]{1}$",
+      "type": "string"
+    },
+    "bidPrice": {
+      "type": "number"
+    },
+    "bidSize": {
+      "type": "integer"
+    },
+    "bidTick": {
+      "type": "string"
+    },
+    "closePrice": {
+      "type": "number"
+    },
+    "cusip": {
+      "pattern": "^[A-Z0-9]{9}$",
+      "type": "string"
+    },
+    "delayed": {
+      "type": "boolean"
+    },
+    "description": {
+      "type": "string"
+    },
+    "digits": {
+      "type": "integer"
+    },
+    "divAmount": {
+      "type": "number"
+    },
+    "divDate": {
+      "type": "string"
+    },
+    "divYield": {
+      "type": "number"
+    },
+    "exchange": {
+      "pattern": "^(n|q)$",
+      "type": "string"
+    },
+    "exchangeName": {
+      "pattern": "^(NASD|NYSE)$",
+      "type": "string"
+    },
+    "highPrice": {
+      "type": "number"
+    },
+    "lastId": {
+      "pattern": "^[A-Z]{1}$",
+      "type": "string"
+    },
+    "lastPrice": {
+      "type": "number"
+    },
+    "lastSize": {
+      "type": "integer"
+    },
+    "lowPrice": {
+      "type": "number"
+    },
+    "marginable": {
+      "type": "boolean"
+    },
+    "mark": {
+      "type": "number"
+    },
+    "markChangeInDouble": {
+      "type": "number"
+    },
+    "markPercentChangeInDouble": {
+      "type": "number"
+    },
+    "nAV": {
+      "type": "number"
+    },
+    "netChange": {
+      "type": "number"
+    },
+    "netPercentChangeInDouble": {
+      "type": "number"
+    },
+    "openPrice": {
+      "type": "number"
+    },
+    "peRatio": {
+      "type": "number"
+    },
+    "quoteTimeInLong": {
+      "type": "integer"
+    },
+    "realtimeEntitled": {
+      "type": "boolean"
+    },
+    "regularMarketLastPrice": {
+      "type": "number"
+    },
+    "regularMarketLastSize": {
+      "type": "integer"
+    },
+    "regularMarketNetChange": {
+      "type": "number"
+    },
+    "regularMarketPercentChangeInDouble": {
+      "type": "number"
+    },
+    "regularMarketTradeTimeInLong": {
+      "type": "integer"
+    },
+    "securityStatus": {
+      "pattern": "^(Normal)$",
+      "type": "string"
+    },
+    "shortable": {
+      "type": "boolean"
+    },
+    "symbol": {
+      "type": "string"
+    },
+    "totalVolume": {
+      "type": "integer"
+    },
+    "volatility": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "52WkHigh",
+    "52WkLow",
+    "askId",
+    "askPrice",
+    "askSize",
+    "assetMainType",
+    "assetSubType",
+    "assetType",
+    "bidId",
+    "bidPrice",
+    "bidSize",
+    "bidTick",
+    "closePrice",
+    "cusip",
+    "description",
+    "delayed",
+    "digits",
+    "divAmount",
+    "divDate",
+    "divYield",
+    "exchange",
+    "exchangeName",
+    "highPrice",
+    "lastId",
+    "lastPrice",
+    "lastSize",
+    "lowPrice",
+    "marginable",
+    "mark",
+    "markChangeInDouble",
+    "markPercentChangeInDouble",
+    "nAV",
+    "netChange",
+    "netPercentChangeInDouble",
+    "openPrice",
+    "peRatio",
+    "quoteTimeInLong",
+    "realtimeEntitled",
+    "regularMarketLastPrice",
+    "regularMarketLastSize",
+    "regularMarketNetChange",
+    "regularMarketPercentChangeInDouble",
+    "regularMarketTradeTimeInLong",
+    "securityStatus",
+    "shortable",
+    "symbol",
+    "totalVolume",
+    "tradeTimeInLong",
+    "volatility"
+  ]
+}
+

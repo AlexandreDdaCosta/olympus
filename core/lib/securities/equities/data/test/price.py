@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 
-import json, sys, time, unittest
+import json, jsonschema, os, re, sys, time, unittest
 
-from olympus import USER
-from olympus.securities.equities.data.symbols import SymbolNotFoundError
+from jsonschema import validate
 
 import olympus.securities.equities.data as data
 import olympus.securities.equities.data.price as price
 import olympus.testing as testing
 
+from olympus import USER
 from olympus.securities.equities import *
+from olympus.securities.equities.data.symbols import SymbolNotFoundError
+
+LATEST_PRICE_SCHEMA_FILE = re.sub(r'(.*\/).*\/.*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/LatestPriceQuote.json'
 
 # Standard run parameters:
 # sudo su -s /bin/bash -c '... price.py' USER
@@ -81,55 +84,36 @@ class TestPrice(testing.Test):
             self.assertTrue(last_date in quotes_noregen);
     
     def test_latest(self):
-        # 'quoteTimeInLong': 1660953600058, 'tradeTimeInLong': 1660953596094, 'regularMarketTradeTimeInLong': 1660950000001, 'netPercentChangeInDouble': 0.57,
-        boolean_keys = ['delayed','realtimeEntitled','marginable','shortable']
-        float_keys = ['52WkHigh','52WkLow','askPrice','bidPrice','closePrice','divAmount','divYield','highPrice','lastPrice','lowPrice','mark','markChangeInDouble','markPercentChangeInDouble','nAV','netChange','netPercentChangeInDouble','openPrice','peRatio','regularMarketLastPrice','regularMarketNetChange','regularMarketPercentChangeInDouble','volatility']
-        int_keys = ['askSize','bidSize','digits','lastSize','quoteTimeInLong','regularMarketLastSize','regularMarketTradeTimeInLong','totalVolume','tradeTimeInLong']
-        string_keys = ['askId','assetMainType','assetSubType','assetType','bidId','bidTick','cusip','description','divDate','exchange','exchangeName','lastId','securityStatus','symbol']
+        with open(LATEST_PRICE_SCHEMA_FILE) as schema_file:
+            validation_schema = json.load(schema_file)
         quote = self.latest.quote(TEST_SYMBOL_ONE)
-        print(quote)
-        print(int(time.time()))
-        self.assertFalse('unknown_symbols' in quote)
+        quoteTimeLong = int(time.time() * 1000)
         symbol = TEST_SYMBOL_ONE.upper()
+        self.assertTrue('quotes' in quote)
+        self.assertFalse('unknown_symbols' in quote)
         self.assertTrue(symbol in quote['quotes'])
         self.assertEqual(quote['quotes'][symbol]['symbol'], symbol)
-        for key in quote['quotes'][symbol]:
-            self.assertTrue(key in boolean_keys or key in float_keys or key in int_keys or key in string_keys)
-        for key in boolean_keys:
-            self.assertTrue(isinstance(quote['quotes'][symbol][key], bool))
-        for key in float_keys:
-            self.assertTrue(isinstance(quote['quotes'][symbol][key], float))
-        for key in int_keys:
-            self.assertTrue(isinstance(quote['quotes'][symbol][key], int))
-        for key in string_keys:
-            self.assertTrue(isinstance(quote['quotes'][symbol][key], str))
-        self.assertEqual(quote['quotes'][symbol]['assetMainType'], 'EQUITY')
-        self.assertEqual(quote['quotes'][symbol]['assetType'], 'EQUITY')
+        validate(instance=quote['quotes'][symbol],schema=validation_schema)
         self.assertEqual(quote['quotes'][symbol]['exchange'], TEST_SYMBOL_ONE_QUOTE_EXCHANGE)
         self.assertEqual(quote['quotes'][symbol]['exchangeName'], TEST_SYMBOL_ONE_QUOTE_EXCHANGE_NAME)
         self.assertGreaterEqual(quote['quotes'][symbol]['askPrice'],quote['quotes'][symbol]['bidPrice'])
         self.assertGreaterEqual(quote['quotes'][symbol]['highPrice'],quote['quotes'][symbol]['lowPrice'])
         self.assertGreaterEqual(quote['quotes'][symbol]['highPrice'],quote['quotes'][symbol]['openPrice'])
-        self.assertGreaterEqual(quote['quotes'][symbol]['highPrice'],quote['quotes'][symbol]['closePrice'])
         self.assertLessEqual(quote['quotes'][symbol]['lowPrice'],quote['quotes'][symbol]['openPrice'])
-        self.assertLessEqual(quote['quotes'][symbol]['lowPrice'],quote['quotes'][symbol]['closePrice'])
-        self.assertEqual(round(quote['quotes'][symbol]['netChange'],2), round(quote['quotes'][symbol]['lastPrice'] - quote['quotes'][symbol]['closePrice'],2))
+        self.assertGreaterEqual(quoteTimeLong,quote['quotes'][symbol]['quoteTimeInLong'])
+        self.assertGreaterEqual(quoteTimeLong,quote['quotes'][symbol]['tradeTimeInLong'])
+        self.assertGreaterEqual(quoteTimeLong,quote['quotes'][symbol]['regularMarketTradeTimeInLong'])
+        self.assertGreaterEqual(quote['quotes'][symbol]['tradeTimeInLong'],quote['quotes'][symbol]['regularMarketTradeTimeInLong'])
+        self.assertLessEqual(abs(round(quote['quotes'][symbol]['netChange'] - (quote['quotes'][symbol]['lastPrice'] - quote['quotes'][symbol]['closePrice']),2)), .01)
         quote = self.latest.quote([TEST_SYMBOL_ONE.lower(),TEST_SYMBOL_TWO,TEST_SYMBOL_FAKE.lower()])
+        quoteTimeLong = int(time.time() * 1000)
+        self.assertTrue('quotes' in quote)
+        self.assertTrue('unknown_symbols' in quote)
         self.assertTrue(TEST_SYMBOL_FAKE.upper() in quote['unknown_symbols'])
         for symbol in [TEST_SYMBOL_ONE.upper(),TEST_SYMBOL_TWO.upper()]:
+            self.assertTrue(symbol in quote['quotes'])
             self.assertEqual(quote['quotes'][symbol]['symbol'], symbol)
-            for key in quote['quotes'][symbol]:
-                self.assertTrue(key in boolean_keys or key in float_keys or key in int_keys or key in string_keys)
-            for key in boolean_keys:
-                self.assertTrue(isinstance(quote['quotes'][symbol][key], bool))
-            for key in float_keys:
-                self.assertTrue(isinstance(quote['quotes'][symbol][key], float))
-            for key in int_keys:
-                self.assertTrue(isinstance(quote['quotes'][symbol][key], int))
-            for key in string_keys:
-                self.assertTrue(isinstance(quote['quotes'][symbol][key], str))
-            self.assertEqual(quote['quotes'][symbol]['assetMainType'], 'EQUITY')
-            self.assertEqual(quote['quotes'][symbol]['assetType'], 'EQUITY')
+            validate(instance=quote['quotes'][symbol],schema=validation_schema)
             if symbol == TEST_SYMBOL_ONE.upper():
                 self.assertEqual(quote['quotes'][symbol]['exchange'], TEST_SYMBOL_ONE_QUOTE_EXCHANGE)
                 self.assertEqual(quote['quotes'][symbol]['exchangeName'], TEST_SYMBOL_ONE_QUOTE_EXCHANGE_NAME)
@@ -139,12 +123,15 @@ class TestPrice(testing.Test):
             self.assertGreaterEqual(quote['quotes'][symbol]['askPrice'],quote['quotes'][symbol]['bidPrice'])
             self.assertGreaterEqual(quote['quotes'][symbol]['highPrice'],quote['quotes'][symbol]['lowPrice'])
             self.assertGreaterEqual(quote['quotes'][symbol]['highPrice'],quote['quotes'][symbol]['openPrice'])
-            self.assertGreaterEqual(quote['quotes'][symbol]['highPrice'],quote['quotes'][symbol]['closePrice'])
             self.assertLessEqual(quote['quotes'][symbol]['lowPrice'],quote['quotes'][symbol]['openPrice'])
-            self.assertLessEqual(quote['quotes'][symbol]['lowPrice'],quote['quotes'][symbol]['closePrice'])
-            self.assertEqual(round(quote['quotes'][symbol]['netChange'],2), round(quote['quotes'][symbol]['lastPrice'] - quote['quotes'][symbol]['closePrice'],2))
+            self.assertGreaterEqual(quoteTimeLong,quote['quotes'][symbol]['quoteTimeInLong'])
+            self.assertGreaterEqual(quoteTimeLong,quote['quotes'][symbol]['tradeTimeInLong'])
+            self.assertGreaterEqual(quoteTimeLong,quote['quotes'][symbol]['regularMarketTradeTimeInLong'])
+            self.assertGreaterEqual(quote['quotes'][symbol]['tradeTimeInLong'],quote['quotes'][symbol]['regularMarketTradeTimeInLong'])
+            self.assertLessEqual(abs(round(quote['quotes'][symbol]['netChange'] - (quote['quotes'][symbol]['lastPrice'] - quote['quotes'][symbol]['closePrice']),2)), .01)
         quote = self.latest.quote([TEST_SYMBOL_FAKE,TEST_SYMBOL_FAKE_TWO.lower()])
         self.assertFalse('quotes' in quote)
+        self.assertTrue('unknown_symbols' in quote)
         self.assertTrue(TEST_SYMBOL_FAKE.upper() in quote['unknown_symbols'])
         self.assertTrue(TEST_SYMBOL_FAKE_TWO.upper() in quote['unknown_symbols'])
 
