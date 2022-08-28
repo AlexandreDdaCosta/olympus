@@ -2,6 +2,7 @@
 
 import json, jsonschema, os, re, sys, time, unittest
 
+from datetime import date, timedelta
 from jsonschema import validate
 
 import olympus.securities.equities.data as data
@@ -13,6 +14,8 @@ from olympus.securities.equities import *
 from olympus.securities.equities.data.symbols import SymbolNotFoundError
 
 LATEST_PRICE_SCHEMA_FILE = re.sub(r'(.*\/).*\/.*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/LatestPriceQuote.json'
+NODIVIDEND_STOCK = 'DASH' # This may need update over time
+UNSPLIT_STOCK = 'TWLO' # This may need update over time
 
 # Standard run parameters:
 # sudo su -s /bin/bash -c '... price.py' USER
@@ -33,35 +36,186 @@ class TestPrice(testing.Test):
         self.mongo_data = data.Connection(username)
 
     def test_adjustments(self):
-        return # ALEX
+        dividend_schema = {
+            "type": "object",
+            "properties": {
+                "Adjusted Dividend": {
+                    "type": "number"
+                },
+                "Dividend": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "Adjusted Dividend",
+                "Dividend"
+            ]
+        }
+        split_schema = {
+            "type": "object",
+            "properties": {
+                "Denominator": {
+                    "type": "integer"
+                },
+                "Numerator": {
+                    "type": "integer"
+                },
+                "Price/Dividend Adjustment": {
+                    "type": "number"
+                },
+                "Volume Adjustment": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "Denominator",
+                "Numerator",
+                "Price/Dividend Adjustment",
+                "Volume Adjustment"
+            ]
+        }
         with self.assertRaises(SymbolNotFoundError):
             splits = self.adjustments.splits(TEST_SYMBOL_FAKE)
-        #splits = self.adjustments.splits(TEST_SYMBOL_TWO)
-        #print(splits)
-        #splits = self.adjustments.splits('ZIM',regen=True)
-        #print(splits)
-        #dividends = self.adjustments.dividends(TEST_SYMBOL_TWO)
-        #print(dividends)
-        #regen_splits = self.adjustments.splits(TEST_SYMBOL_TWO,regen=True)
-        #print(regen_splits)
-        #regen_dividends = self.adjustments.dividends(TEST_SYMBOL_TWO,regen=True)
-        #print(regen_dividends)
-        adjustments = self.adjustments.adjustments(TEST_SYMBOL_TWO,regen=True)
-        print(adjustments)
-
-    def test_daily(self):
-        return # ALEX
-        with self.assertRaises(SymbolNotFoundError):
-            quotes = self.daily.quote(TEST_SYMBOL_FAKE)
-        #quotes = self.daily.quote(TEST_SYMBOL_TWO)
-        quotes = self.daily.quote(TEST_SYMBOL_TWO,regen=True)
-        #quotes = self.daily.quote(TEST_SYMBOL_TWO,regen=True,start_date='2020-08-24',end_date='2020-09-09')
-        #quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date='2020-08-24',end_date='2020-09-09')
-        #data = json.dumps(quotes,indent=4)
-        #print(data)
-        # Remove the last price record by date, then get the quote again. Check that the record was restored.
+        splits = self.adjustments.splits(UNSPLIT_STOCK)
+        self.assertIsNone(splits)
         price_collection = 'price.' + TEST_SYMBOL_TWO
         collection = self.mongo_data.db[price_collection]
+        initial_split_data = collection.find_one({ 'Adjustment': 'Splits' },{ '_id': 0, 'Interval': 0 })
+        splits = self.adjustments.splits(TEST_SYMBOL_TWO,regen=True)
+        last_split_date = None
+        for split_date in splits:
+            validate(instance=splits[split_date],schema=split_schema)
+            if last_split_date is not None:
+                self.assertLess(split_date,last_split_date)
+            last_split_date = split_date
+        first_regen_split_data = collection.find_one({ 'Adjustment': 'Splits' },{ '_id': 0, 'Interval': 0 })
+        if initial_split_data is not None:
+            self.assertGreater(first_regen_split_data['Time'],initial_split_data['Time'])
+        with self.assertRaises(SymbolNotFoundError):
+            dividends = self.adjustments.dividends(TEST_SYMBOL_FAKE)
+        dividends = self.adjustments.dividends(NODIVIDEND_STOCK)
+        self.assertIsNone(dividends)
+        initial_dividend_data = collection.find_one({ 'Adjustment': 'Dividends' },{ '_id': 0, 'Interval': 0 })
+        dividends = self.adjustments.dividends(TEST_SYMBOL_TWO,regen=True)
+        last_dividend_date = None
+        for dividend_date in dividends:
+            validate(instance=dividends[dividend_date],schema=dividend_schema)
+            if last_dividend_date is not None:
+                self.assertLess(dividend_date,last_dividend_date)
+            last_dividend_date = dividend_date
+        regen_dividend_data = collection.find_one({ 'Adjustment': 'Dividends' },{ '_id': 0, 'Interval': 0 })
+        # Regenerating dividend data should regenerate split data due to dependencies
+        regen_split_data = collection.find_one({ 'Adjustment': 'Splits' },{ '_id': 0, 'Interval': 0 })
+        self.assertGreater(regen_split_data['Time'],first_regen_split_data['Time'])
+        if initial_dividend_data is not None:
+            self.assertGreater(regen_dividend_data['Time'],initial_dividend_data['Time'])
+        with self.assertRaises(SymbolNotFoundError):
+            dividends = self.adjustments.adjustments(TEST_SYMBOL_FAKE)
+        adjustments = self.adjustments.adjustments(TEST_SYMBOL_TWO)
+        adjustments_split_data = collection.find_one({ 'Adjustment': 'Splits' },{ '_id': 0, 'Interval': 0 })
+        self.assertEqual(adjustments_split_data['Time'],regen_split_data['Time'])
+        self.assertTrue(adjustments_split_data['Splits'] == regen_split_data['Splits'])
+        adjustments_dividend_data = collection.find_one({ 'Adjustment': 'Dividends' },{ '_id': 0, 'Interval': 0 })
+        self.assertEqual(adjustments_dividend_data['Time'],regen_dividend_data['Time'])
+        self.assertTrue(adjustments_dividend_data['Dividends'] == regen_dividend_data['Dividends'])
+        last_adjustment_date = None
+        for adjustment in adjustments:
+            if last_adjustment_date is not None:
+                self.assertLess(adjustment['Date'],last_adjustment_date)
+            last_adjustment_date = adjustment['Date']
+            if 'Dividend' in adjustment:
+                self.assertEqual(adjustment['Dividend'],dividends[adjustment['Date']]['Adjusted Dividend'])
+            if 'Price Adjustment' in adjustment:
+                self.assertEqual(adjustment['Price Adjustment'],splits[adjustment['Date']]['Price/Dividend Adjustment'])
+                self.assertEqual(adjustment['Volume Adjustment'],splits[adjustment['Date']]['Volume Adjustment'])
+        adjustment_data = collection.find_one({ 'Adjustment': 'Merged' },{ '_id': 0, 'Interval': 0 })
+        regen_adjustments = self.adjustments.adjustments(TEST_SYMBOL_TWO,regen=True)
+        regen_adjustment_data = collection.find_one({ 'Adjustment': 'Merged' },{ '_id': 0, 'Interval': 0 })
+        self.assertGreater(regen_adjustment_data['Time'],adjustment_data['Time'])
+
+    def test_daily(self):
+        quote_schema = {
+            "type": "object",
+            "properties": {
+                "Adjusted Close": {
+                    "type": "number"
+                },
+                "Adjusted High": {
+                    "type": "number"
+                },
+                "Adjusted Low": {
+                    "type": "number"
+                },
+                "Adjusted Open": {
+                    "type": "number"
+                },
+                "Close": {
+                    "type": "number"
+                },
+                "High": {
+                    "type": "number"
+                },
+                "Low": {
+                    "type": "number"
+                },
+                "Open": {
+                    "type": "number"
+                },
+                "Adjusted Volume": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "Adjusted Close",
+                "Adjusted High",
+                "Adjusted Low",
+                "Adjusted Open",
+                "Adjusted Volume",
+                "Close",
+                "High",
+                "Low",
+                "Open",
+                "Volume"
+            ]
+        }
+        with self.assertRaises(SymbolNotFoundError):
+            quotes = self.daily.quote(TEST_SYMBOL_FAKE)
+        price_collection = 'price.' + TEST_SYMBOL_TWO
+        collection = self.mongo_data.db[price_collection]
+        quotes = self.daily.quote(TEST_SYMBOL_TWO)
+        init_quote_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0, 'Quotes': 0 })
+        quotes = self.daily.quote(TEST_SYMBOL_TWO,regen=True)
+        regen_quote_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0, 'Quotes': 0 })
+        self.assertGreater(regen_quote_data['Time'],init_quote_data['Time'])
+        with self.assertRaises(Exception):
+            range_quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date='BADLYFORMATTEDDATE')
+            range_quotes = self.daily.quote(TEST_SYMBOL_TWO,end_date='BADLYFORMATTEDDATE')
+        with self.assertRaises(Exception):
+            tomorrow = str(date.today() + timedelta(days=1))
+            range_quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date=tomorrow)
+        a_while_ago = str(date.today() - timedelta(days=90))
+        today = str(date.today())
+        with self.assertRaises(Exception):
+            range_quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date=today,end_date=a_while_ago)
+        range_quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date=a_while_ago,end_date=today)
+        curr_range_date = None
+        for range_date in range_quotes:
+            if curr_range_date is None:
+                self.assertGreaterEqual(range_date,a_while_ago)
+            validate(instance=range_quotes[range_date],schema=quote_schema)
+            self.assertLessEqual(range_quotes[range_date]['Adjusted Close'],range_quotes[range_date]['Close'])
+            self.assertLessEqual(range_quotes[range_date]['Adjusted Low'],range_quotes[range_date]['Low'])
+            self.assertLessEqual(range_quotes[range_date]['Adjusted High'],range_quotes[range_date]['High'])
+            self.assertLessEqual(range_quotes[range_date]['Adjusted Open'],range_quotes[range_date]['Open'])
+            self.assertGreaterEqual(range_quotes[range_date]['Adjusted Volume'],range_quotes[range_date]['Volume'])
+            self.assertGreaterEqual(range_quotes[range_date]['High'],range_quotes[range_date]['Close'])
+            self.assertGreaterEqual(range_quotes[range_date]['High'],range_quotes[range_date]['Low'])
+            self.assertGreaterEqual(range_quotes[range_date]['High'],range_quotes[range_date]['Open'])
+            self.assertLessEqual(range_quotes[range_date]['Low'],range_quotes[range_date]['Close'])
+            self.assertLessEqual(range_quotes[range_date]['Low'],range_quotes[range_date]['Open'])
+            curr_range_date = range_date
+        self.assertLessEqual(curr_range_date,today)
+        # Remove the last price record by date, then get the quote again. Check that the record was restored.
         interval_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0 })
         last_date = None
         previous_date = None

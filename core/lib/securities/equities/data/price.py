@@ -1,7 +1,8 @@
 import collections, datetime, json, os, re, shutil, subprocess, time, urllib.request, wget
 
+from datetime import date, timedelta
+from datetime import date, timedelta
 from datetime import datetime as dt
-from datetime import timedelta
 from dateutil.parser import parse
 from file_read_backwards import FileReadBackwards
 
@@ -520,6 +521,15 @@ my current judgment is that these differences will not grossly affect the desire
             regen_adjustments = False
         start_date = kwargs.get('start_date',None)
         end_date = kwargs.get('end_date',None)
+        date_format = "%Y-%m-%d"
+        if start_date is not None:
+            dt.strptime(start_date, date_format)
+            if start_date > str(date.today()):
+                raise Exception('Requested start date in the future.')
+            if end_date is not None and end_date < start_date:
+                raise Exception('Requested end date is greater than requested start date.')
+        if end_date is not None:
+            dt.strptime(end_date, date_format)
         now = dt.now().astimezone()
         price_collection = 'price.' + symbol
         returndata = None
@@ -596,10 +606,10 @@ my current judgment is that these differences will not grossly affect the desire
         # Trim data outside of requested date range
         if start_date is not None:
             start_date = dt.strptime(start_date,"%Y-%m-%d")
-            returndata = {key: value for key, value in returndata.items() if dt.strptime(key,"%Y-%m-%d") > start_date}
+            returndata = {key: value for key, value in returndata.items() if dt.strptime(key,"%Y-%m-%d") >= start_date}
         if end_date is not None:
             end_date = dt.strptime(end_date,"%Y-%m-%d")
-            returndata = {key: value for key, value in returndata.items() if dt.strptime(key,"%Y-%m-%d") < end_date}
+            returndata = {key: value for key, value in returndata.items() if dt.strptime(key,"%Y-%m-%d") <= end_date}
         # Format returned data using data headers
         formatted_returndata = {}
         details_length = len(STORED_PRICE_FORMAT)
