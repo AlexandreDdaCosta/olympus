@@ -12,6 +12,18 @@ import olympus.securities.equities.data.alphavantage as alphavantage
 import olympus.securities.equities.data.tdameritrade as ameritrade
 import olympus.securities.equities.data.symbols as symbols
 
+MAP_LATEST_PRICE_KEYS = {
+    "Open": "openPrice",
+    "High": "highPrice",
+    "Low": "lowPrice", 
+    "Close": "closePrice", 
+    "Volume": "totalVolume",
+    "Adjusted Open": "openPrice",
+    "Adjusted High": "highPrice",
+    "Adjusted Low": "lowPrice",
+    "Adjusted Close": "closePrice",
+    "Adjusted Volume": "totalVolume"
+    }
 STORED_DIVIDEND_FORMAT = [ "Dividend", "Adjusted Dividend" ]
 STORED_PRICE_FORMAT = [ "Open", "High", "Low", "Close", "Volume", "Adjusted Open", "Adjusted High", "Adjusted Low", "Adjusted Close", "Adjusted Volume" ]
 STORED_SPLIT_FORMAT = [ "Numerator", "Denominator", "Price/Dividend Adjustment", "Volume Adjustment" ]
@@ -723,6 +735,8 @@ class Latest(ameritrade.Connection):
         params = {}
         unknown_symbols = []
         unquoted_symbols = []
+        # "Standardize" means to add keys corresponding to those appearing in STORED_PRICE_FORMAT
+        standardize = kwargs.get('standardize',False)
         # Symbol can be a string or array (list of symbols)
         if isinstance(symbol,str):
             symbol = symbol.upper()
@@ -754,6 +768,9 @@ class Latest(ameritrade.Connection):
                     unquoted_symbols.append(uc_symbol)
         for quote_symbol in response:
             response[quote_symbol]['date'] = dt.fromtimestamp(response[quote_symbol]['quoteTimeInLong'] / 1000).strftime('%Y-%m-%d')
+            if standardize is True:
+                for mapped_key in MAP_LATEST_PRICE_KEYS:
+                    response[quote_symbol][mapped_key] = response[quote_symbol][MAP_LATEST_PRICE_KEYS[mapped_key]]
         reply = { 'quotes': response }
         if unknown_symbols:
             reply['unknown_symbols'] = unknown_symbols
