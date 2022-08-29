@@ -149,6 +149,9 @@ class TestPrice(testing.Test):
                 "Adjusted Open": {
                     "type": "number"
                 },
+                "Adjusted Volume": {
+                    "type": "integer"
+                },
                 "Close": {
                     "type": "number"
                 },
@@ -161,7 +164,7 @@ class TestPrice(testing.Test):
                 "Open": {
                     "type": "number"
                 },
-                "Adjusted Volume": {
+                "Volume": {
                     "type": "integer"
                 }
             },
