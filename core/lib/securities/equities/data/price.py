@@ -1,7 +1,6 @@
 import collections, datetime, json, os, re, shutil, subprocess, time, urllib.request, wget
 
 from datetime import date, timedelta
-from datetime import date, timedelta
 from datetime import datetime as dt
 from dateutil.parser import parse
 from file_read_backwards import FileReadBackwards
@@ -753,6 +752,8 @@ class Latest(ameritrade.Connection):
             for uc_symbol in symbol:
                 if uc_symbol not in response and uc_symbol not in unknown_symbols:
                     unquoted_symbols.append(uc_symbol)
+        for quote_symbol in response:
+            response[quote_symbol]['date'] = dt.fromtimestamp(response[quote_symbol]['quoteTimeInLong'] / 1000).strftime('%Y-%m-%d')
         reply = { 'quotes': response }
         if unknown_symbols:
             reply['unknown_symbols'] = unknown_symbols
