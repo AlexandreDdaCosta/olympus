@@ -12,6 +12,7 @@ import olympus.securities.equities.data.alphavantage as alphavantage
 import olympus.securities.equities.data.tdameritrade as ameritrade
 import olympus.securities.equities.data.symbols as symbols
 
+DATE_FORMAT = "%Y-%m-%d"
 MAP_LATEST_PRICE_KEYS = {
     "Open": "openPrice",
     "High": "highPrice",
@@ -27,6 +28,7 @@ MAP_LATEST_PRICE_KEYS = {
 STORED_DIVIDEND_FORMAT = [ "Dividend", "Adjusted Dividend" ]
 STORED_PRICE_FORMAT = [ "Open", "High", "Low", "Close", "Volume", "Adjusted Open", "Adjusted High", "Adjusted Low", "Adjusted Close", "Adjusted Volume" ]
 STORED_SPLIT_FORMAT = [ "Numerator", "Denominator", "Price/Dividend Adjustment", "Volume Adjustment" ]
+VALID_DAILY_WEEKLY_PERIODS = ['1M','3M','6M','1Y','2Y','5Y','10Y','All']
 
 '''
 When stored in the database, price data is split into separate collection by symbol
@@ -530,17 +532,21 @@ my current judgment is that these differences will not grossly affect the desire
             regen_adjustments = True
         else:
             regen_adjustments = False
+        period = kwargs.get('period',None)
         start_date = kwargs.get('start_date',None)
         end_date = kwargs.get('end_date',None)
-        date_format = "%Y-%m-%d"
+        if period is not None:
+            if start_date is not None or end_date is not None:
+                raise Exception('Cannot specify both a time period and a start/end date.')
+            start_date = self._verify_period(period)
         if start_date is not None:
-            dt.strptime(start_date, date_format)
+            dt.strptime(start_date, DATE_FORMAT)
             if start_date > str(date.today()):
                 raise Exception('Requested start date in the future.')
             if end_date is not None and end_date < start_date:
                 raise Exception('Requested end date is greater than requested start date.')
         if end_date is not None:
-            dt.strptime(end_date, date_format)
+            dt.strptime(end_date, DATE_FORMAT)
         now = dt.now().astimezone()
         price_collection = 'price.' + symbol
         returndata = None
@@ -724,6 +730,50 @@ my current judgment is that these differences will not grossly affect the desire
     def _verify_csv_daily_format(self,first_line):
         if not re.match(r'^Date,Open,High,Low,Close,Adj Close,Volume',first_line):
             raise Exception('First line of symbol daily data .csv file does not match expected format.')
+
+    def _verify_period(self,period):
+        if period not in VALID_DAILY_WEEKLY_PERIODS:
+            raise Exception('Invalid period specified; must be one of the following: ' + str(VALID_DAILY_WEEKLY_PERIODS))
+        start_date = None # "All"
+        # ['1M','3M','6M','1Y','2Y','5Y','10Y','All']
+
+        print(str(start_date) + ' DAILY')
+        return start_date
+
+class Weekly(Daily):
+
+    def __init__(self,username=USER,**kwargs):
+        super(Weekly,self).__init__(username,**kwargs)
+
+    def quote(self,symbol,period='1Y',**kwargs):
+        kwargs.pop('start_date',None)
+        kwargs.pop('end_date',None)
+        daily_quotes = super().quote(symbol,period=period,**kwargs)
+        weekly_quotes = None
+        new_week = True
+        self._reset_prices()
+        for quote_date in daily_quotes:
+            if new_week is True:
+                self._reset_prices()
+            day_of_week = dt.strptime(quote_date,'%Y-%m-%d').isoweekday()
+        return weekly_quotes
+        # ALEX
+
+    def _reset_prices(self):
+        self.adjusted_close_price = None
+        self.adjusted_high_price = None
+        self.adjusted_low_price = None
+        self.adjusted_open_price = None
+        self.adjusted_volume = None
+        self.close_price = None
+        self.high_price = None
+        self.low_price = None
+        self.open_price = None
+        self.volume = None
+
+    def _verify_period(self,period):
+        start_date = super()._verify_period(period)
+        print(str(start_date) + ' WEEKLY')
 
 class Latest(ameritrade.Connection):
 
