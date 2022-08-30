@@ -253,7 +253,7 @@ class TestPrice(testing.Test):
             quotes = self.daily.quote(TEST_SYMBOL_FAKE)
         price_collection = 'price.' + TEST_SYMBOL_ONE
         collection = self.mongo_data.db[price_collection]
-        quotes = self.weekly.quote(TEST_SYMBOL_ONE,'1Y')
+        quotes = self.weekly.quote(TEST_SYMBOL_ONE,'3M')
         # print(quotes)
         return #ALEX
 

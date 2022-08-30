@@ -28,7 +28,7 @@ MAP_LATEST_PRICE_KEYS = {
 STORED_DIVIDEND_FORMAT = [ "Dividend", "Adjusted Dividend" ]
 STORED_PRICE_FORMAT = [ "Open", "High", "Low", "Close", "Volume", "Adjusted Open", "Adjusted High", "Adjusted Low", "Adjusted Close", "Adjusted Volume" ]
 STORED_SPLIT_FORMAT = [ "Numerator", "Denominator", "Price/Dividend Adjustment", "Volume Adjustment" ]
-VALID_DAILY_WEEKLY_PERIODS = ['1M','3M','6M','1Y','2Y','5Y','10Y','All']
+VALID_DAILY_WEEKLY_PERIODS = {'1M':30,'3M':91,'6M':183,'1Y':365,'2Y':730,'5Y':1825,'10Y':3650,'All':None}
 
 '''
 When stored in the database, price data is split into separate collection by symbol
@@ -732,12 +732,15 @@ my current judgment is that these differences will not grossly affect the desire
             raise Exception('First line of symbol daily data .csv file does not match expected format.')
 
     def _verify_period(self,period):
-        if period not in VALID_DAILY_WEEKLY_PERIODS:
-            raise Exception('Invalid period specified; must be one of the following: ' + str(VALID_DAILY_WEEKLY_PERIODS))
-        start_date = None # "All"
-        # ['1M','3M','6M','1Y','2Y','5Y','10Y','All']
-
-        print(str(start_date) + ' DAILY')
+        if period not in VALID_DAILY_WEEKLY_PERIODS.keys():
+            valid_choices = ''
+            for item in VALID_DAILY_WEEKLY_PERIODS:
+                valid_choices += item + " "
+            raise Exception('Invalid period specified; must be one of the following: ' + valid_choices)
+        if VALID_DAILY_WEEKLY_PERIODS[period] is not None:
+            start_date = str(date.today() - timedelta(days=VALID_DAILY_WEEKLY_PERIODS[period]))
+        else:
+            start_date = None
         return start_date
 
 class Weekly(Daily):
@@ -749,31 +752,79 @@ class Weekly(Daily):
         kwargs.pop('start_date',None)
         kwargs.pop('end_date',None)
         daily_quotes = super().quote(symbol,period=period,**kwargs)
-        weekly_quotes = None
-        new_week = True
-        self._reset_prices()
+        self.adjusted_close = None
+        self.adjusted_high = None
+        self.adjusted_low = None
+        self.adjusted_open = None
+        self.adjusted_volume = 0
+        self.close = None
+        self.high = None
+        self.low = None
+        self.open = None
+        self.volume = 0
+        last_day_of_week = None
+        last_start_date_of_week = None
+        weekly_quotes = {}
         for quote_date in daily_quotes:
-            if new_week is True:
-                self._reset_prices()
             day_of_week = dt.strptime(quote_date,'%Y-%m-%d').isoweekday()
+            if last_day_of_week is not None and day_of_week < last_day_of_week:
+                quote = self._set_quote()
+                weekly_quotes[last_start_date_of_week] = quote
+                last_start_date_of_week = quote_date
+                self.open = daily_quotes[quote_date]['Open']
+                self.high = daily_quotes[quote_date]['High']
+                self.low = daily_quotes[quote_date]['Low']
+                self.close = daily_quotes[quote_date]['Close']
+                self.volume = daily_quotes[quote_date]['Volume']
+                self.adjusted_open = daily_quotes[quote_date]['Adjusted Open']
+                self.adjusted_high = daily_quotes[quote_date]['Adjusted High']
+                self.adjusted_low = daily_quotes[quote_date]['Adjusted Low']
+                self.adjusted_close = daily_quotes[quote_date]['Adjusted Close']
+                self.adjusted_volume = daily_quotes[quote_date]['Adjusted Volume']
+            else:
+                if last_start_date_of_week is None:
+                    last_start_date_of_week = quote_date
+                if self.open is None:
+                    self.open = daily_quotes[quote_date]['Open']
+                if self.high is None or daily_quotes[quote_date]['High'] > self.high:
+                    self.high = daily_quotes[quote_date]['High']
+                if self.low is None or daily_quotes[quote_date]['Low'] < self.low:
+                    self.low = daily_quotes[quote_date]['Low']
+                self.close = daily_quotes[quote_date]['Close']
+                self.volume = self.volume + daily_quotes[quote_date]['Volume']
+                if self.adjusted_open is None:
+                    self.adjusted_open = daily_quotes[quote_date]['Adjusted Open']
+                if self.adjusted_high is None or daily_quotes[quote_date]['Adjusted High'] > self.adjusted_high:
+                    self.adjusted_high = daily_quotes[quote_date]['Adjusted High']
+                if self.adjusted_low is None or daily_quotes[quote_date]['Adjusted Low'] < self.adjusted_low:
+                    self.adjusted_low = daily_quotes[quote_date]['Adjusted Low']
+                self.adjusted_close = daily_quotes[quote_date]['Adjusted Close']
+                self.adjusted_volume = self.adjusted_volume + daily_quotes[quote_date]['Adjusted Volume']
+            last_day_of_week = day_of_week
+        quote = self._set_quote()
+        weekly_quotes[last_start_date_of_week] = quote
         return weekly_quotes
-        # ALEX
 
-    def _reset_prices(self):
-        self.adjusted_close_price = None
-        self.adjusted_high_price = None
-        self.adjusted_low_price = None
-        self.adjusted_open_price = None
-        self.adjusted_volume = None
-        self.close_price = None
-        self.high_price = None
-        self.low_price = None
-        self.open_price = None
-        self.volume = None
+    def _set_quote(self):
+        quote = {}
+        quote['Open'] = self.open
+        quote['High'] = self.high
+        quote['Low'] = self.low
+        quote['Close'] = self.close
+        quote['Volume'] = self.volume
+        quote['Adjusted Open'] = self.adjusted_open
+        quote['Adjusted High'] = self.adjusted_high
+        quote['Adjusted Low'] = self.adjusted_low
+        quote['Adjusted Close'] = self.adjusted_close
+        quote['Adjusted Volume'] = self.adjusted_volume
+        return quote
 
     def _verify_period(self,period):
         start_date = super()._verify_period(period)
-        print(str(start_date) + ' WEEKLY')
+        day_of_week = dt.strptime(start_date,'%Y-%m-%d').isoweekday()
+        if day_of_week != 1:
+            start_date = str(dt.strptime(start_date,'%Y-%m-%d') - timedelta(days=(day_of_week-1)))[0:10]
+        return start_date
 
 class Latest(ameritrade.Connection):
 
