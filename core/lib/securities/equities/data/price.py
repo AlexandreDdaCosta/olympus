@@ -1,6 +1,6 @@
 import collections, datetime, json, os, re, shutil, subprocess, time, urllib.request, wget
 
-from datetime import date, timedelta
+from datetime import date, timedelta, timezone
 from datetime import datetime as dt
 from dateutil.parser import parse
 from file_read_backwards import FileReadBackwards
@@ -444,28 +444,34 @@ date more recent than or matching the date of the most recent split is therefore
         return None
 
     def _is_stale_data(self,refresh_date):
+        # These rules are designed to exclude quotes for the ongoing trading day,
+        # since these quotes are constantly changing and will introduce anomalies
+        # into saved data.
+        # 9 PM is chosen as that is an hour past the close of extended hours trading.
         # Query source:
-        # If now is a weekday and before 4:00 PM, generated before today
-        # If now is a weekday and after 4:00 PM, generated before 4:00 PM today
-        # If now is a weekend day, generated before 4:00 last Friday
+        # If now is a weekday and before 9:00 PM, generated before 9:00 PM yesterday
+        # If now is a weekday and after 9:00 PM, generated before 9:00 PM today
+        # If now is a weekend day, generated before 9:00 last Friday
         stale = False
         refresh_date_object = parse(refresh_date)
         now = dt.now().astimezone()
+        time_zone_offset_string = str(now)[-5:]
         weekday_no = now.weekday()
+        yesterday = now - timedelta(days = 1)
         if weekday_no < 5:
-            # weekday
-            midnight = "%d-%02d-%02d 00:00:00.000000-04:00" % (now.year,now.month,now.day)
-            midnight_object = parse(midnight)
-            four_pm = "%d-%02d-%02d 16:00:00.000000-04:00" % (now.year,now.month,now.day)
-            four_pm_object = parse(four_pm)
-            if now <= four_pm_object and refresh_date_object < midnight_object:
+            # Weekday
+            nine_pm_yesterday = "%d-%02d-%02d 21:00:00.000000-" % (yesterday.year,yesterday.month,yesterday.day) + time_zone_offset_string
+            nine_pm_yesterday_object = parse(nine_pm_yesterday)
+            nine_pm = "%d-%02d-%02d 21:00:00.000000-" % (now.year,now.month,now.day) + time_zone_offset_string
+            nine_pm_object = parse(nine_pm)
+            if now <= nine_pm_object and refresh_date_object < nine_pm_yesterday_object:
                 stale = True
-            elif now > four_pm_object and refresh_date_object < four_pm_object:
+            elif now > nine_pm_object and refresh_date_object < nine_pm_object:
                 stale = True
         else:
-            # weekend
+            # Weekend
             last_friday = now - timedelta(days=(weekday_no-4))
-            last_friday_string = "%d-%02d-%02d 16:00:00.000000-04:00" % (last_friday.year,last_friday.month,last_friday.day)
+            last_friday_string = "%d-%02d-%02d 21:00:00.000000-04:00" % (last_friday.year,last_friday.month,last_friday.day)
             last_friday_object = parse(last_friday_string)
             if refresh_date_object < last_friday_object:
                 stale = True
@@ -535,18 +541,21 @@ my current judgment is that these differences will not grossly affect the desire
         period = kwargs.get('period',None)
         start_date = kwargs.get('start_date',None)
         end_date = kwargs.get('end_date',None)
+        self.today = str(date.today())
         if period is not None:
             if start_date is not None or end_date is not None:
                 raise Exception('Cannot specify both a time period and a start/end date.')
             start_date = self._verify_period(period)
         if start_date is not None:
-            dt.strptime(start_date, DATE_FORMAT)
-            if start_date > str(date.today()):
-                raise Exception('Requested start date in the future.')
-            if end_date is not None and end_date < start_date:
-                raise Exception('Requested end date is greater than requested start date.')
+            dt.strptime(start_date, DATE_FORMAT) # Date verification
+            if start_date >= self.today:
+                raise Exception('Requested start date in not in the past.')
+            if end_date is not None and end_date <= start_date:
+                raise Exception('Requested start date is not older than requested end date.')
         if end_date is not None:
-            dt.strptime(end_date, DATE_FORMAT)
+            dt.strptime(end_date, DATE_FORMAT) # Date verification
+            if end_date > self.today:
+                raise Exception('Requested end date in the future.')
         now = dt.now().astimezone()
         price_collection = 'price.' + symbol
         returndata = None
@@ -558,6 +567,13 @@ my current judgment is that these differences will not grossly affect the desire
         stale = False
         self.start_date_daily = None
         self.end_date_daily = None
+        self.cutoff_today = False
+        time_zone_offset_string = str(now)[-5:]
+        nine_pm_today = "%d-%02d-%02d 21:00:00.000000-" % (now.year,now.month,now.day) + time_zone_offset_string
+        nine_pm_object = parse(nine_pm_today)
+        if now < nine_pm_object:
+            self.cutoff_today = True
+
         if interval_data is not None:
             self.start_date_daily = interval_data['Start Date']
             self.end_date_daily = interval_data['End Date']
@@ -585,8 +601,9 @@ my current judgment is that these differences will not grossly affect the desire
                 with FileReadBackwards(target_file, encoding="utf-8") as f:
                     for line in f:
                         (json_quote,interval_date) = self._parse_daily(line,adjustments)
-                        collection.update_one({'Interval': '1d'},{ "$set": {'Quotes.'+interval_date: json_quote}}, upsert=True)
-                        interval_data['Quotes'][interval_date] = json_quote
+                        if json_quote is not None:
+                            collection.update_one({'Interval': '1d'},{ "$set": {'Quotes.'+interval_date: json_quote}}, upsert=True)
+                            interval_data['Quotes'][interval_date] = json_quote
                     collection.update_one({'Interval': '1d'},{ "$set":  {'End Date': self.end_date_daily, 'Start Date': self.start_date_daily, 'Time': str(now)}})
             os.remove(target_file)
         if regen is True:
@@ -604,7 +621,8 @@ my current judgment is that these differences will not grossly affect the desire
                 json_quotes = {}
                 for line in f:
                     (json_quote,interval_date) = self._parse_daily(line,adjustments)
-                    json_quotes[interval_date] = json_quote
+                    if json_quote is not None:
+                        json_quotes[interval_date] = json_quote
             write_dict = {}
             write_dict['Time'] = str(now)
             write_dict['Interval'] = '1d'
@@ -664,6 +682,8 @@ my current judgment is that these differences will not grossly affect the desire
         line = line.rstrip()
         pieces = line.rstrip().split(',')
         interval_date = str(pieces[0])
+        if self.cutoff_today and interval_date == self.today:
+            return None, None
         if (self.start_date_daily is None or self.start_date_daily >= interval_date):
             self.start_date_daily = interval_date
         if (self.end_date_daily is None or self.end_date_daily <= interval_date):
@@ -821,9 +841,10 @@ class Weekly(Daily):
 
     def _verify_period(self,period):
         start_date = super()._verify_period(period)
-        day_of_week = dt.strptime(start_date,'%Y-%m-%d').isoweekday()
-        if day_of_week != 1:
-            start_date = str(dt.strptime(start_date,'%Y-%m-%d') - timedelta(days=(day_of_week-1)))[0:10]
+        if start_date is not None:
+            day_of_week = dt.strptime(start_date,'%Y-%m-%d').isoweekday()
+            if day_of_week != 1:
+                start_date = str(dt.strptime(start_date,'%Y-%m-%d') - timedelta(days=(day_of_week-1)))[0:10]
         return start_date
 
 class Latest(ameritrade.Connection):

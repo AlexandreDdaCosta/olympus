@@ -3,6 +3,7 @@
 import json, jsonschema, os, re, sys, time, unittest
 
 from datetime import date, timedelta
+from datetime import datetime as dt
 from jsonschema import validate
 
 import olympus.securities.equities.data as data
@@ -12,9 +13,37 @@ import olympus.testing as testing
 from olympus import USER
 from olympus.securities.equities import *
 from olympus.securities.equities.data.symbols import SymbolNotFoundError
+from olympus.securities.equities.data.price import DATE_FORMAT, VALID_DAILY_WEEKLY_PERIODS
 
 LATEST_PRICE_SCHEMA_FILE = re.sub(r'(.*\/).*\/.*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/LatestPriceQuote.json'
 NODIVIDEND_STOCK = 'DASH' # This may need update over time
+QUOTE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "Adjusted Close": { "type": "number" },
+        "Adjusted High": { "type": "number" },
+        "Adjusted Low": { "type": "number" },
+        "Adjusted Open": { "type": "number" },
+        "Adjusted Volume": { "type": "integer" },
+        "Close": { "type": "number" },
+        "High": { "type": "number" },
+        "Low": { "type": "number" },
+        "Open": { "type": "number" },
+        "Volume": { "type": "integer" } 
+    },
+    "required": [
+        "Adjusted Close",
+        "Adjusted High",
+        "Adjusted Low",
+        "Adjusted Open",
+        "Adjusted Volume",
+        "Close",
+        "High",
+        "Low",
+        "Open",
+        "Volume"
+    ]
+}
 UNSPLIT_STOCK = 'TWLO' # This may need update over time
 
 # Standard run parameters:
@@ -37,7 +66,6 @@ class TestPrice(testing.Test):
         self.mongo_data = data.Connection(username)
 
     def test_adjustments(self):
-        return #ALEX
         dividend_schema = {
             "type": "object",
             "properties": {
@@ -136,96 +164,58 @@ class TestPrice(testing.Test):
         self.assertGreater(regen_adjustment_data['Time'],adjustment_data['Time'])
 
     def test_daily(self):
-        return #ALEX
-        quote_schema = {
-            "type": "object",
-            "properties": {
-                "Adjusted Close": {
-                    "type": "number"
-                },
-                "Adjusted High": {
-                    "type": "number"
-                },
-                "Adjusted Low": {
-                    "type": "number"
-                },
-                "Adjusted Open": {
-                    "type": "number"
-                },
-                "Adjusted Volume": {
-                    "type": "integer"
-                },
-                "Close": {
-                    "type": "number"
-                },
-                "High": {
-                    "type": "number"
-                },
-                "Low": {
-                    "type": "number"
-                },
-                "Open": {
-                    "type": "number"
-                },
-                "Volume": {
-                    "type": "integer"
-                }
-            },
-            "required": [
-                "Adjusted Close",
-                "Adjusted High",
-                "Adjusted Low",
-                "Adjusted Open",
-                "Adjusted Volume",
-                "Close",
-                "High",
-                "Low",
-                "Open",
-                "Volume"
-            ]
-        }
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.daily.quote(TEST_SYMBOL_FAKE)
         price_collection = 'price.' + TEST_SYMBOL_TWO
         collection = self.mongo_data.db[price_collection]
         quotes = self.daily.quote(TEST_SYMBOL_TWO)
+        first_date = list(quotes)[0]
         init_quote_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0, 'Quotes': 0 })
         quotes = self.daily.quote(TEST_SYMBOL_TWO,regen=True)
         regen_quote_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0, 'Quotes': 0 })
         self.assertGreater(regen_quote_data['Time'],init_quote_data['Time'])
         with self.assertRaises(Exception):
-            range_quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date='2022-02-29')
-            range_quotes = self.daily.quote(TEST_SYMBOL_TWO,end_date='2022-02-29')
-            range_quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date='BADLYFORMATTEDDATE')
-            range_quotes = self.daily.quote(TEST_SYMBOL_TWO,end_date='BADLYFORMATTEDDATE')
+            quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date='2022-02-29')
+            quotes = self.daily.quote(TEST_SYMBOL_TWO,end_date='2022-02-29')
+            quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date='BADLYFORMATTEDDATE')
+            quotes = self.daily.quote(TEST_SYMBOL_TWO,end_date='BADLYFORMATTEDDATE')
         with self.assertRaises(Exception):
             tomorrow = str(date.today() + timedelta(days=1))
-            range_quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date=tomorrow)
+            quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date=tomorrow)
         a_while_ago = str(date.today() - timedelta(days=90))
         today = str(date.today())
         with self.assertRaises(Exception):
-            range_quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date=today,end_date=a_while_ago)
-            range_quotes = self.daily.quote(TEST_SYMBOL_TWO,period='BADPERIOD')
-            range_quotes = self.daily.quote(TEST_SYMBOL_TWO,period='1Y',start_date=a_while_ago)
-            range_quotes = self.daily.quote(TEST_SYMBOL_TWO,period='1Y',end_date=a_while_ago)
-        range_quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date=a_while_ago,end_date=today)
+            quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date=today,end_date=a_while_ago)
+            quotes = self.daily.quote(TEST_SYMBOL_TWO,period='BADPERIOD')
+            quotes = self.daily.quote(TEST_SYMBOL_TWO,period='1Y',start_date=a_while_ago)
+            quotes = self.daily.quote(TEST_SYMBOL_TWO,period='1Y',end_date=a_while_ago)
+        quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date=a_while_ago,end_date=today)
         curr_range_date = None
-        for range_date in range_quotes:
+        for range_date in quotes:
             if curr_range_date is None:
                 self.assertGreaterEqual(range_date,a_while_ago)
-            validate(instance=range_quotes[range_date],schema=quote_schema)
-            self.assertLessEqual(range_quotes[range_date]['Adjusted Close'],range_quotes[range_date]['Close'])
-            self.assertLessEqual(range_quotes[range_date]['Adjusted Low'],range_quotes[range_date]['Low'])
-            self.assertLessEqual(range_quotes[range_date]['Adjusted High'],range_quotes[range_date]['High'])
-            self.assertLessEqual(range_quotes[range_date]['Adjusted Open'],range_quotes[range_date]['Open'])
-            self.assertGreaterEqual(range_quotes[range_date]['Adjusted Volume'],range_quotes[range_date]['Volume'])
-            self.assertGreaterEqual(range_quotes[range_date]['High'],range_quotes[range_date]['Close'])
-            self.assertGreaterEqual(range_quotes[range_date]['High'],range_quotes[range_date]['Low'])
-            self.assertGreaterEqual(range_quotes[range_date]['High'],range_quotes[range_date]['Open'])
-            self.assertLessEqual(range_quotes[range_date]['Low'],range_quotes[range_date]['Close'])
-            self.assertLessEqual(range_quotes[range_date]['Low'],range_quotes[range_date]['Open'])
+            validate(instance=quotes[range_date],schema=QUOTE_SCHEMA)
+            self.assertLessEqual(quotes[range_date]['Adjusted Close'],quotes[range_date]['Close'])
+            self.assertLessEqual(quotes[range_date]['Adjusted Low'],quotes[range_date]['Low'])
+            self.assertLessEqual(quotes[range_date]['Adjusted High'],quotes[range_date]['High'])
+            self.assertLessEqual(quotes[range_date]['Adjusted Open'],quotes[range_date]['Open'])
+            self.assertGreaterEqual(quotes[range_date]['Adjusted Volume'],quotes[range_date]['Volume'])
+            self.assertGreaterEqual(quotes[range_date]['High'],quotes[range_date]['Close'])
+            self.assertGreaterEqual(quotes[range_date]['High'],quotes[range_date]['Low'])
+            self.assertGreaterEqual(quotes[range_date]['High'],quotes[range_date]['Open'])
+            self.assertLessEqual(quotes[range_date]['Low'],quotes[range_date]['Close'])
+            self.assertLessEqual(quotes[range_date]['Low'],quotes[range_date]['Open'])
             curr_range_date = range_date
         self.assertLessEqual(curr_range_date,today)
+        for period in VALID_DAILY_WEEKLY_PERIODS.keys():
+            quotes = self.daily.quote(TEST_SYMBOL_TWO,period=period)
+            first_period_date = list(quotes)[0]
+            if period == 'All':
+                self.assertEqual(first_date,first_period_date)
+            else:    
+                past_days = VALID_DAILY_WEEKLY_PERIODS[period] + 4 # Add 4 in case of mid-week day adjustment
+                max_past_date = str(date.today() - timedelta(days=past_days))
+                self.assertLessEqual(max_past_date,first_period_date)
         # Remove the last price record by date, then get the quote again. Check that the record was restored.
         interval_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0 })
         last_date = None
@@ -245,20 +235,38 @@ class TestPrice(testing.Test):
             interval_data = collection.find_one({ 'Interval': '1d',  },{ '_id': 0, 'Interval': 0 })
             self.assertTrue(previous_date in interval_data['Quotes']);
             self.assertFalse(last_date in interval_data['Quotes']);
-            quotes_noregen = self.daily.quote(TEST_SYMBOL_TWO)
-            self.assertTrue(last_date in quotes_noregen);
+            quotes = self.daily.quote(TEST_SYMBOL_TWO)
+            self.assertTrue(last_date in quotes);
     
     def test_weekly(self):
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.daily.quote(TEST_SYMBOL_FAKE)
-        price_collection = 'price.' + TEST_SYMBOL_ONE
-        collection = self.mongo_data.db[price_collection]
-        quotes = self.weekly.quote(TEST_SYMBOL_ONE,'3M')
-        # print(quotes)
-        return #ALEX
+        today = str(date.today())
+        quotes = self.weekly.quote(TEST_SYMBOL_ONE,'All')
+        first_date = list(quotes)[0]
+        for quote_date in quotes:
+            validate(instance=quotes[quote_date],schema=QUOTE_SCHEMA)
+            self.assertLessEqual(quotes[quote_date]['Adjusted Close'],quotes[quote_date]['Close'])
+            self.assertLessEqual(quotes[quote_date]['Adjusted Low'],quotes[quote_date]['Low'])
+            self.assertLessEqual(quotes[quote_date]['Adjusted High'],quotes[quote_date]['High'])
+            self.assertLessEqual(quotes[quote_date]['Adjusted Open'],quotes[quote_date]['Open'])
+            self.assertGreaterEqual(quotes[quote_date]['Adjusted Volume'],quotes[quote_date]['Volume'])
+            self.assertGreaterEqual(quotes[quote_date]['High'],quotes[quote_date]['Close'])
+            self.assertGreaterEqual(quotes[quote_date]['High'],quotes[quote_date]['Low'])
+            self.assertGreaterEqual(quotes[quote_date]['High'],quotes[quote_date]['Open'])
+            self.assertLessEqual(quotes[quote_date]['Low'],quotes[quote_date]['Close'])
+            self.assertLessEqual(quotes[quote_date]['Low'],quotes[quote_date]['Open'])
+        for period in VALID_DAILY_WEEKLY_PERIODS.keys():
+            if period == 'All':
+                continue
+            past_days = VALID_DAILY_WEEKLY_PERIODS[period] + 4 # Add 4 in case of mid-week day adjustment
+            max_past_date = str(date.today() - timedelta(days=past_days))
+            quotes = self.weekly.quote(TEST_SYMBOL_ONE,period)
+            first_period_date = list(quotes)[0]
+            self.assertLessEqual(first_date,first_period_date)
+            self.assertLessEqual(max_past_date,first_period_date)
 
     def test_latest(self):
-        return #ALEX
         with open(LATEST_PRICE_SCHEMA_FILE) as schema_file:
             validation_schema = json.load(schema_file)
         quote = self.latest.quote(TEST_SYMBOL_ONE)
