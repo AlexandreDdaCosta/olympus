@@ -28,7 +28,8 @@ MAP_LATEST_PRICE_KEYS = {
 STORED_DIVIDEND_FORMAT = [ "Dividend", "Adjusted Dividend" ]
 STORED_PRICE_FORMAT = [ "Open", "High", "Low", "Close", "Volume", "Adjusted Open", "Adjusted High", "Adjusted Low", "Adjusted Close", "Adjusted Volume" ]
 STORED_SPLIT_FORMAT = [ "Numerator", "Denominator", "Price/Dividend Adjustment", "Volume Adjustment" ]
-VALID_DAILY_WEEKLY_PERIODS = {'1M':30,'3M':91,'6M':183,'1Y':365,'2Y':730,'5Y':1825,'10Y':3650,'All':None}
+VALID_DAILY_WEEKLY_PERIODS = {'1M':30,'3M':91,'6M':183,'1Y':365,'2Y':730,'5Y':1825,'10Y':3652,'20Y':7305,'All':None}
+VALID_MONTHLY_PERIODS = ['1Y','2Y','5Y','10Y','20Y','All']
 
 '''
 When stored in the database, price data is split into separate collection by symbol
@@ -845,6 +846,64 @@ class Weekly(Daily):
             day_of_week = dt.strptime(start_date,'%Y-%m-%d').isoweekday()
             if day_of_week != 1:
                 start_date = str(dt.strptime(start_date,'%Y-%m-%d') - timedelta(days=(day_of_week-1)))[0:10]
+        return start_date
+
+class Monthly(Daily):
+
+    def __init__(self,username=USER,**kwargs):
+        super(Monthly,self).__init__(username,**kwargs)
+
+    def quote(self,symbol,period='5Y',**kwargs):
+        kwargs.pop('start_date',None)
+        kwargs.pop('end_date',None)
+        start_date = self._verify_period(period)
+        if start_date is not None:
+            daily_quotes = super().quote(symbol,start_date=start_date,**kwargs)
+        else:
+            daily_quotes = super().quote(symbol,**kwargs)
+        daily_quotes = super().quote(symbol,**kwargs) # ALEX
+        self.adjusted_volume = 0
+        self.close = None
+        self.high = None
+        self.low = None
+        self.open = None
+        self.volume = 0
+        monthly_quotes = {}
+        #ALEX
+        #ALEX return monthly_quotes
+        return daily_quotes #ALEX
+
+    def _set_quote(self):
+        quote = {}
+        quote['Open'] = self.open
+        quote['High'] = self.high
+        quote['Low'] = self.low
+        quote['Close'] = self.close
+        quote['Volume'] = self.volume
+        quote['Adjusted Open'] = self.adjusted_open
+        quote['Adjusted High'] = self.adjusted_high
+        quote['Adjusted Low'] = self.adjusted_low
+        quote['Adjusted Close'] = self.adjusted_close
+        quote['Adjusted Volume'] = self.adjusted_volume
+        return quote
+
+    def _verify_period(self,period):
+        if period not in VALID_MONTHLY_PERIODS:
+            valid_choices = ''
+            for item in VALID_MONTHLY_PERIODS:
+                valid_choices += item + " "
+            raise Exception('Invalid period specified; must be one of the following: ' + valid_choices)
+        start_date = None
+        if period != 'All':
+            # Here we convert our period to a past date.
+            # Monthly data always begins on the first day of the month; no partial months.
+            pass
+        '''
+        if VALID_MONTHLY_PERIODS] is not None:
+            start_date = str(date.today() - timedelta(days=VALID_MONTHLY_PERIODS[period]))
+        else:
+            start_date = None
+        '''
         return start_date
 
 class Latest(ameritrade.Connection):
