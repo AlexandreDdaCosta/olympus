@@ -768,77 +768,31 @@ class Weekly(Daily):
 
     def __init__(self,username=USER,**kwargs):
         super(Weekly,self).__init__(username,**kwargs)
+        self.merge = QuoteMerger()
 
     def quote(self,symbol,period='1Y',**kwargs):
         kwargs.pop('start_date',None)
         kwargs.pop('end_date',None)
         daily_quotes = super().quote(symbol,period=period,**kwargs)
-        self.adjusted_close = None
-        self.adjusted_high = None
-        self.adjusted_low = None
-        self.adjusted_open = None
-        self.adjusted_volume = 0
-        self.close = None
-        self.high = None
-        self.low = None
-        self.open = None
-        self.volume = 0
+        self.merge.reset_quote()
         last_day_of_week = None
         last_start_date_of_week = None
         weekly_quotes = {}
         for quote_date in daily_quotes:
             day_of_week = dt.strptime(quote_date,'%Y-%m-%d').isoweekday()
             if last_day_of_week is not None and day_of_week < last_day_of_week:
-                quote = self._set_quote()
+                quote = self.merge.set_quote()
                 weekly_quotes[last_start_date_of_week] = quote
                 last_start_date_of_week = quote_date
-                self.open = daily_quotes[quote_date]['Open']
-                self.high = daily_quotes[quote_date]['High']
-                self.low = daily_quotes[quote_date]['Low']
-                self.close = daily_quotes[quote_date]['Close']
-                self.volume = daily_quotes[quote_date]['Volume']
-                self.adjusted_open = daily_quotes[quote_date]['Adjusted Open']
-                self.adjusted_high = daily_quotes[quote_date]['Adjusted High']
-                self.adjusted_low = daily_quotes[quote_date]['Adjusted Low']
-                self.adjusted_close = daily_quotes[quote_date]['Adjusted Close']
-                self.adjusted_volume = daily_quotes[quote_date]['Adjusted Volume']
+                self.merge.init_quote(daily_quotes[quote_date])
             else:
                 if last_start_date_of_week is None:
                     last_start_date_of_week = quote_date
-                if self.open is None:
-                    self.open = daily_quotes[quote_date]['Open']
-                if self.high is None or daily_quotes[quote_date]['High'] > self.high:
-                    self.high = daily_quotes[quote_date]['High']
-                if self.low is None or daily_quotes[quote_date]['Low'] < self.low:
-                    self.low = daily_quotes[quote_date]['Low']
-                self.close = daily_quotes[quote_date]['Close']
-                self.volume = self.volume + daily_quotes[quote_date]['Volume']
-                if self.adjusted_open is None:
-                    self.adjusted_open = daily_quotes[quote_date]['Adjusted Open']
-                if self.adjusted_high is None or daily_quotes[quote_date]['Adjusted High'] > self.adjusted_high:
-                    self.adjusted_high = daily_quotes[quote_date]['Adjusted High']
-                if self.adjusted_low is None or daily_quotes[quote_date]['Adjusted Low'] < self.adjusted_low:
-                    self.adjusted_low = daily_quotes[quote_date]['Adjusted Low']
-                self.adjusted_close = daily_quotes[quote_date]['Adjusted Close']
-                self.adjusted_volume = self.adjusted_volume + daily_quotes[quote_date]['Adjusted Volume']
+                self.merge.compare_quotes(daily_quotes[quote_date])
             last_day_of_week = day_of_week
-        quote = self._set_quote()
+        quote = self.merge.set_quote()
         weekly_quotes[last_start_date_of_week] = quote
         return weekly_quotes
-
-    def _set_quote(self):
-        quote = {}
-        quote['Open'] = self.open
-        quote['High'] = self.high
-        quote['Low'] = self.low
-        quote['Close'] = self.close
-        quote['Volume'] = self.volume
-        quote['Adjusted Open'] = self.adjusted_open
-        quote['Adjusted High'] = self.adjusted_high
-        quote['Adjusted Low'] = self.adjusted_low
-        quote['Adjusted Close'] = self.adjusted_close
-        quote['Adjusted Volume'] = self.adjusted_volume
-        return quote
 
     def _verify_period(self,period):
         start_date = super()._verify_period(period)
@@ -852,6 +806,7 @@ class Monthly(Daily):
 
     def __init__(self,username=USER,**kwargs):
         super(Monthly,self).__init__(username,**kwargs)
+        self.merge = QuoteMerger()
 
     def quote(self,symbol,period='5Y',**kwargs):
         kwargs.pop('start_date',None)
@@ -861,31 +816,26 @@ class Monthly(Daily):
             daily_quotes = super().quote(symbol,start_date=start_date,**kwargs)
         else:
             daily_quotes = super().quote(symbol,**kwargs)
-        daily_quotes = super().quote(symbol,**kwargs) # ALEX
-        self.adjusted_volume = 0
-        self.close = None
-        self.high = None
-        self.low = None
-        self.open = None
-        self.volume = 0
+        self.merge.reset_quote()
+        last_start_date_of_month = None
+        previous_month = None
         monthly_quotes = {}
-        #ALEX
-        #ALEX return monthly_quotes
-        return daily_quotes #ALEX
-
-    def _set_quote(self):
-        quote = {}
-        quote['Open'] = self.open
-        quote['High'] = self.high
-        quote['Low'] = self.low
-        quote['Close'] = self.close
-        quote['Volume'] = self.volume
-        quote['Adjusted Open'] = self.adjusted_open
-        quote['Adjusted High'] = self.adjusted_high
-        quote['Adjusted Low'] = self.adjusted_low
-        quote['Adjusted Close'] = self.adjusted_close
-        quote['Adjusted Volume'] = self.adjusted_volume
-        return quote
+        for quote_date in daily_quotes:
+            month = quote_date[5:-3]
+            year = quote_date[0:4]
+            if previous_month is not None and month != previous_month:
+                quote = self.merge.set_quote()
+                monthly_quotes[last_start_date_of_month] = quote
+                last_start_date_of_month = year + '-' + month + '-' + '01'
+                self.merge.init_quote(daily_quotes[quote_date])
+            else:
+                if last_start_date_of_month is None:
+                    last_start_date_of_month = year + '-' + month + '-' + '01'
+                self.merge.compare_quotes(daily_quotes[quote_date])
+            previous_month = month
+        quote = self.merge.set_quote()
+        monthly_quotes[last_start_date_of_month] = quote
+        return monthly_quotes
 
     def _verify_period(self,period):
         if period not in VALID_MONTHLY_PERIODS:
@@ -895,16 +845,46 @@ class Monthly(Daily):
             raise Exception('Invalid period specified; must be one of the following: ' + valid_choices)
         start_date = None
         if period != 'All':
-            # Here we convert our period to a past date.
-            # Monthly data always begins on the first day of the month; no partial months.
-            pass
-        '''
-        if VALID_MONTHLY_PERIODS] is not None:
-            start_date = str(date.today() - timedelta(days=VALID_MONTHLY_PERIODS[period]))
-        else:
-            start_date = None
-        '''
+            period = re.sub(r"[Y]", "", period) # All periods are in the form "#Y", with "Y" signifying years
+            now = dt.now().astimezone()
+            start_date = "%d-%02d-%02d" % (now.year - int(period),now.month,1)
         return start_date
+
+class QuoteMerger():
+
+    def __init__(self):
+        pass
+
+    def compare_quotes(self,quote):
+        for item in ['Open','Adjusted Open']:
+            if getattr(self, item) is None:
+                setattr(self, item, quote[item])
+        for item in ['High','Adjusted High']:
+            if getattr(self, item) is None or quote[item] > getattr(self, item):
+                setattr(self, item, quote[item])
+        for item in ['Low','Adjusted Low']:
+            if getattr(self, item) is None or quote[item] < getattr(self, item):
+                setattr(self, item, quote[item])
+        for item in ['Close','Adjusted Close']:
+            setattr(self, item, quote[item])
+        for item in ['Volume','Adjusted Volume']:
+            setattr(self, item, getattr(self, item) + quote[item])
+
+    def init_quote(self,quote):
+        for label in STORED_PRICE_FORMAT:
+            setattr(self, label, quote[label])
+
+    def reset_quote(self):
+        for label in STORED_PRICE_FORMAT:
+            setattr(self, label, None)
+        setattr(self, 'Adjusted Volume', 0)
+        setattr(self, 'Volume', 0)
+
+    def set_quote(self):
+        quote = {}
+        for label in STORED_PRICE_FORMAT:
+            quote[label] = getattr(self, label)
+        return quote
 
 class Latest(ameritrade.Connection):
 

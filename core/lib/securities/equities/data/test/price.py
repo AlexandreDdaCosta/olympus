@@ -67,7 +67,6 @@ class TestPrice(testing.Test):
         self.mongo_data = data.Connection(username)
 
     def test_adjustments(self):
-        return #ALEX
         dividend_schema = {
             "type": "object",
             "properties": {
@@ -166,7 +165,6 @@ class TestPrice(testing.Test):
         self.assertGreater(regen_adjustment_data['Time'],adjustment_data['Time'])
 
     def test_daily(self):
-        return #ALEX
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.daily.quote(TEST_SYMBOL_FAKE)
         price_collection = 'price.' + TEST_SYMBOL_TWO
@@ -242,7 +240,6 @@ class TestPrice(testing.Test):
             self.assertTrue(last_date in quotes);
     
     def test_weekly(self):
-        return #ALEX
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.daily.quote(TEST_SYMBOL_FAKE)
         today = str(date.today())
@@ -274,7 +271,7 @@ class TestPrice(testing.Test):
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.monthly.quote(TEST_SYMBOL_FAKE)
         today = str(date.today())
-        quotes = self.monthly.quote(TEST_SYMBOL_ONE,'All')
+        quotes = self.monthly.quote(TEST_SYMBOL_TWO,period='All')
         first_date = list(quotes)[0]
         for quote_date in quotes:
             validate(instance=quotes[quote_date],schema=QUOTE_SCHEMA)
@@ -291,15 +288,15 @@ class TestPrice(testing.Test):
         for period in VALID_MONTHLY_PERIODS:
             if period == 'All':
                 continue
-            #past_days = VALID_MONTHLY_PERIODS[period]
-            #max_past_date = str(date.today() - timedelta(days=past_days))
-            #quotes = self.weekly.quote(TEST_SYMBOL_ONE,period)
-            #first_period_date = list(quotes)[0]
-            #self.assertLessEqual(first_date,first_period_date)
-            #self.assertLessEqual(max_past_date,first_period_date)
+            past_period = int(re.sub(r"[Y]", "", period))
+            now = dt.now().astimezone()
+            max_past_date = "%d-%02d-%02d" % (now.year - int(past_period),now.month,1)
+            quotes = self.monthly.quote(TEST_SYMBOL_TWO,period)
+            first_period_date = list(quotes)[0]
+            self.assertLessEqual(first_date,first_period_date)
+            self.assertLessEqual(max_past_date,first_period_date)
 
     def test_latest(self):
-        return #ALEX
         with open(LATEST_PRICE_SCHEMA_FILE) as schema_file:
             validation_schema = json.load(schema_file)
         quote = self.latest.quote(TEST_SYMBOL_ONE)
@@ -351,7 +348,7 @@ class TestPrice(testing.Test):
         self.assertTrue(TEST_SYMBOL_FAKE.upper() in quote['unknown_symbols'])
         self.assertTrue(TEST_SYMBOL_FAKE_TWO.upper() in quote['unknown_symbols'])
 
-    def test_intra_day(self):
+    def test_intraday(self):
         return # ALEX
         quotes = self.intraday.quote(TEST_SYMBOL_ONE)
 
