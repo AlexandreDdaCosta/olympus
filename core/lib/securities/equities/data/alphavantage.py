@@ -10,7 +10,7 @@ class Connection(provider.Connection):
         super(Connection,self).__init__('AlphaVantage',username,**kwargs)
 
     def request(self,function,data=None):
-        token = self.token()
+        token = self.access_key()
         url = self.protocol + '://' + self.url + token + '&function=' + function
         if (data is not None):
             for key in data:

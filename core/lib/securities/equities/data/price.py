@@ -886,6 +886,69 @@ class QuoteMerger():
             quote[label] = getattr(self, label)
         return quote
 
+class Intraday(ameritrade.Connection):
+    '''
+This class focuses on the minute-by-minute price quotes available via the TD Ameritrade API.
+The API currently offers a maximum of 10 days of data for any quote frequency, from 1
+minute to 60 minutes.
+    '''
+
+    def __init__(self,username=USER,**kwargs):
+        super(Intraday,self).__init__(username,**kwargs)
+        self.symbol_reader = symbols.Read(username,**kwargs)
+        self.valid_periods = [1, 2, 3, 4, 5, 10]
+        self.valid_frequencies = [1, 5, 10, 15, 30, 60]
+
+    def quote(self,symbol,frequency=60,**kwargs):
+        need_extended_hours_data = kwargs.get('need_extended_hours_data',False)
+        period = kwargs.get('period',None)
+        end_date = kwargs.get('end_date',None)
+        start_date = kwargs.get('start_date',None)
+        if period is not None and start_date is not None and end_date is not None:
+            raise Exception('The keyword argument "period" cannot be declared with both the "end_date" and "start_date" keyword arguments.')
+        if period is None and ((start_date is None and end_date is None) or (start_date is None and end_date is not None) or (start_date is not None and end_date is None)):
+            period = 10 # Using Ameritrade default (ten days)
+        if start_date is not None:
+            dt.strptime(start_date, DATE_FORMAT) # Also date verification
+            #start_date = start_date * 1000
+        if end_date is not None:
+            dt.strptime(end_date, DATE_FORMAT) # Also date verification
+            #end_date = end_date * 1000
+        '''
+        now = dt.now().astimezone()
+        time_zone_offset_string = str(now)[-5:]
+        weekday_no = now.weekday()
+        yesterday = now - timedelta(days = 1)
+        if weekday_no < 5:
+            # Weekday
+            nine_pm_yesterday = "%d-%02d-%02d 21:00:00.000000-" % (yesterday.year,yesterday.month,yesterday.day) + time_zone_offset_string
+        '''
+        #print(ALEXHERE)
+        symbol = str(symbol).upper()
+        symbol_data = self.symbol_reader.get_symbol(symbol)
+        if period not in self.valid_periods:
+            valid_choices = ''
+            for item in valid_periods:
+                valid_choices += item + " "
+            raise Exception('Invalid period specified; must be one of the following: ' + valid_choices)
+        if frequency not in self.valid_frequencies:
+            valid_choices = ''
+            for item in valid_frequencies:
+                valid_choices += item + " "
+            raise Exception('Invalid frequency specified; must be one of the following: ' + valid_choices)
+        params = { 'frequency': frequency, 'frequencyType': 'minute', 'needExtendedHoursData': need_extended_hours_data, 'periodType': 'day' }
+        if period is not None:
+            params['period'] = period
+        # Assignments include conversions to milliseconds as required by API
+        if end_date is not None:
+            params['endDate'] = end_date * 1000
+        if start_date is not None:
+            params['startDate'] = start_date * 1000
+        response = self.request('marketdata/' + symbol + '/pricehistory',params)
+        if response['symbol'] != symbol:
+            raise Exception('Incorrect symbol ' + str(response['symbol']) + ' returned by API call.')
+        return response
+
 class Latest(ameritrade.Connection):
 
     def __init__(self,username=USER,**kwargs):
@@ -938,31 +1001,3 @@ class Latest(ameritrade.Connection):
         if unquoted_symbols:
             reply['unquoted_symbols'] = unquoted_symbols
         return reply
-
-class Intraday(alphavantage.Connection):
-
-    def __init__(self,username=USER,**kwargs):
-        super(Intraday,self).__init__(username,**kwargs)
-        self.data_readwriter = data.Connection(self.username,**kwargs)
-
-    def quote(self,symbol,interval='1',**kwargs):
-        # Default interval results:
-        # 
-        # 1 minute intervals: 2 months
-        # 60 minute intervals: 12 months
-        # 
-        # Note that the source also offers the following intervals: 5, 15, and 30 minutes.
-        #
-        # This process returns both adjusted and unadjusted quotes.
-        #
-        valid_intervals = ['1','60']
-        if interval not in valid_intervals:
-            raise Exception('Invalid interval specified for intraday quote.')
-        data = {
-            'interval': interval + 'min',
-            'outputsize': 'full',
-            'symbol': str(symbol).upper()
-        }
-        response = self.request('TIME_SERIES_INTRADAY',data)
-        # Get adjusted data, blend into results
-        return response

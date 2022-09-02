@@ -13,10 +13,10 @@ class Connection(provider.Connection):
     def __init__(self,username=USER,**kwargs):
         super(Connection,self).__init__('TDAmeritrade',username,**kwargs)
 
-    def request(self,endpoint,method='GET',params=None,**kwargs):
-        with_apikey = kwargs.get('with_apikey',False)
+    def request(self,endpoint,params=None,method='GET',**kwargs):
+        with_apikey = kwargs.get('with_apikey',True)
         token = self.access_key()
-        url = self.protocol + '://' + self.url + '/' + endpoint
+        url = self.protocol + '://' + self.url + '/v1/' + endpoint
         if with_apikey or params is not None:
             first_param = True
             if with_apikey:
@@ -28,7 +28,7 @@ class Connection(provider.Connection):
                     first_param = False
                 else:
                     url += '&'
-                url += param + '=' + params[param]
+                url += param + '=' + str(params[param])
         request = Request(url)
         request.add_header('Authorization', 'Bearer '+token)
         response = urlopen(request)
