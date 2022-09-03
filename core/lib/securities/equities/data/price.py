@@ -1,4 +1,4 @@
-import collections, datetime, json, os, re, shutil, subprocess, time, urllib.request, wget
+import collections, datetime, json, numpy, os, re, shutil, subprocess, time, urllib.request, wget
 
 from datetime import date, timedelta, timezone
 from datetime import datetime as dt
@@ -13,6 +13,7 @@ import olympus.securities.equities.data.tdameritrade as ameritrade
 import olympus.securities.equities.data.symbols as symbols
 
 DATE_FORMAT = "%Y-%m-%d"
+DEFAULT_INTRADAY_FREQUENCY = 30
 MAP_LATEST_PRICE_KEYS = {
     "Open": "openPrice",
     "High": "highPrice",
@@ -29,6 +30,10 @@ STORED_DIVIDEND_FORMAT = [ "Dividend", "Adjusted Dividend" ]
 STORED_PRICE_FORMAT = [ "Open", "High", "Low", "Close", "Volume", "Adjusted Open", "Adjusted High", "Adjusted Low", "Adjusted Close", "Adjusted Volume" ]
 STORED_SPLIT_FORMAT = [ "Numerator", "Denominator", "Price/Dividend Adjustment", "Volume Adjustment" ]
 VALID_DAILY_WEEKLY_PERIODS = {'1M':30,'3M':91,'6M':183,'1Y':365,'2Y':730,'5Y':1825,'10Y':3652,'20Y':7305,'All':None}
+VALID_INTRADAY_PERIODS = [1, 2, 3, 4, 5, 10]
+VALID_INTRADAY_FREQUENCIES = {1:35, 5:180, 10:180, 15:180, 30:180}
+# Keys: Frequency of quote (in minutes)
+# Values: Number of trading days into the past from today for which data is available for given frequency
 VALID_MONTHLY_PERIODS = ['1Y','2Y','5Y','10Y','20Y','All']
 
 '''
@@ -889,65 +894,65 @@ class QuoteMerger():
 class Intraday(ameritrade.Connection):
     '''
 This class focuses on the minute-by-minute price quotes available via the TD Ameritrade API.
-The API currently offers a maximum of 10 days of data for any quote frequency, from 1
-minute to 60 minutes.
     '''
 
     def __init__(self,username=USER,**kwargs):
         super(Intraday,self).__init__(username,**kwargs)
         self.symbol_reader = symbols.Read(username,**kwargs)
-        self.valid_periods = [1, 2, 3, 4, 5, 10]
-        self.valid_frequencies = [1, 5, 10, 15, 30, 60]
 
-    def quote(self,symbol,frequency=60,**kwargs):
-        need_extended_hours_data = kwargs.get('need_extended_hours_data',False)
+    def oldest_date_by_frequency(self,frequency):
+        self._verify_frequency(frequency)
+
+    def quote(self,symbol,frequency=30,**kwargs):
+        '''
+        d1 = date(2022, 7, 17)
+        d2 = date(2022, 9, 3)
+        days = numpy.busday_count( d1, d2 )
+        print(days)
+        '''
+        need_extended_hours_data = kwargs.get('need_extended_hours_data',True)
         period = kwargs.get('period',None)
         end_date = kwargs.get('end_date',None)
         start_date = kwargs.get('start_date',None)
+        symbol = str(symbol).upper()
+        symbol_data = self.symbol_reader.get_symbol(symbol)
+        if period is not None and period not in VALID_INTRADAY_PERIODS:
+            valid_choices = ''
+            for item in VALID_INTRADAY_PERIODS:
+                valid_choices += item + " "
+            raise Exception('Invalid period specified; must be one of the following: ' + valid_choices)
+        self._verify_frequency(frequency)
         if period is not None and start_date is not None and end_date is not None:
             raise Exception('The keyword argument "period" cannot be declared with both the "end_date" and "start_date" keyword arguments.')
         if period is None and ((start_date is None and end_date is None) or (start_date is None and end_date is not None) or (start_date is not None and end_date is None)):
-            period = 10 # Using Ameritrade default (ten days)
-        if start_date is not None:
-            dt.strptime(start_date, DATE_FORMAT) # Also date verification
-            #start_date = start_date * 1000
-        if end_date is not None:
-            dt.strptime(end_date, DATE_FORMAT) # Also date verification
-            #end_date = end_date * 1000
-        '''
-        now = dt.now().astimezone()
-        time_zone_offset_string = str(now)[-5:]
-        weekday_no = now.weekday()
-        yesterday = now - timedelta(days = 1)
-        if weekday_no < 5:
-            # Weekday
-            nine_pm_yesterday = "%d-%02d-%02d 21:00:00.000000-" % (yesterday.year,yesterday.month,yesterday.day) + time_zone_offset_string
-        '''
-        #print(ALEXHERE)
-        symbol = str(symbol).upper()
-        symbol_data = self.symbol_reader.get_symbol(symbol)
-        if period not in self.valid_periods:
-            valid_choices = ''
-            for item in valid_periods:
-                valid_choices += item + " "
-            raise Exception('Invalid period specified; must be one of the following: ' + valid_choices)
-        if frequency not in self.valid_frequencies:
-            valid_choices = ''
-            for item in valid_frequencies:
-                valid_choices += item + " "
-            raise Exception('Invalid frequency specified; must be one of the following: ' + valid_choices)
+            period = 10 # Ameritrade default (ten days)
         params = { 'frequency': frequency, 'frequencyType': 'minute', 'needExtendedHoursData': need_extended_hours_data, 'periodType': 'day' }
         if period is not None:
             params['period'] = period
-        # Assignments include conversions to milliseconds as required by API
-        if end_date is not None:
-            params['endDate'] = end_date * 1000
         if start_date is not None:
-            params['startDate'] = start_date * 1000
+            dt.strptime(start_date, DATE_FORMAT) # Verification
+            start_date = dt(int(start_date[:4]), int(start_date[-5:-3]), int(start_date[-2:]), 0, 0, 0).strftime('%s')
+            params['startDate'] = int(start_date) * 1000 # Convert to milliseconds per API
+        if end_date is not None:
+            dt.strptime(end_date, DATE_FORMAT) # Verification
+            end_date = dt(int(end_date[:4]), int(end_date[-5:-3]), int(end_date[-2:]), 0, 0, 0).strftime('%s')
+            params['endDate'] = int(end_date) * 1000 # Convert to milliseconds per API
+        print(params) #ALEX
         response = self.request('marketdata/' + symbol + '/pricehistory',params)
         if response['symbol'] != symbol:
             raise Exception('Incorrect symbol ' + str(response['symbol']) + ' returned by API call.')
+        for quote in response['candles']:
+            print(quote['datetime']) #ALEX
+            print(dt.fromtimestamp(quote['datetime']/1000)) #ALEX
+            print(quote) #ALEX
         return response
+
+    def _verify_frequency(self,frequency):
+        if frequency not in VALID_INTRADAY_FREQUENCIES.keys():
+            valid_choices = ''
+            for item in VALID_INTRADAY_FREQUENCIES.keys():
+                valid_choices += item + " "
+            raise Exception('Invalid frequency specified; must be one of the following: ' + valid_choices)
 
 class Latest(ameritrade.Connection):
 
