@@ -13,7 +13,7 @@ import olympus.testing as testing
 from olympus import USER
 from olympus.securities.equities import *
 from olympus.securities.equities.data.symbols import SymbolNotFoundError
-from olympus.securities.equities.data.price import DATE_FORMAT, VALID_DAILY_WEEKLY_PERIODS, VALID_MONTHLY_PERIODS
+from olympus.securities.equities.data.price import VALID_DAILY_WEEKLY_PERIODS, VALID_MONTHLY_PERIODS
 
 LATEST_PRICE_SCHEMA_FILE = re.sub(r'(.*\/).*\/.*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/LatestPriceQuote.json'
 NODIVIDEND_STOCK = 'DASH' # This may need update over time

@@ -22,19 +22,20 @@ TEST_PURCHASE_SIZE = 100 # Shares
 
 # Miscellaneous
 
-'''
-NASDAQ and NYSE Partial Holidays
-(1:00 p.m. Eastern Close)	2022	2023	2024	2025
-Day before Independence Day		July 3rd	July 3rd	July 3rd
-The Day Following Thanksgiving	November 25th	November 24th	November 29th	November 28th
-Christmas Eve
-'''
-US_EQUITY_MARKET_HALF_DAYS = 
-[
+QUOTE_DATE_FORMAT = "%Y-%m-%d"
+US_EQUITY_MARKET_HALF_DAYS = [
+    '2023-07-03', # Day before Independence Day, if on a weekday and not already closed
+    '2024-07-03',
+    '2025-07-03',
+    '2022-11-25', # Day after Thanksgiving Day; fourth Friday in November
+    '2023-11-24',
+    '2024-11-29',
+    '2025-11-28',
+    '2024-12-24', # Christmas Eve, when on a weekday and not already closed
+    '2025-12-24'
 ]
-US_EQUITY_MARKET_HOLIDAYS = 
-[
-    '2023-01-02', # New Year's Day; Jauary 1st or first Monday following
+US_EQUITY_MARKET_HOLIDAYS = [
+    '2023-01-02', # New Year's Day; January 1st or first Monday following
     '2024-01-01',
     '2025-01-01',
     '2022-01-17', # Martin Luther King, Jr. Day; third Monday in January
@@ -53,11 +54,11 @@ US_EQUITY_MARKET_HOLIDAYS =
     '2023-05-29',
     '2024-05-27',
     '2025-05-26',
-    '2022-06-20', # Juneteenth National Independence Day; July 19. If Saturday, June 18; if Sunday, June 20
+    '2022-06-20', # Juneteenth National Independence Day; July 19. If Saturday, June 18; if Sunday, June 20. First was 2021-06-17.
     '2023-06-19',
     '2024-06-19',
     '2025-06-19',
-    '2022-07-04', # Independence Day; July 4. If Saturday, July 3; if Sunday, July 5
+    '2022-07-04', # Independence Day; July 4. If Saturday, July 3; if Sunday, July 5.
     '2023-07-04',
     '2024-07-04',
     '2025-07-04',
@@ -75,3 +76,35 @@ US_EQUITY_MARKET_HOLIDAYS =
     '2024-12-25',
     '2025-12-25'
 ]
+
+class TradingDates(object):
+    '''
+    Information about trading days and hours for US equity markets
+    '''
+
+    def __init__(self):
+        pass
+
+    def holidays(self,start_date,end_date=None):
+        # Returns a list of all trading holidays between two dates, inclusive
+        # If no end date is given, will use the current date
+        pass
+
+    def half_days(self,start_date,end_date=None):
+        # Returns a list of all half trading days between two dates, inclusive
+        # On these days, the US stock market closes at 1 PM
+        # If no end date is given, will use the current date
+        pass
+
+    def trade_days(self,start_date,end_date=None):
+        # Returns a count of all dates on which the US equity markets are open
+        # between two dates, inclusive.
+        # If no end date is given, will use the current date
+        '''
+        d1 = date(2022, 7, 17)
+        d2 = date(2022, 9, 3)
+        days = numpy.busday_count( d1, d2 )
+        print(days)
+        '''
+        return 0
+

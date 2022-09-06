@@ -5,14 +5,14 @@ from datetime import datetime as dt
 from dateutil.parser import parse
 from file_read_backwards import FileReadBackwards
 
-from olympus import USER, User
-
 import olympus.securities.equities.data as data
 import olympus.securities.equities.data.alphavantage as alphavantage
 import olympus.securities.equities.data.tdameritrade as ameritrade
 import olympus.securities.equities.data.symbols as symbols
 
-DATE_FORMAT = "%Y-%m-%d"
+from olympus import USER, User
+from olympus.securities.equities import QUOTE_DATE_FORMAT, TradingDates
+
 DEFAULT_INTRADAY_FREQUENCY = 30
 MAP_LATEST_PRICE_KEYS = {
     "Open": "openPrice",
@@ -553,13 +553,13 @@ my current judgment is that these differences will not grossly affect the desire
                 raise Exception('Cannot specify both a time period and a start/end date.')
             start_date = self._verify_period(period)
         if start_date is not None:
-            dt.strptime(start_date, DATE_FORMAT) # Date verification
+            dt.strptime(start_date, QUOTE_DATE_FORMAT) # Date verification
             if start_date >= self.today:
                 raise Exception('Requested start date in not in the past.')
             if end_date is not None and end_date <= start_date:
                 raise Exception('Requested start date is not older than requested end date.')
         if end_date is not None:
-            dt.strptime(end_date, DATE_FORMAT) # Date verification
+            dt.strptime(end_date, QUOTE_DATE_FORMAT) # Date verification
             if end_date > self.today:
                 raise Exception('Requested end date in the future.')
         now = dt.now().astimezone()
@@ -900,43 +900,25 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
         super(Intraday,self).__init__(username,**kwargs)
         self.symbol_reader = symbols.Read(username,**kwargs)
 
-    def oldest_date_by_frequency(self,frequency):
-        self._verify_frequency(frequency)
-
     def quote(self,symbol,frequency=30,**kwargs):
-        '''
-        d1 = date(2022, 7, 17)
-        d2 = date(2022, 9, 3)
-        days = numpy.busday_count( d1, d2 )
-        print(days)
-        '''
+        symbol = str(symbol).upper()
+        symbol_data = self.symbol_reader.get_symbol(symbol)
+        self._verify_frequency(frequency)
         need_extended_hours_data = kwargs.get('need_extended_hours_data',True)
         period = kwargs.get('period',None)
         end_date = kwargs.get('end_date',None)
         start_date = kwargs.get('start_date',None)
-        symbol = str(symbol).upper()
-        symbol_data = self.symbol_reader.get_symbol(symbol)
-        if period is not None and period not in VALID_INTRADAY_PERIODS:
-            valid_choices = ''
-            for item in VALID_INTRADAY_PERIODS:
-                valid_choices += item + " "
-            raise Exception('Invalid period specified; must be one of the following: ' + valid_choices)
-        self._verify_frequency(frequency)
-        if period is not None and start_date is not None and end_date is not None:
-            raise Exception('The keyword argument "period" cannot be declared with both the "end_date" and "start_date" keyword arguments.')
-        if period is None and ((start_date is None and end_date is None) or (start_date is None and end_date is not None) or (start_date is not None and end_date is None)):
-            period = 10 # Ameritrade default (ten days)
+        period = self._verify_period(period,start_date,end_date)
         params = { 'frequency': frequency, 'frequencyType': 'minute', 'needExtendedHoursData': need_extended_hours_data, 'periodType': 'day' }
+        period = None #ALEX
+        start_date = '2022-01-01'
         if period is not None:
             params['period'] = period
+        (start_date, end_date) = self._verify_dates(start_date,end_date,frequency)
         if start_date is not None:
-            dt.strptime(start_date, DATE_FORMAT) # Verification
-            start_date = dt(int(start_date[:4]), int(start_date[-5:-3]), int(start_date[-2:]), 0, 0, 0).strftime('%s')
-            params['startDate'] = int(start_date) * 1000 # Convert to milliseconds per API
+            params['startDate'] = start_date
         if end_date is not None:
-            dt.strptime(end_date, DATE_FORMAT) # Verification
-            end_date = dt(int(end_date[:4]), int(end_date[-5:-3]), int(end_date[-2:]), 0, 0, 0).strftime('%s')
-            params['endDate'] = int(end_date) * 1000 # Convert to milliseconds per API
+            params['endDate'] = end_date
         print(params) #ALEX
         response = self.request('marketdata/' + symbol + '/pricehistory',params)
         if response['symbol'] != symbol:
@@ -947,12 +929,39 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
             print(quote) #ALEX
         return response
 
+    def _verify_dates(self,start_date,end_date,frequency):
+        if start_date is not None:
+            date_counter = TradingDates()
+            trade_days = date_counter.trade_days(start_date,end_date)
+            if trade_days < VALID_INTRADAY_FREQUENCIES[frequency]:
+                raise Exception('Start date is too far in the past. For the given frequency of ' + str(frequency) + ' minutes, only ' + str(VALID_INTRADAY_FREQUENCIES[frequency]) + ' past trading days are available.')
+            dt.strptime(start_date, QUOTE_DATE_FORMAT) # Verification
+            start_date = dt(int(start_date[:4]), int(start_date[-5:-3]), int(start_date[-2:]), 0, 0, 0).strftime('%s')
+            start_date = int(start_date) * 1000 # Convert to milliseconds per API
+        if end_date is not None:
+            dt.strptime(end_date, QUOTE_DATE_FORMAT) # Verification
+            end_date = dt(int(end_date[:4]), int(end_date[-5:-3]), int(end_date[-2:]), 0, 0, 0).strftime('%s')
+            end_date = int(end_date) * 1000 # Convert to milliseconds per API
+        return start_date, end_date
+
     def _verify_frequency(self,frequency):
         if frequency not in VALID_INTRADAY_FREQUENCIES.keys():
             valid_choices = ''
             for item in VALID_INTRADAY_FREQUENCIES.keys():
                 valid_choices += item + " "
             raise Exception('Invalid frequency specified; must be one of the following: ' + valid_choices)
+
+    def _verify_period(self,period,end_date,start_date):
+        if period is not None and period not in VALID_INTRADAY_PERIODS:
+            valid_choices = ''
+            for item in VALID_INTRADAY_PERIODS:
+                valid_choices += item + " "
+            raise Exception('Invalid period specified; must be one of the following: ' + valid_choices)
+        if period is not None and start_date is not None and end_date is not None:
+            raise Exception('The keyword argument "period" cannot be declared with both the "end_date" and "start_date" keyword arguments.')
+        if period is None and ((start_date is None and end_date is None) or (start_date is None and end_date is not None) or (start_date is not None and end_date is None)):
+            period = 10 # Ameritrade default (ten days)
+        return period
 
 class Latest(ameritrade.Connection):
 
