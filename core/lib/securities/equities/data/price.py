@@ -1,4 +1,4 @@
-import collections, datetime, json, numpy, os, re, shutil, subprocess, time, urllib.request, wget
+import collections, datetime, json, os, re, shutil, subprocess, time, urllib.request, wget
 
 from datetime import date, timedelta, timezone
 from datetime import datetime as dt
@@ -11,7 +11,7 @@ import olympus.securities.equities.data.tdameritrade as ameritrade
 import olympus.securities.equities.data.symbols as symbols
 
 from olympus import USER, User
-from olympus.securities.equities import QUOTE_DATE_FORMAT, TradingDates
+from olympus.securities.equities.data.datetime import QUOTE_DATE_FORMAT, TradingDates
 
 DEFAULT_INTRADAY_FREQUENCY = 30
 MAP_LATEST_PRICE_KEYS = {
@@ -759,10 +759,7 @@ my current judgment is that these differences will not grossly affect the desire
 
     def _verify_period(self,period):
         if period not in VALID_DAILY_WEEKLY_PERIODS.keys():
-            valid_choices = ''
-            for item in VALID_DAILY_WEEKLY_PERIODS:
-                valid_choices += item + " "
-            raise Exception('Invalid period specified; must be one of the following: ' + valid_choices)
+            raise Exception('Invalid period specified; must be one of the following: ' + ', ' . join(VALID_DAILY_WEEKLY_PERIODS))
         if VALID_DAILY_WEEKLY_PERIODS[period] is not None:
             start_date = str(date.today() - timedelta(days=VALID_DAILY_WEEKLY_PERIODS[period]))
         else:
@@ -844,10 +841,7 @@ class Monthly(Daily):
 
     def _verify_period(self,period):
         if period not in VALID_MONTHLY_PERIODS:
-            valid_choices = ''
-            for item in VALID_MONTHLY_PERIODS:
-                valid_choices += item + " "
-            raise Exception('Invalid period specified; must be one of the following: ' + valid_choices)
+            raise Exception('Invalid period specified; must be one of the following: ' + ', ' . join(VALID_MONTHLY_PERIODS))
         start_date = None
         if period != 'All':
             period = re.sub(r"[Y]", "", period) # All periods are in the form "#Y", with "Y" signifying years
@@ -911,9 +905,10 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
         period = self._verify_period(period,start_date,end_date)
         params = { 'frequency': frequency, 'frequencyType': 'minute', 'needExtendedHoursData': need_extended_hours_data, 'periodType': 'day' }
         period = None #ALEX
-        start_date = '2022-01-01'
         if period is not None:
             params['period'] = period
+        start_date = '2021-12-16' #ALEX
+        #end_date = '2022-09-06' #ALEX
         (start_date, end_date) = self._verify_dates(start_date,end_date,frequency)
         if start_date is not None:
             params['startDate'] = start_date
@@ -923,40 +918,34 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
         response = self.request('marketdata/' + symbol + '/pricehistory',params)
         if response['symbol'] != symbol:
             raise Exception('Incorrect symbol ' + str(response['symbol']) + ' returned by API call.')
-        for quote in response['candles']:
+        for quote in response['candles']: #ALEX
             print(quote['datetime']) #ALEX
             print(dt.fromtimestamp(quote['datetime']/1000)) #ALEX
             print(quote) #ALEX
         return response
 
     def _verify_dates(self,start_date,end_date,frequency):
+        if end_date is not None and start_date is None:
+            raise Exception('Keyword end_date is defined; this requires keyword start_date to also be defined.')
         if start_date is not None:
             date_counter = TradingDates()
             trade_days = date_counter.trade_days(start_date,end_date)
-            if trade_days < VALID_INTRADAY_FREQUENCIES[frequency]:
+            if trade_days > VALID_INTRADAY_FREQUENCIES[frequency]:
                 raise Exception('Start date is too far in the past. For the given frequency of ' + str(frequency) + ' minutes, only ' + str(VALID_INTRADAY_FREQUENCIES[frequency]) + ' past trading days are available.')
-            dt.strptime(start_date, QUOTE_DATE_FORMAT) # Verification
             start_date = dt(int(start_date[:4]), int(start_date[-5:-3]), int(start_date[-2:]), 0, 0, 0).strftime('%s')
-            start_date = int(start_date) * 1000 # Convert to milliseconds per API
+            start_date = int(start_date) * 1000 # Milliseconds per API
         if end_date is not None:
-            dt.strptime(end_date, QUOTE_DATE_FORMAT) # Verification
             end_date = dt(int(end_date[:4]), int(end_date[-5:-3]), int(end_date[-2:]), 0, 0, 0).strftime('%s')
-            end_date = int(end_date) * 1000 # Convert to milliseconds per API
+            end_date = int(end_date) * 1000 # Milliseconds
         return start_date, end_date
 
     def _verify_frequency(self,frequency):
         if frequency not in VALID_INTRADAY_FREQUENCIES.keys():
-            valid_choices = ''
-            for item in VALID_INTRADAY_FREQUENCIES.keys():
-                valid_choices += item + " "
-            raise Exception('Invalid frequency specified; must be one of the following: ' + valid_choices)
+            raise Exception('Invalid frequency specified; must be one of the following: ' + ', ' . join(VALID_INTRADAY_FREQUENCIES))
 
     def _verify_period(self,period,end_date,start_date):
         if period is not None and period not in VALID_INTRADAY_PERIODS:
-            valid_choices = ''
-            for item in VALID_INTRADAY_PERIODS:
-                valid_choices += item + " "
-            raise Exception('Invalid period specified; must be one of the following: ' + valid_choices)
+            raise Exception('Invalid period specified; must be one of the following: ' + ', ' . join(VALID_INTRADAY_PERIODS))
         if period is not None and start_date is not None and end_date is not None:
             raise Exception('The keyword argument "period" cannot be declared with both the "end_date" and "start_date" keyword arguments.')
         if period is None and ((start_date is None and end_date is None) or (start_date is None and end_date is not None) or (start_date is not None and end_date is None)):
