@@ -354,8 +354,9 @@ class TestPrice(testing.Test):
         self.assertTrue(TEST_SYMBOL_FAKE_TWO.upper() in quote['unknown_symbols'])
 
     def test_intraday(self):
-        quotes = self.intraday.quote(TEST_SYMBOL_TWO)
-        print(quotes)
+        #ALEX quotes = self.intraday.quote(TEST_SYMBOL_TWO)
+        quotes = self.intraday.quote('AAPL',start_date='2021-12-26')
+        print(json.dumps(quotes, indent=4))
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:

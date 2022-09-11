@@ -19,7 +19,6 @@ MAP_INTRADAY_PRICE_KEYS = {
     "High": "high",
     "Low": "low", 
     "Close": "close", 
-    "QuoteDateTime": "datetime",
     "Volume": "volume"
     }
 MAP_LATEST_PRICE_KEYS = {
@@ -297,6 +296,7 @@ date more recent than or matching the date of the most recent split is therefore
                 if not re.match(r'^Date,Dividends',f.readline()):
                     raise Exception('First line of symbol dividend data .csv file does not match expected format.')
                 for line in f:
+                    print(line)
                     json_dividend = []
                     line = line.rstrip()
                     pieces = line.rstrip().split(',')
@@ -309,6 +309,7 @@ date more recent than or matching the date of the most recent split is therefore
                     # Here we have the dividend adjusted for any subsequent or concurrent splits.
                     # Determine the unadjusted value, and store that.
                     # If the adjusted value is different, store that as well.
+                    adjustment_factors = self.split_adjustment(symbol,dividend_date,regen=regen,symbol_verify=False)
                     if adjustment_factors is not None:
                         # Use the reciprocal of the price/dividend adjustment to undo the split adjustment on the dividend
                         json_dividend.append(round(float(adjustment_factors['Price/Dividend Adjustment']) * adjusted_dividend,2))
@@ -492,98 +493,58 @@ date more recent than or matching the date of the most recent split is therefore
 
 class PriceAdjuster(Adjustments):
 
-    def __init__(self,symbol,regen=False,symbol_verify=True): #ALEX
+    def __init__(self,symbol,username=USER,**kwargs): #ALEX
+        super(PriceAdjuster,self).__init__(username)
+        regen = kwargs.get('regen',False)
+        symbol_verify = kwargs.get('symbol_verify',True)
         self.symbol_adjustments = self.adjustments(symbol,regen=regen,symbol_verify=symbol_verify)
         if self.symbol_adjustments is not None:
-            self.adjustments_length = len(adjustments)
+            self.adjustments_length = len(self.symbol_adjustments)
             self.adjustments_index = 0
+            self.last_quote_date = None
             self.next_adjustment = self.symbol_adjustments[self.adjustments_index]
             self.dividend_adjustment = 1.0
             self.price_adjustment = 1
             self.volume_adjustment = 1.0
-        return self.symbol_adjustments
+        self.date_verifier = DateVerifier()
 
-    def iterator(self,interval_date):
-        pass
+    def date_iterator(self,quote_date,daily_close,**kwargs):
+        '''
+        Called repeatedly over a sequence of dates to calculate proper price/volume adjustments.
         #ALEX
-
-    '''
-    def _parse_daily(self,line,adjustments):
-        # Received data is split-adjusted only, excluding adjusted close. Therefore:
-        # 1. Ignore the reported "Adjusted Close" in all lines (pieces[5])
-        # 2. Remove split adjustments for price and volume to get as-traded prices and volumes
-        # 3. Apply dividend adjustments to price to get split- and dvidend-adjusted prices.
-        # 4. Use reported volume as adjusted volume.
-        line = line.rstrip()
-        pieces = line.rstrip().split(',')
-        interval_date = str(pieces[0])
-        if self.cutoff_today and interval_date == self.today:
-            return None, None
-        if (self.start_date_daily is None or self.start_date_daily >= interval_date):
-            self.start_date_daily = interval_date
-        if (self.end_date_daily is None or self.end_date_daily <= interval_date):
-            self.end_date_daily = interval_date
-        quote = []
-        if adjustments is None:
-            quote.append(round(float(pieces[1]),2)) # Open
-            quote.append(round(float(pieces[2]),2)) # High
-            quote.append(round(float(pieces[3]),2)) # Low
-            quote.append(round(float(pieces[4]),2)) # Close
-            quote.append(int(pieces[6])) # Volume
-        else:
-            if self.next_adjustment is not None and interval_date < self.next_adjustment['Date']:
-    '''
-    '''
-                Dividend adjustments for dates prior to the ex-dividend date are done according to the following calculation:
-
-                Closing price on day prior to dividend - dividend amount
-                -------------------------------------------------------- = Adjustment factor
-                       Closing price on day prior to dividend
-
-                Multiply the adjustment factor by all prices before the ex-dividend date to calculate adjusted prices.
-
-                In the common case of multiple historical dividends, the adjustment factors are CUMULATIVE, which means that
-                the calculated adjustment factor for a specific date must be multiplied by all later adjustment factors
-                to get the actual adjustment factor for that date. Therefore, calculating adjustments require that we know
-                closing prices for the security.
-
-                The data source gives us split-adjusted prices, which we rely on to calculate all other prices. Therefore,
-                the above calculation uses the split-adjusted closing price and the split-adjusted dividend.
-
-    '''
-    '''
-                if 'Dividend' in self.next_adjustment:
-                    # Note that the data source extends to six decimal places
-                    self.dividend_adjustment = self.dividend_adjustment * ((float(pieces[4]) - float(self.next_adjustment['Dividend'])) / float(pieces[4]))
-                if 'Price Adjustment' in self.next_adjustment:
-                    # These two always show up together (reciprocals)
-                    self.price_adjustment = self.next_adjustment['Price Adjustment']
-                    self.volume_adjustment = self.next_adjustment['Volume Adjustment']
-                self.adjustments_index = self.adjustments_index + 1
-                if self.adjustments_index < self.adjustments_length:
-                    self.next_adjustment = adjustments[self.adjustments_index]
-                else:
-                    self.next_adjustment = None
-            if self.dividend_adjustment == 1.0 and self.price_adjustment == 1:
-                quote.append(round(float(pieces[1]),2)) # Open
-                quote.append(round(float(pieces[2]),2)) # High
-                quote.append(round(float(pieces[3]),2)) # Low
-                quote.append(round(float(pieces[4]),2)) # Close
-                quote.append(int(pieces[6])) # Volume
+        Expects progressively older dates.
+        Will compensate for skipped dates that include an adjustment.
+        '''
+        date_verify = kwargs.get('date_verify',True)
+        if date_verify is True:
+            self.date_verifier.verify_date(quote_date)
+        if self.next_adjustment is not None and interval_date < self.next_adjustment['Date']:
+            if 'Dividend' in self.next_adjustment:
+                self.dividend_adjustment = self.dividend_adjustment * ((float(daily_close) - float(self.next_adjustment['Dividend'])) / float(daily_close))
+            if 'Price Adjustment' in self.next_adjustment:
+                # These two always show up together (reciprocals)
+                self.price_adjustment = self.next_adjustment['Price Adjustment']
+                self.volume_adjustment = self.next_adjustment['Volume Adjustment']
+            self.adjustments_index = self.adjustments_index + 1
+            if self.adjustments_index < self.adjustments_length:
+                self.next_adjustment = adjustments[self.adjustments_index]
             else:
-                quote.append(round(float(pieces[1]) * float(self.price_adjustment),2)) # Open
-                quote.append(round(float(pieces[2]) * float(self.price_adjustment),2)) # High
-                quote.append(round(float(pieces[3]) * float(self.price_adjustment),2)) # Low
-                quote.append(round(float(pieces[4]) * float(self.price_adjustment),2)) # Close
-                quote.append(int(int(pieces[6]) * float(self.volume_adjustment))) # Volume
-                # Adjusted prices rounded to 6 places for better accuracy when plotting small adjusted numbers
-                quote.append(round(float(pieces[1]) * self.dividend_adjustment,6)) # Adjusted open
-                quote.append(round(float(pieces[2]) * self.dividend_adjustment,6)) # Adjusted high
-                quote.append(round(float(pieces[3]) * self.dividend_adjustment,6)) # Adjusted low
-                quote.append(round(float(pieces[5]),6)) # Adjusted close
-                quote.append(int(pieces[6])) # Adjusted volume
-        return (quote,interval_date)
-    '''
+                self.next_adjustment = None
+        self.last_quote_date = quote_date
+
+    # The following three functions returned values based on last execution of the iterator or the initial value before iterations
+
+    def current_dividend_adjustment(self):
+        return self.dividend_adjustment
+
+    def current_price_adjustment(self):
+        return self.price_adjustment
+
+    def current_volume_adjustment(self):
+        return self.volume_adjustment
+
+    def get_adjustments(self):
+        return self.symbol_adjustments
 
 class Daily(Adjustments):
     '''
@@ -1018,16 +979,36 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
         if response['symbol'] != symbol:
             raise Exception('Incorrect symbol ' + str(response['symbol']) + ' returned by API call.')
         formatted_response = {}
-        for quote in response['candles']:
+        adjuster = PriceAdjuster(symbol,self.username,regen=False,symbol_verify=False)
+        # "candles" is a list in ascending date order
+        # Read the list backwards to correctly apply adjustments
+        last_quote_date = None
+        for quote in reversed(response['candles']): 
             quote_date = dt.fromtimestamp(quote['datetime']/1000)
-            key_quote_date = "%d-%02d-%02d %02d:%02d:%02d" % (quote_date.year,quote_date.month,quote_date.day,quote_date.hour,quote_date.minute,quote_date.second)
-            formatted_response[key_quote_date] = {}
-            quote['datetime'] = quote_date
+            quote_daymonthyear = "%d-%02d-%02d" % (quote_date.year,quote_date.month,quote_date.day)
+            quote_hourminutesecond = "%02d:%02d:%02d" % (quote_date.hour,quote_date.minute,quote_date.second)
+            if quote_daymonthyear != last_quote_date:
+                if last_quote_date is not None:
+                    formatted_response[last_quote_date] = collections.OrderedDict(sorted(formatted_response[last_quote_date].items()))
+                last_quote_date = quote_daymonthyear
+                formatted_response[last_quote_date] = {}
+            formatted_response[last_quote_date][quote_hourminutesecond] = {}
             for mapped_key in MAP_INTRADAY_PRICE_KEYS:
-                formatted_response[key_quote_date][mapped_key] = quote[MAP_INTRADAY_PRICE_KEYS[mapped_key]]
+                formatted_response[last_quote_date][quote_hourminutesecond][mapped_key] = quote[MAP_INTRADAY_PRICE_KEYS[mapped_key]]
+            # These quotes are split-adjusted.
+            # Therefore, the following logic applies:
+            # 1. Undo split adjustments to get as-traded prices and volumes
+            # 2. Apply split and dividend adjustments to as-traded prices and volumes to get adjusted prices and volumes
             #ALEX
-            # Adjust output and prices as needed
-        return formatted_response
+            if adjuster.get_adjustments() is None:
+                for mapped_key in MAP_INTRADAY_PRICE_KEYS:
+                    adjusted_key = 'Adjusted' + mapped_key
+                    formatted_response[last_quote_date][quote_hourminutesecond][adjusted_key] = formatted_response[last_quote_date][quote_hourminutesecond][mapped_key]
+            else:
+                pass
+        if last_quote_date is not None:
+            formatted_response[last_quote_date] = collections.OrderedDict(sorted(formatted_response[last_quote_date].items()))
+        return collections.OrderedDict(sorted(formatted_response.items()))
 
     def oldest_available_date(self,frequency):
         min_date = dt.now().astimezone() - timedelta(VALID_INTRADAY_FREQUENCIES[frequency] - 1) # Inclusive of today, so minus 1
