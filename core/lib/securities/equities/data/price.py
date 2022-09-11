@@ -11,9 +11,17 @@ import olympus.securities.equities.data.tdameritrade as ameritrade
 import olympus.securities.equities.data.symbols as symbols
 
 from olympus import USER, User
-from olympus.securities.equities.data.datetime import QUOTE_DATE_FORMAT, TradingDates
+from olympus.securities.equities.data.datetime import DateVerifier
 
 DEFAULT_INTRADAY_FREQUENCY = 30
+MAP_INTRADAY_PRICE_KEYS = {
+    "Open": "open",
+    "High": "high",
+    "Low": "low", 
+    "Close": "close", 
+    "QuoteDateTime": "datetime",
+    "Volume": "volume"
+    }
 MAP_LATEST_PRICE_KEYS = {
     "Open": "openPrice",
     "High": "highPrice",
@@ -31,9 +39,9 @@ STORED_PRICE_FORMAT = [ "Open", "High", "Low", "Close", "Volume", "Adjusted Open
 STORED_SPLIT_FORMAT = [ "Numerator", "Denominator", "Price/Dividend Adjustment", "Volume Adjustment" ]
 VALID_DAILY_WEEKLY_PERIODS = {'1M':30,'3M':91,'6M':183,'1Y':365,'2Y':730,'5Y':1825,'10Y':3652,'20Y':7305,'All':None}
 VALID_INTRADAY_PERIODS = [1, 2, 3, 4, 5, 10]
-VALID_INTRADAY_FREQUENCIES = {1:35, 5:180, 10:180, 15:180, 30:180}
+VALID_INTRADAY_FREQUENCIES = {1:50, 5:260, 10:260, 15:260, 30:260}
 # Keys: Frequency of quote (in minutes)
-# Values: Number of trading days into the past from today for which data is available for given frequency
+# Values: Number of days into the past from today for which data is available for given frequency, inclusive of today's date
 VALID_MONTHLY_PERIODS = ['1Y','2Y','5Y','10Y','20Y','All']
 
 '''
@@ -301,7 +309,6 @@ date more recent than or matching the date of the most recent split is therefore
                     # Here we have the dividend adjusted for any subsequent or concurrent splits.
                     # Determine the unadjusted value, and store that.
                     # If the adjusted value is different, store that as well.
-                    adjustment_factors = self.split_adjustment(symbol,dividend_date,regen=regen,symbol_verify=False)
                     if adjustment_factors is not None:
                         # Use the reciprocal of the price/dividend adjustment to undo the split adjustment on the dividend
                         json_dividend.append(round(float(adjustment_factors['Price/Dividend Adjustment']) * adjusted_dividend,2))
@@ -483,6 +490,101 @@ date more recent than or matching the date of the most recent split is therefore
                 stale = True
         return stale
 
+class PriceAdjuster(Adjustments):
+
+    def __init__(self,symbol,regen=False,symbol_verify=True): #ALEX
+        self.symbol_adjustments = self.adjustments(symbol,regen=regen,symbol_verify=symbol_verify)
+        if self.symbol_adjustments is not None:
+            self.adjustments_length = len(adjustments)
+            self.adjustments_index = 0
+            self.next_adjustment = self.symbol_adjustments[self.adjustments_index]
+            self.dividend_adjustment = 1.0
+            self.price_adjustment = 1
+            self.volume_adjustment = 1.0
+        return self.symbol_adjustments
+
+    def iterator(self,interval_date):
+        pass
+        #ALEX
+
+    '''
+    def _parse_daily(self,line,adjustments):
+        # Received data is split-adjusted only, excluding adjusted close. Therefore:
+        # 1. Ignore the reported "Adjusted Close" in all lines (pieces[5])
+        # 2. Remove split adjustments for price and volume to get as-traded prices and volumes
+        # 3. Apply dividend adjustments to price to get split- and dvidend-adjusted prices.
+        # 4. Use reported volume as adjusted volume.
+        line = line.rstrip()
+        pieces = line.rstrip().split(',')
+        interval_date = str(pieces[0])
+        if self.cutoff_today and interval_date == self.today:
+            return None, None
+        if (self.start_date_daily is None or self.start_date_daily >= interval_date):
+            self.start_date_daily = interval_date
+        if (self.end_date_daily is None or self.end_date_daily <= interval_date):
+            self.end_date_daily = interval_date
+        quote = []
+        if adjustments is None:
+            quote.append(round(float(pieces[1]),2)) # Open
+            quote.append(round(float(pieces[2]),2)) # High
+            quote.append(round(float(pieces[3]),2)) # Low
+            quote.append(round(float(pieces[4]),2)) # Close
+            quote.append(int(pieces[6])) # Volume
+        else:
+            if self.next_adjustment is not None and interval_date < self.next_adjustment['Date']:
+    '''
+    '''
+                Dividend adjustments for dates prior to the ex-dividend date are done according to the following calculation:
+
+                Closing price on day prior to dividend - dividend amount
+                -------------------------------------------------------- = Adjustment factor
+                       Closing price on day prior to dividend
+
+                Multiply the adjustment factor by all prices before the ex-dividend date to calculate adjusted prices.
+
+                In the common case of multiple historical dividends, the adjustment factors are CUMULATIVE, which means that
+                the calculated adjustment factor for a specific date must be multiplied by all later adjustment factors
+                to get the actual adjustment factor for that date. Therefore, calculating adjustments require that we know
+                closing prices for the security.
+
+                The data source gives us split-adjusted prices, which we rely on to calculate all other prices. Therefore,
+                the above calculation uses the split-adjusted closing price and the split-adjusted dividend.
+
+    '''
+    '''
+                if 'Dividend' in self.next_adjustment:
+                    # Note that the data source extends to six decimal places
+                    self.dividend_adjustment = self.dividend_adjustment * ((float(pieces[4]) - float(self.next_adjustment['Dividend'])) / float(pieces[4]))
+                if 'Price Adjustment' in self.next_adjustment:
+                    # These two always show up together (reciprocals)
+                    self.price_adjustment = self.next_adjustment['Price Adjustment']
+                    self.volume_adjustment = self.next_adjustment['Volume Adjustment']
+                self.adjustments_index = self.adjustments_index + 1
+                if self.adjustments_index < self.adjustments_length:
+                    self.next_adjustment = adjustments[self.adjustments_index]
+                else:
+                    self.next_adjustment = None
+            if self.dividend_adjustment == 1.0 and self.price_adjustment == 1:
+                quote.append(round(float(pieces[1]),2)) # Open
+                quote.append(round(float(pieces[2]),2)) # High
+                quote.append(round(float(pieces[3]),2)) # Low
+                quote.append(round(float(pieces[4]),2)) # Close
+                quote.append(int(pieces[6])) # Volume
+            else:
+                quote.append(round(float(pieces[1]) * float(self.price_adjustment),2)) # Open
+                quote.append(round(float(pieces[2]) * float(self.price_adjustment),2)) # High
+                quote.append(round(float(pieces[3]) * float(self.price_adjustment),2)) # Low
+                quote.append(round(float(pieces[4]) * float(self.price_adjustment),2)) # Close
+                quote.append(int(int(pieces[6]) * float(self.volume_adjustment))) # Volume
+                # Adjusted prices rounded to 6 places for better accuracy when plotting small adjusted numbers
+                quote.append(round(float(pieces[1]) * self.dividend_adjustment,6)) # Adjusted open
+                quote.append(round(float(pieces[2]) * self.dividend_adjustment,6)) # Adjusted high
+                quote.append(round(float(pieces[3]) * self.dividend_adjustment,6)) # Adjusted low
+                quote.append(round(float(pieces[5]),6)) # Adjusted close
+                quote.append(int(pieces[6])) # Adjusted volume
+        return (quote,interval_date)
+    '''
+
 class Daily(Adjustments):
     '''
 Yahoo! Finance historical quotes are the data source for daily prices.
@@ -539,6 +641,7 @@ my current judgment is that these differences will not grossly affect the desire
     def quote(self,symbol,**kwargs):
         symbol = str(symbol).upper()
         symbol_data = self.symbol_reader.get_symbol(symbol)
+        date_verifier = DateVerifier()
         regen = kwargs.get('regen',False)
         if regen is True:
             regen_adjustments = True
@@ -553,13 +656,13 @@ my current judgment is that these differences will not grossly affect the desire
                 raise Exception('Cannot specify both a time period and a start/end date.')
             start_date = self._verify_period(period)
         if start_date is not None:
-            dt.strptime(start_date, QUOTE_DATE_FORMAT) # Date verification
+            date_verifier.verify_date(start_date)
             if start_date >= self.today:
                 raise Exception('Requested start date in not in the past.')
             if end_date is not None and end_date <= start_date:
                 raise Exception('Requested start date is not older than requested end date.')
         if end_date is not None:
-            dt.strptime(end_date, QUOTE_DATE_FORMAT) # Date verification
+            date_verifier.verify_date(end_date)
             if end_date > self.today:
                 raise Exception('Requested end date in the future.')
         now = dt.now().astimezone()
@@ -894,7 +997,7 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
         super(Intraday,self).__init__(username,**kwargs)
         self.symbol_reader = symbols.Read(username,**kwargs)
 
-    def quote(self,symbol,frequency=30,**kwargs):
+    def quote(self,symbol,frequency=DEFAULT_INTRADAY_FREQUENCY,**kwargs):
         symbol = str(symbol).upper()
         symbol_data = self.symbol_reader.get_symbol(symbol)
         self._verify_frequency(frequency)
@@ -904,34 +1007,39 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
         start_date = kwargs.get('start_date',None)
         period = self._verify_period(period,start_date,end_date)
         params = { 'frequency': frequency, 'frequencyType': 'minute', 'needExtendedHoursData': need_extended_hours_data, 'periodType': 'day' }
-        period = None #ALEX
         if period is not None:
             params['period'] = period
-        start_date = '2021-12-16' #ALEX
-        #end_date = '2022-09-06' #ALEX
         (start_date, end_date) = self._verify_dates(start_date,end_date,frequency)
         if start_date is not None:
             params['startDate'] = start_date
         if end_date is not None:
             params['endDate'] = end_date
-        print(params) #ALEX
         response = self.request('marketdata/' + symbol + '/pricehistory',params)
         if response['symbol'] != symbol:
             raise Exception('Incorrect symbol ' + str(response['symbol']) + ' returned by API call.')
-        for quote in response['candles']: #ALEX
-            print(quote['datetime']) #ALEX
-            print(dt.fromtimestamp(quote['datetime']/1000)) #ALEX
-            print(quote) #ALEX
-        return response
+        formatted_response = {}
+        for quote in response['candles']:
+            quote_date = dt.fromtimestamp(quote['datetime']/1000)
+            key_quote_date = "%d-%02d-%02d %02d:%02d:%02d" % (quote_date.year,quote_date.month,quote_date.day,quote_date.hour,quote_date.minute,quote_date.second)
+            formatted_response[key_quote_date] = {}
+            quote['datetime'] = quote_date
+            for mapped_key in MAP_INTRADAY_PRICE_KEYS:
+                formatted_response[key_quote_date][mapped_key] = quote[MAP_INTRADAY_PRICE_KEYS[mapped_key]]
+            #ALEX
+            # Adjust output and prices as needed
+        return formatted_response
+
+    def oldest_available_date(self,frequency):
+        min_date = dt.now().astimezone() - timedelta(VALID_INTRADAY_FREQUENCIES[frequency] - 1) # Inclusive of today, so minus 1
+        return "%d-%02d-%02d" % (min_date.year,min_date.month,min_date.day)
 
     def _verify_dates(self,start_date,end_date,frequency):
-        if end_date is not None and start_date is None:
-            raise Exception('Keyword end_date is defined; this requires keyword start_date to also be defined.')
+        date_verifier = DateVerifier()
+        (start_date,end_date) = date_verifier.verify_date_range(start_date,end_date,null_start_date=True)
         if start_date is not None:
-            date_counter = TradingDates()
-            trade_days = date_counter.trade_days(start_date,end_date)
-            if trade_days > VALID_INTRADAY_FREQUENCIES[frequency]:
-                raise Exception('Start date is too far in the past. For the given frequency of ' + str(frequency) + ' minutes, only ' + str(VALID_INTRADAY_FREQUENCIES[frequency]) + ' past trading days are available.')
+            oldest_available_date = self.oldest_available_date(frequency)
+            if start_date < oldest_available_date:
+                raise Exception('For a minute frequency of ' + str(frequency) + ', the oldest available date is ' + oldest_available_date + '.')
             start_date = dt(int(start_date[:4]), int(start_date[-5:-3]), int(start_date[-2:]), 0, 0, 0).strftime('%s')
             start_date = int(start_date) * 1000 # Milliseconds per API
         if end_date is not None:

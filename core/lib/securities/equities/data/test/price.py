@@ -355,7 +355,7 @@ class TestPrice(testing.Test):
 
     def test_intraday(self):
         quotes = self.intraday.quote(TEST_SYMBOL_TWO)
-        #print(quotes)
+        print(quotes)
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:

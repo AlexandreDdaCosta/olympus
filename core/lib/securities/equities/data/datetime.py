@@ -10,12 +10,40 @@ HOLIDAY_NAMES = ['New Years Day','MLK Day','Presidents Day','Good Friday','Memor
 QUOTE_DATE_FORMAT = "%Y-%m-%d"
 OLDEST_QUOTE_DATE = '1990-01-01'
 
-class TradingDates(object):
+class DateVerifier(object):
+
+    def __init__(self):
+        pass
+
+    def verify_date(self,trading_date):
+        return dt.strptime(trading_date, QUOTE_DATE_FORMAT)
+
+    def verify_date_range(self,start_date,end_date,null_start_date=False):
+        now = dt.now().astimezone()
+        today = "%d-%02d-%02d" % (now.year,now.month,now.day)
+        if null_start_date is False and start_date is None:
+            raise Exception('Parameter start_date cannot be None; set keyword null_start_date = True to override.')
+        if start_date is not None:
+            self.verify_date(start_date)
+            if start_date < OLDEST_QUOTE_DATE:
+                raise Exception('Start date cannot be less than ' + OLDEST_QUOTE_DATE)
+            if start_date > today:
+                raise Exception('Start date cannot be in the future.')
+        if end_date is not None:
+            self.verify_date(end_date)
+            if start_date is not None and end_date <= start_date:
+                raise Exception('End date must be greater than start date.')
+        else:
+            end_date = today
+        return start_date, end_date
+
+class TradingDates(DateVerifier):
     '''
     Information about the trading calendar for US equity markets
     '''
 
-    def __init__(self):
+    def __init__(self,**kwargs):
+        super(TradingDates,self).__init__(**kwargs)
         pass
 
     def holidays(self,start_date,end_date=None,**kwargs):
@@ -29,7 +57,7 @@ class TradingDates(object):
             days_list = []
         else:
             days_count = 0
-        (start_date, end_date) = self._verify_date_range(start_date,end_date)
+        (start_date, end_date) = self.verify_date_range(start_date,end_date)
         start_year = int(start_date[:4])
         end_year = int(end_date[:4])
         name_date = None
@@ -65,10 +93,10 @@ class TradingDates(object):
         if end_date is None:
             now = dt.now().astimezone()
             today = "%d-%02d-%02d" % (now.year,now.month,now.day)
-            business_days = numpy.busday_count(start_date,today) - holiday_count
+            trading_days = numpy.busday_count(start_date,today,'Mon Tue Wed Thu Fri') - holiday_count
         else:
-            business_days = numpy.busday_count(start_date,end_date) - holiday_count
-        return business_days
+            trading_days = numpy.busday_count(start_date,end_date,'Mon Tue Wed Thu Fri') - holiday_count
+        return trading_days
 
     def _adjust_for_weekend(self,check_date):
         weekday_no = check_date.weekday()
@@ -133,19 +161,3 @@ class TradingDates(object):
     def _standard_holiday(self,year,month,day):
         holiday_datetime = dt.strptime(str(year) + '-' + str("%02d" % month) + '-' +str("%02d" % day), QUOTE_DATE_FORMAT)
         return self._adjust_for_weekend(holiday_datetime)
-
-    def _verify_date_range(self,start_date,end_date):
-        now = dt.now().astimezone()
-        today = "%d-%02d-%02d" % (now.year,now.month,now.day)
-        dt.strptime(start_date, QUOTE_DATE_FORMAT) # Also verifies format
-        if start_date < OLDEST_QUOTE_DATE:
-            raise Exception('Start date cannot be less than ' + OLDEST_QUOTE_DATE)
-        if start_date > today:
-            raise Exception('Start date cannot be in the future.')
-        if end_date is not None:
-            dt.strptime(end_date, QUOTE_DATE_FORMAT)
-            if end_date <= start_date:
-                raise Exception('End date must be greater than start date.')
-        else:
-            end_date = today
-        return start_date, end_date
