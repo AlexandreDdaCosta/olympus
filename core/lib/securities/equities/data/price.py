@@ -493,12 +493,13 @@ date more recent than or matching the date of the most recent split is therefore
 
 class PriceAdjuster(Adjustments):
 
-    def __init__(self,symbol,username=USER,**kwargs): #ALEX
+    def __init__(self,symbol,username=USER,**kwargs):
         super(PriceAdjuster,self).__init__(username)
         regen = kwargs.get('regen',False)
         symbol_verify = kwargs.get('symbol_verify',True)
         self.symbol_adjustments = self.adjustments(symbol,regen=regen,symbol_verify=symbol_verify)
         if self.symbol_adjustments is not None:
+            self.adjustments_exist = True
             self.adjustments_length = len(self.symbol_adjustments)
             self.adjustments_index = 0
             self.last_quote_date = None
@@ -506,19 +507,30 @@ class PriceAdjuster(Adjustments):
             self.dividend_adjustment = 1.0
             self.price_adjustment = 1
             self.volume_adjustment = 1.0
+        else:
+            self.adjustments_exist = False
         self.date_verifier = DateVerifier()
 
     def date_iterator(self,quote_date,daily_close,**kwargs):
         '''
         Called repeatedly over a sequence of dates to calculate proper price/volume adjustments.
-        #ALEX
-        Expects progressively older dates.
-        Will compensate for skipped dates that include an adjustment.
+        Expects progressively older dates; otherwise, will throw an exception.
+        Skipping an adjustment date in the sequence will throw an exception.
         '''
         date_verify = kwargs.get('date_verify',True)
         if date_verify is True:
             self.date_verifier.verify_date(quote_date)
-        if self.next_adjustment is not None and interval_date < self.next_adjustment['Date']:
+        if self.last_quote_date is not None and quote_date >= self.last_quote_date:
+            raise Exception('The date iterator expects progressively older dates in order to do accurate price adjustments.')
+        if self.next_adjustment is not None and quote_date < self.next_adjustment['Date'] and daily_close is not None:
+            # Make sure we haven't skipped any adjustment dates or results will be off
+            if (self.adjustments_index + 1) < self.adjustments_length:
+                next_adjustment = self.symbol_adjustments[self.adjustments_index + 1]
+                if next_adjustment['Date'] > quote_date:
+                    #ALEX
+                    print(next_adjustment['Date'])
+                    print(quote_date)
+                    raise Exception('Date sequence incorrect; skipped an adjustment date.')
             if 'Dividend' in self.next_adjustment:
                 self.dividend_adjustment = self.dividend_adjustment * ((float(daily_close) - float(self.next_adjustment['Dividend'])) / float(daily_close))
             if 'Price Adjustment' in self.next_adjustment:
@@ -527,7 +539,7 @@ class PriceAdjuster(Adjustments):
                 self.volume_adjustment = self.next_adjustment['Volume Adjustment']
             self.adjustments_index = self.adjustments_index + 1
             if self.adjustments_index < self.adjustments_length:
-                self.next_adjustment = adjustments[self.adjustments_index]
+                self.next_adjustment = self.symbol_adjustments[self.adjustments_index]
             else:
                 self.next_adjustment = None
         self.last_quote_date = quote_date
@@ -543,8 +555,8 @@ class PriceAdjuster(Adjustments):
     def current_volume_adjustment(self):
         return self.volume_adjustment
 
-    def get_adjustments(self):
-        return self.symbol_adjustments
+    def have_adjustments(self):
+        return self.adjustments_exist
 
 class Daily(Adjustments):
     '''
@@ -966,11 +978,11 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
         period = kwargs.get('period',None)
         end_date = kwargs.get('end_date',None)
         start_date = kwargs.get('start_date',None)
-        period = self._verify_period(period,start_date,end_date)
         params = { 'frequency': frequency, 'frequencyType': 'minute', 'needExtendedHoursData': need_extended_hours_data, 'periodType': 'day' }
+        period = self._verify_period(period,start_date,end_date)
         if period is not None:
             params['period'] = period
-        (start_date, end_date) = self._verify_dates(start_date,end_date,frequency)
+        (start_date, end_date) = self._verify_dates(start_date,end_date,frequency,period)
         if start_date is not None:
             params['startDate'] = start_date
         if end_date is not None:
@@ -980,31 +992,47 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
             raise Exception('Incorrect symbol ' + str(response['symbol']) + ' returned by API call.')
         formatted_response = {}
         adjuster = PriceAdjuster(symbol,self.username,regen=False,symbol_verify=False)
-        # "candles" is a list in ascending date order
-        # Read the list backwards to correctly apply adjustments
+        # "candles" is a list in ascending date order, so read the list backwards to correctly apply adjustments
         last_quote_date = None
-        for quote in reversed(response['candles']): 
+        daily_close = None
+        candle_count = len(response['candles'])
+        candle_index = candle_count - 1
+        for quote in reversed(response['candles']): # Most recent date/time first
             quote_date = dt.fromtimestamp(quote['datetime']/1000)
             quote_daymonthyear = "%d-%02d-%02d" % (quote_date.year,quote_date.month,quote_date.day)
             quote_hourminutesecond = "%02d:%02d:%02d" % (quote_date.hour,quote_date.minute,quote_date.second)
             if quote_daymonthyear != last_quote_date:
+                get_adjustments = True
                 if last_quote_date is not None:
                     formatted_response[last_quote_date] = collections.OrderedDict(sorted(formatted_response[last_quote_date].items()))
                 last_quote_date = quote_daymonthyear
                 formatted_response[last_quote_date] = {}
+                # This loop gets the daily close for each candle
+                while candle_index > 0:
+                    loop_quote = response['candles'][candle_index]
+                    candle_index = candle_index - 1
+                    candle_date = dt.fromtimestamp(loop_quote['datetime']/1000)
+                    candle_daymonthyear = "%d-%02d-%02d" % (candle_date.year,candle_date.month,candle_date.day)
+                    candle_hourminutesecond = "%02d:%02d:%02d" % (candle_date.hour,candle_date.minute,candle_date.second)
+                    if candle_daymonthyear > quote_daymonthyear:
+                        continue
+                    if candle_hourminutesecond < '16:00:00':
+                        daily_close = loop_quote['close']
+                        break
+                adjuster.date_iterator(quote_daymonthyear,daily_close)
+                print(quote_daymonthyear)
+                print(adjuster.current_dividend_adjustment())
+                print(adjuster.current_price_adjustment())
+                print(adjuster.current_volume_adjustment())
             formatted_response[last_quote_date][quote_hourminutesecond] = {}
-            for mapped_key in MAP_INTRADAY_PRICE_KEYS:
-                formatted_response[last_quote_date][quote_hourminutesecond][mapped_key] = quote[MAP_INTRADAY_PRICE_KEYS[mapped_key]]
-            # These quotes are split-adjusted.
-            # Therefore, the following logic applies:
-            # 1. Undo split adjustments to get as-traded prices and volumes
-            # 2. Apply split and dividend adjustments to as-traded prices and volumes to get adjusted prices and volumes
-            #ALEX
-            if adjuster.get_adjustments() is None:
+            if adjuster.have_adjustments() is False:
+                for mapped_key in MAP_INTRADAY_PRICE_KEYS:
+                    formatted_response[last_quote_date][quote_hourminutesecond][mapped_key] = quote[MAP_INTRADAY_PRICE_KEYS[mapped_key]]
                 for mapped_key in MAP_INTRADAY_PRICE_KEYS:
                     adjusted_key = 'Adjusted' + mapped_key
                     formatted_response[last_quote_date][quote_hourminutesecond][adjusted_key] = formatted_response[last_quote_date][quote_hourminutesecond][mapped_key]
             else:
+                #ALEX Get and apply adjustments
                 pass
         if last_quote_date is not None:
             formatted_response[last_quote_date] = collections.OrderedDict(sorted(formatted_response[last_quote_date].items()))
@@ -1014,16 +1042,21 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
         min_date = dt.now().astimezone() - timedelta(VALID_INTRADAY_FREQUENCIES[frequency] - 1) # Inclusive of today, so minus 1
         return "%d-%02d-%02d" % (min_date.year,min_date.month,min_date.day)
 
-    def _verify_dates(self,start_date,end_date,frequency):
+    def _verify_dates(self,start_date,end_date,frequency,period):
         date_verifier = DateVerifier()
-        (start_date,end_date) = date_verifier.verify_date_range(start_date,end_date,null_start_date=True)
+        (start_date,end_date) = date_verifier.verify_date_range(start_date,end_date,null_start_date=True,keep_null_end_date=True,allow_future_end_date=False)
+        oldest_available_date = self.oldest_available_date(frequency)
         if start_date is not None:
-            oldest_available_date = self.oldest_available_date(frequency)
             if start_date < oldest_available_date:
                 raise Exception('For a minute frequency of ' + str(frequency) + ', the oldest available date is ' + oldest_available_date + '.')
             start_date = dt(int(start_date[:4]), int(start_date[-5:-3]), int(start_date[-2:]), 0, 0, 0).strftime('%s')
             start_date = int(start_date) * 1000 # Milliseconds per API
         if end_date is not None:
+            if end_date < oldest_available_date:
+                raise Exception('For a minute frequency of ' + str(frequency) + ', the oldest available date is ' + oldest_available_date + '.')
+            if period is not None and start_date is None:
+                if dt.strptime(end_date,"%Y-%m-%d") - timedelta(days=period-1) < dt.strptime(oldest_available_date,"%Y-%m-%d"):
+                    raise Exception('Cannot retrieve data for requested end date ' + end_date + ' and period ' + str(period) + ' since oldest available date is ' + oldest_available_date + '.')
             end_date = dt(int(end_date[:4]), int(end_date[-5:-3]), int(end_date[-2:]), 0, 0, 0).strftime('%s')
             end_date = int(end_date) * 1000 # Milliseconds
         return start_date, end_date
@@ -1032,12 +1065,12 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
         if frequency not in VALID_INTRADAY_FREQUENCIES.keys():
             raise Exception('Invalid frequency specified; must be one of the following: ' + ', ' . join(VALID_INTRADAY_FREQUENCIES))
 
-    def _verify_period(self,period,end_date,start_date):
+    def _verify_period(self,period,start_date,end_date):
         if period is not None and period not in VALID_INTRADAY_PERIODS:
             raise Exception('Invalid period specified; must be one of the following: ' + ', ' . join(VALID_INTRADAY_PERIODS))
-        if period is not None and start_date is not None and end_date is not None:
-            raise Exception('The keyword argument "period" cannot be declared with both the "end_date" and "start_date" keyword arguments.')
-        if period is None and ((start_date is None and end_date is None) or (start_date is None and end_date is not None) or (start_date is not None and end_date is None)):
+        if period is not None and start_date is not None:
+            raise Exception('The keyword argument "period" cannot be declared with the "start_date" keyword argument')
+        if period is None and start_date is None and end_date is None:
             period = 10 # Ameritrade default (ten days)
         return period
 

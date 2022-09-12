@@ -355,7 +355,7 @@ class TestPrice(testing.Test):
 
     def test_intraday(self):
         #ALEX quotes = self.intraday.quote(TEST_SYMBOL_TWO)
-        quotes = self.intraday.quote('AAPL',start_date='2021-12-26')
+        quotes = self.intraday.quote('AMZN',start_date='2021-12-27')
         print(json.dumps(quotes, indent=4))
 
 if __name__ == '__main__':

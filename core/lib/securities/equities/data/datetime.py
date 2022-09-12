@@ -18,7 +18,10 @@ class DateVerifier(object):
     def verify_date(self,trading_date):
         return dt.strptime(trading_date, QUOTE_DATE_FORMAT)
 
-    def verify_date_range(self,start_date,end_date,null_start_date=False):
+    def verify_date_range(self,start_date,end_date,**kwargs):
+        allow_future_end_date = kwargs.get('allow_future_end_date',True)
+        null_start_date = kwargs.get('null_start_date',False)
+        keep_null_end_date = kwargs.get('keep_null_end_date',False)
         now = dt.now().astimezone()
         today = "%d-%02d-%02d" % (now.year,now.month,now.day)
         if null_start_date is False and start_date is None:
@@ -33,7 +36,9 @@ class DateVerifier(object):
             self.verify_date(end_date)
             if start_date is not None and end_date <= start_date:
                 raise Exception('End date must be greater than start date.')
-        else:
+            if allow_future_end_date is False and end_date > today:
+                raise Exception('End date cannot be in the future.')
+        elif keep_null_end_date is False:
             end_date = today
         return start_date, end_date
 
