@@ -166,6 +166,10 @@ class TestPrice(testing.Test):
         self.assertGreater(regen_adjustment_data['Time'],adjustment_data['Time'])
 
     def test_daily(self):
+        a_while_ago = str(date.today() - timedelta(days=180))
+        today = str(date.today())
+        quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date=a_while_ago,end_date=today)
+        print(json.dumps(quotes, indent=4))
         return #ALEX
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.daily.quote(TEST_SYMBOL_FAKE)
@@ -354,8 +358,10 @@ class TestPrice(testing.Test):
         self.assertTrue(TEST_SYMBOL_FAKE_TWO.upper() in quote['unknown_symbols'])
 
     def test_intraday(self):
+        return #ALEX
         #ALEX quotes = self.intraday.quote(TEST_SYMBOL_TWO)
-        quotes = self.intraday.quote('AMZN',start_date='2021-12-27')
+        quotes = self.intraday.quote('AAPL',start_date='2022-05-05')
+        #quotes = self.intraday.quote('AMZN',start_date='2022-06-03')
         print(json.dumps(quotes, indent=4))
 
 if __name__ == '__main__':

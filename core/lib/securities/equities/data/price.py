@@ -21,6 +21,7 @@ MAP_INTRADAY_PRICE_KEYS = {
     "Close": "close", 
     "Volume": "volume"
     }
+INTRADAY_PRICE_KEYS = [ "Open", "High", "Low", "Close" ]
 MAP_LATEST_PRICE_KEYS = {
     "Open": "openPrice",
     "High": "highPrice",
@@ -491,10 +492,13 @@ date more recent than or matching the date of the most recent split is therefore
                 stale = True
         return stale
 
-class PriceAdjuster(Adjustments):
-
+class _PriceAdjuster(Adjustments):
+    '''
+    An internal class used by both daily and intraday price quotes to apply price and volume adjustments.
+    Built with the understanding that daily close prices are split adjusted
+    '''
     def __init__(self,symbol,username=USER,**kwargs):
-        super(PriceAdjuster,self).__init__(username)
+        super(_PriceAdjuster,self).__init__(username)
         regen = kwargs.get('regen',False)
         symbol_verify = kwargs.get('symbol_verify',True)
         self.symbol_adjustments = self.adjustments(symbol,regen=regen,symbol_verify=symbol_verify)
@@ -511,26 +515,11 @@ class PriceAdjuster(Adjustments):
             self.adjustments_exist = False
         self.date_verifier = DateVerifier()
 
-    def date_iterator(self,quote_date,daily_close,**kwargs):
+    def date_iterator(self,quote_date,daily_close):
         '''
         Called repeatedly over a sequence of dates to calculate proper price/volume adjustments.
-        Expects progressively older dates; otherwise, will throw an exception.
-        Skipping an adjustment date in the sequence will throw an exception.
         '''
-        date_verify = kwargs.get('date_verify',True)
-        if date_verify is True:
-            self.date_verifier.verify_date(quote_date)
-        if self.last_quote_date is not None and quote_date >= self.last_quote_date:
-            raise Exception('The date iterator expects progressively older dates in order to do accurate price adjustments.')
         if self.next_adjustment is not None and quote_date < self.next_adjustment['Date'] and daily_close is not None:
-            # Make sure we haven't skipped any adjustment dates or results will be off
-            if (self.adjustments_index + 1) < self.adjustments_length:
-                next_adjustment = self.symbol_adjustments[self.adjustments_index + 1]
-                if next_adjustment['Date'] > quote_date:
-                    #ALEX
-                    print(next_adjustment['Date'])
-                    print(quote_date)
-                    raise Exception('Date sequence incorrect; skipped an adjustment date.')
             if 'Dividend' in self.next_adjustment:
                 self.dividend_adjustment = self.dividend_adjustment * ((float(daily_close) - float(self.next_adjustment['Dividend'])) / float(daily_close))
             if 'Price Adjustment' in self.next_adjustment:
@@ -546,13 +535,13 @@ class PriceAdjuster(Adjustments):
 
     # The following three functions returned values based on last execution of the iterator or the initial value before iterations
 
-    def current_dividend_adjustment(self):
+    def get_dividend_adjustment(self):
         return self.dividend_adjustment
 
-    def current_price_adjustment(self):
+    def get_price_adjustment(self):
         return self.price_adjustment
 
-    def current_volume_adjustment(self):
+    def get_volume_adjustment(self):
         return self.volume_adjustment
 
     def have_adjustments(self):
@@ -991,7 +980,7 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
         if response['symbol'] != symbol:
             raise Exception('Incorrect symbol ' + str(response['symbol']) + ' returned by API call.')
         formatted_response = {}
-        adjuster = PriceAdjuster(symbol,self.username,regen=False,symbol_verify=False)
+        adjuster = _PriceAdjuster(symbol,self.username,regen=False,symbol_verify=False)
         # "candles" is a list in ascending date order, so read the list backwards to correctly apply adjustments
         last_quote_date = None
         daily_close = None
@@ -1002,7 +991,6 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
             quote_daymonthyear = "%d-%02d-%02d" % (quote_date.year,quote_date.month,quote_date.day)
             quote_hourminutesecond = "%02d:%02d:%02d" % (quote_date.hour,quote_date.minute,quote_date.second)
             if quote_daymonthyear != last_quote_date:
-                get_adjustments = True
                 if last_quote_date is not None:
                     formatted_response[last_quote_date] = collections.OrderedDict(sorted(formatted_response[last_quote_date].items()))
                 last_quote_date = quote_daymonthyear
@@ -1019,21 +1007,27 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
                     if candle_hourminutesecond < '16:00:00':
                         daily_close = loop_quote['close']
                         break
-                adjuster.date_iterator(quote_daymonthyear,daily_close)
-                print(quote_daymonthyear)
-                print(adjuster.current_dividend_adjustment())
-                print(adjuster.current_price_adjustment())
-                print(adjuster.current_volume_adjustment())
+                if adjuster.have_adjustments() is True:
+                    adjuster.date_iterator(quote_daymonthyear,daily_close)
             formatted_response[last_quote_date][quote_hourminutesecond] = {}
             if adjuster.have_adjustments() is False:
                 for mapped_key in MAP_INTRADAY_PRICE_KEYS:
                     formatted_response[last_quote_date][quote_hourminutesecond][mapped_key] = quote[MAP_INTRADAY_PRICE_KEYS[mapped_key]]
                 for mapped_key in MAP_INTRADAY_PRICE_KEYS:
-                    adjusted_key = 'Adjusted' + mapped_key
+                    adjusted_key = 'Adjusted ' + mapped_key
                     formatted_response[last_quote_date][quote_hourminutesecond][adjusted_key] = formatted_response[last_quote_date][quote_hourminutesecond][mapped_key]
             else:
-                #ALEX Get and apply adjustments
-                pass
+                for price_key in INTRADAY_PRICE_KEYS:
+                    for mapped_key in MAP_INTRADAY_PRICE_KEYS:
+                        if mapped_key in INTRADAY_PRICE_KEYS:
+                            formatted_response[last_quote_date][quote_hourminutesecond][mapped_key] = round(quote[MAP_INTRADAY_PRICE_KEYS[mapped_key]] * adjuster.get_price_adjustment(),2)
+                            adjusted_key = 'Adjusted ' + mapped_key
+                            # Adjusted prices rounded to 6 places for better accuracy when plotting small adjusted numbers
+                            formatted_response[last_quote_date][quote_hourminutesecond][adjusted_key] = round(quote[MAP_INTRADAY_PRICE_KEYS[mapped_key]] * adjuster.get_dividend_adjustment(),6)
+                        else: # Volume
+                            formatted_response[last_quote_date][quote_hourminutesecond][mapped_key] = int(quote[MAP_INTRADAY_PRICE_KEYS[mapped_key]] * adjuster.get_volume_adjustment())
+                            adjusted_key = 'Adjusted ' + mapped_key
+                            formatted_response[last_quote_date][quote_hourminutesecond][adjusted_key] = quote[MAP_INTRADAY_PRICE_KEYS[mapped_key]]
         if last_quote_date is not None:
             formatted_response[last_quote_date] = collections.OrderedDict(sorted(formatted_response[last_quote_date].items()))
         return collections.OrderedDict(sorted(formatted_response.items()))
