@@ -297,7 +297,6 @@ date more recent than or matching the date of the most recent split is therefore
                 if not re.match(r'^Date,Dividends',f.readline()):
                     raise Exception('First line of symbol dividend data .csv file does not match expected format.')
                 for line in f:
-                    print(line)
                     json_dividend = []
                     line = line.rstrip()
                     pieces = line.rstrip().split(',')
@@ -518,6 +517,22 @@ class _PriceAdjuster(Adjustments):
     def date_iterator(self,quote_date,daily_close):
         '''
         Called repeatedly over a sequence of dates to calculate proper price/volume adjustments.
+
+        Dividend adjustments for dates prior to the ex-dividend date are done according to the following calculation:
+
+        Closing price on day prior to dividend - dividend amount
+        -------------------------------------------------------- = Adjustment factor
+               Closing price on day prior to dividend
+
+        Multiply the adjustment factor by all prices before the ex-dividend date to calculate adjusted prices.
+
+        In the common case of multiple historical dividends, the adjustment factors are CUMULATIVE, which means that
+        the calculated adjustment factor for a specific date must be multiplied by all later adjustment factors
+        to get the actual adjustment factor for that date. Therefore, calculating adjustments requires that we know
+        closing prices for the security.
+
+        The data sources give us split-adjusted prices, which we rely on to calculate all other prices. Therefore,
+        the above calculation uses the split-adjusted closing price and the split-adjusted dividend.
         '''
         if self.next_adjustment is not None and quote_date < self.next_adjustment['Date'] and daily_close is not None:
             if 'Dividend' in self.next_adjustment:
@@ -667,18 +682,20 @@ my current judgment is that these differences will not grossly affect the desire
                         # There's been a price adjustment, regenerate everything
                         regen = True
             if regen is False:
-                adjustments = self._init_adjustments(symbol,regen_adjustments)
+                adjuster = _PriceAdjuster(symbol,self.username,regen=regen_adjustments,symbol_verify=False)
+                #adjustments = self._init_adjustments(symbol,regen_adjustments)
                 subprocess.check_output("/usr/bin/sed -i '1d' " + target_file, shell=True)
                 with FileReadBackwards(target_file, encoding="utf-8") as f:
                     for line in f:
-                        (json_quote,interval_date) = self._parse_daily(line,adjustments)
+                        (json_quote,interval_date) = self._parse_daily(line,adjuster)
                         if json_quote is not None:
                             collection.update_one({'Interval': '1d'},{ "$set": {'Quotes.'+interval_date: json_quote}}, upsert=True)
                             interval_data['Quotes'][interval_date] = json_quote
                     collection.update_one({'Interval': '1d'},{ "$set":  {'End Date': self.end_date_daily, 'Start Date': self.start_date_daily, 'Time': str(now)}})
             os.remove(target_file)
         if regen is True:
-            adjustments = self._init_adjustments(symbol,regen_adjustments)
+            adjuster = _PriceAdjuster(symbol,self.username,regen=regen_adjustments,symbol_verify=False)
+            #adjustments = self._init_adjustments(symbol,regen_adjustments)
             url = self._daily_quote_url(symbol)
             response = urllib.request.urlretrieve(url,target_file)
             # The initial response contains split-only adjusted prices, ordered from oldest to newest.
@@ -691,7 +708,7 @@ my current judgment is that these differences will not grossly affect the desire
             with FileReadBackwards(target_file, encoding="utf-8") as f:
                 json_quotes = {}
                 for line in f:
-                    (json_quote,interval_date) = self._parse_daily(line,adjustments)
+                    (json_quote,interval_date) = self._parse_daily(line,adjuster)
                     if json_quote is not None:
                         json_quotes[interval_date] = json_quote
             write_dict = {}
@@ -744,7 +761,7 @@ my current judgment is that these differences will not grossly affect the desire
             self.volume_adjustment = 1.0
         return adjustments
 
-    def _parse_daily(self,line,adjustments):
+    def _parse_daily(self,line,adjuster):
         # Received data is split-adjusted only, excluding adjusted close. Therefore:
         # 1. Ignore the reported "Adjusted Close" in all lines (pieces[5])
         # 2. Remove split adjustments for price and volume to get as-traded prices and volumes
@@ -760,60 +777,30 @@ my current judgment is that these differences will not grossly affect the desire
         if (self.end_date_daily is None or self.end_date_daily <= interval_date):
             self.end_date_daily = interval_date
         quote = []
-        if adjustments is None:
+        if adjuster.have_adjustments() is False:
             quote.append(round(float(pieces[1]),2)) # Open
             quote.append(round(float(pieces[2]),2)) # High
             quote.append(round(float(pieces[3]),2)) # Low
             quote.append(round(float(pieces[4]),2)) # Close
             quote.append(int(pieces[6])) # Volume
         else:
-            if self.next_adjustment is not None and interval_date < self.next_adjustment['Date']:
-                '''
-                Dividend adjustments for dates prior to the ex-dividend date are done according to the following calculation:
-
-                Closing price on day prior to dividend - dividend amount
-                -------------------------------------------------------- = Adjustment factor
-                       Closing price on day prior to dividend
-
-                Multiply the adjustment factor by all prices before the ex-dividend date to calculate adjusted prices.
-
-                In the common case of multiple historical dividends, the adjustment factors are CUMULATIVE, which means that
-                the calculated adjustment factor for a specific date must be multiplied by all later adjustment factors
-                to get the actual adjustment factor for that date. Therefore, calculating adjustments require that we know
-                closing prices for the security.
-
-                The data source gives us split-adjusted prices, which we rely on to calculate all other prices. Therefore,
-                the above calculation uses the split-adjusted closing price and the split-adjusted dividend.
-
-                '''
-                if 'Dividend' in self.next_adjustment:
-                    # Note that the data source extends to six decimal places
-                    self.dividend_adjustment = self.dividend_adjustment * ((float(pieces[4]) - float(self.next_adjustment['Dividend'])) / float(pieces[4]))
-                if 'Price Adjustment' in self.next_adjustment:
-                    # These two always show up together (reciprocals)
-                    self.price_adjustment = self.next_adjustment['Price Adjustment']
-                    self.volume_adjustment = self.next_adjustment['Volume Adjustment']
-                self.adjustments_index = self.adjustments_index + 1
-                if self.adjustments_index < self.adjustments_length:
-                    self.next_adjustment = adjustments[self.adjustments_index]
-                else:
-                    self.next_adjustment = None
-            if self.dividend_adjustment == 1.0 and self.price_adjustment == 1:
+            adjuster.date_iterator(interval_date,float(pieces[4]))
+            if adjuster.get_dividend_adjustment() == 1.0 and adjuster.get_price_adjustment() == 1:
                 quote.append(round(float(pieces[1]),2)) # Open
                 quote.append(round(float(pieces[2]),2)) # High
                 quote.append(round(float(pieces[3]),2)) # Low
                 quote.append(round(float(pieces[4]),2)) # Close
                 quote.append(int(pieces[6])) # Volume
             else:
-                quote.append(round(float(pieces[1]) * float(self.price_adjustment),2)) # Open
-                quote.append(round(float(pieces[2]) * float(self.price_adjustment),2)) # High
-                quote.append(round(float(pieces[3]) * float(self.price_adjustment),2)) # Low
-                quote.append(round(float(pieces[4]) * float(self.price_adjustment),2)) # Close
-                quote.append(int(int(pieces[6]) * float(self.volume_adjustment))) # Volume
+                quote.append(round(float(pieces[1]) * float(adjuster.get_price_adjustment()),2)) # Open
+                quote.append(round(float(pieces[2]) * float(adjuster.get_price_adjustment()),2)) # High
+                quote.append(round(float(pieces[3]) * float(adjuster.get_price_adjustment()),2)) # Low
+                quote.append(round(float(pieces[4]) * float(adjuster.get_price_adjustment()),2)) # Close
+                quote.append(int(int(pieces[6]) * float(adjuster.get_volume_adjustment()))) # Volume
                 # Adjusted prices rounded to 6 places for better accuracy when plotting small adjusted numbers
-                quote.append(round(float(pieces[1]) * self.dividend_adjustment,6)) # Adjusted open
-                quote.append(round(float(pieces[2]) * self.dividend_adjustment,6)) # Adjusted high
-                quote.append(round(float(pieces[3]) * self.dividend_adjustment,6)) # Adjusted low
+                quote.append(round(float(pieces[1]) * adjuster.get_dividend_adjustment(),6)) # Adjusted open
+                quote.append(round(float(pieces[2]) * adjuster.get_dividend_adjustment(),6)) # Adjusted high
+                quote.append(round(float(pieces[3]) * adjuster.get_dividend_adjustment(),6)) # Adjusted low
                 quote.append(round(float(pieces[5]),6)) # Adjusted close
                 quote.append(int(pieces[6])) # Adjusted volume
         return (quote,interval_date)
@@ -1101,7 +1088,7 @@ class Latest(ameritrade.Connection):
                 reply = { 'unknown_symbols': unknown_symbols }
                 return reply
             params['symbol'] = ','.join(quote_symbols)
-        response = self.request('v1/marketdata/quotes','GET',params,with_apikey=True)
+        response = self.request('marketdata/quotes',params,'GET',with_apikey=True)
         if isinstance(symbol,str):
             if symbol not in response and symbol not in unknown_symbols:
                 unquoted_symbols.append(symbol)

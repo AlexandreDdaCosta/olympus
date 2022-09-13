@@ -166,10 +166,6 @@ class TestPrice(testing.Test):
         self.assertGreater(regen_adjustment_data['Time'],adjustment_data['Time'])
 
     def test_daily(self):
-        a_while_ago = str(date.today() - timedelta(days=180))
-        today = str(date.today())
-        quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date=a_while_ago,end_date=today)
-        print(json.dumps(quotes, indent=4))
         return #ALEX
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.daily.quote(TEST_SYMBOL_FAKE)
@@ -267,7 +263,7 @@ class TestPrice(testing.Test):
         for period in VALID_DAILY_WEEKLY_PERIODS.keys():
             if period == 'All':
                 continue
-            past_days = VALID_DAILY_WEEKLY_PERIODS[period] + 4 # Add 4 in case of mid-week day adjustment
+            past_days = VALID_DAILY_WEEKLY_PERIODS[period] + 6 # Add 6 in case of day adjustment (maximum 6 for Sunday)
             max_past_date = str(date.today() - timedelta(days=past_days))
             quotes = self.weekly.quote(TEST_SYMBOL_ONE,period)
             first_period_date = list(quotes)[0]
@@ -358,11 +354,10 @@ class TestPrice(testing.Test):
         self.assertTrue(TEST_SYMBOL_FAKE_TWO.upper() in quote['unknown_symbols'])
 
     def test_intraday(self):
-        return #ALEX
         #ALEX quotes = self.intraday.quote(TEST_SYMBOL_TWO)
         quotes = self.intraday.quote('AAPL',start_date='2022-05-05')
         #quotes = self.intraday.quote('AMZN',start_date='2022-06-03')
-        print(json.dumps(quotes, indent=4))
+        #print(json.dumps(quotes, indent=4))
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
