@@ -36,6 +36,8 @@ class DateVerifier(object):
             self.verify_date(end_date)
             if start_date is not None and end_date <= start_date:
                 raise Exception('End date must be greater than start date.')
+            if end_date < OLDEST_QUOTE_DATE:
+                raise Exception('End date cannot be less than ' + OLDEST_QUOTE_DATE)
             if allow_future_end_date is False and end_date > today:
                 raise Exception('End date cannot be in the future.')
         elif keep_null_end_date is False:

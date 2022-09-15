@@ -3,6 +3,7 @@ import argparse, inspect, os, pwd, random, re, string, sys, unittest
 DEFAULT_STRING_LENGTH = 60
 GREP_TEXT = 'Search string located in file.'
 NO_GREP_TEXT = 'Search string not found in file.'
+NONE_TEXT = 'Value equals None.'
 NOT_FLOAT_TEXT = 'Value is not a float.'
 NOT_NONE_TEXT = 'Value does not equal None.'
 MATCH_TEXT = 'Match for regular expression.'
@@ -44,6 +45,11 @@ class Test(unittest.TestCase):
 
     def assertIsNone(self,value,description=NOT_NONE_TEXT):
         if value is None:
+            return
+        raise AssertionError(description)
+    
+    def assertIsNotNone(self,value,description=NONE_TEXT):
+        if value is not None:
             return
         raise AssertionError(description)
     

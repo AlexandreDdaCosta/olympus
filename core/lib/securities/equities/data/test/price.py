@@ -17,7 +17,6 @@ from olympus.securities.equities.data.price import DEFAULT_INTRADAY_FREQUENCY, D
 from olympus.securities.equities.data.symbols import SymbolNotFoundError
 
 LATEST_PRICE_SCHEMA_FILE = re.sub(r'(.*\/).*\/.*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/LatestPriceQuote.json'
-NODIVIDEND_STOCK = 'DASH' # This may need update over time
 QUOTE_SCHEMA = {
     "type": "object",
     "properties": {
@@ -45,7 +44,6 @@ QUOTE_SCHEMA = {
         "Volume"
     ]
 }
-UNSPLIT_STOCK = 'TWLO' # This may need update over time
 
 # Standard run parameters:
 # sudo su -s /bin/bash -c '... price.py' USER
@@ -109,12 +107,12 @@ class TestPrice(testing.Test):
         }
         with self.assertRaises(SymbolNotFoundError):
             splits = self.adjustments.splits(TEST_SYMBOL_FAKE)
-        splits = self.adjustments.splits(UNSPLIT_STOCK)
+        splits = self.adjustments.splits(TEST_SYMBOL_NODIVSPLIT)
         self.assertIsNone(splits)
-        price_collection = 'price.' + TEST_SYMBOL_TWO
+        price_collection = 'price.' + TEST_SYMBOL_DIVSPLIT
         collection = self.mongo_data.db[price_collection]
         initial_split_data = collection.find_one({ 'Adjustment': 'Splits' },{ '_id': 0, 'Interval': 0 })
-        splits = self.adjustments.splits(TEST_SYMBOL_TWO,regen=True)
+        splits = self.adjustments.splits(TEST_SYMBOL_DIVSPLIT,regen=True)
         last_split_date = None
         for split_date in splits:
             validate(instance=splits[split_date],schema=split_schema)
@@ -126,10 +124,10 @@ class TestPrice(testing.Test):
             self.assertGreater(first_regen_split_data['Time'],initial_split_data['Time'])
         with self.assertRaises(SymbolNotFoundError):
             dividends = self.adjustments.dividends(TEST_SYMBOL_FAKE)
-        dividends = self.adjustments.dividends(NODIVIDEND_STOCK)
+        dividends = self.adjustments.dividends(TEST_SYMBOL_SPLIT)
         self.assertIsNone(dividends)
         initial_dividend_data = collection.find_one({ 'Adjustment': 'Dividends' },{ '_id': 0, 'Interval': 0 })
-        dividends = self.adjustments.dividends(TEST_SYMBOL_TWO,regen=True)
+        dividends = self.adjustments.dividends(TEST_SYMBOL_DIVSPLIT,regen=True)
         last_dividend_date = None
         for dividend_date in dividends:
             validate(instance=dividends[dividend_date],schema=dividend_schema)
@@ -144,7 +142,7 @@ class TestPrice(testing.Test):
             self.assertGreater(regen_dividend_data['Time'],initial_dividend_data['Time'])
         with self.assertRaises(SymbolNotFoundError):
             dividends = self.adjustments.adjustments(TEST_SYMBOL_FAKE)
-        adjustments = self.adjustments.adjustments(TEST_SYMBOL_TWO)
+        adjustments = self.adjustments.adjustments(TEST_SYMBOL_DIVSPLIT)
         adjustments_split_data = collection.find_one({ 'Adjustment': 'Splits' },{ '_id': 0, 'Interval': 0 })
         self.assertEqual(adjustments_split_data['Time'],regen_split_data['Time'])
         self.assertTrue(adjustments_split_data['Splits'] == regen_split_data['Splits'])
@@ -162,7 +160,7 @@ class TestPrice(testing.Test):
                 self.assertEqual(adjustment['Price Adjustment'],splits[adjustment['Date']]['Price/Dividend Adjustment'])
                 self.assertEqual(adjustment['Volume Adjustment'],splits[adjustment['Date']]['Volume Adjustment'])
         adjustment_data = collection.find_one({ 'Adjustment': 'Merged' },{ '_id': 0, 'Interval': 0 })
-        regen_adjustments = self.adjustments.adjustments(TEST_SYMBOL_TWO,regen=True)
+        regen_adjustments = self.adjustments.adjustments(TEST_SYMBOL_DIVSPLIT,regen=True)
         regen_adjustment_data = collection.find_one({ 'Adjustment': 'Merged' },{ '_id': 0, 'Interval': 0 })
         self.assertGreater(regen_adjustment_data['Time'],adjustment_data['Time'])
 
@@ -170,30 +168,30 @@ class TestPrice(testing.Test):
         return #ALEX
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.daily.quote(TEST_SYMBOL_FAKE)
-        price_collection = 'price.' + TEST_SYMBOL_TWO
+        price_collection = 'price.' + TEST_SYMBOL_DIVSPLIT
         collection = self.mongo_data.db[price_collection]
-        quotes = self.daily.quote(TEST_SYMBOL_TWO)
+        quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT)
         first_date = list(quotes)[0]
         init_quote_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0, 'Quotes': 0 })
-        quotes = self.daily.quote(TEST_SYMBOL_TWO,regen=True)
+        quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,regen=True)
         regen_quote_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0, 'Quotes': 0 })
         self.assertGreater(regen_quote_data['Time'],init_quote_data['Time'])
         with self.assertRaises(Exception):
-            quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date='2022-02-29')
-            quotes = self.daily.quote(TEST_SYMBOL_TWO,end_date='2022-02-29')
-            quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date='BADLYFORMATTEDDATE')
-            quotes = self.daily.quote(TEST_SYMBOL_TWO,end_date='BADLYFORMATTEDDATE')
+            quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,start_date='2022-02-29')
+            quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,end_date='2022-02-29')
+            quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,start_date='BADLYFORMATTEDDATE')
+            quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,end_date='BADLYFORMATTEDDATE')
         with self.assertRaises(Exception):
             tomorrow = str(date.today() + timedelta(days=1))
-            quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date=tomorrow)
+            quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,start_date=tomorrow)
         a_while_ago = str(date.today() - timedelta(days=90))
         today = str(date.today())
         with self.assertRaises(Exception):
-            quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date=today,end_date=a_while_ago)
-            quotes = self.daily.quote(TEST_SYMBOL_TWO,period='BADPERIOD')
-            quotes = self.daily.quote(TEST_SYMBOL_TWO,period='1Y',start_date=a_while_ago)
-            quotes = self.daily.quote(TEST_SYMBOL_TWO,period='1Y',end_date=a_while_ago)
-        quotes = self.daily.quote(TEST_SYMBOL_TWO,start_date=a_while_ago,end_date=today)
+            quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,start_date=today,end_date=a_while_ago)
+            quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,period='BADPERIOD')
+            quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,period='1Y',start_date=a_while_ago)
+            quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,period='1Y',end_date=a_while_ago)
+        quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,start_date=a_while_ago,end_date=today)
         curr_range_date = None
         for range_date in quotes:
             if curr_range_date is None:
@@ -212,7 +210,7 @@ class TestPrice(testing.Test):
             curr_range_date = range_date
         self.assertLessEqual(curr_range_date,today)
         for period in VALID_DAILY_WEEKLY_PERIODS.keys():
-            quotes = self.daily.quote(TEST_SYMBOL_TWO,period=period)
+            quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,period=period)
             first_period_date = list(quotes)[0]
             if period == 'All':
                 self.assertEqual(first_date,first_period_date)
@@ -239,7 +237,7 @@ class TestPrice(testing.Test):
             interval_data = collection.find_one({ 'Interval': '1d',  },{ '_id': 0, 'Interval': 0 })
             self.assertTrue(previous_date in interval_data['Quotes']);
             self.assertFalse(last_date in interval_data['Quotes']);
-            quotes = self.daily.quote(TEST_SYMBOL_TWO)
+            quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT)
             self.assertTrue(last_date in quotes);
     
     def test_weekly(self):
@@ -247,7 +245,7 @@ class TestPrice(testing.Test):
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.daily.quote(TEST_SYMBOL_FAKE)
         today = str(date.today())
-        quotes = self.weekly.quote(TEST_SYMBOL_TWO,'All')
+        quotes = self.weekly.quote(TEST_SYMBOL_DIVSPLIT,'All')
         first_date = list(quotes)[0]
         for quote_date in quotes:
             validate(instance=quotes[quote_date],schema=QUOTE_SCHEMA)
@@ -266,7 +264,7 @@ class TestPrice(testing.Test):
                 continue
             past_days = VALID_DAILY_WEEKLY_PERIODS[period] + 4 # Add 4 in case of weekday adjustment
             max_past_date = str(date.today() - timedelta(days=past_days))
-            quotes = self.weekly.quote(TEST_SYMBOL_ONE,period)
+            quotes = self.weekly.quote(TEST_SYMBOL_DIV,period)
             first_period_date = list(quotes)[0]
             self.assertLessEqual(first_date,first_period_date)
             self.assertLessEqual(max_past_date,first_period_date)
@@ -276,7 +274,7 @@ class TestPrice(testing.Test):
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.monthly.quote(TEST_SYMBOL_FAKE)
         today = str(date.today())
-        quotes = self.monthly.quote(TEST_SYMBOL_TWO,period='All')
+        quotes = self.monthly.quote(TEST_SYMBOL_DIVSPLIT,period='All')
         first_date = list(quotes)[0]
         for quote_date in quotes:
             validate(instance=quotes[quote_date],schema=QUOTE_SCHEMA)
@@ -296,7 +294,7 @@ class TestPrice(testing.Test):
             past_period = int(re.sub(r"[Y]", "", period))
             now = dt.now().astimezone()
             max_past_date = "%d-%02d-%02d" % (now.year - int(past_period),now.month,1)
-            quotes = self.monthly.quote(TEST_SYMBOL_TWO,period)
+            quotes = self.monthly.quote(TEST_SYMBOL_DIVSPLIT,period)
             first_period_date = list(quotes)[0]
             self.assertLessEqual(first_date,first_period_date)
             self.assertLessEqual(max_past_date,first_period_date)
@@ -307,16 +305,16 @@ class TestPrice(testing.Test):
             quotes = self.monthly.quote(TEST_SYMBOL_FAKE)
         with open(LATEST_PRICE_SCHEMA_FILE) as schema_file:
             validation_schema = json.load(schema_file)
-        quote = self.latest.quote(TEST_SYMBOL_ONE)
+        quote = self.latest.quote(TEST_SYMBOL_DIV)
         quoteTimeLong = int(time.time() * 1000)
-        symbol = TEST_SYMBOL_ONE.upper()
+        symbol = TEST_SYMBOL_DIV.upper()
         self.assertTrue('quotes' in quote)
         self.assertFalse('unknown_symbols' in quote)
         self.assertTrue(symbol in quote['quotes'])
         self.assertEqual(quote['quotes'][symbol]['symbol'], symbol)
         validate(instance=quote['quotes'][symbol],schema=validation_schema)
-        self.assertEqual(quote['quotes'][symbol]['exchange'], TEST_SYMBOL_ONE_QUOTE_EXCHANGE)
-        self.assertEqual(quote['quotes'][symbol]['exchangeName'], TEST_SYMBOL_ONE_QUOTE_EXCHANGE_NAME)
+        self.assertEqual(quote['quotes'][symbol]['exchange'], TEST_SYMBOL_DIV_QUOTE_EXCHANGE)
+        self.assertEqual(quote['quotes'][symbol]['exchangeName'], TEST_SYMBOL_DIV_QUOTE_EXCHANGE_NAME)
         self.assertGreaterEqual(quote['quotes'][symbol]['askPrice'],quote['quotes'][symbol]['bidPrice'])
         self.assertGreaterEqual(quote['quotes'][symbol]['highPrice'],quote['quotes'][symbol]['lowPrice'])
         self.assertGreaterEqual(quote['quotes'][symbol]['highPrice'],quote['quotes'][symbol]['openPrice'])
@@ -326,21 +324,21 @@ class TestPrice(testing.Test):
         self.assertGreaterEqual(quoteTimeLong,quote['quotes'][symbol]['regularMarketTradeTimeInLong'])
         self.assertGreaterEqual(quote['quotes'][symbol]['tradeTimeInLong'],quote['quotes'][symbol]['regularMarketTradeTimeInLong'])
         self.assertLessEqual(abs(round(quote['quotes'][symbol]['netChange'] - (quote['quotes'][symbol]['lastPrice'] - quote['quotes'][symbol]['closePrice']),2)), .01)
-        quote = self.latest.quote([TEST_SYMBOL_ONE.lower(),TEST_SYMBOL_TWO,TEST_SYMBOL_FAKE.lower()])
+        quote = self.latest.quote([TEST_SYMBOL_DIV.lower(),TEST_SYMBOL_DIVSPLIT,TEST_SYMBOL_FAKE.lower()])
         quoteTimeLong = int(time.time() * 1000)
         self.assertTrue('quotes' in quote)
         self.assertTrue('unknown_symbols' in quote)
         self.assertTrue(TEST_SYMBOL_FAKE.upper() in quote['unknown_symbols'])
-        for symbol in [TEST_SYMBOL_ONE.upper(),TEST_SYMBOL_TWO.upper()]:
+        for symbol in [TEST_SYMBOL_DIV.upper(),TEST_SYMBOL_DIVSPLIT.upper()]:
             self.assertTrue(symbol in quote['quotes'])
             self.assertEqual(quote['quotes'][symbol]['symbol'], symbol)
             validate(instance=quote['quotes'][symbol],schema=validation_schema)
-            if symbol == TEST_SYMBOL_ONE.upper():
-                self.assertEqual(quote['quotes'][symbol]['exchange'], TEST_SYMBOL_ONE_QUOTE_EXCHANGE)
-                self.assertEqual(quote['quotes'][symbol]['exchangeName'], TEST_SYMBOL_ONE_QUOTE_EXCHANGE_NAME)
+            if symbol == TEST_SYMBOL_DIV.upper():
+                self.assertEqual(quote['quotes'][symbol]['exchange'], TEST_SYMBOL_DIV_QUOTE_EXCHANGE)
+                self.assertEqual(quote['quotes'][symbol]['exchangeName'], TEST_SYMBOL_DIV_QUOTE_EXCHANGE_NAME)
             else:
-                self.assertEqual(quote['quotes'][symbol]['exchange'], TEST_SYMBOL_TWO_QUOTE_EXCHANGE)
-                self.assertEqual(quote['quotes'][symbol]['exchangeName'], TEST_SYMBOL_TWO_QUOTE_EXCHANGE_NAME)
+                self.assertEqual(quote['quotes'][symbol]['exchange'], TEST_SYMBOL_DIVSPLIT_QUOTE_EXCHANGE)
+                self.assertEqual(quote['quotes'][symbol]['exchangeName'], TEST_SYMBOL_DIVSPLIT_QUOTE_EXCHANGE_NAME)
             self.assertGreaterEqual(quote['quotes'][symbol]['askPrice'],quote['quotes'][symbol]['bidPrice'])
             self.assertGreaterEqual(quote['quotes'][symbol]['highPrice'],quote['quotes'][symbol]['lowPrice'])
             self.assertGreaterEqual(quote['quotes'][symbol]['highPrice'],quote['quotes'][symbol]['openPrice'])
@@ -358,21 +356,25 @@ class TestPrice(testing.Test):
 
     def test_intraday(self):
         date_verifier = DateVerifier()
+        two_days_ago = (dt.now() - timedelta(days=2)).strftime("%Y-%m-%d")
+        yesterday = (dt.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+        '''
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.monthly.quote(TEST_SYMBOL_FAKE)
         bad_min_frequency = min(VALID_INTRADAY_FREQUENCIES.keys()) - 1
         with self.assertRaises(Exception):
-            quotes = self.intraday.quote(TEST_SYMBOL_ONE,frequency=bad_min_frequency)
+            quotes = self.intraday.quote(TEST_SYMBOL_DIV,frequency=bad_min_frequency)
         bad_max_frequency = max(VALID_INTRADAY_FREQUENCIES.keys()) + 1
         with self.assertRaises(Exception):
-            quotes = self.intraday.quote(TEST_SYMBOL_ONE,frequency=bad_max_frequency)
+            quotes = self.intraday.quote(TEST_SYMBOL_DIV,frequency=bad_max_frequency)
         bad_min_period = min(VALID_INTRADAY_PERIODS) - 1
         with self.assertRaises(Exception):
-            quotes = self.intraday.quote(TEST_SYMBOL_ONE,period=bad_min_period)
+            quotes = self.intraday.quote(TEST_SYMBOL_DIV,period=bad_min_period)
         bad_max_period = max(VALID_INTRADAY_PERIODS) + 1
         with self.assertRaises(Exception):
-            quotes = self.intraday.quote(TEST_SYMBOL_ONE,period=bad_max_period)
-        quotes = self.intraday.quote(TEST_SYMBOL_ONE)
+            quotes = self.intraday.quote(TEST_SYMBOL_DIV,period=bad_max_period)
+        # The next two series use the default values for period and frequency
+        quotes = self.intraday.quote(TEST_SYMBOL_DIV)
         self.assertEqual(DEFAULT_INTRADAY_PERIOD,len(quotes.keys()))
         for quote_date in quotes:
             date_verifier.verify_date(quote_date)
@@ -387,29 +389,56 @@ class TestPrice(testing.Test):
                     current_date_time = dt.strptime(quote_date + ' ' + quote_time, "%Y-%m-%d %H:%M:%S")
                     self.assertEqual(DEFAULT_INTRADAY_FREQUENCY, int((current_date_time - previous_date_time).total_seconds()/60))
                     last_quote_time = quote_time
-        #for period in VALID_INTRADAY_PERIODS:
-        #    print(period)
+        quotes = self.intraday.quote(TEST_SYMBOL_DIV,need_extended_hours_data=False)
+        for quote_date in quotes:
+            open_time = list(quotes[quote_date].keys())[0]
+            self.assertEqual(open_time,REGULAR_MARKET_OPEN_TIME)
+            close_time = dt.strptime(quote_date + ' ' + REGULAR_MARKET_CLOSE_TIME, "%Y-%m-%d %H:%M:%S")
+            last_quote_time = list(quotes[quote_date].keys())[-1]
+            last_time = dt.strptime(quote_date + ' ' + last_quote_time, "%Y-%m-%d %H:%M:%S")
+            self.assertEqual(close_time,last_time + timedelta(minutes=DEFAULT_INTRADAY_FREQUENCY))
+        # Check all period/frequency combinations
+        for period in VALID_INTRADAY_PERIODS:
+            with self.assertRaises(Exception):
+                # period and start_date don't mix
+                quotes = self.intraday.quote(TEST_SYMBOL_DIVSPLIT,period=period,start_date=two_days_ago)
+            for frequency in VALID_INTRADAY_FREQUENCIES:
+                quotes = self.intraday.quote(TEST_SYMBOL_DIVSPLIT,period=period,frequency=frequency)
+                self.assertEqual(period,len(quotes.keys()))
+                for quote_date in quotes:
+                    last_quote_time = None
+                    for quote_time in quotes[quote_date]:
+                        if last_quote_time is not None:
+                            previous_date_time = dt.strptime(quote_date + ' ' + last_quote_time, "%Y-%m-%d %H:%M:%S")
+                            current_date_time = dt.strptime(quote_date + ' ' + quote_time, "%Y-%m-%d %H:%M:%S")
+                            self.assertEqual(frequency, int((current_date_time - previous_date_time).total_seconds()/60))
+                            last_quote_time = quote_time
+        # Various checks for absolute and relative dates
+        too_old_date = (dt.strptime(OLDEST_QUOTE_DATE, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
+        with self.assertRaises(Exception):
+            quotes = self.intraday.quote(TEST_SYMBOL_SPLIT,start_date=too_old_date)
+        with self.assertRaises(Exception):
+            quotes = self.intraday.quote(TEST_SYMBOL_SPLIT,end_date=too_old_date)
+        tomorrow = (dt.now() + timedelta(days=1)).strftime("%Y-%m-%d")
+        with self.assertRaises(Exception):
+            quotes = self.intraday.quote(TEST_SYMBOL_SPLIT,start_date=tommorow)
+        with self.assertRaises(Exception):
+            quotes = self.intraday.quote(TEST_SYMBOL_SPLIT,end_date=tomorrow)
+        with self.assertRaises(Exception):
+            quotes = self.intraday.quote(TEST_SYMBOL_SPLIT,end_date=two_days_ago,start_date=yesterday)
+        '''
+        for frequency in VALID_INTRADAY_FREQUENCIES:
+            print(frequency)
+            print(VALID_INTRADAY_FREQUENCIES[frequency])
         #ALEXHERE
-        #print(json.dumps(quotes, indent=4))
-        #need_extended_hours_data = kwargs.get('need_extended_hours_data',True)
         #with self.assertRaises(Exception):
-        #    quotes = self.intraday.quote(TEST_SYMBOL_ONE,start_date='2000-01-05')
-        #quotes = self.intraday.quote(TEST_SYMBOL_TWO,start_date='2022-05-05')
+        #    quotes = self.intraday.quote(TEST_SYMBOL_DIV,start_date='2000-01-05')
         #VALID_INTRADAY_FREQUENCIES = {1:50, 5:260, 10:260, 15:260, 30:260}
-        #VALID_INTRADAY_PERIODS = [1, 2, 3, 4, 5, 10]
-        #OLDEST_QUOTE_DATE = '1990-01-01'
         #if start_date < oldest_available_date:
         #    raise Exception('For a minute frequency of ' + str(frequency) + ', the oldest available date is ' + oldest_available_date + '.')
         #if end_date < oldest_available_date:
         #    raise Exception('For a minute frequency of ' + str(frequency) + ', the oldest available date is ' + oldest_available_date + '.')
         #raise Exception('Cannot retrieve data for requested end date ' + end_date + ' and period ' + str(period) + ' since oldest available date is ' + oldest_available_date + '.')
-        #raise Exception('The keyword argument "period" cannot be declared with the "start_date" keyword argument')
-        #raise Exception('Start date cannot be less than ' + OLDEST_QUOTE_DATE)
-        #raise Exception('Start date cannot be in the future.')
-        #raise Exception('End date must be greater than start date.')
-        #raise Exception('End date cannot be in the future.')
-        #if period is None and start_date is None and end_date is None:
-        #    period = 10 # Ameritrade default (ten days)
         #print(json.dumps(quotes, indent=4))
 
 if __name__ == '__main__':
