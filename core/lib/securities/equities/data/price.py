@@ -14,6 +14,9 @@ from olympus import USER, User
 from olympus.securities.equities.data.datetime import DateVerifier
 
 DEFAULT_INTRADAY_FREQUENCY = 30
+DEFAULT_INTRADAY_PERIOD = 10
+DIVIDEND_FORMAT = [ "Dividend", "Adjusted Dividend" ]
+INTRADAY_PRICE_KEYS = [ "Open", "High", "Low", "Close" ]
 MAP_INTRADAY_PRICE_KEYS = {
     "Open": "open",
     "High": "high",
@@ -21,7 +24,6 @@ MAP_INTRADAY_PRICE_KEYS = {
     "Close": "close", 
     "Volume": "volume"
     }
-INTRADAY_PRICE_KEYS = [ "Open", "High", "Low", "Close" ]
 MAP_LATEST_PRICE_KEYS = {
     "Open": "openPrice",
     "High": "highPrice",
@@ -34,12 +36,11 @@ MAP_LATEST_PRICE_KEYS = {
     "Adjusted Close": "closePrice",
     "Adjusted Volume": "totalVolume"
     }
-STORED_DIVIDEND_FORMAT = [ "Dividend", "Adjusted Dividend" ]
-STORED_PRICE_FORMAT = [ "Open", "High", "Low", "Close", "Volume", "Adjusted Open", "Adjusted High", "Adjusted Low", "Adjusted Close", "Adjusted Volume" ]
-STORED_SPLIT_FORMAT = [ "Numerator", "Denominator", "Price/Dividend Adjustment", "Volume Adjustment" ]
+PRICE_FORMAT = [ "Open", "High", "Low", "Close", "Volume", "Adjusted Open", "Adjusted High", "Adjusted Low", "Adjusted Close", "Adjusted Volume" ]
+SPLIT_FORMAT = [ "Numerator", "Denominator", "Price/Dividend Adjustment", "Volume Adjustment" ]
 VALID_DAILY_WEEKLY_PERIODS = {'1M':30,'3M':91,'6M':183,'1Y':365,'2Y':730,'5Y':1825,'10Y':3652,'20Y':7305,'All':None}
-VALID_INTRADAY_PERIODS = [1, 2, 3, 4, 5, 10]
 VALID_INTRADAY_FREQUENCIES = {1:50, 5:260, 10:260, 15:260, 30:260}
+VALID_INTRADAY_PERIODS = [1, 2, 3, 4, 5, 10]
 # Keys: Frequency of quote (in minutes)
 # Values: Number of days into the past from today for which data is available for given frequency, inclusive of today's date
 VALID_MONTHLY_PERIODS = ['1Y','2Y','5Y','10Y','20Y','All']
@@ -320,7 +321,7 @@ date more recent than or matching the date of the most recent split is therefore
                 write_dict = {}
                 write_dict['Time'] = str(dt.now().astimezone())
                 write_dict['Adjustment'] = 'Dividends'
-                write_dict['Format'] = STORED_DIVIDEND_FORMAT
+                write_dict['Format'] = DIVIDEND_FORMAT
                 write_dict['Start Date'] = start_dividend_date
                 write_dict['End Date'] = end_dividend_date
                 write_dict['Dividends'] = json_dividends
@@ -334,16 +335,16 @@ date more recent than or matching the date of the most recent split is therefore
             returndata = dividend_data['Dividends']
         # Format returned data using data headers
         formatted_returndata = {}
-        details_length = len(STORED_DIVIDEND_FORMAT)
+        details_length = len(DIVIDEND_FORMAT)
         if returndata is not None:
             for dividend_date in returndata:
                 formatted_returndata[dividend_date] = {}
                 dividend_length = len(returndata[dividend_date])
                 for index in range(0, details_length):
                     if index >= dividend_length:
-                        formatted_returndata[dividend_date][STORED_DIVIDEND_FORMAT[index]] = returndata[dividend_date][index-1]
+                        formatted_returndata[dividend_date][DIVIDEND_FORMAT[index]] = returndata[dividend_date][index-1]
                     else:
-                        formatted_returndata[dividend_date][STORED_DIVIDEND_FORMAT[index]] = returndata[dividend_date][index]
+                        formatted_returndata[dividend_date][DIVIDEND_FORMAT[index]] = returndata[dividend_date][index]
             if return_date is False:
                 return collections.OrderedDict(sorted(formatted_returndata.items(),reverse=True))
             else:
@@ -415,7 +416,7 @@ date more recent than or matching the date of the most recent split is therefore
             write_dict = {}
             write_dict['Time'] = str(dt.now().astimezone())
             write_dict['Adjustment'] = 'Splits'
-            write_dict['Format'] = STORED_SPLIT_FORMAT
+            write_dict['Format'] = SPLIT_FORMAT
             write_dict['Start Date'] = start_split_date
             write_dict['End Date'] = end_split_date
             write_dict['Splits'] = json_splits
@@ -429,13 +430,13 @@ date more recent than or matching the date of the most recent split is therefore
             returndata = split_data['Splits']
         # Format returned data using data headers
         formatted_returndata = {}
-        details_length = len(STORED_SPLIT_FORMAT)
+        details_length = len(SPLIT_FORMAT)
         if returndata is not None:
             for quote_date in returndata:
                 formatted_returndata[quote_date] = {}
                 quote_length = len(returndata[quote_date])
                 for index in range(0, details_length):
-                    formatted_returndata[quote_date][STORED_SPLIT_FORMAT[index]] = returndata[quote_date][index]
+                    formatted_returndata[quote_date][SPLIT_FORMAT[index]] = returndata[quote_date][index]
             if return_date is False:
                 return collections.OrderedDict(sorted(formatted_returndata.items(),reverse=True))
             else:
@@ -493,8 +494,8 @@ date more recent than or matching the date of the most recent split is therefore
 
 class _PriceAdjuster(Adjustments):
     '''
-    An internal class used by both daily and intraday price quotes to apply price and volume adjustments.
-    Built with the understanding that daily close prices are split adjusted
+An internal class used by both daily and intraday price quotes to apply price and volume adjustments.
+Built with the understanding that daily close prices are split adjusted
     '''
     def __init__(self,symbol,username=USER,**kwargs):
         super(_PriceAdjuster,self).__init__(username)
@@ -714,7 +715,7 @@ my current judgment is that these differences will not grossly affect the desire
             write_dict = {}
             write_dict['Time'] = str(now)
             write_dict['Interval'] = '1d'
-            write_dict['Format'] = STORED_PRICE_FORMAT
+            write_dict['Format'] = PRICE_FORMAT
             write_dict['Start Date'] = self.start_date_daily
             write_dict['End Date'] = self.end_date_daily
             write_dict['Quotes'] = {key:json_quotes[key] for key in sorted(json_quotes)}
@@ -735,15 +736,15 @@ my current judgment is that these differences will not grossly affect the desire
             returndata = {key: value for key, value in returndata.items() if dt.strptime(key,"%Y-%m-%d") <= end_date}
         # Format returned data using data headers
         formatted_returndata = {}
-        details_length = len(STORED_PRICE_FORMAT)
+        details_length = len(PRICE_FORMAT)
         for quote_date in returndata:
             formatted_returndata[quote_date] = {}
             quote_length = len(returndata[quote_date])
             for index in range(0, details_length):
                 if index >= quote_length:
-                    formatted_returndata[quote_date][STORED_PRICE_FORMAT[index]] = returndata[quote_date][index-5]
+                    formatted_returndata[quote_date][PRICE_FORMAT[index]] = returndata[quote_date][index-5]
                 else:
-                    formatted_returndata[quote_date][STORED_PRICE_FORMAT[index]] = returndata[quote_date][index]
+                    formatted_returndata[quote_date][PRICE_FORMAT[index]] = returndata[quote_date][index]
         return collections.OrderedDict(sorted(formatted_returndata.items()))
 
     def _daily_quote_url(self,symbol,period1='0'):
@@ -852,7 +853,7 @@ class Weekly(Daily):
         start_date = super()._verify_period(period)
         if start_date is not None:
             day_of_week = dt.strptime(start_date,'%Y-%m-%d').isoweekday()
-            if day_of_week != 1:
+            if day_of_week > 1 and day_of_week < 6:
                 start_date = str(dt.strptime(start_date,'%Y-%m-%d') - timedelta(days=(day_of_week-1)))[0:10]
         return start_date
 
@@ -922,18 +923,18 @@ class QuoteMerger():
             setattr(self, item, getattr(self, item) + quote[item])
 
     def init_quote(self,quote):
-        for label in STORED_PRICE_FORMAT:
+        for label in PRICE_FORMAT:
             setattr(self, label, quote[label])
 
     def reset_quote(self):
-        for label in STORED_PRICE_FORMAT:
+        for label in PRICE_FORMAT:
             setattr(self, label, None)
         setattr(self, 'Adjusted Volume', 0)
         setattr(self, 'Volume', 0)
 
     def set_quote(self):
         quote = {}
-        for label in STORED_PRICE_FORMAT:
+        for label in PRICE_FORMAT:
             quote[label] = getattr(self, label)
         return quote
 
@@ -1052,7 +1053,7 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
         if period is not None and start_date is not None:
             raise Exception('The keyword argument "period" cannot be declared with the "start_date" keyword argument')
         if period is None and start_date is None and end_date is None:
-            period = 10 # Ameritrade default (ten days)
+            period = DEFAULT_INTRADAY_PERIOD
         return period
 
 class Latest(ameritrade.Connection):
@@ -1065,7 +1066,7 @@ class Latest(ameritrade.Connection):
         params = {}
         unknown_symbols = []
         unquoted_symbols = []
-        # "Standardize" means to add keys corresponding to those appearing in STORED_PRICE_FORMAT
+        # "Standardize" means to add keys corresponding to those appearing in PRICE_FORMAT
         standardize = kwargs.get('standardize',False)
         # Symbol can be a string or array (list of symbols)
         if isinstance(symbol,str):

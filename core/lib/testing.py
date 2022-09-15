@@ -47,6 +47,10 @@ class Test(unittest.TestCase):
             return
         raise AssertionError(description)
     
+    def assertKeyInDict(self,key,dictionary):
+        if key not in dictionary:
+            raise AssertionError('Key ' + str(key) + ' not in dict.')
+
     def assertMatchesRegex(self,string,regex,description=MATCH_TEXT):
         if not regex.match(string):
             raise AssertionError(description)

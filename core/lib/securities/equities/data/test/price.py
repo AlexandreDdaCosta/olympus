@@ -12,8 +12,9 @@ import olympus.testing as testing
 
 from olympus import USER
 from olympus.securities.equities import *
+from olympus.securities.equities.data.datetime import OLDEST_QUOTE_DATE, DateVerifier
+from olympus.securities.equities.data.price import DEFAULT_INTRADAY_FREQUENCY, DEFAULT_INTRADAY_PERIOD, PRICE_FORMAT, VALID_DAILY_WEEKLY_PERIODS, VALID_INTRADAY_FREQUENCIES, VALID_INTRADAY_PERIODS, VALID_MONTHLY_PERIODS
 from olympus.securities.equities.data.symbols import SymbolNotFoundError
-from olympus.securities.equities.data.price import VALID_DAILY_WEEKLY_PERIODS, VALID_MONTHLY_PERIODS
 
 LATEST_PRICE_SCHEMA_FILE = re.sub(r'(.*\/).*\/.*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/LatestPriceQuote.json'
 NODIVIDEND_STOCK = 'DASH' # This may need update over time
@@ -263,7 +264,7 @@ class TestPrice(testing.Test):
         for period in VALID_DAILY_WEEKLY_PERIODS.keys():
             if period == 'All':
                 continue
-            past_days = VALID_DAILY_WEEKLY_PERIODS[period] + 6 # Add 6 in case of day adjustment (maximum 6 for Sunday)
+            past_days = VALID_DAILY_WEEKLY_PERIODS[period] + 4 # Add 4 in case of weekday adjustment
             max_past_date = str(date.today() - timedelta(days=past_days))
             quotes = self.weekly.quote(TEST_SYMBOL_ONE,period)
             first_period_date = list(quotes)[0]
@@ -302,6 +303,8 @@ class TestPrice(testing.Test):
 
     def test_latest(self):
         return #ALEX
+        with self.assertRaises(SymbolNotFoundError):
+            quotes = self.monthly.quote(TEST_SYMBOL_FAKE)
         with open(LATEST_PRICE_SCHEMA_FILE) as schema_file:
             validation_schema = json.load(schema_file)
         quote = self.latest.quote(TEST_SYMBOL_ONE)
@@ -354,9 +357,59 @@ class TestPrice(testing.Test):
         self.assertTrue(TEST_SYMBOL_FAKE_TWO.upper() in quote['unknown_symbols'])
 
     def test_intraday(self):
-        #ALEX quotes = self.intraday.quote(TEST_SYMBOL_TWO)
-        quotes = self.intraday.quote('AAPL',start_date='2022-05-05')
-        #quotes = self.intraday.quote('AMZN',start_date='2022-06-03')
+        date_verifier = DateVerifier()
+        with self.assertRaises(SymbolNotFoundError):
+            quotes = self.monthly.quote(TEST_SYMBOL_FAKE)
+        bad_min_frequency = min(VALID_INTRADAY_FREQUENCIES.keys()) - 1
+        with self.assertRaises(Exception):
+            quotes = self.intraday.quote(TEST_SYMBOL_ONE,frequency=bad_min_frequency)
+        bad_max_frequency = max(VALID_INTRADAY_FREQUENCIES.keys()) + 1
+        with self.assertRaises(Exception):
+            quotes = self.intraday.quote(TEST_SYMBOL_ONE,frequency=bad_max_frequency)
+        bad_min_period = min(VALID_INTRADAY_PERIODS) - 1
+        with self.assertRaises(Exception):
+            quotes = self.intraday.quote(TEST_SYMBOL_ONE,period=bad_min_period)
+        bad_max_period = max(VALID_INTRADAY_PERIODS) + 1
+        with self.assertRaises(Exception):
+            quotes = self.intraday.quote(TEST_SYMBOL_ONE,period=bad_max_period)
+        quotes = self.intraday.quote(TEST_SYMBOL_ONE)
+        self.assertEqual(DEFAULT_INTRADAY_PERIOD,len(quotes.keys()))
+        for quote_date in quotes:
+            date_verifier.verify_date(quote_date)
+            last_quote_time = None
+            for quote_time in quotes[quote_date]:
+                for quote_key in PRICE_FORMAT:
+                    self.assertKeyInDict(quote_key,quotes[quote_date][quote_time])
+                for quote_date_key in quotes[quote_date][quote_time]:
+                    self.assertKeyInDict(quote_date_key,PRICE_FORMAT)
+                if last_quote_time is not None:
+                    previous_date_time = dt.strptime(quote_date + ' ' + last_quote_time, "%Y-%m-%d %H:%M:%S")
+                    current_date_time = dt.strptime(quote_date + ' ' + quote_time, "%Y-%m-%d %H:%M:%S")
+                    self.assertEqual(DEFAULT_INTRADAY_FREQUENCY, int((current_date_time - previous_date_time).total_seconds()/60))
+                    last_quote_time = quote_time
+        #for period in VALID_INTRADAY_PERIODS:
+        #    print(period)
+        #ALEXHERE
+        #print(json.dumps(quotes, indent=4))
+        #need_extended_hours_data = kwargs.get('need_extended_hours_data',True)
+        #with self.assertRaises(Exception):
+        #    quotes = self.intraday.quote(TEST_SYMBOL_ONE,start_date='2000-01-05')
+        #quotes = self.intraday.quote(TEST_SYMBOL_TWO,start_date='2022-05-05')
+        #VALID_INTRADAY_FREQUENCIES = {1:50, 5:260, 10:260, 15:260, 30:260}
+        #VALID_INTRADAY_PERIODS = [1, 2, 3, 4, 5, 10]
+        #OLDEST_QUOTE_DATE = '1990-01-01'
+        #if start_date < oldest_available_date:
+        #    raise Exception('For a minute frequency of ' + str(frequency) + ', the oldest available date is ' + oldest_available_date + '.')
+        #if end_date < oldest_available_date:
+        #    raise Exception('For a minute frequency of ' + str(frequency) + ', the oldest available date is ' + oldest_available_date + '.')
+        #raise Exception('Cannot retrieve data for requested end date ' + end_date + ' and period ' + str(period) + ' since oldest available date is ' + oldest_available_date + '.')
+        #raise Exception('The keyword argument "period" cannot be declared with the "start_date" keyword argument')
+        #raise Exception('Start date cannot be less than ' + OLDEST_QUOTE_DATE)
+        #raise Exception('Start date cannot be in the future.')
+        #raise Exception('End date must be greater than start date.')
+        #raise Exception('End date cannot be in the future.')
+        #if period is None and start_date is None and end_date is None:
+        #    period = 10 # Ameritrade default (ten days)
         #print(json.dumps(quotes, indent=4))
 
 if __name__ == '__main__':
