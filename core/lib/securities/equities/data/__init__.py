@@ -6,6 +6,7 @@ from olympus import USER, User
 
 DATABASE = 'equities'
 INDEX_SUFFIX = '_idx'
+REQUEST_TIMEOUT = 10 # In seconds
 URLS = {
    "AlphaVantage": "https://www.alphavantage.co/query?apikey=",
    "YahooFinance": "https://query1.finance.yahoo.com/v7/finance/download/",

@@ -1,17 +1,21 @@
-import collections, datetime, json, os, re, shutil, subprocess, time, urllib.request, wget
+import collections, datetime, json, os, re, shutil, socket, subprocess, time
 
 from datetime import date, timedelta, timezone
 from datetime import datetime as dt
 from dateutil.parser import parse
 from file_read_backwards import FileReadBackwards
+from urllib.request import urlretrieve
 
 import olympus.securities.equities.data as data
 import olympus.securities.equities.data.alphavantage as alphavantage
 import olympus.securities.equities.data.tdameritrade as ameritrade
 import olympus.securities.equities.data.symbols as symbols
 
-from olympus import USER, User
+from olympus import USER
+from olympus.securities.equities.data import REQUEST_TIMEOUT
 from olympus.securities.equities.data.datetime import DateVerifier
+
+socket.setdefaulttimeout(REQUEST_TIMEOUT) # For urlretrieve
 
 DEFAULT_INTRADAY_FREQUENCY = 30
 DEFAULT_INTRADAY_PERIOD = 10
@@ -292,7 +296,7 @@ date more recent than or matching the date of the most recent split is therefore
         returndata = None
         if stale is True or regen is True:
             url = 'https://query1.finance.yahoo.com/v7/finance/download/' + symbol + '?period1=0&period2=9999999999&events=div'
-            response = urllib.request.urlretrieve(url,target_file)
+            response = urlretrieve(url,target_file)
             json_dividends = None
             with open(target_file,'r') as f:
                 if not re.match(r'^Date,Dividends',f.readline()):
@@ -380,7 +384,7 @@ date more recent than or matching the date of the most recent split is therefore
         returndata = None
         if stale is True or regen is True:
             url = 'https://query1.finance.yahoo.com/v7/finance/download/' + symbol + '?period1=0&period2=9999999999&events=split'
-            response = urllib.request.urlretrieve(url,target_file)
+            response = urlretrieve(url,target_file)
             splits = {}
             with open(target_file,'r') as f:
                 if not re.match(r'^Date,Stock Splits',f.readline()):
@@ -673,7 +677,7 @@ my current judgment is that these differences will not grossly affect the desire
                 year,month,day = map(int,self.end_date_daily.rstrip().split('-'))
                 period1 = str(int(dt(year, month, day, 0, 0, 0).timestamp()))
             url = self._daily_quote_url(symbol,period1)
-            response = urllib.request.urlretrieve(url,target_file)
+            response = urlretrieve(url,target_file)
             with open(target_file,'r') as f:
                 self._verify_csv_daily_format(f.readline())
                 if self.end_date_daily is not None:
@@ -698,7 +702,7 @@ my current judgment is that these differences will not grossly affect the desire
             adjuster = _PriceAdjuster(symbol,self.username,regen=regen_adjustments,symbol_verify=False)
             #adjustments = self._init_adjustments(symbol,regen_adjustments)
             url = self._daily_quote_url(symbol)
-            response = urllib.request.urlretrieve(url,target_file)
+            response = urlretrieve(url,target_file)
             # The initial response contains split-only adjusted prices, ordered from oldest to newest.
             with open(target_file,'r') as f:
                 self._verify_csv_daily_format(f.readline())

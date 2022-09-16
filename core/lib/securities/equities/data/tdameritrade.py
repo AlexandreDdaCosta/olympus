@@ -5,6 +5,7 @@ from urllib.request import Request, urlopen
 import olympus.securities.equities.data.provider as provider
 
 from olympus import USER
+from olympus.securities.equities.data import REQUEST_TIMEOUT
 
 # Collections
 
@@ -31,7 +32,7 @@ class Connection(provider.Connection):
                 url += param + '=' + str(params[param])
         request = Request(url)
         request.add_header('Authorization', 'Bearer '+token)
-        response = urlopen(request)
+        response = urlopen(request, timeout=REQUEST_TIMEOUT)
         if response.status != 200:
             raise Exception('Failed query to Ameritrade, URL ' + url + ': ' + str(response.status))
         reply = json.loads(re.sub(r'^\s*?\/\/\s*',r'',response.read().decode("utf-8")))

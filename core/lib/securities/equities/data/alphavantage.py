@@ -1,8 +1,11 @@
-import json, re, urllib.request
+import json, re
+
+from urllib.request import urlopen
 
 import olympus.securities.equities.data.provider as provider
 
 from olympus import USER
+from olympus.securities.equities.data import REQUEST_TIMEOUT
 
 class Connection(provider.Connection):
 
@@ -15,6 +18,6 @@ class Connection(provider.Connection):
         if (data is not None):
             for key in data:
                 url += '&' + key + '=' + str(data[key])
-        request = urllib.request.urlopen(url)
+        request = urlopen(url, timeout=REQUEST_TIMEOUT)
         response = json.loads(re.sub(r'^\s*?\/\/\s*',r'',request.read().decode("utf-8")))
         return response
