@@ -40,9 +40,9 @@ PRICE_FORMAT = [ "Open", "High", "Low", "Close", "Volume", "Adjusted Open", "Adj
 SPLIT_FORMAT = [ "Numerator", "Denominator", "Price/Dividend Adjustment", "Volume Adjustment" ]
 VALID_DAILY_WEEKLY_PERIODS = {'1M':30,'3M':91,'6M':183,'1Y':365,'2Y':730,'5Y':1825,'10Y':3652,'20Y':7305,'All':None}
 VALID_INTRADAY_FREQUENCIES = {1:50, 5:260, 10:260, 15:260, 30:260}
-VALID_INTRADAY_PERIODS = [1, 2, 3, 4, 5, 10]
 # Keys: Frequency of quote (in minutes)
 # Values: Number of days into the past from today for which data is available for given frequency, inclusive of today's date
+VALID_INTRADAY_PERIODS = [1, 2, 3, 4, 5, 10]
 VALID_MONTHLY_PERIODS = ['1Y','2Y','5Y','10Y','20Y','All']
 
 '''
@@ -950,13 +950,13 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
     def quote(self,symbol,frequency=DEFAULT_INTRADAY_FREQUENCY,**kwargs):
         symbol = str(symbol).upper()
         symbol_data = self.symbol_reader.get_symbol(symbol)
-        self._verify_frequency(frequency)
+        self.valid_frequency(frequency)
         need_extended_hours_data = kwargs.get('need_extended_hours_data',True)
         period = kwargs.get('period',None)
         end_date = kwargs.get('end_date',None)
         start_date = kwargs.get('start_date',None)
         params = { 'frequency': frequency, 'frequencyType': 'minute', 'needExtendedHoursData': need_extended_hours_data, 'periodType': 'day' }
-        period = self._verify_period(period,start_date,end_date)
+        period = self.valid_period(period,start_date,end_date)
         if period is not None:
             params['period'] = period
         (start_date, end_date) = self._verify_dates(start_date,end_date,frequency,period)
@@ -1024,6 +1024,19 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
         min_date = dt.now().astimezone() - timedelta(VALID_INTRADAY_FREQUENCIES[frequency] - 1) # Inclusive of today, so minus 1
         return "%d-%02d-%02d" % (min_date.year,min_date.month,min_date.day)
 
+    def valid_frequency(self,frequency):
+        if frequency not in VALID_INTRADAY_FREQUENCIES.keys():
+            raise Exception('Invalid frequency specified; must be one of the following: ' + ', ' . join(VALID_INTRADAY_FREQUENCIES))
+
+    def valid_period(self,period=None,start_date=None,end_date=None):
+        if period is not None and period not in VALID_INTRADAY_PERIODS:
+            raise Exception('Invalid period specified; must be one of the following: ' + ', ' . join(VALID_INTRADAY_PERIODS))
+        if period is not None and start_date is not None:
+            raise Exception('The keyword argument "period" cannot be declared with the "start_date" keyword argument')
+        if period is None and start_date is None and end_date is None:
+            period = DEFAULT_INTRADAY_PERIOD
+        return period
+
     def _verify_dates(self,start_date,end_date,frequency,period):
         date_verifier = DateVerifier()
         (start_date,end_date) = date_verifier.verify_date_range(start_date,end_date,null_start_date=True,keep_null_end_date=True,allow_future_end_date=False)
@@ -1038,23 +1051,10 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
                 raise Exception('For a minute frequency of ' + str(frequency) + ', the oldest available date is ' + oldest_available_date + '.')
             if period is not None and start_date is None:
                 if dt.strptime(end_date,"%Y-%m-%d") - timedelta(days=period-1) < dt.strptime(oldest_available_date,"%Y-%m-%d"):
-                    raise Exception('Cannot retrieve data for requested end date ' + end_date + ' and period ' + str(period) + ' since oldest available date is ' + oldest_available_date + '.')
+                    raise Exception('Cannot retrieve data for requested end date ' + end_date + ' and period ' + str(period) + ' with frequency ' + str(frequency) + ' since oldest available date is ' + oldest_available_date + '.')
             end_date = dt(int(end_date[:4]), int(end_date[-5:-3]), int(end_date[-2:]), 0, 0, 0).strftime('%s')
             end_date = int(end_date) * 1000 # Milliseconds
         return start_date, end_date
-
-    def _verify_frequency(self,frequency):
-        if frequency not in VALID_INTRADAY_FREQUENCIES.keys():
-            raise Exception('Invalid frequency specified; must be one of the following: ' + ', ' . join(VALID_INTRADAY_FREQUENCIES))
-
-    def _verify_period(self,period,start_date,end_date):
-        if period is not None and period not in VALID_INTRADAY_PERIODS:
-            raise Exception('Invalid period specified; must be one of the following: ' + ', ' . join(VALID_INTRADAY_PERIODS))
-        if period is not None and start_date is not None:
-            raise Exception('The keyword argument "period" cannot be declared with the "start_date" keyword argument')
-        if period is None and start_date is None and end_date is None:
-            period = DEFAULT_INTRADAY_PERIOD
-        return period
 
 class Latest(ameritrade.Connection):
 
