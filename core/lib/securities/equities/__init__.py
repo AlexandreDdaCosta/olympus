@@ -24,6 +24,7 @@ SELL = 'Sell'
 
 # Quantities (defaults)
 
+STOP_LOSS = .98 # Two percent stop loss on buy/short
 TEST_PURCHASE_SIZE = 100 # Shares
 
 # Miscellaneous
