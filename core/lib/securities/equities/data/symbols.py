@@ -6,6 +6,8 @@ import olympus.restapi as restapi
 import olympus.securities.equities.data as data
 
 from olympus import USER
+from olympus.securities import SECURITY_STANDARD_ATTRIBUTES, Security
+from olympus.securities.equities import INDEX_CLASS, SECURITY_CLASS_ETF, SECURITY_CLASS_STOCK
 
 COMPANY_SYMBOL_SCHEMA_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/NasdaqSymbolList.json'
 ETF_INDEX_DATA_FILE_NAME = 'usexchange-etf+indexlist.csv'
@@ -94,7 +96,7 @@ class InitSymbols(data.Initializer):
                     company['IPO Year'] = company.pop('ipoyear')
                     company['Name'] = company.pop('name')
                     company['Sector'] = company.pop('sector')
-                    company['SecurityClass'] = 'Stock'
+                    company['SecurityClass'] = SECURITY_CLASS_STOCK
                     company['Symbol'] = company.pop('symbol')
                     added_symbols[company['Symbol']] = True
                     json_write.append(company)
@@ -144,11 +146,11 @@ class InitSymbols(data.Initializer):
             for entry in json_data:
                 entry.pop('Trash',None)
                 if (re.search("Index", entry['Category'])):
-                    entry['SecurityClass'] = 'Index'
+                    entry['SecurityClass'] = INDEX_CLASS
                     entry['OriginalSymbol'] = entry.pop('Symbol')
                     entry['Symbol'] = re.sub("^\.", "", entry['OriginalSymbol'])
                 else:
-                    entry['SecurityClass'] = 'ETF'
+                    entry['SecurityClass'] = SECURITY_CLASS_ETF
                 if entry['Symbol'] in added_symbols:
                     continue
                 added_symbols[entry['Symbol']] = True
@@ -213,9 +215,9 @@ class InitSymbols(data.Initializer):
                 entry['Name'] = entry.pop('Security Name')
                 entry['Symbol'] = entry.pop('NASDAQ Symbol')
                 if entry.pop('ETF') == 'Y':
-                    entry['SecurityClass'] = 'ETF'
+                    entry['SecurityClass'] = SECURITY_CLASS_ETF
                 else:
-                    entry['SecurityClass'] = 'Stock'
+                    entry['SecurityClass'] = SECURITY_CLASS_STOCK
                 json_write.append(entry)
             collection.insert_many(json_write)
         except:
@@ -310,24 +312,74 @@ class InitSymbols(data.Initializer):
             self.clean_up()
             raise
 
+class _Symbols(object):
+
+    def __init__(self):
+        self.symbols = None
+        self.unknown_symbols = None
+        self.symbol_indices = {}
+        self.symbol_index = 0
+
+    def add_symbol(self,symbol,symbol_object):
+        symbol = str(symbol).upper()
+        if self.symbols is None:
+            self.symbols = []
+        self.symbols.append(symbol_object)
+        self.symbol_indices[symbol_object.symbol] = self.symbol_index
+        self.symbol_index = self.symbol_index + 1
+
+    def add_unknown_symbols(self,unknown_symbols):
+        if unknown_symbols and self.unknown_symbols is None:
+            self.unknown_symbols = unknown_symbols
+
+    def get_symbol(self,symbol):
+        symbol = str(symbol).upper()
+        if symbol not in self.symbol_indices:
+            return None
+        return self.symbols[self.symbol_indices[symbol]]
+
 class Read(restapi.Connection):
 
     def __init__(self,username=USER,**kwargs):
         super(Read,self).__init__(username,**kwargs)
 
     def get_symbol(self,symbol,**kwargs):
-        symbol = symbol.upper()
+        symbol = str(symbol).upper()
         response = self.call('/equities/symbol/'+symbol)
         if (response.status_code == 404):
            raise SymbolNotFoundError(symbol)
-        content = json.loads(response.content)
-        return content['symbol']
+        data = json.loads(response.content)['symbol']
+        standard_data = {}
+        for attribute in SECURITY_STANDARD_ATTRIBUTES:
+            standard_data[attribute] = data[attribute]
+        return_object = Security(standard_data)
+        for key in data:
+            if key in SECURITY_STANDARD_ATTRIBUTES:
+                continue
+            return_object.add_misc(key,data[key])
+        return return_object
 
     def get_symbols(self,symbols,**kwargs):
-        symbol_string = ','.join([symbol.upper() for symbol in symbols])
+        if not isinstance(symbols, list):
+            raise Exception('Parameter "symbols" must be a list of security symbols.')
+        symbol_string = ','.join([str(symbol).upper() for symbol in symbols])
+        return_object = _Symbols()
         response = self.call('/equities/symbols/'+symbol_string)
         content = json.loads(response.content)
-        return content
+        return_object.add_unknown_symbols(content['unknownSymbols'])
+        if content['symbols']:
+            for symbol in content['symbols']:
+                symbol_data = content['symbols'][symbol]
+                standard_data = {}
+                for attribute in SECURITY_STANDARD_ATTRIBUTES:
+                    standard_data[attribute] = symbol_data[attribute]
+                symbol_object = Security(standard_data)
+                for misc_key in symbol_data:
+                    if misc_key in SECURITY_STANDARD_ATTRIBUTES:
+                        continue
+                    symbol_object.add_misc(misc_key,symbol_data[misc_key])
+                return_object.add_symbol(symbol,symbol_object)
+        return return_object
 
 class SymbolNotFoundError(Exception):
     """ Raised for non-existent symbol

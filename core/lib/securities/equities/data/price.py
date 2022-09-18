@@ -1050,7 +1050,7 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
             end_date = int(end_date) * 1000 # Milliseconds
         return start_date, end_date
 
-class LatestQuotes(object):
+class _LatestQuotes(object):
 
     def __init__(self):
         self.symbols = None
@@ -1117,7 +1117,7 @@ class Latest(ameritrade.Connection):
             schema_file_location = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/LatestPriceQuote.json'
             with open(schema_file_location) as schema_file:
                 validation_schema = json.load(schema_file)
-        return_object = LatestQuotes()
+        return_object = _LatestQuotes()
         params = {}
         # Symbol can be a string or array (list of symbols)
         if isinstance(symbol,str):

@@ -1,10 +1,40 @@
+import re
+
+# The attributes that all securities must have
+SECURITY_STANDARD_ATTRIBUTES = [ "Name", "SecurityClass", "Symbol" ]
+
 # The attributes that all price quotes must have
 PRICE_STANDARD_ATTRIBUTES = [ "Close", "DateTime", "High", "Low", "Open", "Volume" ]
 
 # The attributes that all quote adjustments must have
 PRICE_ADJUSTED_ATTRIBUTES = [ "Adjusted Close", "Adjusted High", "Adjusted Low", "Adjusted Open", "Adjusted Volume" ]
 
-class ValidateQuoteKeys(object):
+class _ClassMisc(object):
+
+    def __init__(self,named_attributes=None):
+        self.added_attributes = None
+        self.named_attributes = named_attributes
+
+    def add(self,misc_name,misc_value):
+        # Camel/Pascal case get converted to underscore format
+        misc_name = re.sub(r'(((?<=[a-z])[A-Z])|([A-Z](?![A-Z]|$)))', r'_\1', misc_name).lower().strip('_')
+        if self.named_attributes is not None:
+            if misc_name in self.named_attributes:
+                raise Exception('Miscellaneous quote data ' + str(misc_name) + ' exists as a named attribute and cannot be miscellanoues data.')
+        if self.added_attributes is None:
+            self.added_attributes = []
+        setattr(self,misc_name,misc_value)
+        self.added_attributes.append(misc_name)
+
+    def get(self,misc_name):
+        if self.added_attributes is not None and misc_name in self.added_attributes:
+            return getattr(self, misc_name)
+        return None
+
+    def list(self):
+        return self.added_attributes
+
+class _ValidateAttributes(object):
 
     def __init__(self,quote,attribute_list,attribute_type):
         if not isinstance(quote, dict):
@@ -27,7 +57,7 @@ class ValidateQuoteKeys(object):
 
 class QuoteAdjustments(object):
 
-    # Typically these attributes  reference equity prices, in which past as-traded prices and volumes can be adjusted for dividends and splits.
+    # Typically these attributes reference equity prices, in which past as-traded prices and volumes can be adjusted for dividends and splits.
     MAP_ADJUSTED_ATTRIBUTES = {
         "Adjusted Close": "close",
         "Adjusted High": "high",
@@ -37,19 +67,9 @@ class QuoteAdjustments(object):
     }
 
     def __init__(self,adjustments):
-        validator = ValidateQuoteKeys(adjustments,PRICE_ADJUSTED_ATTRIBUTES,'adjusted details')
+        validator = _ValidateAttributes(adjustments,PRICE_ADJUSTED_ATTRIBUTES,'adjusted details')
         for adjustment in adjustments:
             setattr(self,self.MAP_ADJUSTED_ATTRIBUTES[adjustment],adjustments[adjustment])
-
-class QuoteMisc(object):
-
-    def __init__(self):
-        pass
-
-    def add_misc(self,misc_name,misc_value):
-        if misc_name in PRICE_STANDARD_ATTRIBUTES or misc_name in PRICE_ADJUSTED_ATTRIBUTES:
-            raise Exception('Miscellaneous quote data ' + str(misc_name) + ' exists as a named attribute and cannot be miscellanoues data.')
-        setattr(self,misc_name,misc_value)
 
 class Quote(object):
 
@@ -65,7 +85,7 @@ class Quote(object):
     def __init__(self,quote):
         self.adjustments = None
         self.misc = None
-        validator = ValidateQuoteKeys(quote,PRICE_STANDARD_ATTRIBUTES,'standard details')
+        validator = _ValidateAttributes(quote,PRICE_STANDARD_ATTRIBUTES,'standard details')
         for detail in quote:
             setattr(self,self.MAP_STANDARD_ATTRIBUTES[detail],quote[detail])
 
@@ -74,8 +94,8 @@ class Quote(object):
 
     def add_misc(self,misc_name,misc_value):
         if self.misc is None:
-            self.misc = QuoteMisc()
-        self.misc.add_misc(misc_name,misc_value)
+            self.misc = _ClassMisc(named_attributes=PRICE_ADJUSTED_ATTRIBUTES + PRICE_STANDARD_ATTRIBUTES)
+        self.misc.add(misc_name,misc_value)
 
     def add_symbol(self,symbol):
         # For those cases in which the symbol itself needs to be part of a quote
@@ -131,3 +151,22 @@ A time-ordered list of quote objects
             return False
         self.iterator_index = self.iterator_index + 1
         return quote
+
+class Security(object):
+
+    MAP_STANDARD_ATTRIBUTES = {
+        "Name": "name", 
+        "SecurityClass": "security_class", 
+        "Symbol": "symbol"
+    }
+
+    def __init__(self,standard_data):
+        self.misc = None
+        validator = _ValidateAttributes(standard_data,SECURITY_STANDARD_ATTRIBUTES,'standard security details')
+        for detail in standard_data:
+            setattr(self,self.MAP_STANDARD_ATTRIBUTES[detail],standard_data[detail])
+
+    def add_misc(self,misc_name,misc_value):
+        if self.misc is None:
+            self.misc = _ClassMisc(named_attributes=SECURITY_STANDARD_ATTRIBUTES)
+        self.misc.add(misc_name,misc_value)
