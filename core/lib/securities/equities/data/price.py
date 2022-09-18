@@ -4,6 +4,7 @@ from datetime import date, timedelta, timezone
 from datetime import datetime as dt
 from dateutil.parser import parse
 from file_read_backwards import FileReadBackwards
+from jsonschema import validate
 from urllib.request import urlretrieve
 
 import olympus.securities.equities.data as data
@@ -1055,11 +1056,17 @@ class LatestQuotes(object):
         self.symbols = None
         self.unknown_symbols = None
         self.unquoted_symbols = None
+        self.symbol_indices = {}
+        self.symbol_index = 0
 
-    def add_symbol(self,quote_object):
+    def add_symbol(self,symbol,quote_object):
+        symbol = symbol.upper()
         if self.symbols is None:
             self.symbols = []
+        quote_object.add_symbol(symbol)
         self.symbols.append(quote_object)
+        self.symbol_indices[symbol] = self.symbol_index
+        self.symbol_index = self.symbol_index + 1
 
     def add_unknown_symbol(self,symbol):
         if self.unknown_symbols is None:
@@ -1071,6 +1078,12 @@ class LatestQuotes(object):
             self.unquoted_symbols = []
         self.unquoted_symbols.append(symbol.upper())
 
+    def get_symbol(self,symbol):
+        symbol = symbol.upper()
+        if symbol not in self.symbol_indices:
+            raise Exception('Symbol ' + str(symbol) + ' not in quote set.')
+        return self.symbols[self.symbol_indices[symbol]]
+
 class Latest(ameritrade.Connection):
 
     MAP_ADJUSTED_KEYS = {
@@ -1079,6 +1092,10 @@ class Latest(ameritrade.Connection):
         "lowPrice": "Adjusted Low",
         "openPrice": "Adjusted Open",
         "totalVolume": "Adjusted Volume"
+    }
+    MAP_MISC_KEYS = {
+        "askPrice": "ask",
+        "bidPrice": "bid"
     }
     MAP_STANDARD_KEYS = {
         "closePrice": "Close",
@@ -1093,9 +1110,13 @@ class Latest(ameritrade.Connection):
         self.symbol_reader = symbols.Read(username,**kwargs)
 
     def quote(self,symbol,**kwargs):
-        # When set to "True", raw_data returns quotes as dicts rather than as objects.
-        # Mostly a testing function to validate correct formatting of received data.
-        raw_data = kwargs.get('raw_data',False)
+        # When set to "True", verify_response_format checks incoming response for correct json format
+        # Intended as a testing feature, not something to be used regularly
+        verify_response_format = kwargs.get('verify_response_format',False)
+        if verify_response_format is True:
+            schema_file_location = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/LatestPriceQuote.json'
+            with open(schema_file_location) as schema_file:
+                validation_schema = json.load(schema_file)
         return_object = LatestQuotes()
         params = {}
         # Symbol can be a string or array (list of symbols)
@@ -1111,26 +1132,30 @@ class Latest(ameritrade.Connection):
         elif isinstance(symbol,list):
             symbols = [x.upper() for x in symbol]
             symbol_data = self.symbol_reader.get_symbols(symbols)
-            quote_symbols = symbol_data['symbols'].keys()
-            if not quote_symbols:
+            if 'unknownSymbols' in symbol_data:
                 for unknown_symbol in symbol_data['unknownSymbols']:
                     return_object.add_unknown_symbol(unknown_symbol)
-                return return_object
-            params['symbol'] = ','.join(quote_symbols)
+                if not symbol_data['symbols'].keys():
+                    return return_object
+            params['symbol'] = ','.join(symbol_data['symbols'].keys())
         response = self.request('marketdata/quotes',params,'GET',with_apikey=True)
         have_quoted_symbols = False
         if isinstance(symbol,str):
             if symbol not in response and symbol not in unknown_symbols:
                 return_object.add_unquoted_symbol(unknown_symbol)
                 return return_object
+            have_quoted_symbols = True
         elif isinstance(symbol,list):
             for uc_symbol in symbols:
-                if uc_symbol not in response and uc_symbol not in return_object.unknown_symbols:
+                if uc_symbol not in response and return_object.unknown_symbols is not None and uc_symbol not in return_object.unknown_symbols:
                     return_object.add_unquoted_symbol(uc_symbol)
                 else:
                     have_quoted_symbols = True
         if have_quoted_symbols is True:
             for quote_symbol in response:
+                quote = response[quote_symbol]
+                if verify_response_format is True:
+                    validate(instance=quote,schema=validation_schema)
                 standard_data = {}
                 standard_data['DateTime'] = dt.fromtimestamp(quote['quoteTimeInLong'] / 1000)
                 for quote_key in self.MAP_STANDARD_KEYS:
@@ -1143,61 +1168,9 @@ class Latest(ameritrade.Connection):
                 misc_data = {}
                 for quote_key in quote:
                     if quote_key not in self.MAP_STANDARD_KEYS and quote_key not in self.MAP_ADJUSTED_KEYS:
-                        quote_object.add_misc(quote_key,quote[quote_key])
-                return_object.add_symbol(quote_object)
+                        if quote_key in self.MAP_MISC_KEYS:
+                            quote_object.add_misc(self.MAP_MISC_KEYS[quote_key],quote[quote_key])
+                        else:
+                            quote_object.add_misc(quote_key,quote[quote_key])
+                return_object.add_symbol(quote_symbol,quote_object)
         return return_object
-
-'''
-class Latest(ameritrade.Connection):
-
-    def __init__(self,username=USER,**kwargs):
-        super(Latest,self).__init__(username,**kwargs)
-        self.symbol_reader = symbols.Read(username,**kwargs)
-
-    def quote(self,symbol,**kwargs):
-        params = {}
-        unknown_symbols = []
-        unquoted_symbols = []
-        # "Standardize" means to add keys corresponding to those appearing in PRICE_FORMAT
-        standardize = kwargs.get('standardize',False)
-        # Symbol can be a string or array (list of symbols)
-        if isinstance(symbol,str):
-            symbol = symbol.upper()
-            try:
-                symbol_data = self.symbol_reader.get_symbol(symbol)
-            except symbols.SymbolNotFoundError:
-                unknown_symbols.append(symbol)
-                reply = { 'unknown_symbols': unknown_symbols }
-                return reply
-            except:
-                raise
-            params['symbol'] = symbol
-        elif isinstance(symbol,list):
-            symbol = [x.upper() for x in symbol]
-            symbol_data = self.symbol_reader.get_symbols(symbol)
-            unknown_symbols = symbol_data['unknownSymbols']
-            quote_symbols = symbol_data['symbols'].keys()
-            if (not quote_symbols):
-                reply = { 'unknown_symbols': unknown_symbols }
-                return reply
-            params['symbol'] = ','.join(quote_symbols)
-        response = self.request('marketdata/quotes',params,'GET',with_apikey=True)
-        if isinstance(symbol,str):
-            if symbol not in response and symbol not in unknown_symbols:
-                unquoted_symbols.append(symbol)
-        elif isinstance(symbol,list):
-            for uc_symbol in symbol:
-                if uc_symbol not in response and uc_symbol not in unknown_symbols:
-                    unquoted_symbols.append(uc_symbol)
-        for quote_symbol in response:
-            response[quote_symbol]['date'] = dt.fromtimestamp(response[quote_symbol]['quoteTimeInLong'] / 1000).strftime('%Y-%m-%d')
-            if standardize is True:
-                for mapped_key in MAP_LATEST_PRICE_KEYS:
-                    response[quote_symbol][mapped_key] = response[quote_symbol][MAP_LATEST_PRICE_KEYS[mapped_key]]
-        reply = { 'quotes': response }
-        if unknown_symbols:
-            reply['unknown_symbols'] = unknown_symbols
-        if unquoted_symbols:
-            reply['unquoted_symbols'] = unquoted_symbols
-        return reply
-'''

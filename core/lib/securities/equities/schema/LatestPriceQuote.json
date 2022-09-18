@@ -49,10 +49,6 @@
       "pattern": "^[A-Z0-9]{9}$",
       "type": "string"
     },
-    "date": {
-      "pattern": "^20[0-9]{2}-[0-1]{1}[0-9]{1}-[0-2]{1}[0-9]{1}$",
-      "type": "string"
-    },
     "delayed": {
       "type": "boolean"
     },
@@ -175,7 +171,6 @@
     "bidTick",
     "closePrice",
     "cusip",
-    "date",
     "description",
     "delayed",
     "digits",

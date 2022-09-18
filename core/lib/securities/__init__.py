@@ -7,7 +7,7 @@ PRICE_ADJUSTED_ATTRIBUTES = [ "Adjusted Close", "Adjusted High", "Adjusted Low",
 class ValidateQuoteKeys(object):
 
     def __init__(self,quote,attribute_list,attribute_type):
-        if type(quote) != 'dict':
+        if not isinstance(quote, dict):
             raise Exception('Quote details must be a dict.')
         bad_attributes = []
         for attribute in quote:
@@ -18,9 +18,9 @@ class ValidateQuoteKeys(object):
         missing_attributes = []
         for key in attribute_list:
             if key not in quote:
-                missing_keys.append(key)
-        if missing_keys:
-            raise Exception('Keys in ' + attribute_type + ' are incomplete: ' + ', ' . join(missing_keys))
+                missing_attributes.append(key)
+        if missing_attributes:
+            raise Exception('Keys in ' + attribute_type + ' are incomplete: ' + ', ' . join(missing_attributes))
 
 # Standardized quote format objects for all securities.
 # These are intended for quotes in a series.
@@ -39,7 +39,7 @@ class QuoteAdjustments(object):
     def __init__(self,adjustments):
         validator = ValidateQuoteKeys(adjustments,PRICE_ADJUSTED_ATTRIBUTES,'adjusted details')
         for adjustment in adjustments:
-            setattr(self,MAP_ADJUSTED_ATTRIBUTES[adjustment],adjustments[adjustment])
+            setattr(self,self.MAP_ADJUSTED_ATTRIBUTES[adjustment],adjustments[adjustment])
 
 class QuoteMisc(object):
 
@@ -67,7 +67,7 @@ class Quote(object):
         self.misc = None
         validator = ValidateQuoteKeys(quote,PRICE_STANDARD_ATTRIBUTES,'standard details')
         for detail in quote:
-            setattr(self,MAP_STANDARD_ATTRIBUTES[detail],quote[detail])
+            setattr(self,self.MAP_STANDARD_ATTRIBUTES[detail],quote[detail])
 
     def add_adjustments(self,adjustments):
         self.adjustments = QuoteAdjustments(adjustments)
@@ -87,7 +87,7 @@ A time-ordered list of quote objects
     '''
 
     def __init__(self,quote_series=None,**kwargs):
-        if type(quote_series) != list:
+        if not isinstance(quote_series, list):
             raise Exception('Parameter "quote_series" must be a list.')
         raw_data = kwargs.pop('raw_data',False)
         reverse_datetime_order = kwargs.pop('reverse_datetime_order',False)
