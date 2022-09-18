@@ -12,6 +12,7 @@ import olympus.securities.equities.data.tdameritrade as ameritrade
 import olympus.securities.equities.data.symbols as symbols
 
 from olympus import USER
+from olympus.securities import Quote
 from olympus.securities.equities.data import REQUEST_TIMEOUT
 from olympus.securities.equities.data.datetime import DateVerifier
 
@@ -27,18 +28,6 @@ MAP_INTRADAY_PRICE_KEYS = {
     "Low": "low", 
     "Close": "close", 
     "Volume": "volume"
-    }
-MAP_LATEST_PRICE_KEYS = {
-    "Open": "openPrice",
-    "High": "highPrice",
-    "Low": "lowPrice", 
-    "Close": "closePrice", 
-    "Volume": "totalVolume",
-    "Adjusted Open": "openPrice",
-    "Adjusted High": "highPrice",
-    "Adjusted Low": "lowPrice",
-    "Adjusted Close": "closePrice",
-    "Adjusted Volume": "totalVolume"
     }
 PRICE_FORMAT = [ "Open", "High", "Low", "Close", "Volume", "Adjusted Open", "Adjusted High", "Adjusted Low", "Adjusted Close", "Adjusted Volume" ]
 SPLIT_FORMAT = [ "Numerator", "Denominator", "Price/Dividend Adjustment", "Volume Adjustment" ]
@@ -1060,6 +1049,105 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
             end_date = int(end_date) * 1000 # Milliseconds
         return start_date, end_date
 
+class LatestQuotes(object):
+
+    def __init__(self):
+        self.symbols = None
+        self.unknown_symbols = None
+        self.unquoted_symbols = None
+
+    def add_symbol(self,quote_object):
+        if self.symbols is None:
+            self.symbols = []
+        self.symbols.append(quote_object)
+
+    def add_unknown_symbol(self,symbol):
+        if self.unknown_symbols is None:
+            self.unknown_symbols = []
+        self.unknown_symbols.append(symbol.upper())
+
+    def add_unquoted_symbol(self,symbol,quote):
+        if self.unquoted_symbols is None:
+            self.unquoted_symbols = []
+        self.unquoted_symbols.append(symbol.upper())
+
+class Latest(ameritrade.Connection):
+
+    MAP_ADJUSTED_KEYS = {
+        "closePrice": "Adjusted Close",
+        "highPrice": "Adjusted High",
+        "lowPrice": "Adjusted Low",
+        "openPrice": "Adjusted Open",
+        "totalVolume": "Adjusted Volume"
+    }
+    MAP_STANDARD_KEYS = {
+        "closePrice": "Close",
+        "highPrice": "High",
+        "lowPrice": "Low",
+        "openPrice": "Open",
+        "totalVolume": "Volume"
+    }
+
+    def __init__(self,username=USER,**kwargs):
+        super(Latest,self).__init__(username,**kwargs)
+        self.symbol_reader = symbols.Read(username,**kwargs)
+
+    def quote(self,symbol,**kwargs):
+        # When set to "True", raw_data returns quotes as dicts rather than as objects.
+        # Mostly a testing function to validate correct formatting of received data.
+        raw_data = kwargs.get('raw_data',False)
+        return_object = LatestQuotes()
+        params = {}
+        # Symbol can be a string or array (list of symbols)
+        if isinstance(symbol,str):
+            try:
+                symbol_data = self.symbol_reader.get_symbol(symbol)
+            except symbols.SymbolNotFoundError:
+                return_object.add_unknown_symbol(symbol)
+                return return_object
+            except:
+                raise
+            params['symbol'] = symbol
+        elif isinstance(symbol,list):
+            symbols = [x.upper() for x in symbol]
+            symbol_data = self.symbol_reader.get_symbols(symbols)
+            quote_symbols = symbol_data['symbols'].keys()
+            if not quote_symbols:
+                for unknown_symbol in symbol_data['unknownSymbols']:
+                    return_object.add_unknown_symbol(unknown_symbol)
+                return return_object
+            params['symbol'] = ','.join(quote_symbols)
+        response = self.request('marketdata/quotes',params,'GET',with_apikey=True)
+        have_quoted_symbols = False
+        if isinstance(symbol,str):
+            if symbol not in response and symbol not in unknown_symbols:
+                return_object.add_unquoted_symbol(unknown_symbol)
+                return return_object
+        elif isinstance(symbol,list):
+            for uc_symbol in symbols:
+                if uc_symbol not in response and uc_symbol not in return_object.unknown_symbols:
+                    return_object.add_unquoted_symbol(uc_symbol)
+                else:
+                    have_quoted_symbols = True
+        if have_quoted_symbols is True:
+            for quote_symbol in response:
+                standard_data = {}
+                standard_data['DateTime'] = dt.fromtimestamp(quote['quoteTimeInLong'] / 1000)
+                for quote_key in self.MAP_STANDARD_KEYS:
+                    standard_data[self.MAP_STANDARD_KEYS[quote_key]] = quote[quote_key]
+                quote_object = Quote(standard_data)
+                adjusted_data = {}
+                for quote_key in self.MAP_ADJUSTED_KEYS:
+                    adjusted_data[self.MAP_ADJUSTED_KEYS[quote_key]] = quote[quote_key]
+                quote_object.add_adjustments(adjusted_data)
+                misc_data = {}
+                for quote_key in quote:
+                    if quote_key not in self.MAP_STANDARD_KEYS and quote_key not in self.MAP_ADJUSTED_KEYS:
+                        quote_object.add_misc(quote_key,quote[quote_key])
+                return_object.add_symbol(quote_object)
+        return return_object
+
+'''
 class Latest(ameritrade.Connection):
 
     def __init__(self,username=USER,**kwargs):
@@ -1112,3 +1200,4 @@ class Latest(ameritrade.Connection):
         if unquoted_symbols:
             reply['unquoted_symbols'] = unquoted_symbols
         return reply
+'''

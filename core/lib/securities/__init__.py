@@ -1,36 +1,85 @@
-# Recognized quote attributes
+# The attributes that all price quotes must have
+PRICE_STANDARD_ATTRIBUTES = [ "Close", "DateTime", "High", "Low", "Open", "Volume" ]
 
-# These attributes are grouped under "adjusted" in a "Quote" object.
-# Typically they reference equity prices, in which past as-traded prices and volumes
-# can be adjusted for dividends and splits.
-MAP_ADJUSTED_QUOTE_ATTRIBUTES = {
-    "Adjusted Close": "close",
-    "Adjusted High": "high",
-    "Adjusted Low": "low",
-    "Adjusted Open": "open",
-    "Adjusted Volume": "volume"
-    }
-# These attributes are grouped under "misc" in a "Quote" object. None are required.
-MAP_MISCELLANEOUS_QUOTE_ATTRIBUTES = {
-    }
-# All quotes in a series must have these attributes
-MAP_STANDARD_QUOTE_ATTRIBUTES = {
-    "Close": "close", 
-    "DateTime": "datetime", 
-    "High": "high",
-    "Low": "low", 
-    "Open": "open",
-    "Volume": "volume"
-    }
+# The attributes that all quote adjustments must have
+PRICE_ADJUSTED_ATTRIBUTES = [ "Adjusted Close", "Adjusted High", "Adjusted Low", "Adjusted Open", "Adjusted Volume" ]
+
+class ValidateQuoteKeys(object):
+
+    def __init__(self,quote,attribute_list,attribute_type):
+        if type(quote) != 'dict':
+            raise Exception('Quote details must be a dict.')
+        bad_attributes = []
+        for attribute in quote:
+            if attribute not in attribute_list:
+                bad_attributes.append(attribute)
+        if bad_attributes:
+            raise Exception('Invalid keys in ' + attribute_type + ': ' + ', ' . join(bad_attributes))
+        missing_attributes = []
+        for key in attribute_list:
+            if key not in quote:
+                missing_keys.append(key)
+        if missing_keys:
+            raise Exception('Keys in ' + attribute_type + ' are incomplete: ' + ', ' . join(missing_keys))
 
 # Standardized quote format objects for all securities.
 # These are intended for quotes in a series.
 
+class QuoteAdjustments(object):
+
+    # Typically these attributes  reference equity prices, in which past as-traded prices and volumes can be adjusted for dividends and splits.
+    MAP_ADJUSTED_ATTRIBUTES = {
+        "Adjusted Close": "close",
+        "Adjusted High": "high",
+        "Adjusted Low": "low",
+        "Adjusted Open": "open",
+        "Adjusted Volume": "volume"
+    }
+
+    def __init__(self,adjustments):
+        validator = ValidateQuoteKeys(adjustments,PRICE_ADJUSTED_ATTRIBUTES,'adjusted details')
+        for adjustment in adjustments:
+            setattr(self,MAP_ADJUSTED_ATTRIBUTES[adjustment],adjustments[adjustment])
+
+class QuoteMisc(object):
+
+    def __init__(self):
+        pass
+
+    def add_misc(self,misc_name,misc_value):
+        if misc_name in PRICE_STANDARD_ATTRIBUTES or misc_name in PRICE_ADJUSTED_ATTRIBUTES:
+            raise Exception('Miscellaneous quote data ' + str(misc_name) + ' exists as a named attribute and cannot be miscellanoues data.')
+        setattr(self,misc_name,misc_value)
+
 class Quote(object):
 
-    def __init__(self,data):
-        if type(data) != dict:
-            raise Exception('For the "Quote" object, parameter "data" must be a dict.')
+    MAP_STANDARD_ATTRIBUTES = {
+        "Close": "close", 
+        "DateTime": "datetime", 
+        "High": "high",
+        "Low": "low", 
+        "Open": "open",
+        "Volume": "volume"
+    }
+
+    def __init__(self,quote):
+        self.adjustments = None
+        self.misc = None
+        validator = ValidateQuoteKeys(quote,PRICE_STANDARD_ATTRIBUTES,'standard details')
+        for detail in quote:
+            setattr(self,MAP_STANDARD_ATTRIBUTES[detail],quote[detail])
+
+    def add_adjustments(self,adjustments):
+        self.adjustments = QuoteAdjustments(adjustments)
+
+    def add_misc(self,misc_name,misc_value):
+        if self.misc is None:
+            self.misc = QuoteMisc()
+        self.misc.add_misc(misc_name,misc_value)
+
+    def add_symbol(self,symbol):
+        # For those cases in which the symbol itself needs to be part of a quote
+        self.symbol = symbol.upper()
 
 class QuoteSeries(object):
     '''
