@@ -320,7 +320,7 @@ class _Symbols(object):
         self.symbol_indices = {}
         self.symbol_index = 0
 
-    def add_symbol(self,symbol,symbol_object):
+    def add(self,symbol,symbol_object):
         symbol = str(symbol).upper()
         if self.symbols is None:
             self.symbols = []
@@ -356,7 +356,7 @@ class Read(restapi.Connection):
         for key in data:
             if key in SECURITY_STANDARD_ATTRIBUTES:
                 continue
-            return_object.add_misc(key,data[key])
+            return_object.add(key,data[key])
         return return_object
 
     def get_symbols(self,symbols,**kwargs):
@@ -377,8 +377,8 @@ class Read(restapi.Connection):
                 for misc_key in symbol_data:
                     if misc_key in SECURITY_STANDARD_ATTRIBUTES:
                         continue
-                    symbol_object.add_misc(misc_key,symbol_data[misc_key])
-                return_object.add_symbol(symbol,symbol_object)
+                    symbol_object.add(misc_key,symbol_data[misc_key])
+                return_object.add(symbol,symbol_object)
         return return_object
 
 class SymbolNotFoundError(Exception):

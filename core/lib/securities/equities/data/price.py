@@ -201,7 +201,7 @@ date more recent than or matching the date of the most recent split is therefore
         symbol = str(symbol).upper()
         symbol_verify = kwargs.get('symbol_verify',True)
         if symbol_verify is True:
-            symbol_data = self.symbol_reader.get_symbol(symbol)
+            self.symbol_reader.get_symbol(symbol)
         regen = kwargs.get('regen',False)
         adjustments_collection = 'price.' + symbol
         collection = self.db[adjustments_collection]
@@ -264,7 +264,7 @@ date more recent than or matching the date of the most recent split is therefore
         symbol = str(symbol).upper()
         symbol_verify = kwargs.get('symbol_verify',True)
         if symbol_verify is True:
-            symbol_data = self.symbol_reader.get_symbol(symbol)
+            self.symbol_reader.get_symbol(symbol)
         regen = kwargs.get('regen',False)
         return_date = kwargs.get('return_date',False)
         dividend_collection = 'price.' + symbol
@@ -352,7 +352,7 @@ date more recent than or matching the date of the most recent split is therefore
         symbol = str(symbol).upper()
         symbol_verify = kwargs.get('symbol_verify',True)
         if symbol_verify is True:
-            symbol_data = self.symbol_reader.get_symbol(symbol)
+            self.symbol_reader.get_symbol(symbol)
         regen = kwargs.get('regen',False)
         return_date = kwargs.get('return_date',False)
         split_collection = 'price.' + symbol
@@ -1169,8 +1169,8 @@ class Latest(ameritrade.Connection):
                 for quote_key in quote:
                     if quote_key not in self.MAP_STANDARD_KEYS and quote_key not in self.MAP_ADJUSTED_KEYS:
                         if quote_key in self.MAP_MISC_KEYS:
-                            quote_object.add_misc(self.MAP_MISC_KEYS[quote_key],quote[quote_key])
+                            quote_object.add(self.MAP_MISC_KEYS[quote_key],quote[quote_key])
                         else:
-                            quote_object.add_misc(quote_key,quote[quote_key])
+                            quote_object.add(quote_key,quote[quote_key])
                 return_object.add_symbol(quote_symbol,quote_object)
         return return_object

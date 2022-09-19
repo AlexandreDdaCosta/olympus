@@ -1,6 +1,6 @@
 # Core constants and classes
 
-import os, shutil, stat
+import os, re, shutil, stat
 
 from os.path import isfile
 
@@ -14,6 +14,16 @@ RESTAPI_RUN_USERNAME = 'node'
 RESTAPI_SERVICE = 'restapi'
 
 PASSWORD_ENABLED_SERVICES = [ MONGODB_SERVICE, REDIS_SERVICE, RESTAPI_SERVICE ]
+
+class String():
+
+    def __init__(self):
+        pass
+
+    def pascal_case_to_underscore(self,string):
+        string = str(string)
+        string = re.sub(r' ', r'', string)
+        return re.sub(r'(((?<=[a-z])[A-Z])|([A-Z](?![A-Z]|$)))', r'_\1', string).lower().strip('_')
 
 class User():
 
