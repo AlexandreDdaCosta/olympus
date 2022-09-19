@@ -107,6 +107,7 @@ class Quote(object):
         self.misc = None
         self.standard_attributes = []
         validator = _ValidateAttributes(quote,PRICE_STANDARD_ATTRIBUTES,'standard details')
+        string = String()
         for detail in quote:
             uc_detail = string.pascal_case_to_underscore(detail)
             setattr(self,uc_detail,quote[detail])

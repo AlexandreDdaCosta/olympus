@@ -943,7 +943,7 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
 
     def quote(self,symbol,frequency=DEFAULT_INTRADAY_FREQUENCY,**kwargs):
         symbol = str(symbol).upper()
-        symbol_data = self.symbol_reader.get_symbol(symbol)
+        self.symbol_reader.get_symbol(symbol)
         self.valid_frequency(frequency)
         need_extended_hours_data = kwargs.get('need_extended_hours_data',True)
         period = kwargs.get('period',None)
@@ -1073,7 +1073,7 @@ class _LatestQuotes(object):
             self.unknown_symbols = []
         self.unknown_symbols.append(symbol.upper())
 
-    def add_unquoted_symbol(self,symbol,quote):
+    def add_unquoted_symbol(self,symbol):
         if self.unquoted_symbols is None:
             self.unquoted_symbols = []
         self.unquoted_symbols.append(symbol.upper())
@@ -1121,8 +1121,9 @@ class Latest(ameritrade.Connection):
         params = {}
         # Symbol can be a string or array (list of symbols)
         if isinstance(symbol,str):
+            symbol = str(symbol).upper()
             try:
-                symbol_data = self.symbol_reader.get_symbol(symbol)
+                result = self.symbol_reader.get_symbol(symbol)
             except symbols.SymbolNotFoundError:
                 return_object.add_unknown_symbol(symbol)
                 return return_object
@@ -1130,19 +1131,21 @@ class Latest(ameritrade.Connection):
                 raise
             params['symbol'] = symbol
         elif isinstance(symbol,list):
-            symbols = [x.upper() for x in symbol]
-            symbol_data = self.symbol_reader.get_symbols(symbols)
-            if 'unknownSymbols' in symbol_data:
-                for unknown_symbol in symbol_data['unknownSymbols']:
+            symbols = [str(x).upper() for x in symbol]
+            result = self.symbol_reader.get_symbols(symbols)
+            if result.unknown_symbols is not None:
+                for unknown_symbol in result.unknown_symbols:
                     return_object.add_unknown_symbol(unknown_symbol)
-                if not symbol_data['symbols'].keys():
+                if result.symbols is None:
                     return return_object
-            params['symbol'] = ','.join(symbol_data['symbols'].keys())
+            params['symbol'] = ','.join(result.symbol_list)
+        else:
+            raise Exception('Parameter "symbol" must be a string or a list of strings.')
         response = self.request('marketdata/quotes',params,'GET',with_apikey=True)
         have_quoted_symbols = False
         if isinstance(symbol,str):
-            if symbol not in response and symbol not in unknown_symbols:
-                return_object.add_unquoted_symbol(unknown_symbol)
+            if symbol not in response:
+                return_object.add_unquoted_symbol(symbol)
                 return return_object
             have_quoted_symbols = True
         elif isinstance(symbol,list):

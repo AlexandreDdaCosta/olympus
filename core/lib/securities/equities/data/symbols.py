@@ -319,12 +319,16 @@ class _Symbols(object):
         self.unknown_symbols = None
         self.symbol_indices = {}
         self.symbol_index = 0
+        self.symbol_list = None
 
     def add(self,symbol,symbol_object):
         symbol = str(symbol).upper()
         if self.symbols is None:
             self.symbols = []
+        if self.symbol_list is None:
+            self.symbol_list = []
         self.symbols.append(symbol_object)
+        self.symbol_list.append(symbol)
         self.symbol_indices[symbol_object.symbol] = self.symbol_index
         self.symbol_index = self.symbol_index + 1
 
