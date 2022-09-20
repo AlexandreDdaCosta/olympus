@@ -21,7 +21,7 @@ socket.setdefaulttimeout(REQUEST_TIMEOUT) # For urlretrieve
 
 DEFAULT_INTRADAY_FREQUENCY = 30
 DEFAULT_INTRADAY_PERIOD = 10
-DIVIDEND_FORMAT = [ "Dividend", "Adjusted Dividend" ]
+DIVIDEND_FORMAT = { "Dividend":float, "Adjusted Dividend":float }
 INTRADAY_PRICE_KEYS = [ "Open", "High", "Low", "Close" ]
 MAP_INTRADAY_PRICE_KEYS = {
     "Open": "open",
@@ -146,49 +146,55 @@ Notes:
 
 # Classes for returned adjustment data
 
+#ALEX
 class _Adjustment(object):
-
-    def __init__(self):
-        pass
-
-class _Adjustments(Series):
 
     def __init__(self):
         pass
 
 class _Dividend(object):
 
-    def __init(self):
-        pass
-
-class _Dividends(Series):
-
-    def __init(self):
-        pass
+    def __init__(self,data,dividend_date):
+        string = String()
+        self.date = dividend_date
+        for index in range(0, len(list(DIVIDEND_FORMAT.keys()))):
+            if index >= len(data):
+               attribute_name = string.pascal_case_to_underscore(list(DIVIDEND_FORMAT.keys())[index - 1]) # Case of the missing adjusted value
+            else:
+               attribute_name = string.pascal_case_to_underscore(list(DIVIDEND_FORMAT.keys())[index])
+            setattr(self,attribute_name,dividend_data[index])
 
 class _Split(object):
 
     def __init__(self,split_data,split_date):
         string = String()
-        self.datetime = split_date
+        self.date = split_date
         for index in range(0, len(list(SPLIT_FORMAT.keys()))):
             attribute_name = string.pascal_case_to_underscore(list(SPLIT_FORMAT.keys())[index])
             setattr(self,attribute_name,split_data[index])
 
-class _Splits(Series):
+class _Adjustments(Series):
 
-    def __init__(self,split_data,query_date):
-        super(_Splits,self).__init__()
+    def __init__(self,adjustment_type,data,query_date):
+        super(_Adjustments,self).__init__()
         self.query_date = query_date
-        if split_data is None:
+        if data is None:
             return
         self.dates = []
-        for split_date in split_data:
-            split_date_object = dt.strptime(split_date,"%Y-%m-%d")
-            split_object = _Split(split_data[split_date],split_date_object)
-            self.add(split_object)
-            self.dates.append(split_date_object)
-        self.sort('datetime',True)
+        for adjustment in data:
+            if adjustment_type == 'split' or adjustment_type == 'dividend':
+                adjustment_date = dt.strptime(adjustment,"%Y-%m-%d")
+                self.dates.append(adjustment_date)
+                if adjustment_type == 'split':
+                    adjustment_object = _Split(data[adjustment],adjustment_date)
+                else:
+                    adjustment_object = _Dividend(data[adjustment],adjustment_date_object)
+            elif adjustment_type == 'adjustment':
+                adjustment_object = _Adjustment(adjustment)
+            else:
+                raise Exception('Programming error: Unrecognized adjustment type ' + str(adjustment_type))
+            self.add(adjustment_object)
+        self.sort('date',True)
         self.dates = sorted(self.dates,reverse=True)
 
 class Adjustments(data.Connection):
@@ -362,7 +368,7 @@ date more recent than or matching the date of the most recent split is therefore
                 write_dict = {}
                 write_dict['Time'] = str(dt.now().astimezone())
                 write_dict['Adjustment'] = 'Dividends'
-                write_dict['Format'] = DIVIDEND_FORMAT
+                write_dict['Format'] = list(DIVIDEND_FORMAT.keys())
                 write_dict['Start Date'] = start_dividend_date
                 write_dict['End Date'] = end_dividend_date
                 write_dict['Dividends'] = json_dividends
@@ -371,29 +377,10 @@ date more recent than or matching the date of the most recent split is therefore
                 query_date = write_dict['Time']
                 returndata = write_dict['Dividends']
             os.remove(target_file)
-
         if returndata is None and dividend_data is not None:
             returndata = dividend_data['Dividends']
-        # Format returned data using data headers
-        formatted_returndata = {}
-        details_length = len(DIVIDEND_FORMAT)
-        if returndata is not None:
-            for dividend_date in returndata:
-                formatted_returndata[dividend_date] = {}
-                dividend_length = len(returndata[dividend_date])
-                for index in range(0, details_length):
-                    if index >= dividend_length:
-                        formatted_returndata[dividend_date][DIVIDEND_FORMAT[index]] = returndata[dividend_date][index-1]
-                    else:
-                        formatted_returndata[dividend_date][DIVIDEND_FORMAT[index]] = returndata[dividend_date][index]
-            if return_date is False:
-                return collections.OrderedDict(sorted(formatted_returndata.items(),reverse=True))
-            else:
-                return (collections.OrderedDict(sorted(formatted_returndata.items(),reverse=True)),query_date)
-        if return_date is False:
-            return None
-        else:
-            return (None,query_date)
+        return_object = _Adjustments('dividend',returndata,query_date)
+        return return_object
 
     def splits(self,symbol,**kwargs):
         symbol = str(symbol).upper()
@@ -467,7 +454,7 @@ date more recent than or matching the date of the most recent split is therefore
             os.remove(target_file)
         if returndata is None and split_data is not None:
             returndata = split_data['Splits']
-        return_object = _Splits(returndata,query_date)
+        return_object = _Adjustments('split',returndata,query_date)
         return return_object
 
     def split_adjustment(self,symbol,value_date,**kwargs):

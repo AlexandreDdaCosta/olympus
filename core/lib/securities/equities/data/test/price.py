@@ -13,7 +13,7 @@ import olympus.testing as testing
 from olympus import String, USER
 from olympus.securities.equities import *
 from olympus.securities.equities.data.datetime import OLDEST_QUOTE_DATE, DateVerifier
-from olympus.securities.equities.data.price import DEFAULT_INTRADAY_FREQUENCY, DEFAULT_INTRADAY_PERIOD, PRICE_FORMAT, SPLIT_FORMAT, VALID_DAILY_WEEKLY_PERIODS, VALID_INTRADAY_FREQUENCIES, VALID_INTRADAY_PERIODS, VALID_MONTHLY_PERIODS
+from olympus.securities.equities.data.price import *
 from olympus.securities.equities.data.symbols import SymbolNotFoundError
 
 QUOTE_SCHEMA = {
@@ -65,6 +65,8 @@ class TestPrice(testing.Test):
         self.mongo_data = data.Connection(username)
 
     def test_adjustments(self):
+        string = String()
+        # Splits
         with self.assertRaises(SymbolNotFoundError):
             self.adjustments.splits(TEST_SYMBOL_FAKE)
         splits = self.adjustments.splits(TEST_SYMBOL_NODIVSPLIT)
@@ -75,42 +77,27 @@ class TestPrice(testing.Test):
         splits = self.adjustments.splits(TEST_SYMBOL_DIVSPLIT,regen=True)
         last_split_date = None
         entry = splits.next()
-        string = String()
         while entry is not None:
             if last_split_date is not None:
-                self.assertLess(entry.datetime,last_split_date)
+                self.assertLess(entry.date,last_split_date)
             for split_attribute in list(SPLIT_FORMAT.keys()):
                 self.assertEqual(type(getattr(entry,string.pascal_case_to_underscore(split_attribute))),SPLIT_FORMAT[split_attribute])
-            last_split_date = entry.datetime
+            last_split_date = entry.date
             entry = splits.next()
-        return #ALEX
-        dividend_schema = {
-            "type": "object",
-            "properties": {
-                "Adjusted Dividend": {
-                    "type": "number"
-                },
-                "Dividend": {
-                    "type": "number"
-                }
-            },
-            "required": [
-                "Adjusted Dividend",
-                "Dividend"
-            ]
-        }
-        # Data checks for all returned split dates
+        # Check that data was regenerated
         first_regen_split_data = collection.find_one({ 'Adjustment': 'Splits' },{ '_id': 0, 'Interval': 0 })
         if initial_split_data is not None:
             self.assertGreater(first_regen_split_data['Time'],initial_split_data['Time'])
-        # Data checks for all returned dividend dates
+        # Dividends
         with self.assertRaises(SymbolNotFoundError):
             dividends = self.adjustments.dividends(TEST_SYMBOL_FAKE)
-        dividends = self.adjustments.dividends(TEST_SYMBOL_SPLIT)
-        self.assertIsNone(dividends)
+        dividends = self.adjustments.dividends(TEST_SYMBOL_NODIVSPLIT)
+        self.assertIsNone(dividends.first())
         initial_dividend_data = collection.find_one({ 'Adjustment': 'Dividends' },{ '_id': 0, 'Interval': 0 })
         dividends = self.adjustments.dividends(TEST_SYMBOL_DIVSPLIT,regen=True)
         last_dividend_date = None
+        return #ALEX
+
         for dividend_date in dividends:
             validate(instance=dividends[dividend_date],schema=dividend_schema)
             if last_dividend_date is not None:
