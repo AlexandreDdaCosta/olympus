@@ -1,4 +1,4 @@
-from olympus import String
+from olympus import Series, String
 
 # The attributes that all securities must have
 SECURITY_STANDARD_ATTRIBUTES = [ "Name", "SecurityClass", "Symbol" ]
@@ -35,7 +35,7 @@ class _ClassMisc(object):
 
     def get(self,misc_name):
         if self.misc_attributes is not None and misc_name in self.misc_attributes:
-            return getattr(self, misc_name)
+            return getattr(self,misc_name)
         return None
 
     def list(self):
@@ -144,56 +144,23 @@ class Quote(object):
             listed = listed + self.adjustments.list()
         return sorted(listed + self.standard_attributes)
 
-class QuoteSeries(object):
+class QuoteSeries(Series):
     '''
 A time-ordered list of quote objects
     '''
 
     def __init__(self,quote_series=None,**kwargs):
+        super(QuoteSeries,self).__init__()
+        if quote_series is None:
+            return
         if not isinstance(quote_series, list):
             raise Exception('Parameter "quote_series" must be a list.')
-        raw_data = kwargs.pop('raw_data',False)
         reverse_datetime_order = kwargs.pop('reverse_datetime_order',False)
-        self.iterator_index = 0
-        self.quotes = []
         for quote in quote_series:
-            if raw_data is True:
-                # quote_series is a list of dicts
-                quote_object = Quote(quote)
-                self.quotes.append(quote_object)
-            else:
-                # quote_series is a list of quote objects
-                if isinstance(quote, Quote) is False:
-                    raise Exception('Without the "raw_data" setting, all items in quote_series must be of the "Quote" class.')
-                self.quotes.append(quote)
-        if self.quotes:
-            self.quotes = sorted(self.quotes, key=lambda l: (l.datetime), reverse=reverse_datetime_order)
-
-    def first(self):
-        # First quote in time ordered series
-        if not self.quotes:
-            return None
-        return self.quotes[0]
-
-    def last(self):
-        # Last quote in time ordered series
-        if not self.quotes:
-            return None
-        return self.quotes[-1]
-
-    def next(self,**kwargs):
-        # Used to iterate through a series of quotes
-        if not self.quotes:
-            return None
-        reset = kwargs.pop('reset',False)
-        if reset is True:
-            self.iterator_index = 0
-        try:
-            quote = self.quotes[self.iterator_index]
-        except IndexError:
-            return False
-        self.iterator_index = self.iterator_index + 1
-        return quote
+            if isinstance(quote, Quote) is False:
+                raise Exception('All items in quote_series must be of the "Quote" class.')
+            self.series.append(quote)
+        self.sort('datetime',reverse_datetime_order)
 
 class Security(object):
 

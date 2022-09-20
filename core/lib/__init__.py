@@ -15,14 +15,63 @@ RESTAPI_SERVICE = 'restapi'
 
 PASSWORD_ENABLED_SERVICES = [ MONGODB_SERVICE, REDIS_SERVICE, RESTAPI_SERVICE ]
 
-class String():
+class Series(object):
+
+    # A series of objects
+
+    def __init__(self):
+        self.index = 0
+        self.series = None
+
+    def add(self,new_object):
+        # Add object to series
+        if not isinstance(new_object, object):
+            raise Exception('Series object only accepts other objects for addition to the series.')
+        if self.series is None:
+            self.series = []
+        self.series.append(new_object)
+
+    def first(self):
+        # First object in series
+        if self.series is None:
+            return None
+        return self.series[0]
+
+    def last(self):
+        # Last object in series
+        if self.series is None:
+            return None
+        return self.series[-1]
+
+    def next(self,**kwargs):
+        # Used to iterate through the series
+        if not self.series:
+            return None
+        reset = kwargs.pop('reset',False)
+        if reset is True:
+            self.index = 0
+        try:
+            item = self.series[self.index]
+        except IndexError:
+            return None
+        self.index = self.index + 1
+        return item
+
+    def sort(self,attribute,reverse=False):
+        # Sort the series by an object attribute
+        if self.series is not None:
+            self.series = sorted(self.series, key=lambda s: getattr(s,attribute), reverse=reverse)
+
+class String(object):
+
+    # Some useful string methods
 
     def __init__(self):
         pass
 
     def pascal_case_to_underscore(self,string):
-        string = str(string)
-        string = re.sub(r' ', r'', string)
+        # First line deals with whitespace
+        string = re.sub(r'\b[A-Za-z0-9]', lambda m: m.group().upper().replace("\b",""), str(string))
         return re.sub(r'(((?<=[a-z])[A-Z])|([A-Z](?![A-Z]|$)))', r'_\1', string).lower().strip('_')
 
 class User():

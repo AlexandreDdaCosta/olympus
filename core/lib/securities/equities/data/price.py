@@ -12,7 +12,7 @@ import olympus.securities.equities.data.alphavantage as alphavantage
 import olympus.securities.equities.data.tdameritrade as ameritrade
 import olympus.securities.equities.data.symbols as symbols
 
-from olympus import USER
+from olympus import Series, String, USER
 from olympus.securities import Quote
 from olympus.securities.equities.data import REQUEST_TIMEOUT
 from olympus.securities.equities.data.datetime import DateVerifier
@@ -31,7 +31,7 @@ MAP_INTRADAY_PRICE_KEYS = {
     "Volume": "volume"
     }
 PRICE_FORMAT = [ "Open", "High", "Low", "Close", "Volume", "Adjusted Open", "Adjusted High", "Adjusted Low", "Adjusted Close", "Adjusted Volume" ]
-SPLIT_FORMAT = [ "Numerator", "Denominator", "Price/Dividend Adjustment", "Volume Adjustment" ]
+SPLIT_FORMAT = { "Numerator":int, "Denominator":int, "Price Dividend Adjustment":float, "Volume Adjustment":float }
 VALID_DAILY_WEEKLY_PERIODS = {'1M':30,'3M':91,'6M':183,'1Y':365,'2Y':730,'5Y':1825,'10Y':3652,'20Y':7305,'All':None}
 VALID_INTRADAY_FREQUENCIES = {1:50, 5:260, 10:260, 15:260, 30:260}
 # Keys: Frequency of quote (in minutes)
@@ -56,7 +56,7 @@ Splits:
         "<Time stamp, one minute resolution>" : {
             "Numerator" : <integer>,
             "Denominator" : <integer>,
-            "Price/Dividend Adjustment" : <float>,
+            "Price Dividend Adjustment" : <float>,
             "Volume Adjustment" : <float>
         },
         <more splits>
@@ -144,6 +144,53 @@ Notes:
 
 '''
 
+# Classes for returned adjustment data
+
+class _Adjustment(object):
+
+    def __init__(self):
+        pass
+
+class _Adjustments(Series):
+
+    def __init__(self):
+        pass
+
+class _Dividend(object):
+
+    def __init(self):
+        pass
+
+class _Dividends(Series):
+
+    def __init(self):
+        pass
+
+class _Split(object):
+
+    def __init__(self,split_data,split_date):
+        string = String()
+        self.datetime = split_date
+        for index in range(0, len(list(SPLIT_FORMAT.keys()))):
+            attribute_name = string.pascal_case_to_underscore(list(SPLIT_FORMAT.keys())[index])
+            setattr(self,attribute_name,split_data[index])
+
+class _Splits(Series):
+
+    def __init__(self,split_data,query_date):
+        super(_Splits,self).__init__()
+        self.query_date = query_date
+        if split_data is None:
+            return
+        self.dates = []
+        for split_date in split_data:
+            split_date_object = dt.strptime(split_date,"%Y-%m-%d")
+            split_object = _Split(split_data[split_date],split_date_object)
+            self.add(split_object)
+            self.dates.append(split_date_object)
+        self.sort('datetime',True)
+        self.dates = sorted(self.dates,reverse=True)
+
 class Adjustments(data.Connection):
     '''
 Yahoo! Finance historical quotes are the data source for split and dividend history due to the data
@@ -209,7 +256,7 @@ date more recent than or matching the date of the most recent split is therefore
         if adjustments_data is None:
             regen = True
         if regen is True or self._is_stale_data(adjustments_data['Time Dividends']) or self._is_stale_data(adjustments_data['Time Splits']):
-            (splits_data,splits_date) = self.splits(symbol,return_date=True,**kwargs)
+            (splits_data,splits_date) = self.splits(symbol,**kwargs)
             (dividends_data,dividends_date) = self.dividends(symbol,return_date=True,**kwargs) 
             adjustments = []
             if splits_data is not None:
@@ -230,12 +277,12 @@ date more recent than or matching the date of the most recent split is therefore
                                 dividend_written = True
                                 break
                             elif dividend_date == split_date:
-                                adjustments.append({ 'Date': dividend_date, 'Dividend': dividend_adjustment, 'Price Adjustment': split_dict['Price/Dividend Adjustment'], 'Volume Adjustment': split_dict['Volume Adjustment'] })
+                                adjustments.append({ 'Date': dividend_date, 'Dividend': dividend_adjustment, 'Price Adjustment': split_dict['Price Dividend Adjustment'], 'Volume Adjustment': split_dict['Volume Adjustment'] })
                                 split_index = split_index + 1
                                 dividend_written = True
                                 break
                             else: # dividend_date < split_date
-                                adjustments.append({ 'Date': split_date, 'Price Adjustment': split_dict['Price/Dividend Adjustment'], 'Volume Adjustment': split_dict['Volume Adjustment'] })
+                                adjustments.append({ 'Date': split_date, 'Price Adjustment': split_dict['Price Dividend Adjustment'], 'Volume Adjustment': split_dict['Volume Adjustment'] })
                                 split_index = split_index + 1
                         if dividend_written is False:
                             adjustments.append({ 'Date': dividend_date, 'Dividend': dividend_adjustment })
@@ -245,7 +292,7 @@ date more recent than or matching the date of the most recent split is therefore
                 for index in range(split_index, split_count):
                     split_date = split_entries[split_index][0]
                     split_dict = split_entries[split_index][1]
-                    adjustments.append({ 'Date': split_date, 'Price Adjustment': split_dict['Price/Dividend Adjustment'], 'Volume Adjustment': split_dict['Volume Adjustment'] })
+                    adjustments.append({ 'Date': split_date, 'Price Adjustment': split_dict['Price Dividend Adjustment'], 'Volume Adjustment': split_dict['Volume Adjustment'] })
             if len(adjustments) == 0:
                 adjustments = None
             write_dict = {}
@@ -307,7 +354,7 @@ date more recent than or matching the date of the most recent split is therefore
                     adjustment_factors = self.split_adjustment(symbol,dividend_date,regen=regen,symbol_verify=False)
                     if adjustment_factors is not None:
                         # Use the reciprocal of the price/dividend adjustment to undo the split adjustment on the dividend
-                        json_dividend.append(round(float(adjustment_factors['Price/Dividend Adjustment']) * adjusted_dividend,2))
+                        json_dividend.append(round(float(adjustment_factors['Price Dividend Adjustment']) * adjusted_dividend,2))
                     json_dividend.append(adjusted_dividend)
                     if json_dividends is None:
                         json_dividends = {}
@@ -354,7 +401,6 @@ date more recent than or matching the date of the most recent split is therefore
         if symbol_verify is True:
             self.symbol_reader.get_symbol(symbol)
         regen = kwargs.get('regen',False)
-        return_date = kwargs.get('return_date',False)
         split_collection = 'price.' + symbol
         target_file = self.download_directory()+symbol+'-splits.csv'
         collection = self.db[split_collection]
@@ -410,7 +456,7 @@ date more recent than or matching the date of the most recent split is therefore
             write_dict = {}
             write_dict['Time'] = str(dt.now().astimezone())
             write_dict['Adjustment'] = 'Splits'
-            write_dict['Format'] = SPLIT_FORMAT
+            write_dict['Format'] = list(SPLIT_FORMAT.keys())
             write_dict['Start Date'] = start_split_date
             write_dict['End Date'] = end_split_date
             write_dict['Splits'] = json_splits
@@ -419,32 +465,16 @@ date more recent than or matching the date of the most recent split is therefore
             query_date = write_dict['Time']
             returndata = write_dict['Splits']
             os.remove(target_file)
-
         if returndata is None and split_data is not None:
             returndata = split_data['Splits']
-        # Format returned data using data headers
-        formatted_returndata = {}
-        details_length = len(SPLIT_FORMAT)
-        if returndata is not None:
-            for quote_date in returndata:
-                formatted_returndata[quote_date] = {}
-                quote_length = len(returndata[quote_date])
-                for index in range(0, details_length):
-                    formatted_returndata[quote_date][SPLIT_FORMAT[index]] = returndata[quote_date][index]
-            if return_date is False:
-                return collections.OrderedDict(sorted(formatted_returndata.items(),reverse=True))
-            else:
-                return (collections.OrderedDict(sorted(formatted_returndata.items(),reverse=True)),query_date)
-        if return_date is False:
-            return None
-        else:
-            return (None,query_date)
+        return_object = _Splits(returndata,query_date)
+        return return_object
 
     def split_adjustment(self,symbol,value_date,**kwargs):
         # Returns split adjustment values for unadjusted prices on a given date
         symbol = str(symbol).upper()
         if self.split_adjusted_symbol is None or self.split_adjusted_symbol != symbol or self.split_data_date is None or self._is_stale_data(self.split_data_date):
-            (self.split_adjustment_data,self.split_data_date) = self.splits(symbol,return_date=True,**kwargs) 
+            (self.split_adjustment_data,self.split_data_date) = self.splits(symbol,**kwargs) 
             self.split_adjusted_symbol = symbol
         if self.split_adjustment_data is not None:
             for adjustment_date in reversed(self.split_adjustment_data):
@@ -572,7 +602,7 @@ Peculiarities:
 1. Prices are all adjusted. Yahoo!'s plain "Open/High/Low/Close/Volume" figures are adjusted for stock splits only.
 2. Based on the formatting of the price data, daily data is therefore saved as follows:
    a. Maintain up-to-date records of a symbol's historical price splits and dividends, also available for download
-      from Yahoo! Finance historical quotes. These records include "Price/Dividend Adjustment" and
+      from Yahoo! Finance historical quotes. These records include "Price Dividend Adjustment" and
       "Volume Adjustment" factors.
    b. To derive as-traded prices and volume, take "Open/High/Low/Close/Volume" and multiply by the reciprocal
       of the split adjustment factor.
@@ -903,33 +933,33 @@ class QuoteMerger():
 
     def compare_quotes(self,quote):
         for item in ['Open','Adjusted Open']:
-            if getattr(self, item) is None:
-                setattr(self, item, quote[item])
+            if getattr(self,item) is None:
+                setattr(self,item, quote[item])
         for item in ['High','Adjusted High']:
-            if getattr(self, item) is None or quote[item] > getattr(self, item):
-                setattr(self, item, quote[item])
+            if getattr(self,item) is None or quote[item] > getattr(self,item):
+                setattr(self,item,quote[item])
         for item in ['Low','Adjusted Low']:
-            if getattr(self, item) is None or quote[item] < getattr(self, item):
-                setattr(self, item, quote[item])
+            if getattr(self,item) is None or quote[item] < getattr(self,item):
+                setattr(self,item,quote[item])
         for item in ['Close','Adjusted Close']:
-            setattr(self, item, quote[item])
+            setattr(self,item,quote[item])
         for item in ['Volume','Adjusted Volume']:
-            setattr(self, item, getattr(self, item) + quote[item])
+            setattr(self,item,getattr(self,item) + quote[item])
 
     def init_quote(self,quote):
         for label in PRICE_FORMAT:
-            setattr(self, label, quote[label])
+            setattr(self,label,quote[label])
 
     def reset_quote(self):
         for label in PRICE_FORMAT:
-            setattr(self, label, None)
-        setattr(self, 'Adjusted Volume', 0)
-        setattr(self, 'Volume', 0)
+            setattr(self,label,None)
+        setattr(self,'Adjusted Volume',0)
+        setattr(self,'Volume',0)
 
     def set_quote(self):
         quote = {}
         for label in PRICE_FORMAT:
-            quote[label] = getattr(self, label)
+            quote[label] = getattr(self,label)
         return quote
 
 class Intraday(ameritrade.Connection):
@@ -1120,7 +1150,7 @@ class Latest(ameritrade.Connection):
         return_object = _LatestQuotes()
         params = {}
         # Symbol can be a string or array (list of symbols)
-        if isinstance(symbol,str):
+        if isinstance(symbol, str):
             symbol = str(symbol).upper()
             try:
                 result = self.symbol_reader.get_symbol(symbol)
@@ -1130,7 +1160,7 @@ class Latest(ameritrade.Connection):
             except:
                 raise
             params['symbol'] = symbol
-        elif isinstance(symbol,list):
+        elif isinstance(symbol, list):
             symbols = [str(x).upper() for x in symbol]
             result = self.symbol_reader.get_symbols(symbols)
             if result.unknown_symbols is not None:
@@ -1143,12 +1173,12 @@ class Latest(ameritrade.Connection):
             raise Exception('Parameter "symbol" must be a string or a list of strings.')
         response = self.request('marketdata/quotes',params,'GET',with_apikey=True)
         have_quoted_symbols = False
-        if isinstance(symbol,str):
+        if isinstance(symbol, str):
             if symbol not in response:
                 return_object.add_unquoted_symbol(symbol)
                 return return_object
             have_quoted_symbols = True
-        elif isinstance(symbol,list):
+        elif isinstance(symbol, list):
             for uc_symbol in symbols:
                 if uc_symbol not in response and return_object.unknown_symbols is not None and uc_symbol not in return_object.unknown_symbols:
                     return_object.add_unquoted_symbol(uc_symbol)

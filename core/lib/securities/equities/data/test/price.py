@@ -10,10 +10,10 @@ import olympus.securities.equities.data as data
 import olympus.securities.equities.data.price as price
 import olympus.testing as testing
 
-from olympus import USER
+from olympus import String, USER
 from olympus.securities.equities import *
 from olympus.securities.equities.data.datetime import OLDEST_QUOTE_DATE, DateVerifier
-from olympus.securities.equities.data.price import DEFAULT_INTRADAY_FREQUENCY, DEFAULT_INTRADAY_PERIOD, PRICE_FORMAT, VALID_DAILY_WEEKLY_PERIODS, VALID_INTRADAY_FREQUENCIES, VALID_INTRADAY_PERIODS, VALID_MONTHLY_PERIODS
+from olympus.securities.equities.data.price import DEFAULT_INTRADAY_FREQUENCY, DEFAULT_INTRADAY_PERIOD, PRICE_FORMAT, SPLIT_FORMAT, VALID_DAILY_WEEKLY_PERIODS, VALID_INTRADAY_FREQUENCIES, VALID_INTRADAY_PERIODS, VALID_MONTHLY_PERIODS
 from olympus.securities.equities.data.symbols import SymbolNotFoundError
 
 QUOTE_SCHEMA = {
@@ -65,6 +65,24 @@ class TestPrice(testing.Test):
         self.mongo_data = data.Connection(username)
 
     def test_adjustments(self):
+        with self.assertRaises(SymbolNotFoundError):
+            self.adjustments.splits(TEST_SYMBOL_FAKE)
+        splits = self.adjustments.splits(TEST_SYMBOL_NODIVSPLIT)
+        self.assertIsNone(splits.first())
+        price_collection = 'price.' + TEST_SYMBOL_DIVSPLIT
+        collection = self.mongo_data.db[price_collection]
+        initial_split_data = collection.find_one({ 'Adjustment': 'Splits' },{ '_id': 0, 'Interval': 0 })
+        splits = self.adjustments.splits(TEST_SYMBOL_DIVSPLIT,regen=True)
+        last_split_date = None
+        entry = splits.next()
+        string = String()
+        while entry is not None:
+            if last_split_date is not None:
+                self.assertLess(entry.datetime,last_split_date)
+            for split_attribute in list(SPLIT_FORMAT.keys()):
+                self.assertEqual(type(getattr(entry,string.pascal_case_to_underscore(split_attribute))),SPLIT_FORMAT[split_attribute])
+            last_split_date = entry.datetime
+            entry = splits.next()
         return #ALEX
         dividend_schema = {
             "type": "object",
@@ -81,44 +99,7 @@ class TestPrice(testing.Test):
                 "Dividend"
             ]
         }
-        split_schema = {
-            "type": "object",
-            "properties": {
-                "Denominator": {
-                    "type": "integer"
-                },
-                "Numerator": {
-                    "type": "integer"
-                },
-                "Price/Dividend Adjustment": {
-                    "type": "number"
-                },
-                "Volume Adjustment": {
-                    "type": "number"
-                }
-            },
-            "required": [
-                "Denominator",
-                "Numerator",
-                "Price/Dividend Adjustment",
-                "Volume Adjustment"
-            ]
-        }
-        with self.assertRaises(SymbolNotFoundError):
-            splits = self.adjustments.splits(TEST_SYMBOL_FAKE)
-        splits = self.adjustments.splits(TEST_SYMBOL_NODIVSPLIT)
-        self.assertIsNone(splits)
-        price_collection = 'price.' + TEST_SYMBOL_DIVSPLIT
-        collection = self.mongo_data.db[price_collection]
-        initial_split_data = collection.find_one({ 'Adjustment': 'Splits' },{ '_id': 0, 'Interval': 0 })
-        splits = self.adjustments.splits(TEST_SYMBOL_DIVSPLIT,regen=True)
-        last_split_date = None
         # Data checks for all returned split dates
-        for split_date in splits:
-            validate(instance=splits[split_date],schema=split_schema)
-            if last_split_date is not None:
-                self.assertLess(split_date,last_split_date)
-            last_split_date = split_date
         first_regen_split_data = collection.find_one({ 'Adjustment': 'Splits' },{ '_id': 0, 'Interval': 0 })
         if initial_split_data is not None:
             self.assertGreater(first_regen_split_data['Time'],initial_split_data['Time'])
@@ -316,6 +297,7 @@ class TestPrice(testing.Test):
             self.assertLessEqual(max_past_date,first_period_date)
 
     def test_latest(self):
+        return #ALEX
         result = self.latest.quote(TEST_SYMBOL_DIV.lower(),verify_response_format=True)
         symbol = TEST_SYMBOL_DIV.upper()
         # Verify returned data format and contents
