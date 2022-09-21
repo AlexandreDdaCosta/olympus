@@ -15,6 +15,70 @@ RESTAPI_SERVICE = 'restapi'
 
 PASSWORD_ENABLED_SERVICES = [ MONGODB_SERVICE, REDIS_SERVICE, RESTAPI_SERVICE ]
 
+class AttributeGetter(object):
+
+    def __init__(self,attributes):
+        if not isinstance(attributes,dict):
+            raise Exception('Parameter "core_attributes" must be a dict.')
+        self.attributes = []
+        self.data_keys = []
+        self.string = String()
+        for attribute in attributes.keys():
+            self.data_keys.append(attribute)
+            self.attributes.append(self.string.pascal_case_to_underscore(attribute))
+        self.attributes = sorted(self.attributes)
+
+class CoreObject(object):
+
+    def __init__(self,core_data,core_attributes,description):
+        if not isinstance(core_data,dict):
+            raise Exception('Parameter "core_data" must be of type dict.')
+        if not isinstance(core_attributes,dict):
+            raise Exception('Parameter "core_attributes" must be of type dict.')
+        self.Attributes = []
+        self.CoreAttributes = core_attributes
+        self.String = String()
+        validator = self._validate_core_attributes(core_data,core_attributes,str(description))
+        for name in core_attributes.keys():
+            underscore_name = self.String.pascal_case_to_underscore(name)
+            setattr(self,underscore_name,core_data[name])
+            self.Attributes.append(underscore_name)
+
+    def add(self,name,value):
+        name = str(name)
+        if name in self.CoreAttributes.keys():
+            raise Exception('Cannot add ' + str(name) + ' to object attributes: Attribute exists in core list.')
+        underscore_name = self.String.pascal_case_to_underscore(name)
+        setattr(self,underscore_name,value)
+        self.Attributes.append(underscore_name)
+
+    def get(self,name):
+        name = str(name)
+        if name in self.Attributes:
+            return getattr(self,name)
+        else:
+            underscore_name = self.String.pascal_case_to_underscore(name)
+            if underscore_name in self.Attributes:
+                return getattr(self,underscore_name)
+        return None
+
+    def list(self):
+        return sorted(self.Attributes)
+
+    def _validate_core_attributes(self,data,attributes,description):
+        bad_attributes = []
+        for attribute in data:
+            if attribute not in self.CoreAttributes.keys():
+                bad_attributes.append(attribute)
+        if bad_attributes:
+            raise Exception('Invalid keys in ' + description + ' core attributes: ' + ', ' . join(bad_attributes))
+        missing_attributes = []
+        for key in attributes:
+            if key not in data:
+                missing_attributes.append(key)
+        if missing_attributes:
+            raise Exception('Keys in ' + description + ' core attributes are incomplete: ' + ', ' . join(missing_attributes))
+
 class Series(object):
 
     # A series of objects

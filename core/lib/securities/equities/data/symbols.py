@@ -5,7 +5,7 @@ from jsonschema import validate
 import olympus.restapi as restapi
 import olympus.securities.equities.data as data
 
-from olympus import USER
+from olympus import AttributeGetter, USER
 from olympus.securities import SECURITY_STANDARD_ATTRIBUTES, Security
 from olympus.securities.equities import INDEX_CLASS, SECURITY_CLASS_ETF, SECURITY_CLASS_STOCK
 
@@ -346,6 +346,8 @@ class Read(restapi.Connection):
 
     def __init__(self,username=USER,**kwargs):
         super(Read,self).__init__(username,**kwargs)
+        self.attribute_getter = AttributeGetter(SECURITY_STANDARD_ATTRIBUTES)
+        self.data_keys = self.attribute_getter.data_keys
 
     def get_symbol(self,symbol,**kwargs):
         symbol = str(symbol).upper()
@@ -354,11 +356,11 @@ class Read(restapi.Connection):
            raise SymbolNotFoundError(symbol)
         data = json.loads(response.content)['symbol']
         standard_data = {}
-        for attribute in SECURITY_STANDARD_ATTRIBUTES:
+        for attribute in self.data_keys:
             standard_data[attribute] = data[attribute]
         return_object = Security(standard_data)
         for key in data:
-            if key in SECURITY_STANDARD_ATTRIBUTES:
+            if key in self.data_keys:
                 continue
             return_object.add(key,data[key])
         return return_object
@@ -375,11 +377,11 @@ class Read(restapi.Connection):
             for symbol in content['symbols']:
                 symbol_data = content['symbols'][symbol]
                 standard_data = {}
-                for attribute in SECURITY_STANDARD_ATTRIBUTES:
+                for attribute in self.data_keys:
                     standard_data[attribute] = symbol_data[attribute]
                 symbol_object = Security(standard_data)
                 for misc_key in symbol_data:
-                    if misc_key in SECURITY_STANDARD_ATTRIBUTES:
+                    if misc_key in self.data_keys:
                         continue
                     symbol_object.add(misc_key,symbol_data[misc_key])
                 return_object.add(symbol,symbol_object)

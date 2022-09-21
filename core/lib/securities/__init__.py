@@ -1,7 +1,7 @@
-from olympus import Series, String
+from olympus import CoreObject, Series, String
 
-# The attributes that all securities must have
-SECURITY_STANDARD_ATTRIBUTES = [ "Name", "SecurityClass", "Symbol" ]
+# Core object 
+SECURITY_STANDARD_ATTRIBUTES = { "Name":str, "SecurityClass":str, "Symbol":str }
 
 # The attributes that all price quotes must have
 PRICE_STANDARD_ATTRIBUTES = [ "Close", "DateTime", "High", "Low", "Open", "Volume" ]
@@ -61,25 +61,6 @@ class _ValidateAttributes(object):
 
 # Standardized quote format objects for all securities.
 # These are intended for quotes in a series.
-
-class AttributeGetter(object):
-
-    def __init__(self):
-        pass
-
-    def get_price_standard_attributes(self):
-        attributes = []
-        string = String()
-        for attribute in PRICE_STANDARD_ATTRIBUTES:
-            attributes.append(string.pascal_case_to_underscore(attribute))
-        return sorted(attributes)
-
-    def get_security_standard_attributes(self):
-        attributes = []
-        string = String()
-        for attribute in SECURITY_STANDARD_ATTRIBUTES:
-            attributes.append(string.pascal_case_to_underscore(attribute))
-        return sorted(attributes)
 
 class QuoteAdjustments(object):
 
@@ -162,32 +143,7 @@ A time-ordered list of quote objects
             self.series.append(quote)
         self.sort('datetime',reverse_datetime_order)
 
-class Security(object):
+class Security(CoreObject):
 
-    def __init__(self,standard_data):
-        self.misc = None
-        self.standard_attributes = []
-        validator = _ValidateAttributes(standard_data,SECURITY_STANDARD_ATTRIBUTES,'standard security details')
-        string = String()
-        for detail in standard_data:
-            uc_detail = string.pascal_case_to_underscore(detail)
-            setattr(self,uc_detail,standard_data[detail])
-            self.standard_attributes.append(uc_detail)
-
-    def add(self,misc_name,misc_value):
-        # Will override an existing attribute
-        if self.misc is None:
-            self.misc = _ClassMisc(named_attributes=SECURITY_STANDARD_ATTRIBUTES)
-        self.misc.add(misc_name,misc_value)
-
-    def get(self,name):
-        if name in self.standard_attributes:
-            return getattr(self,name)
-        if self.misc is not None:
-            return self.misc.get(name)
-        return None
-
-    def list(self):
-        if self.misc is None:
-            return sorted(self.standard_attributes)
-        return sorted(self.misc.list() + self.standard_attributes)
+    def __init__(self,core_data):
+        super(Security,self).__init__(core_data,SECURITY_STANDARD_ATTRIBUTES,'tradeable security')

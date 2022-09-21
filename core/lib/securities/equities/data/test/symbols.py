@@ -7,7 +7,6 @@ import olympus.securities.equities.data.symbols as symbols
 import olympus.testing as testing
 
 from olympus import USER
-from olympus.securities import AttributeGetter
 from olympus.securities.equities import *
 from olympus.securities.equities.data.symbols import SymbolNotFoundError
 
@@ -25,15 +24,13 @@ class TestSymbols(testing.Test):
             username = self.validRunUser(USER)
         self.symbols = symbols.Read(username)
         self.adjustments = price.Adjustments(username)
-        self.attribute_getter = AttributeGetter()
-        self.symbol_attributes = self.attribute_getter.get_security_standard_attributes()
 
     def test_symbol(self):
         with self.assertRaises(SymbolNotFoundError):
             self.symbols.get_symbol(TEST_SYMBOL_FAKE)
         result = self.symbols.get_symbol(TEST_SYMBOL_DIVSPLIT)
         attributes = result.list()
-        for attribute in self.symbol_attributes:
+        for attribute in self.symbols.data_keys:
             self.assertIsNotNone(result.get(attribute))
         for attribute in attributes:
             self.assertIsNotNone(result.get(attribute))
@@ -41,7 +38,7 @@ class TestSymbols(testing.Test):
         self.assertEqual(result.security_class, SECURITY_CLASS_STOCK)
         result = self.symbols.get_symbol(TEST_SYMBOL_ETF)
         attributes = result.list()
-        for attribute in self.symbol_attributes:
+        for attribute in self.symbols.data_keys:
             self.assertIsNotNone(result.get(attribute))
         for attribute in attributes:
             self.assertIsNotNone(result.get(attribute))
