@@ -37,3 +37,8 @@ class Indicators():
         ma['Parameters'] = parameters
         ma['DateTimeSeries'] = {}
         return ma
+
+class RiskRange():
+# Calculates tradeable risk ranges for securities based on price, volume, and historic volatility
+
+    pass
