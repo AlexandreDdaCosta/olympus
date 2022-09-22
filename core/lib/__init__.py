@@ -131,6 +131,11 @@ class Series():
             return None
         return self.series[index]
 
+    def have_objects(self):
+        if self.series is None:
+            return False
+        return True
+
     def last(self):
         # Last object in series
         if self.series is None:
@@ -150,6 +155,9 @@ class Series():
             return None
         self.index = self.index + 1
         return item
+
+    def objects(self):
+        return self.series
 
     def sort(self,attribute,reverse=False):
         # Sort the series by an object attribute

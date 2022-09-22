@@ -3,204 +3,217 @@
   "type": "object",
   "properties": {
     "52WkHigh": {
-      "description": "",
+      "description": "Highest price traded in the last year",
       "type": "number"
     },
     "52WkLow": {
-      "description": "",
+      "description": "Lowest price traded in the last year",
       "type": "number"
     },
     "askId": {
-      "description": "",
+      "description": "Owner of requested trade",
       "pattern": "^[A-Z]{1}$",
       "type": "string"
     },
     "askPrice": {
-      "description": "",
+      "convert_name": "ask",
+      "description": "Requested trade price",
       "type": "number"
     },
     "askSize": {
-      "description": "",
+      "description": "Quantity of shares in block currently requested for trade",
       "type": "integer"
     },
     "assetMainType": {
-      "description": "",
+      "description": "Identifier of primary security type",
       "pattern": "^EQUITY$",
       "type": "string"
     },
     "assetSubType": {
-      "description": "",
+      "description": "Identifier of secondary security type",
       "type": "string"
     },
     "assetType": {
-      "description": "",
+      "description": "Identifier of security type",
       "pattern": "^EQUITY$",
       "type": "string"
     },
     "bidId": {
-      "description": "",
+      "description": "Owner of offered trade",
       "pattern": "^[A-Z]{1}$",
       "type": "string"
     },
     "bidPrice": {
+      "convert_name": "bid",
       "description": "",
       "type": "number"
     },
     "bidSize": {
-      "description": "",
+      "description": "Quantity of shares in block currently offered for trade",
       "type": "integer"
     },
     "bidTick": {
-      "description": "",
+      "description": "Last direction of offered trade",
       "type": "string"
     },
     "closePrice": {
-      "description": "",
+      "convert_name": "close",
+      "description": "Price of last executed trade in last completed session",
       "type": "number"
     },
     "cusip": {
-      "description": "",
+      "description": "A nine-character alphanumeric code that identifies a North American financial security for the purposes of facilitating clearing and settlement of trades",
       "pattern": "^[A-Z0-9]{9}$",
       "type": "string"
     },
     "delayed": {
-      "description": "",
+      "description": "True if price quote is not real time",
       "type": "boolean"
     },
     "description": {
-      "description": "",
+      "description": "Name for the security being quoted",
       "type": "string"
     },
     "digits": {
-      "description": "",
+      "description": "Number of decimal places used for bid and ask prices",
       "type": "integer"
     },
     "divAmount": {
-      "description": "",
+      "description": "Unadjusted U.S. dollar amount of latest annual cash dividend",
       "type": "number"
     },
     "divDate": {
-      "description": "",
+      "description": "Payment date of latest cash dividend",
       "type": "string"
     },
     "divYield": {
-      "description": "",
+      "description": "Annualized dividend yield",
       "type": "number"
     },
     "exchange": {
-      "description": "",
+      "description": "Primary marketplace for trading of this security, expressed as a single-letter abbreviation",
       "pattern": "^(n|q)$",
       "type": "string"
     },
     "exchangeName": {
-      "description": "",
+      "description": "Upper case abbreviation of primary exchange for trading of this security",
       "pattern": "^(NASD|NYSE)$",
       "type": "string"
     },
     "highPrice": {
-      "description": "",
+      "convert_name": "high",
+      "description": "Maximum execution amount in last completed session",
       "type": "number"
     },
     "lastId": {
       "description": "",
+      "description": "Owner of requested trade",
       "pattern": "^[A-Z]{1}$",
       "type": "string"
     },
     "lastPrice": {
-      "description": "",
+      "description": "Final execution amount in current session",
       "type": "number"
     },
     "lastSize": {
-      "description": "",
+      "description": "Quantity of shares in block most recently traded",
       "type": "integer"
     },
     "lowPrice": {
-      "description": "",
+      "convert_name": "low",
+      "description": "Minimum execution amount in last completed session",
       "type": "number"
     },
     "marginable": {
-      "description": "",
+      "description": "True if security can be used for trading by means of borrowing a certain percentage of its value",
       "type": "boolean"
     },
     "mark": {
-      "description": "",
+      "description": "Current share value calculated based on market bid, market ask, and last traded price",
       "type": "number"
     },
     "markChangeInDouble": {
-      "description": "",
+      "description": "Change in calculated share price from last full session",
       "type": "number"
     },
     "markPercentChangeInDouble": {
-      "description": "",
+      "description": "Change in calculated share price from last full session, expressed as a proportion",
       "type": "number"
     },
     "nAV": {
-      "description": "",
+      "convert_name": "nav",
+      "description": "Value per share calculated for certain securities based on assets held",
       "type": "number"
     },
     "netChange": {
-      "description": "",
+      "description": "Difference in share price from last full session",
       "type": "number"
     },
     "netPercentChangeInDouble": {
-      "description": "",
+      "description": "Difference in share price from last full session, expressed as a proportion",
       "type": "number"
     },
     "openPrice": {
-      "description": "",
+      "convert_name": "open",
+      "description": "Initial trade price during trading session for which the quote is diplayed",
       "type": "number"
     },
     "peRatio": {
-      "description": "",
+      "description": "A valuation measure for a compay calculated as the propotion of current share price to earnings",
       "type": "number"
     },
     "quoteTimeInLong": {
-      "description": "",
+      "description": "Epoch milliseconds when current data was generated",
       "type": "integer"
     },
     "realtimeEntitled": {
-      "description": "",
+      "description": "True if pricing for the security can be generated without delay",
       "type": "boolean"
     },
     "regularMarketLastPrice": {
-      "description": "",
+      "description": "Final quote generated during standard trading hours",
       "type": "number"
     },
     "regularMarketLastSize": {
-      "description": "",
+      "description": "Number of shares last traded as a block during standard trading hours",
       "type": "integer"
     },
     "regularMarketNetChange": {
       "description": "",
+      "description": "Difference in share price since the end of the last session of standard trading hours",
       "type": "number"
     },
     "regularMarketPercentChangeInDouble": {
-      "description": "",
+      "description": "Difference in share price since the end of the last session of standard trading hours, expressed as a proportion",
       "type": "number"
     },
     "regularMarketTradeTimeInLong": {
-      "description": "",
+      "description": "Epoch milliseconds when the last buy/sell transaction occurred for the security during standard trading hours",
       "type": "integer"
     },
     "securityStatus": {
-      "description": "",
+      "description": "Current trading situation",
       "pattern": "^(Normal)$",
       "type": "string"
     },
     "shortable": {
-      "description": "",
+      "description": "True if security can be borrowed for sale to be repurchased later",
       "type": "boolean"
     },
     "symbol": {
-      "description": "",
+      "description": "String of characters used to identify an equity",
       "type": "string"
     },
+    "tradeTimeInLong": {
+      "description": "Epoch milliseconds when the last buy/sell transaction occurred for the security",
+      "type": "integer"
+    },
     "totalVolume": {
-      "description": "",
+      "description": "Number of shares traded in the quoted trading session",
       "type": "integer"
     },
     "volatility": {
-      "description": "",
+      "description": "A measure of the price range in which a security has been trading",
       "type": "number"
     }
   },

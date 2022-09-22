@@ -65,6 +65,7 @@ class TestPrice(testing.Test):
         self.mongo_data = data.Connection(username)
 
     def test_adjustments(self):
+        return #ALEX
         string = String()
         # Splits
         with self.assertRaises(SymbolNotFoundError):
@@ -284,8 +285,7 @@ class TestPrice(testing.Test):
             self.assertLessEqual(max_past_date,first_period_date)
 
     def test_latest(self):
-        return #ALEX
-        result = self.latest.quote(TEST_SYMBOL_DIV.lower(),verify_response_format=True)
+        result = self.latest.quote(TEST_SYMBOL_DIV.lower())
         symbol = TEST_SYMBOL_DIV.upper()
         # Verify returned data format and contents
         self.assertIsNone(result.unknown_symbols)
@@ -293,19 +293,19 @@ class TestPrice(testing.Test):
         quote = result.get_symbol(TEST_SYMBOL_DIV)
         quoteTimeLong = int(time.time() * 1000)
         self.assertEqual(quote.symbol, symbol)
-        self.assertEqual(quote.misc.exchange, TEST_SYMBOL_DIV_QUOTE_EXCHANGE)
-        self.assertEqual(quote.misc.exchange_name, TEST_SYMBOL_DIV_QUOTE_EXCHANGE_NAME)
-        self.assertGreaterEqual(quote.misc.ask, quote.misc.bid)
+        self.assertEqual(quote.exchange, TEST_SYMBOL_DIV_QUOTE_EXCHANGE)
+        self.assertEqual(quote.exchange_name, TEST_SYMBOL_DIV_QUOTE_EXCHANGE_NAME)
+        self.assertGreaterEqual(quote.ask, quote.bid)
         self.assertGreaterEqual(quote.high, quote.low)
         self.assertGreaterEqual(quote.high, quote.open)
         self.assertLessEqual(quote.low, quote.open)
-        self.assertGreaterEqual(quoteTimeLong, quote.misc.quote_time_in_long)
-        self.assertGreaterEqual(quoteTimeLong, quote.misc.trade_time_in_long)
-        self.assertGreaterEqual(quoteTimeLong, quote.misc.regular_market_trade_time_in_long)
-        self.assertGreaterEqual(quote.misc.trade_time_in_long, quote.misc.regular_market_trade_time_in_long)
-        self.assertLessEqual(abs(round(quote.misc.net_change - (quote.misc.last_price - quote.close),2)), .01)
+        self.assertGreaterEqual(quoteTimeLong, quote.quote_time_in_long)
+        self.assertGreaterEqual(quoteTimeLong, quote.trade_time_in_long)
+        self.assertGreaterEqual(quoteTimeLong, quote.regular_market_trade_time_in_long)
+        self.assertGreaterEqual(quote.trade_time_in_long, quote.regular_market_trade_time_in_long)
+        self.assertLessEqual(abs(round(quote.net_change - (quote.last_price - quote.close),2)), .01)
         # Mixed request including (1) Valid symbol, (2) Valid but incorrectly cased symbol, and (3) Unknown symbol
-        result = self.latest.quote([TEST_SYMBOL_NODIVSPLIT.lower(),TEST_SYMBOL_DIVSPLIT,TEST_SYMBOL_FAKE.lower()],verify_response_format=True)
+        result = self.latest.quote([TEST_SYMBOL_NODIVSPLIT.lower(),TEST_SYMBOL_DIVSPLIT,TEST_SYMBOL_FAKE.lower()])
         quoteTimeLong = int(time.time() * 1000)
         self.assertIsNotNone(result.unknown_symbols)
         self.assertIsNone(result.unquoted_symbols)
@@ -315,23 +315,23 @@ class TestPrice(testing.Test):
             quote = result.get_symbol(symbol)
             self.assertEqual(quote.symbol, symbol)
             if symbol == TEST_SYMBOL_NODIVSPLIT:
-                self.assertEqual(quote.misc.exchange, TEST_SYMBOL_NODIVSPLIT_QUOTE_EXCHANGE)
-                self.assertEqual(quote.misc.exchange_name, TEST_SYMBOL_NODIVSPLIT_QUOTE_EXCHANGE_NAME)
+                self.assertEqual(quote.exchange, TEST_SYMBOL_NODIVSPLIT_QUOTE_EXCHANGE)
+                self.assertEqual(quote.exchange_name, TEST_SYMBOL_NODIVSPLIT_QUOTE_EXCHANGE_NAME)
             else:
-                self.assertEqual(quote.misc.exchange, TEST_SYMBOL_DIVSPLIT_QUOTE_EXCHANGE)
-                self.assertEqual(quote.misc.exchange_name, TEST_SYMBOL_DIVSPLIT_QUOTE_EXCHANGE_NAME)
-            self.assertGreaterEqual(quote.misc.ask, quote.misc.bid)
+                self.assertEqual(quote.exchange, TEST_SYMBOL_DIVSPLIT_QUOTE_EXCHANGE)
+                self.assertEqual(quote.exchange_name, TEST_SYMBOL_DIVSPLIT_QUOTE_EXCHANGE_NAME)
+            self.assertGreaterEqual(quote.ask, quote.bid)
             self.assertGreaterEqual(quote.high, quote.low)
             self.assertGreaterEqual(quote.high, quote.open)
             self.assertLessEqual(quote.low, quote.open)
-            self.assertGreaterEqual(quoteTimeLong, quote.misc.quote_time_in_long)
-            self.assertGreaterEqual(quoteTimeLong, quote.misc.trade_time_in_long)
-            self.assertGreaterEqual(quoteTimeLong, quote.misc.regular_market_trade_time_in_long)
-            self.assertGreaterEqual(quote.misc.trade_time_in_long, quote.misc.regular_market_trade_time_in_long)
-            self.assertLessEqual(abs(round(quote.misc.net_change - (quote.misc.last_price - quote.close),2)), .01)
+            self.assertGreaterEqual(quoteTimeLong, quote.quote_time_in_long)
+            self.assertGreaterEqual(quoteTimeLong, quote.trade_time_in_long)
+            self.assertGreaterEqual(quoteTimeLong, quote.regular_market_trade_time_in_long)
+            self.assertGreaterEqual(quote.trade_time_in_long, quote.regular_market_trade_time_in_long)
+            self.assertLessEqual(abs(round(quote.net_change - (quote.last_price - quote.close),2)), .01)
         # Request including only unknown symbols
         result = self.latest.quote([TEST_SYMBOL_FAKE,TEST_SYMBOL_FAKE_TWO.lower()])
-        self.assertIsNone(result.symbols)
+        self.assertIsNone(result.get_quotes())
         self.assertIsNotNone(result.unknown_symbols)
         self.assertIsNone(result.unquoted_symbols)
         self.assertEqual(len(result.unknown_symbols), 2)

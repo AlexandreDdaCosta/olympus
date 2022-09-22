@@ -5,7 +5,7 @@ from jsonschema import validate
 import olympus.restapi as restapi
 import olympus.securities.equities.data as data
 
-from olympus import FileFinder, Return, Series,Series,  USER
+from olympus import FileFinder, Return, Series, USER
 from olympus.securities.equities import CONFIG_FILE_DIRECTORY, INDEX_CLASS, SCHEMA_FILE_DIRECTORY, SECURITY_CLASS_ETF, SECURITY_CLASS_STOCK
 
 ETF_INDEX_DATA_FILE_NAME = 'usexchange-etf+indexlist.csv'
@@ -333,6 +333,16 @@ class _Symbols(Series):
     def get_symbol(self,symbol):
         return self.get_by_attribute('symbol',symbol)
 
+    def get_symbols(self):
+        objects = self.objects()
+        if objects is not None:
+            symbols = []
+            for symbol_object in objects:
+                symbols.append(symbol_object.symbol)
+            return symbols
+        else:
+            return objects
+
 class Read(restapi.Connection):
 
     def __init__(self,username=USER,**kwargs):
@@ -364,7 +374,8 @@ class Read(restapi.Connection):
         return return_object
 
 class SymbolNotFoundError(Exception):
-    """ Raised for non-existent symbol
+    """ 
+    Raised for non-existent symbol
     Attributes:
         symbol: Missing symbol
         message: Explanation

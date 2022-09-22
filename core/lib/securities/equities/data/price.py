@@ -12,8 +12,9 @@ import olympus.securities.equities.data.alphavantage as alphavantage
 import olympus.securities.equities.data.tdameritrade as ameritrade
 import olympus.securities.equities.data.symbols as symbols
 
-from olympus import Series, String, USER
+from olympus import FileFinder, Return, Series, USER
 from olympus.securities import Quote
+from olympus.securities.equities import SCHEMA_FILE_DIRECTORY
 from olympus.securities.equities.data import REQUEST_TIMEOUT
 from olympus.securities.equities.data.datetime import DateVerifier
 
@@ -1058,74 +1059,50 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
             end_date = int(end_date) * 1000 # Milliseconds
         return start_date, end_date
 
-class _LatestQuotes():
+class _LatestQuotes(Series):
 
-    def __init__(self):
-        self.symbols = None
+    def __init__(self,schema):
+        super(_LatestQuotes,self).__init__()
+        self.json_schema = schema
         self.unknown_symbols = None
         self.unquoted_symbols = None
-        self.symbol_indices = {}
-        self.symbol_index = 0
 
-    def add_symbol(self,symbol,quote_object):
-        symbol = symbol.upper()
-        if self.symbols is None:
-            self.symbols = []
-        quote_object.add_symbol(symbol)
-        self.symbols.append(quote_object)
-        self.symbol_indices[symbol] = self.symbol_index
-        self.symbol_index = self.symbol_index + 1
+    def add_symbol(self,symbol,data):
+        latest_price_object = Return(self.json_schema,data)
+        self.add(latest_price_object)
 
     def add_unknown_symbol(self,symbol):
+        symbol = symbol.upper()
         if self.unknown_symbols is None:
             self.unknown_symbols = []
-        self.unknown_symbols.append(symbol.upper())
+        if symbol not in self.unknown_symbols:
+            self.unknown_symbols.append(symbol)
 
     def add_unquoted_symbol(self,symbol):
+        symbol = symbol.upper()
         if self.unquoted_symbols is None:
             self.unquoted_symbols = []
-        self.unquoted_symbols.append(symbol.upper())
+        if symbol not in self.unquoted_symbols:
+            self.unquoted_symbols.append(symbol)
 
     def get_symbol(self,symbol):
-        symbol = symbol.upper()
-        if symbol not in self.symbol_indices:
-            raise Exception('Symbol ' + str(symbol) + ' not in quote set.')
-        return self.symbols[self.symbol_indices[symbol]]
+        return self.get_by_attribute('symbol',symbol)
+
+    def get_quotes(self):
+        return self.objects()
 
 class Latest(ameritrade.Connection):
-
-    MAP_ADJUSTED_KEYS = {
-        "closePrice": "Adjusted Close",
-        "highPrice": "Adjusted High",
-        "lowPrice": "Adjusted Low",
-        "openPrice": "Adjusted Open",
-        "totalVolume": "Adjusted Volume"
-    }
-    MAP_MISC_KEYS = {
-        "askPrice": "ask",
-        "bidPrice": "bid"
-    }
-    MAP_STANDARD_KEYS = {
-        "closePrice": "Close",
-        "highPrice": "High",
-        "lowPrice": "Low",
-        "openPrice": "Open",
-        "totalVolume": "Volume"
-    }
 
     def __init__(self,username=USER,**kwargs):
         super(Latest,self).__init__(username,**kwargs)
         self.symbol_reader = symbols.Read(username,**kwargs)
+        file_finder = FileFinder()
+        schema_file_name = file_finder.schema_file(SCHEMA_FILE_DIRECTORY,'LatestPriceQuote')
+        with open(schema_file_name) as schema_file:
+            self.json_schema = json.load(schema_file)
 
     def quote(self,symbol,**kwargs):
-        # When set to "True", verify_response_format checks incoming response for correct json format
-        # Intended as a testing feature, not something to be used regularly
-        verify_response_format = kwargs.get('verify_response_format',False)
-        if verify_response_format is True:
-            schema_file_location = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/LatestPriceQuote.json'
-            with open(schema_file_location) as schema_file:
-                validation_schema = json.load(schema_file)
-        return_object = _LatestQuotes()
+        return_object = _LatestQuotes(self.json_schema)
         params = {}
         # Symbol can be a string or array (list of symbols)
         if isinstance(symbol, str):
@@ -1144,9 +1121,9 @@ class Latest(ameritrade.Connection):
             if result.unknown_symbols is not None:
                 for unknown_symbol in result.unknown_symbols:
                     return_object.add_unknown_symbol(unknown_symbol)
-                if result.symbols is None:
+                if result.have_objects() is False:
                     return return_object
-            params['symbol'] = ','.join(result.symbol_list)
+            params['symbol'] = ','.join(result.get_symbols())
         else:
             raise Exception('Parameter "symbol" must be a string or a list of strings.')
         response = self.request('marketdata/quotes',params,'GET',with_apikey=True)
@@ -1165,23 +1142,5 @@ class Latest(ameritrade.Connection):
         if have_quoted_symbols is True:
             for quote_symbol in response:
                 quote = response[quote_symbol]
-                if verify_response_format is True:
-                    validate(instance=quote,schema=validation_schema)
-                standard_data = {}
-                standard_data['DateTime'] = dt.fromtimestamp(quote['quoteTimeInLong'] / 1000)
-                for quote_key in self.MAP_STANDARD_KEYS:
-                    standard_data[self.MAP_STANDARD_KEYS[quote_key]] = quote[quote_key]
-                quote_object = Quote(standard_data)
-                adjusted_data = {}
-                for quote_key in self.MAP_ADJUSTED_KEYS:
-                    adjusted_data[self.MAP_ADJUSTED_KEYS[quote_key]] = quote[quote_key]
-                quote_object.add_adjustments(adjusted_data)
-                misc_data = {}
-                for quote_key in quote:
-                    if quote_key not in self.MAP_STANDARD_KEYS and quote_key not in self.MAP_ADJUSTED_KEYS:
-                        if quote_key in self.MAP_MISC_KEYS:
-                            quote_object.add(self.MAP_MISC_KEYS[quote_key],quote[quote_key])
-                        else:
-                            quote_object.add(quote_key,quote[quote_key])
-                return_object.add_symbol(quote_symbol,quote_object)
+                return_object.add_symbol(quote_symbol,quote)
         return return_object
