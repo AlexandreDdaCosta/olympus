@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "Capitalization": {
+      "description": "Equity market value in US dollars",
+      "type": "integer"
+    },
+    "Category": {
+      "description": "Description of security type",
+      "type": "string"
+    },
+    "Country": {
+      "description": "Nation in which company is based",
+      "type": "string"
+    },
+    "Exchange": {
+      "description": "The marketplace in which the equity is primarily listed",
+      "pattern": "^amex|nasdaq|nyse$",
+      "type": "string"
+    },
+    "Industry": {
+      "description": "Economic sub-sector in which company operates",
+      "type": "string"
+    },
+    "IPO Year": {
+      "convert_name": "IpoYear",
+      "convert_type": "integer",
+      "description": "Year of original listing",
+      "type": "string"
+    },
+    "Name": {
+      "description": "Title of company or security",
+      "type": "string"
+    },
+    "Original Symbol": {
+      "convert_name": "OriginalSymbol",
+      "description": "Alternate listing of trading ticker",
+      "pattern": "^[A-Z.$^]+$",
+      "type": "string"
+    },
+    "Sector": {
+      "description": "Economic area in which company operates",
+      "type": "string"
+    },
+    "Security Class": {
+      "convert_name": "SecurityClass",
+      "description": "Type of listed equity",
+      "pattern": "^ETF|Index|Stock$",
+      "type": "string"
+    },
+    "Symbol": {
+      "description": "Trading ticker symbol",
+      "pattern": "^[A-Z.$^]+$",
+      "type": "string"
+    },
+    "Watchlists": {
+      "description": "Names of the lists of monitored securities to which this symbol belongs",
+      "type": "array"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "Name",
+    "Security Class",
+    "Symbol"
+  ]
+}

@@ -7,7 +7,8 @@ NONE_TEXT = 'Value equals None.'
 NOT_FLOAT_TEXT = 'Value is not a float.'
 NOT_NONE_TEXT = 'Value does not equal None.'
 MATCH_TEXT = 'Match for regular expression.'
-SEARCH_TEXT = 'String located during regular expression search'
+SEARCH_TEXT = 'String located during regular expression search.'
+XOR_TEXT = 'One or the other value must be true, but both cannot be.'
 
 TEST_ENVIRONMENT = 'test'
 TEST_PREFIX = 'olympustest_'
@@ -77,6 +78,10 @@ class Test(unittest.TestCase):
         if not regex.search(string):
             raise AssertionError(description)
     
+    def assertXor(self,x,y,description=XOR_TEXT):
+        if not bool((x and not y) or (not x and y)):
+            raise AssertionError(description)
+
     # Utilities
 
     def file(self):

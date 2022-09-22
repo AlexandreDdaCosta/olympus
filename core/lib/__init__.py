@@ -2,6 +2,8 @@
 
 import os, re, shutil, stat
 
+from jsonschema import validate
+from jsonschema.exceptions import ValidationError
 from os.path import isfile
 
 USER = 'olympus'
@@ -15,45 +17,61 @@ RESTAPI_SERVICE = 'restapi'
 
 PASSWORD_ENABLED_SERVICES = [ MONGODB_SERVICE, REDIS_SERVICE, RESTAPI_SERVICE ]
 
-class AttributeGetter(object):
+class FileFinder():
+    # Retrieves location of system files
 
-    def __init__(self,attributes):
-        if not isinstance(attributes,dict):
-            raise Exception('Parameter "core_attributes" must be a dict.')
-        self.attributes = []
-        self.data_keys = []
-        self.string = String()
-        for attribute in attributes.keys():
-            self.data_keys.append(attribute)
-            self.attributes.append(self.string.pascal_case_to_underscore(attribute))
-        self.attributes = sorted(self.attributes)
+    def __init__(self):
+        pass
 
-class CoreObject(object):
+    def config_file(self,base_location,config_name):
+        return base_location + config_name
 
-    def __init__(self,core_data,core_attributes,description):
-        if not isinstance(core_data,dict):
-            raise Exception('Parameter "core_data" must be of type dict.')
-        if not isinstance(core_attributes,dict):
-            raise Exception('Parameter "core_attributes" must be of type dict.')
+    def schema_file(self,base_location,schema_name):
+        return base_location + schema_name + '.json'
+
+class Return():
+    # Stored returned data in object form
+
+    def __init__(self,schema,data):
+        if not isinstance(schema,dict):
+            raise Exception('Parameter "schema" must be of type dict.')
+        if not isinstance(data,dict):
+            raise Exception('Parameter "data" must be of type dict.')
         self.Attributes = []
-        self.CoreAttributes = core_attributes
         self.String = String()
-        validator = self._validate_core_attributes(core_data,core_attributes,str(description))
-        for name in core_attributes.keys():
+        validation_error = None
+        try:
+            validate(instance=data,schema=schema)
+        except ValidationError as e:
+            validation_error = 'Return data validation error occurred: ' + e.args[0]
+        except:
+            raise
+        if validation_error is not None:
+            raise Exception(validation_error)
+        for name in data:
+            original_name = name
+            if 'convert_name' in schema['properties'][name]:
+                # Pascal case name alternative
+                name = schema['properties'][name]['convert_name']
+            if 'convert_type' in schema['properties'][original_name]:
+                # New python data type
+                data[original_name] = self._convert_type(data[original_name],schema['properties'][original_name]['convert_type'])
+            if schema['properties'][original_name]['type'] == 'null' or data[original_name] == '':
+                data[original_name] = None
             underscore_name = self.String.pascal_case_to_underscore(name)
-            setattr(self,underscore_name,core_data[name])
+            setattr(self,underscore_name,data[original_name])
             self.Attributes.append(underscore_name)
 
     def add(self,name,value):
+        # Add the odd attribute
         name = str(name)
-        if name in self.CoreAttributes.keys():
-            raise Exception('Cannot add ' + str(name) + ' to object attributes: Attribute exists in core list.')
         underscore_name = self.String.pascal_case_to_underscore(name)
+        if underscore_name in self.Attributes:
+            raise Exception('Attribute ' + str(name) + ' has already been added.')
         setattr(self,underscore_name,value)
         self.Attributes.append(underscore_name)
 
     def get(self,name):
-        name = str(name)
         if name in self.Attributes:
             return getattr(self,name)
         else:
@@ -64,24 +82,17 @@ class CoreObject(object):
 
     def list(self):
         return sorted(self.Attributes)
+    
+    def _convert_type(self,data,new_type):
+        if new_type == 'string':
+            return str(data)
+        elif new_type == 'integer':
+            return int(data)
+        else:
+            raise Exception('Unrecognized new data type ' + str(new_type))
 
-    def _validate_core_attributes(self,data,attributes,description):
-        bad_attributes = []
-        for attribute in data:
-            if attribute not in self.CoreAttributes.keys():
-                bad_attributes.append(attribute)
-        if bad_attributes:
-            raise Exception('Invalid keys in ' + description + ' core attributes: ' + ', ' . join(bad_attributes))
-        missing_attributes = []
-        for key in attributes:
-            if key not in data:
-                missing_attributes.append(key)
-        if missing_attributes:
-            raise Exception('Keys in ' + description + ' core attributes are incomplete: ' + ', ' . join(missing_attributes))
-
-class Series(object):
-
-    # A series of objects
+class Series():
+    # A list of objects. Preserves order in which objects are added unless resorted.
 
     def __init__(self):
         self.index = 0
@@ -100,6 +111,28 @@ class Series(object):
         if self.series is None:
             return None
         return self.series[0]
+
+    def get_by_attribute(self,attribute,value):
+        # Returns all objects in a series for which the attribute matches a specific value
+        if self.series is None:
+            return None
+        results = None
+        for each_object in self.series:
+            if hasattr(each_object,attribute) and getattr(each_object,attribute) == value:
+                if results is None:
+                    results = []
+                results.append(each_object)
+        if results is None:
+            return None
+        if len(results) == 1:
+            return results[0]
+        return results
+
+    def get_by_index(self,index):
+        # Get object in series according to fixed order
+        if self.series is None:
+            return None
+        return self.series[index]
 
     def last(self):
         # Last object in series
@@ -126,19 +159,17 @@ class Series(object):
         if self.series is not None:
             self.series = sorted(self.series, key=lambda s: getattr(s,attribute), reverse=reverse)
 
-class String(object):
-
+class String():
     # Some useful string methods
 
     def __init__(self):
         pass
 
     def pascal_case_to_underscore(self,string):
-        # First line deals with whitespace
-        string = re.sub(r'\b[A-Za-z0-9]', lambda m: m.group().upper().replace("\b",""), str(string))
         return re.sub(r'(((?<=[a-z])[A-Z])|([A-Z](?![A-Z]|$)))', r'_\1', string).lower().strip('_')
 
 class User():
+    # Core user identity and management
 
     def __init__(self,username=USER):
         self.username=username

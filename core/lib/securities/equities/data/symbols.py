@@ -5,29 +5,23 @@ from jsonschema import validate
 import olympus.restapi as restapi
 import olympus.securities.equities.data as data
 
-from olympus import AttributeGetter, USER
-from olympus.securities import SECURITY_STANDARD_ATTRIBUTES, Security
-from olympus.securities.equities import INDEX_CLASS, SECURITY_CLASS_ETF, SECURITY_CLASS_STOCK
+from olympus import FileFinder, Return, Series,Series,  USER
+from olympus.securities.equities import CONFIG_FILE_DIRECTORY, INDEX_CLASS, SCHEMA_FILE_DIRECTORY, SECURITY_CLASS_ETF, SECURITY_CLASS_STOCK
 
-COMPANY_SYMBOL_SCHEMA_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/NasdaqSymbolList.json'
 ETF_INDEX_DATA_FILE_NAME = 'usexchange-etf+indexlist.csv'
 ETF_INDEX_DATA_URL = 'http://masterdatareports.com/Download-Files/AllTypes.csv'
 ETF_INDEX_JSON_FILE_NAME = 'usexchange-etf+indexlist.json'
-ETF_INDEX_SYMBOL_SCHEMA_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/ETFIndexSymbolList.json'
 JSON_FILE_SUFFIX = '-companylist.json'
 NASDAQ_TRADED_DATA_FILE_NAME = 'nasdaqtraded.txt'
 NASDAQ_TRADED_DATA_URL = 'ftp://ftp.nasdaqtrader.com/SymbolDirectory/nasdaqtraded.txt'
 NASDAQ_TRADED_JSON_FILE_NAME = 'nasdaqtraded.json'
-NASDAQ_TRADED_SYMBOL_SCHEMA_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'schema/NasdaqTradedSymbolList.json'
 NORMALIZE_CAP_REGEX = re.compile('[^0-9\.]')
 SYMBOL_COLLECTION = 'symbols'
-SYMBOL_CORRECTIONS_CONFIG_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'config/symbol_corrections.json'
 SYMBOL_DATA_URLS = [
 {'exchange':'amex','url':'https://api.nasdaq.com/api/screener/stocks?exchange=amex&download=true'},
 {'exchange':'nasdaq','url':'https://api.nasdaq.com/api/screener/stocks?exchange=nasdaq&download=true'},
 {'exchange':'nyse','url':'https://api.nasdaq.com/api/screener/stocks?exchange=nyse&download=true'}
 ]
-WATCHLIST_CONFIG_FILE = re.sub(r'(.*\/).*?$',r'\1', os.path.dirname(os.path.realpath(__file__)) ) + 'config/symbol_watchlists.json'
 
 class InitSymbols(data.Initializer):
 
@@ -54,8 +48,10 @@ class InitSymbols(data.Initializer):
 
         if self.verbose:
             print('Verifying and importing downloaded company symbol data.')
+        file_finder = FileFinder()
+        schema_file_name = file_finder.schema_file(SCHEMA_FILE_DIRECTORY,'NasdaqSymbolList')
         try:
-            with open(COMPANY_SYMBOL_SCHEMA_FILE) as schema_file:
+            with open(schema_file_name) as schema_file:
                 validation_schema = json.load(schema_file)
         except:
             self.clean_up()
@@ -96,7 +92,7 @@ class InitSymbols(data.Initializer):
                     company['IPO Year'] = company.pop('ipoyear')
                     company['Name'] = company.pop('name')
                     company['Sector'] = company.pop('sector')
-                    company['SecurityClass'] = SECURITY_CLASS_STOCK
+                    company['Security Class'] = SECURITY_CLASS_STOCK
                     company['Symbol'] = company.pop('symbol')
                     added_symbols[company['Symbol']] = True
                     json_write.append(company)
@@ -106,8 +102,10 @@ class InitSymbols(data.Initializer):
                 raise
         if self.verbose:
             print('Verifying downloaded ETF and index symbol data.')
+        file_finder = FileFinder()
+        schema_file_name = file_finder.schema_file(SCHEMA_FILE_DIRECTORY,'ETFIndexSymbolList')
         try:
-            with open(ETF_INDEX_SYMBOL_SCHEMA_FILE) as schema_file:
+            with open(schema_file_name) as schema_file:
                 validation_schema = json.load(schema_file)
         except:
             self.clean_up()
@@ -146,11 +144,11 @@ class InitSymbols(data.Initializer):
             for entry in json_data:
                 entry.pop('Trash',None)
                 if (re.search("Index", entry['Category'])):
-                    entry['SecurityClass'] = INDEX_CLASS
-                    entry['OriginalSymbol'] = entry.pop('Symbol')
-                    entry['Symbol'] = re.sub("^\.", "", entry['OriginalSymbol'])
+                    entry['Security Class'] = INDEX_CLASS
+                    entry['Original Symbol'] = entry.pop('Symbol')
+                    entry['Symbol'] = re.sub("^\.", "", entry['Original Symbol'])
                 else:
-                    entry['SecurityClass'] = SECURITY_CLASS_ETF
+                    entry['Security Class'] = SECURITY_CLASS_ETF
                 if entry['Symbol'] in added_symbols:
                     continue
                 added_symbols[entry['Symbol']] = True
@@ -162,8 +160,10 @@ class InitSymbols(data.Initializer):
 
         if self.verbose:
             print('Verifying downloaded Nasdaq traded symbol data.')
+        file_finder = FileFinder()
+        schema_file_name = file_finder.schema_file(SCHEMA_FILE_DIRECTORY,'NasdaqTradedSymbolList')
         try:
-            with open(NASDAQ_TRADED_SYMBOL_SCHEMA_FILE) as schema_file:
+            with open(schema_file_name) as schema_file:
                 validation_schema = json.load(schema_file)
         except:
             self.clean_up()
@@ -215,9 +215,9 @@ class InitSymbols(data.Initializer):
                 entry['Name'] = entry.pop('Security Name')
                 entry['Symbol'] = entry.pop('NASDAQ Symbol')
                 if entry.pop('ETF') == 'Y':
-                    entry['SecurityClass'] = SECURITY_CLASS_ETF
+                    entry['Security Class'] = SECURITY_CLASS_ETF
                 else:
-                    entry['SecurityClass'] = SECURITY_CLASS_STOCK
+                    entry['Security Class'] = SECURITY_CLASS_STOCK
                 json_write.append(entry)
             collection.insert_many(json_write)
         except:
@@ -248,23 +248,26 @@ class InitSymbols(data.Initializer):
         if self.verbose:
             print('Modifying stored symbol collections via configuration files.')
         collection = self.db[SYMBOL_COLLECTION]
+        file_finder = FileFinder()
         unknown_symbols = []
         # Symbol details
-        if os.path.isfile(SYMBOL_CORRECTIONS_CONFIG_FILE):
-            with open(SYMBOL_CORRECTIONS_CONFIG_FILE) as corrections_file:
+        config_file_name = file_finder.config_file(CONFIG_FILE_DIRECTORY,'symbol_corrections.json')
+        if os.path.isfile(config_file_name):
+            with open(config_file_name) as corrections_file:
                 corrections = json.load(corrections_file)
             for symbol in corrections:
                 if (corrections[symbol]['Action'] == 'update'):
-                    existing_symbol=collection.find_one({ "Symbol": symbol, "SecurityClass": corrections[symbol]['SecurityClass'] })
+                    existing_symbol=collection.find_one({ "Symbol": symbol, "Security Class": corrections[symbol]['Security Class'] })
                     if existing_symbol is None:
                         unknown_symbols.append(symbol)
                         continue
-                    recid = collection.update_one({ "Symbol": symbol, "SecurityClass": corrections[symbol]['SecurityClass'] },{ "$set": corrections[symbol]['What'] })
+                    recid = collection.update_one({ "Symbol": symbol, "Security Class": corrections[symbol]['Security Class'] },{ "$set": corrections[symbol]['What'] })
                 else:
                     raise Exception('Unknown operation ' + corrections[symbol]['Action'] + ' requested during symbol post population.')
         # Watchlists
-        if os.path.isfile(WATCHLIST_CONFIG_FILE):
-            with open(WATCHLIST_CONFIG_FILE) as watchlist_file:
+        config_file_name = file_finder.config_file(CONFIG_FILE_DIRECTORY,'symbol_watchlists.json')
+        if os.path.isfile(config_file_name):
+            with open(config_file_name) as watchlist_file:
                 watchlists = json.load(watchlist_file)
             for watchlist_name in watchlists:
                 existing_watchlist_symbols=collection.find({ "Watchlists": watchlist_name })
@@ -312,79 +315,52 @@ class InitSymbols(data.Initializer):
             self.clean_up()
             raise
 
-class _Symbols(object):
+class _Symbols(Series):
 
-    def __init__(self):
-        self.symbols = None
+    def __init__(self,schema):
+        super(_Symbols,self).__init__()
+        self.json_schema = schema
         self.unknown_symbols = None
-        self.symbol_indices = {}
-        self.symbol_index = 0
-        self.symbol_list = None
 
-    def add(self,symbol,symbol_object):
-        symbol = str(symbol).upper()
-        if self.symbols is None:
-            self.symbols = []
-        if self.symbol_list is None:
-            self.symbol_list = []
-        self.symbols.append(symbol_object)
-        self.symbol_list.append(symbol)
-        self.symbol_indices[symbol_object.symbol] = self.symbol_index
-        self.symbol_index = self.symbol_index + 1
+    def add_symbol(self,symbol,data):
+        symbol_object = Return(self.json_schema,data)
+        self.add(symbol_object)
 
     def add_unknown_symbols(self,unknown_symbols):
         if unknown_symbols and self.unknown_symbols is None:
             self.unknown_symbols = unknown_symbols
 
     def get_symbol(self,symbol):
-        symbol = str(symbol).upper()
-        if symbol not in self.symbol_indices:
-            return None
-        return self.symbols[self.symbol_indices[symbol]]
+        return self.get_by_attribute('symbol',symbol)
 
 class Read(restapi.Connection):
 
     def __init__(self,username=USER,**kwargs):
         super(Read,self).__init__(username,**kwargs)
-        self.attribute_getter = AttributeGetter(SECURITY_STANDARD_ATTRIBUTES)
-        self.data_keys = self.attribute_getter.data_keys
+        file_finder = FileFinder()
+        schema_file_name = file_finder.schema_file(SCHEMA_FILE_DIRECTORY,'Symbol')
+        with open(schema_file_name) as schema_file:
+            self.json_schema = json.load(schema_file)
 
     def get_symbol(self,symbol,**kwargs):
         symbol = str(symbol).upper()
         response = self.call('/equities/symbol/'+symbol)
         if (response.status_code == 404):
            raise SymbolNotFoundError(symbol)
-        data = json.loads(response.content)['symbol']
-        standard_data = {}
-        for attribute in self.data_keys:
-            standard_data[attribute] = data[attribute]
-        return_object = Security(standard_data)
-        for key in data:
-            if key in self.data_keys:
-                continue
-            return_object.add(key,data[key])
+        return_object = Return(self.json_schema,json.loads(response.content)['symbol'])
         return return_object
 
     def get_symbols(self,symbols,**kwargs):
         if not isinstance(symbols, list):
             raise Exception('Parameter "symbols" must be a list of security symbols.')
         symbol_string = ','.join([str(symbol).upper() for symbol in symbols])
-        return_object = _Symbols()
         response = self.call('/equities/symbols/'+symbol_string)
         content = json.loads(response.content)
+        return_object = _Symbols(self.json_schema)
         return_object.add_unknown_symbols(content['unknownSymbols'])
         if content['symbols']:
             for symbol in content['symbols']:
-                symbol_data = content['symbols'][symbol]
-                standard_data = {}
-                for attribute in self.data_keys:
-                    standard_data[attribute] = symbol_data[attribute]
-                symbol_object = Security(standard_data)
-                for misc_key in symbol_data:
-                    if misc_key in self.data_keys:
-                        continue
-                    symbol_object.add(misc_key,symbol_data[misc_key])
-                return_object.add(symbol,symbol_object)
+                return_object.add_symbol(symbol,content['symbols'][symbol])
         return return_object
 
 class SymbolNotFoundError(Exception):

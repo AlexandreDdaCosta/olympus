@@ -3,156 +3,204 @@
   "type": "object",
   "properties": {
     "52WkHigh": {
+      "description": "",
       "type": "number"
     },
     "52WkLow": {
+      "description": "",
       "type": "number"
     },
     "askId": {
+      "description": "",
       "pattern": "^[A-Z]{1}$",
       "type": "string"
     },
     "askPrice": {
+      "description": "",
       "type": "number"
     },
     "askSize": {
+      "description": "",
       "type": "integer"
     },
     "assetMainType": {
+      "description": "",
       "pattern": "^EQUITY$",
       "type": "string"
     },
     "assetSubType": {
+      "description": "",
       "type": "string"
     },
     "assetType": {
+      "description": "",
       "pattern": "^EQUITY$",
       "type": "string"
     },
     "bidId": {
+      "description": "",
       "pattern": "^[A-Z]{1}$",
       "type": "string"
     },
     "bidPrice": {
+      "description": "",
       "type": "number"
     },
     "bidSize": {
+      "description": "",
       "type": "integer"
     },
     "bidTick": {
+      "description": "",
       "type": "string"
     },
     "closePrice": {
+      "description": "",
       "type": "number"
     },
     "cusip": {
+      "description": "",
       "pattern": "^[A-Z0-9]{9}$",
       "type": "string"
     },
     "delayed": {
+      "description": "",
       "type": "boolean"
     },
     "description": {
+      "description": "",
       "type": "string"
     },
     "digits": {
+      "description": "",
       "type": "integer"
     },
     "divAmount": {
+      "description": "",
       "type": "number"
     },
     "divDate": {
+      "description": "",
       "type": "string"
     },
     "divYield": {
+      "description": "",
       "type": "number"
     },
     "exchange": {
+      "description": "",
       "pattern": "^(n|q)$",
       "type": "string"
     },
     "exchangeName": {
+      "description": "",
       "pattern": "^(NASD|NYSE)$",
       "type": "string"
     },
     "highPrice": {
+      "description": "",
       "type": "number"
     },
     "lastId": {
+      "description": "",
       "pattern": "^[A-Z]{1}$",
       "type": "string"
     },
     "lastPrice": {
+      "description": "",
       "type": "number"
     },
     "lastSize": {
+      "description": "",
       "type": "integer"
     },
     "lowPrice": {
+      "description": "",
       "type": "number"
     },
     "marginable": {
+      "description": "",
       "type": "boolean"
     },
     "mark": {
+      "description": "",
       "type": "number"
     },
     "markChangeInDouble": {
+      "description": "",
       "type": "number"
     },
     "markPercentChangeInDouble": {
+      "description": "",
       "type": "number"
     },
     "nAV": {
+      "description": "",
       "type": "number"
     },
     "netChange": {
+      "description": "",
       "type": "number"
     },
     "netPercentChangeInDouble": {
+      "description": "",
       "type": "number"
     },
     "openPrice": {
+      "description": "",
       "type": "number"
     },
     "peRatio": {
+      "description": "",
       "type": "number"
     },
     "quoteTimeInLong": {
+      "description": "",
       "type": "integer"
     },
     "realtimeEntitled": {
+      "description": "",
       "type": "boolean"
     },
     "regularMarketLastPrice": {
+      "description": "",
       "type": "number"
     },
     "regularMarketLastSize": {
+      "description": "",
       "type": "integer"
     },
     "regularMarketNetChange": {
+      "description": "",
       "type": "number"
     },
     "regularMarketPercentChangeInDouble": {
+      "description": "",
       "type": "number"
     },
     "regularMarketTradeTimeInLong": {
+      "description": "",
       "type": "integer"
     },
     "securityStatus": {
+      "description": "",
       "pattern": "^(Normal)$",
       "type": "string"
     },
     "shortable": {
+      "description": "",
       "type": "boolean"
     },
     "symbol": {
+      "description": "",
       "type": "string"
     },
     "totalVolume": {
+      "description": "",
       "type": "integer"
     },
     "volatility": {
+      "description": "",
       "type": "number"
     }
   },

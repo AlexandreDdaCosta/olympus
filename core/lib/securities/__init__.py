@@ -1,7 +1,4 @@
-from olympus import CoreObject, Series, String
-
-# Core object 
-SECURITY_STANDARD_ATTRIBUTES = { "Name":str, "SecurityClass":str, "Symbol":str }
+from olympus import Return, Series, String
 
 # The attributes that all price quotes must have
 PRICE_STANDARD_ATTRIBUTES = [ "Close", "DateTime", "High", "Low", "Open", "Volume" ]
@@ -142,8 +139,3 @@ A time-ordered list of quote objects
                 raise Exception('All items in quote_series must be of the "Quote" class.')
             self.series.append(quote)
         self.sort('datetime',reverse_datetime_order)
-
-class Security(CoreObject):
-
-    def __init__(self,core_data):
-        super(Security,self).__init__(core_data,SECURITY_STANDARD_ATTRIBUTES,'tradeable security')
