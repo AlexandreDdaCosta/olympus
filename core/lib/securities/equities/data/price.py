@@ -146,13 +146,7 @@ Notes:
 
 # Classes for returned adjustment data
 
-#ALEX
-class _Adjustment(object):
-
-    def __init__(self):
-        pass
-
-class _Dividend(object):
+class _Dividend():
 
     def __init__(self,data,dividend_date):
         string = String()
@@ -164,7 +158,7 @@ class _Dividend(object):
                attribute_name = string.pascal_case_to_underscore(list(DIVIDEND_FORMAT.keys())[index])
             setattr(self,attribute_name,dividend_data[index])
 
-class _Split(object):
+class _Split():
 
     def __init__(self,split_data,split_date):
         string = String()
@@ -915,9 +909,6 @@ class Monthly(Daily):
 
 class QuoteMerger():
 
-    def __init__(self):
-        pass
-
     def compare_quotes(self,quote):
         for item in ['Open','Adjusted Open']:
             if getattr(self,item) is None:
@@ -1067,7 +1058,7 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
             end_date = int(end_date) * 1000 # Milliseconds
         return start_date, end_date
 
-class _LatestQuotes(object):
+class _LatestQuotes():
 
     def __init__(self):
         self.symbols = None

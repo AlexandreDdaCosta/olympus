@@ -12,9 +12,6 @@ OLDEST_QUOTE_DATE = '1990-01-01'
 
 class DateVerifier(object):
 
-    def __init__(self):
-        pass
-
     def verify_date(self,trading_date):
         return dt.strptime(trading_date, QUOTE_DATE_FORMAT)
 
@@ -51,7 +48,6 @@ class TradingDates(DateVerifier):
 
     def __init__(self,**kwargs):
         super(TradingDates,self).__init__(**kwargs)
-        pass
 
     def holidays(self,start_date,end_date=None,**kwargs):
         # Returns a count of all trading holidays between two dates, inclusive

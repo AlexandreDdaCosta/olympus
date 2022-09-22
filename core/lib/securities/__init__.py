@@ -13,7 +13,7 @@ MAP_ADJUSTED_ATTRIBUTES = {
     "Adjusted Volume": "volume"
 }
 
-class _ClassMisc(object):
+class _ClassMisc():
 
     def __init__(self,named_attributes=None):
         self.misc_attributes = None
@@ -38,7 +38,7 @@ class _ClassMisc(object):
     def list(self):
         return sorted(self.misc_attributes)
 
-class _ValidateAttributes(object):
+class _ValidateAttributes():
 
     def __init__(self,quote,attribute_list,attribute_type):
         if not isinstance(quote, dict):
@@ -59,7 +59,7 @@ class _ValidateAttributes(object):
 # Standardized quote format objects for all securities.
 # These are intended for quotes in a series.
 
-class QuoteAdjustments(object):
+class QuoteAdjustments():
 
     # Typically these attributes reference equity prices, in which past as-traded prices and volumes can be adjusted for dividends and splits.
 
@@ -78,7 +78,7 @@ class QuoteAdjustments(object):
     def list(self):
         return sorted(self.adjusted_attributes)
 
-class Quote(object):
+class Quote():
 
     def __init__(self,quote):
         self.adjustments = None

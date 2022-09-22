@@ -7,10 +7,7 @@ DEFAULT_MOVING_AVERAGE_TYPE = 'Simple'
 DEFAULT_MOVING_AVERAGE_LENGTH = 50
 VALID_MOVING_AVERAGE_TYPES = ['Exponential', 'Simple']
 
-class Indicators(object):
-
-    def __init__(self,**kwargs):
-        pass
+class Indicators():
 
     def average_true_range(self,price_series,**kwargs):
         print(json.dumps(price_series,indent=4))

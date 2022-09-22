@@ -20,9 +20,6 @@ PASSWORD_ENABLED_SERVICES = [ MONGODB_SERVICE, REDIS_SERVICE, RESTAPI_SERVICE ]
 class FileFinder():
     # Retrieves location of system files
 
-    def __init__(self):
-        pass
-
     def config_file(self,base_location,config_name):
         return base_location + config_name
 
@@ -161,9 +158,6 @@ class Series():
 
 class String():
     # Some useful string methods
-
-    def __init__(self):
-        pass
 
     def pascal_case_to_underscore(self,string):
         return re.sub(r'(((?<=[a-z])[A-Z])|([A-Z](?![A-Z]|$)))', r'_\1', string).lower().strip('_')
