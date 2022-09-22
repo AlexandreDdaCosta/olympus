@@ -21,7 +21,7 @@ class FileFinder():
     # Retrieves location of system files
 
     def config_file(self,base_location,config_name):
-        return base_location + config_name
+        return base_location + config_name + '.config'
 
     def schema_file(self,base_location,schema_name):
         return base_location + schema_name + '.json'

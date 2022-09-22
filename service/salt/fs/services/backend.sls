@@ -226,7 +226,7 @@ node-backend:
 
 {% endfor %}
 
-/usr/local/lib/python3.9/dist-packages/olympus/securities/equities/config/symbol_corrections.json:
+/usr/local/lib/python3.9/dist-packages/olympus/securities/equities/config/symbol_corrections.json.config:
   file.managed:
     - group: root
     - mode: 0644
@@ -234,7 +234,7 @@ node-backend:
     - template: jinja
     - user: root
 
-/usr/local/lib/python3.9/dist-packages/olympus/securities/equities/config/symbol_watchlists.json:
+/usr/local/lib/python3.9/dist-packages/olympus/securities/equities/config/symbol_watchlists.json.config:
   file.managed:
     - group: root
     - mode: 0644
