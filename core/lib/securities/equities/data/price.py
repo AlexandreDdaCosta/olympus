@@ -17,6 +17,7 @@ from olympus.securities import Quote
 from olympus.securities.equities import SCHEMA_FILE_DIRECTORY
 from olympus.securities.equities.data import REQUEST_TIMEOUT
 from olympus.securities.equities.data.datetime import DateVerifier
+from olympus.securities.equities.data.schema import SchemaParser, DIVIDENDS_SCHEMA, SPLITS_SCHEMA
 
 socket.setdefaulttimeout(REQUEST_TIMEOUT) # For urlretrieve
 
@@ -32,7 +33,6 @@ MAP_INTRADAY_PRICE_KEYS = {
     "Volume": "volume"
     }
 PRICE_FORMAT = [ "Open", "High", "Low", "Close", "Volume", "Adjusted Open", "Adjusted High", "Adjusted Low", "Adjusted Close", "Adjusted Volume" ]
-SPLIT_FORMAT = { "Numerator":int, "Denominator":int, "Price Dividend Adjustment":float, "Volume Adjustment":float }
 VALID_DAILY_WEEKLY_PERIODS = {'1M':30,'3M':91,'6M':183,'1Y':365,'2Y':730,'5Y':1825,'10Y':3652,'20Y':7305,'All':None}
 VALID_INTRADAY_FREQUENCIES = {1:50, 5:260, 10:260, 15:260, 30:260}
 # Keys: Frequency of quote (in minutes)
@@ -147,50 +147,32 @@ Notes:
 
 # Classes for returned adjustment data
 
-class _Dividend():
-
-    def __init__(self,data,dividend_date):
-        string = String()
-        self.date = dividend_date
-        for index in range(0, len(list(DIVIDEND_FORMAT.keys()))):
-            if index >= len(data):
-               attribute_name = string.pascal_case_to_underscore(list(DIVIDEND_FORMAT.keys())[index - 1]) # Case of the missing adjusted value
-            else:
-               attribute_name = string.pascal_case_to_underscore(list(DIVIDEND_FORMAT.keys())[index])
-            setattr(self,attribute_name,dividend_data[index])
-
-class _Split():
-
-    def __init__(self,split_data,split_date):
-        string = String()
-        self.date = split_date
-        for index in range(0, len(list(SPLIT_FORMAT.keys()))):
-            attribute_name = string.pascal_case_to_underscore(list(SPLIT_FORMAT.keys())[index])
-            setattr(self,attribute_name,split_data[index])
-
 class _Adjustments(Series):
 
     def __init__(self,adjustment_type,data,query_date):
         super(_Adjustments,self).__init__()
-        self.query_date = query_date
         if data is None:
             return
-        self.dates = []
-        for adjustment in data:
-            if adjustment_type == 'split' or adjustment_type == 'dividend':
-                adjustment_date = dt.strptime(adjustment,"%Y-%m-%d")
-                self.dates.append(adjustment_date)
-                if adjustment_type == 'split':
-                    adjustment_object = _Split(data[adjustment],adjustment_date)
-                else:
-                    adjustment_object = _Dividend(data[adjustment],adjustment_date_object)
-            elif adjustment_type == 'adjustment':
-                adjustment_object = _Adjustment(adjustment)
-            else:
-                raise Exception('Programming error: Unrecognized adjustment type ' + str(adjustment_type))
-            self.add(adjustment_object)
-        self.sort('date',True)
-        self.dates = sorted(self.dates,reverse=True)
+        self.query_date = query_date
+        schema_parser = SchemaParser()
+        if adjustment_type == 'dividend':
+            json_schema = DIVIDENDS_SCHEMA
+        elif adjustment_type == 'split':
+            json_schema = SPLITS_SCHEMA
+        else:
+            raise Exception('Unrecognized adjustment type ' + str(adjustment_type) + 'given to _Adjustments object')
+        for adjustment_date in data:
+            database_format = schema_parser.database_format_columns(json_schema)
+            adjustment_data = {}
+            format_index = 0
+            for key in database_format:
+                adjustment_data[key] = data[adjustment_date][format_index]
+                format_index = format_index + 1
+                # Date is the key to the database structure
+                adjustment_data['Date'] = adjustment_date
+            data_object = Return(json_schema,adjustment_data)
+            self.add(data_object)
+        self.sort('date',reverse=True)
 
 class Adjustments(data.Connection):
     '''
@@ -240,6 +222,7 @@ date more recent than or matching the date of the most recent split is therefore
         self.adjustment_split_date = None
         self.adjusted_symbol = None
         self.adjustment_data = None
+        self.schema_parser = SchemaParser()
         self.split_adjusted_symbol = None
         self.split_data_date = None
 
@@ -363,7 +346,8 @@ date more recent than or matching the date of the most recent split is therefore
                 write_dict = {}
                 write_dict['Time'] = str(dt.now().astimezone())
                 write_dict['Adjustment'] = 'Dividends'
-                write_dict['Format'] = list(DIVIDEND_FORMAT.keys())
+                database_format = self.schema_parser.database_format_columns(DIVIDENDS_SCHEMA)
+                write_dict['Format'] = database_format
                 write_dict['Start Date'] = start_dividend_date
                 write_dict['End Date'] = end_dividend_date
                 write_dict['Dividends'] = json_dividends
@@ -429,8 +413,8 @@ date more recent than or matching the date of the most recent split is therefore
                 if last_split is not None:
                     price_dividend_adjustment = price_dividend_adjustment * float(last_split[2])
                     volume_adjustment = volume_adjustment * float(last_split[3])
-                json_split.append(price_dividend_adjustment)
-                json_split.append(volume_adjustment)
+                json_split.append(float(price_dividend_adjustment))
+                json_split.append(float(volume_adjustment))
                 last_split = json_split
                 if json_splits is None:
                     json_splits = {}
@@ -438,7 +422,8 @@ date more recent than or matching the date of the most recent split is therefore
             write_dict = {}
             write_dict['Time'] = str(dt.now().astimezone())
             write_dict['Adjustment'] = 'Splits'
-            write_dict['Format'] = list(SPLIT_FORMAT.keys())
+            database_format = self.schema_parser.database_format_columns(SPLITS_SCHEMA)
+            write_dict['Format'] = database_format
             write_dict['Start Date'] = start_split_date
             write_dict['End Date'] = end_split_date
             write_dict['Splits'] = json_splits
@@ -456,9 +441,12 @@ date more recent than or matching the date of the most recent split is therefore
         # Returns split adjustment values for unadjusted prices on a given date
         symbol = str(symbol).upper()
         if self.split_adjusted_symbol is None or self.split_adjusted_symbol != symbol or self.split_data_date is None or self._is_stale_data(self.split_data_date):
-            (self.split_adjustment_data,self.split_data_date) = self.splits(symbol,**kwargs) 
+            #(self.split_adjustment_data,self.split_data_date) = self.splits(symbol,**kwargs) 
+            self.splits_series = self.splits(symbol,**kwargs) 
+            self.split_data_date = self.splits_series.query_date
             self.split_adjusted_symbol = symbol
-        if self.split_adjustment_data is not None:
+        #if self.split_adjustment_data is not None:
+        if self.splits_series.list() is not None:
             for adjustment_date in reversed(self.split_adjustment_data):
                 if value_date < adjustment_date:
                     return(self.split_adjustment_data[adjustment_date])

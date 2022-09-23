@@ -83,6 +83,7 @@
       "type": "number"
     },
     "divDate": {
+      "convert_type": "datetime_milliseconds_object",
       "description": "Payment date of latest cash dividend",
       "type": "string"
     },
@@ -106,7 +107,6 @@
       "type": "number"
     },
     "lastId": {
-      "description": "",
       "description": "Owner of requested trade",
       "pattern": "^[A-Z]{1}$",
       "type": "string"
@@ -179,7 +179,6 @@
       "type": "integer"
     },
     "regularMarketNetChange": {
-      "description": "",
       "description": "Difference in share price since the end of the last session of standard trading hours",
       "type": "number"
     },

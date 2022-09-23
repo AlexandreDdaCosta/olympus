@@ -5,9 +5,10 @@ from dateutil.relativedelta import MO, relativedelta
 from datetime import datetime as dt
 from datetime import timedelta
 
+from olympus import DATE_STRING_FORMAT as QUOTE_DATE_FORMAT
+
 HALF_DAY_NAMES = ['Independence Eve','Black Friday','Christmas Eve']
 HOLIDAY_NAMES = ['New Years Day','MLK Day','Presidents Day','Good Friday','Memorial Day','Juneteenth','Independence Day','Labor Day','Thanksgiving','Christmas']
-QUOTE_DATE_FORMAT = "%Y-%m-%d"
 OLDEST_QUOTE_DATE = '1990-01-01'
 
 class DateVerifier(object):

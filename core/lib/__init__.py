@@ -2,6 +2,7 @@
 
 import os, re, shutil, stat
 
+from datetime import datetime as dt
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from os.path import isfile
@@ -10,6 +11,8 @@ USER = 'olympus'
 
 ARGON2_CONFIG = { "memory_cost": 64*1024, "parallelism": 1, "salt_bytes": 16, "time_cost": 3 }
 CLIENT_CERT='/etc/ssl/localcerts/client-key-crt.pem'
+DATE_STRING_FORMAT = "%Y-%m-%d"
+DATETIME_STRING_MILLISECONDS_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 MONGODB_SERVICE = 'mongodb'
 REDIS_SERVICE = 'redis'
 RESTAPI_RUN_USERNAME = 'node'
@@ -47,14 +50,14 @@ class Return():
             raise Exception(validation_error)
         for name in data:
             original_name = name
+            if schema['properties'][original_name]['type'] == 'null' or data[original_name] == '':
+                data[original_name] = None
             if 'convert_name' in schema['properties'][name]:
                 # Pascal case name alternative
                 name = schema['properties'][name]['convert_name']
             if 'convert_type' in schema['properties'][original_name]:
                 # New python data type
                 data[original_name] = self._convert_type(data[original_name],schema['properties'][original_name]['convert_type'])
-            if schema['properties'][original_name]['type'] == 'null' or data[original_name] == '':
-                data[original_name] = None
             underscore_name = self.String.pascal_case_to_underscore(name)
             setattr(self,underscore_name,data[original_name])
             self.Attributes.append(underscore_name)
@@ -81,10 +84,18 @@ class Return():
         return sorted(self.Attributes)
     
     def _convert_type(self,data,new_type):
-        if new_type == 'string':
-            return str(data)
+        if data is None:
+            return None
+        if new_type == 'date_object':
+            # This assumes the data is a date string of form DATE_STRING_FORMAT
+            return dt.strptime(data, DATE_STRING_FORMAT)
+        elif new_type == 'datetime_milliseconds_object':
+            # This assumes the data is a date string of form DATETIME_STRING_MILLISECONDS_FORMAT
+            return dt.strptime(data, DATETIME_STRING_MILLISECONDS_FORMAT)
         elif new_type == 'integer':
             return int(data)
+        elif new_type == 'string':
+            return str(data)
         else:
             raise Exception('Unrecognized new data type ' + str(new_type))
 
@@ -159,9 +170,10 @@ class Series():
     def objects(self):
         return self.series
 
-    def sort(self,attribute,reverse=False):
+    def sort(self,attribute,**kwargs):
         # Sort the series by an object attribute
         if self.series is not None:
+            reverse = kwargs.get('reverse',False)
             self.series = sorted(self.series, key=lambda s: getattr(s,attribute), reverse=reverse)
 
 class String():
