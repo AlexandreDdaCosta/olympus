@@ -2,6 +2,7 @@ import collections, datetime, json, os, re, shutil, socket, subprocess, time
 
 from datetime import date, timedelta, timezone
 from datetime import datetime as dt
+from dateutil import tz
 from dateutil.parser import parse
 from file_read_backwards import FileReadBackwards
 from jsonschema import validate
@@ -17,7 +18,7 @@ from olympus.securities import Quote
 from olympus.securities.equities import SCHEMA_FILE_DIRECTORY
 from olympus.securities.equities.data import REQUEST_TIMEOUT
 from olympus.securities.equities.data.datetime import DateVerifier
-from olympus.securities.equities.data.schema import SchemaParser, DIVIDENDS_SCHEMA, SPLITS_SCHEMA
+from olympus.securities.equities.data.schema import ADJUSTMENTS_SCHEMA, DIVIDENDS_SCHEMA, SPLITS_SCHEMA, SchemaParser
 
 socket.setdefaulttimeout(REQUEST_TIMEOUT) # For urlretrieve
 
@@ -32,6 +33,7 @@ MAP_INTRADAY_PRICE_KEYS = {
     "Volume": "volume"
     }
 PRICE_FORMAT = [ "Open", "High", "Low", "Close", "Volume", "Adjusted Open", "Adjusted High", "Adjusted Low", "Adjusted Close", "Adjusted Volume" ]
+TIMEZONE = tz.gettz("America/New_York")
 VALID_DAILY_WEEKLY_PERIODS = {'1M':30,'3M':91,'6M':183,'1Y':365,'2Y':730,'5Y':1825,'10Y':3652,'20Y':7305,'All':None}
 VALID_INTRADAY_FREQUENCIES = {1:50, 5:260, 10:260, 15:260, 30:260}
 # Keys: Frequency of quote (in minutes)
@@ -158,24 +160,29 @@ class _Adjustments(Series):
             json_schema = DIVIDENDS_SCHEMA
         elif adjustment_type == 'split':
             json_schema = SPLITS_SCHEMA
+        elif adjustment_type == 'merged':
+            json_schema = ADJUSTMENTS_SCHEMA
         else:
             raise Exception('Unrecognized adjustment type ' + str(adjustment_type) + 'given to _Adjustments object')
-        for adjustment_date in data:
-            database_format = schema_parser.database_format_columns(json_schema)
-            adjustment_data = {}
-            format_index = 0
-            for key in database_format:
-                try:
-                    adjustment_data[key] = data[adjustment_date][format_index]
-                except IndexError:
-                    break
-                except:
-                    raise
-                format_index = format_index + 1
-            # Date is the key to the database structure
-            adjustment_data['Date'] = adjustment_date
-            data_object = Return(json_schema,adjustment_data)
-            self.add(data_object)
+        if adjustment_type == 'dividend' or adjustment_type == 'split':
+            for entry in data:
+                database_format = schema_parser.database_format_columns(json_schema)
+                adjustment_data = {}
+                format_index = 0
+                for key in database_format:
+                    try:
+                        adjustment_data[key] = entry[format_index]
+                    except IndexError:
+                        break
+                    except:
+                        raise
+                    format_index = format_index + 1
+                data_object = Return(json_schema,adjustment_data)
+                self.add(data_object)
+        else:
+            for entry in data:
+                data_object = Return(json_schema,entry)
+                self.add(data_object)
         self.sort('date',reverse=True)
 
 class Adjustments(data.Connection):
@@ -243,17 +250,21 @@ date more recent than or matching the date of the most recent split is therefore
         adjustments_data = collection.find_one({ 'Adjustment': 'Merged' },{ '_id': 0 })
         if adjustments_data is None:
             regen = True
-        if regen is True or self._is_stale_data(adjustments_data['Time Dividends']) or self._is_stale_data(adjustments_data['Time Splits']):
+        else:
+            dividends_query_time = adjustments_data['Time Dividends'].replace(tzinfo=datetime.timezone.utc).astimezone(TIMEZONE)
+            splits_query_time = adjustments_data['Time Splits'].replace(tzinfo=datetime.timezone.utc).astimezone(TIMEZONE)
+        if regen is True or self._is_stale_data(dividends_query_time) or self._is_stale_data(splits_query_time):
             splits = self.splits(symbol,**kwargs) 
             splits_date = self.splits_series.query_date
+            splits.sort('date')
             dividends = self.dividends(symbol,**kwargs) 
             dividends_date = dividends.query_date
+            dividends.sort('date')
             adjustments = []
             split_index = 0
             if dividends is not None:
                 dividend = dividends.next()
                 while dividend is not None:
-                    print('ALEX WHILE 1')
                     if dividend.get('adjusted_dividend') is not None:
                         dividend_adjustment = dividend.adjusted_dividend
                     else:
@@ -261,7 +272,6 @@ date more recent than or matching the date of the most recent split is therefore
                     dividend_written = False
                     split = splits.next()
                     while split is not None:
-                        print('ALEX WHILE 2')
                         if dividend.date > split.date:
                             adjustments.append({ 'Date': dividend.date, 'Dividend': dividend_adjustment })
                             dividend_written = True
@@ -277,22 +287,26 @@ date more recent than or matching the date of the most recent split is therefore
                         adjustments.append({ 'Date': dividend.date, 'Dividend': dividend_adjustment })
                     dividend = dividends.next()
             while split is not None:
-                print('ALEX WHILE 3')
                 adjustments.append({ 'Date': split.date, 'Price Adjustment': split.price_dividend_adjustment, 'Volume Adjustment': split.volume_adjustment })
                 split = splits.next()
             if len(adjustments) == 0:
                 adjustments = None
             write_dict = {}
-            write_dict['Time'] = str(dt.now().astimezone())
+            write_dict['Time'] = dt.now().astimezone()
             write_dict['Adjustment'] = 'Merged'
             write_dict['Time Dividends'] = dividends_date
             write_dict['Time Splits'] = splits_date
             write_dict['Adjustments'] = adjustments
             collection.delete_many({ 'Adjustment': 'Merged' })
             collection.insert_one(write_dict)
-            return adjustments
+            #ALEX
+            returndata = adjustments
+            query_date = write_dict['Time']
         else:
-            return adjustments_data['Adjustments']
+            returndata = adjustments_data['Adjustments']
+            query_date = adjustments_data['Time']
+        return_object = _Adjustments('merged',returndata,query_date)
+        return return_object
 
     def dividends(self,symbol,**kwargs):
         symbol = str(symbol).upper()
@@ -309,11 +323,17 @@ date more recent than or matching the date of the most recent split is therefore
         start_dividend_date = None
         end_dividend_date = None
         if dividend_data is not None:
-            start_dividend_date = dividend_data['Start Date']
-            end_dividend_date = dividend_data['End Date']
-            query_date = dividend_data['Time']
+            query_date = dividend_data['Time'].replace(tzinfo=datetime.timezone.utc).astimezone()
+            if dividend_data['Start Date'] is not None:
+                start_dividend_date = dividend_data['Start Date'].replace(tzinfo=datetime.timezone.utc).astimezone(TIMEZONE)
+            else:
+                start_dividend_date = None
+            if dividend_data['End Date'] is not None:
+                end_dividend_date = dividend_data['End Date'].replace(tzinfo=datetime.timezone.utc).astimezone(TIMEZONE)
+            else:
+                end_dividend_date = None
         if regen is False and dividend_data is not None:
-            stale = self._is_stale_data(dividend_data['Time'])
+            stale = self._is_stale_data(query_date)
         elif dividend_data is None:
             regen = True
         returndata = None
@@ -328,7 +348,8 @@ date more recent than or matching the date of the most recent split is therefore
                     json_dividend = []
                     line = line.rstrip()
                     pieces = line.rstrip().split(',')
-                    dividend_date = pieces[0]
+                    dividend_date = dt.strptime(pieces[0],DATE_STRING_FORMAT).astimezone(TIMEZONE)
+                    json_dividend.append(dividend_date)
                     adjusted_dividend = float(pieces[1])
                     if (start_dividend_date is None or start_dividend_date >= dividend_date):
                         start_dividend_date = dividend_date
@@ -337,16 +358,16 @@ date more recent than or matching the date of the most recent split is therefore
                     # Here we have the dividend adjusted for any subsequent or concurrent splits.
                     # Determine the unadjusted value, and store that.
                     # If the adjusted value is different, store that as well.
-                    adjustment_factors = self.split_adjustment(symbol,dt.strptime(dividend_date,DATE_STRING_FORMAT),regen=regen,symbol_verify=False)
+                    adjustment_factors = self.split_adjustment(symbol,dividend_date,regen=regen,symbol_verify=False)
                     if adjustment_factors is not None:
                         # Use the reciprocal of the price/dividend adjustment to undo the split adjustment on the dividend
                         json_dividend.append(round(float(adjustment_factors.price_dividend_adjustment) * adjusted_dividend,2))
                     json_dividend.append(adjusted_dividend)
                     if json_dividends is None:
-                        json_dividends = {}
-                    json_dividends[dividend_date] = json_dividend
+                        json_dividends = []
+                    json_dividends.append(json_dividend)
                 write_dict = {}
-                write_dict['Time'] = str(dt.now().astimezone())
+                write_dict['Time'] = dt.now().astimezone()
                 write_dict['Adjustment'] = 'Dividends'
                 database_format = self.schema_parser.database_format_columns(DIVIDENDS_SCHEMA)
                 write_dict['Format'] = database_format
@@ -378,11 +399,17 @@ date more recent than or matching the date of the most recent split is therefore
         start_split_date = None
         end_split_date = None
         if split_data is not None:
-            query_date = split_data['Time']
-            start_split_date = split_data['Start Date']
-            end_split_date = split_data['End Date']
+            query_date = split_data['Time'].replace(tzinfo=datetime.timezone.utc).astimezone()
+            if split_data['Start Date'] is not None:
+                start_split_date = split_data['Start Date'].replace(tzinfo=datetime.timezone.utc).astimezone(TIMEZONE)
+            else:
+                start_split_date = None
+            if split_data['End Date'] is not None:
+                end_split_date = split_data['End Date'].replace(tzinfo=datetime.timezone.utc).astimezone(TIMEZONE)
+            else:
+                end_split_date = None
         if regen is False and split_data is not None:
-            stale = self._is_stale_data(split_data['Time'])
+            stale = self._is_stale_data(query_date)
         elif split_data is None:
             regen = True
         returndata = None
@@ -400,12 +427,15 @@ date more recent than or matching the date of the most recent split is therefore
             json_splits = None
             last_split = None
             for split_date in sorted(splits.keys(),reverse=True):
+                split_date_string = split_date
                 json_split = []
+                split_date = dt.strptime(split_date,DATE_STRING_FORMAT).astimezone(TIMEZONE)
+                json_split.append(split_date)
                 if (start_split_date is None or start_split_date >= split_date):
                     start_split_date = split_date
                 if (end_split_date is None or end_split_date <= split_date):
                     end_split_date = split_date
-                (numerator,denominator) = splits[split_date].rstrip().split(':')
+                (numerator,denominator) = splits[split_date_string].rstrip().split(':')
                 json_split.append(int(numerator))
                 json_split.append(int(denominator))
                 numerator = float(numerator)
@@ -413,16 +443,16 @@ date more recent than or matching the date of the most recent split is therefore
                 price_dividend_adjustment = (numerator/denominator)
                 volume_adjustment = (denominator/numerator)
                 if last_split is not None:
-                    price_dividend_adjustment = price_dividend_adjustment * float(last_split[2])
-                    volume_adjustment = volume_adjustment * float(last_split[3])
+                    price_dividend_adjustment = price_dividend_adjustment * float(last_split[3])
+                    volume_adjustment = volume_adjustment * float(last_split[4])
                 json_split.append(float(price_dividend_adjustment))
                 json_split.append(float(volume_adjustment))
                 last_split = json_split
                 if json_splits is None:
-                    json_splits = {}
-                json_splits[split_date] = json_split
+                    json_splits = []
+                json_splits.append(json_split)
             write_dict = {}
-            write_dict['Time'] = str(dt.now().astimezone())
+            write_dict['Time'] = dt.now().astimezone()
             write_dict['Adjustment'] = 'Splits'
             database_format = self.schema_parser.database_format_columns(SPLITS_SCHEMA)
             write_dict['Format'] = database_format
@@ -447,8 +477,8 @@ date more recent than or matching the date of the most recent split is therefore
             self.split_data_date = self.splits_series.query_date
             self.split_adjusted_symbol = symbol
         if self.splits_series.have_objects() is True:
-            self.splits_series.sort('date',reverse=True)
-            entry = self.splits_series.next()
+            self.splits_series.sort('date')
+            entry = self.splits_series.next(reset=True)
             while entry is not None:
                 if value_date < entry.date:
                     return(entry)
@@ -465,7 +495,6 @@ date more recent than or matching the date of the most recent split is therefore
         # If now is a weekday and after 9:00 PM, generated before 9:00 PM today
         # If now is a weekend day, generated before 9:00 last Friday
         stale = False
-        refresh_date_object = parse(refresh_date)
         now = dt.now().astimezone()
         time_zone_offset_string = str(now)[-5:]
         weekday_no = now.weekday()
@@ -476,16 +505,16 @@ date more recent than or matching the date of the most recent split is therefore
             nine_pm_yesterday_object = parse(nine_pm_yesterday)
             nine_pm = "%d-%02d-%02d 21:00:00.000000-" % (now.year,now.month,now.day) + time_zone_offset_string
             nine_pm_object = parse(nine_pm)
-            if now <= nine_pm_object and refresh_date_object < nine_pm_yesterday_object:
+            if now <= nine_pm_object and refresh_date < nine_pm_yesterday_object:
                 stale = True
-            elif now > nine_pm_object and refresh_date_object < nine_pm_object:
+            elif now > nine_pm_object and refresh_date < nine_pm_object:
                 stale = True
         else:
             # Weekend
             last_friday = now - timedelta(days=(weekday_no-4))
             last_friday_string = "%d-%02d-%02d 21:00:00.000000-04:00" % (last_friday.year,last_friday.month,last_friday.day)
             last_friday_object = parse(last_friday_string)
-            if refresh_date_object < last_friday_object:
+            if refresh_date < last_friday_object:
                 stale = True
         return stale
 

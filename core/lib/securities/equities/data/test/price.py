@@ -75,11 +75,12 @@ class TestPrice(testing.Test):
         collection = self.mongo_data.db[price_collection]
         initial_split_data = collection.find_one({ 'Adjustment': 'Splits' },{ '_id': 0, 'Interval': 0 })
         splits = self.adjustments.splits(TEST_SYMBOL_DIVSPLIT,regen=True)
+        splits.sort('date')
         last_split_date = None
         entry = splits.next()
         while entry is not None:
             if last_split_date is not None:
-                self.assertLess(entry.date,last_split_date)
+                self.assertGreater(entry.date,last_split_date)
             last_split_date = entry.date
             entry = splits.next()
         # Check that data was regenerated
@@ -93,11 +94,12 @@ class TestPrice(testing.Test):
         self.assertIsNone(dividends.first())
         initial_dividend_data = collection.find_one({ 'Adjustment': 'Dividends' },{ '_id': 0, 'Interval': 0 })
         dividends = self.adjustments.dividends(TEST_SYMBOL_DIVSPLIT,regen=True)
+        dividends.sort('date')
         last_dividend_date = None
         dividend = dividends.next()
         while dividend is not None:
             if last_dividend_date is not None:
-                self.assertLess(dividend.date,last_dividend_date)
+                self.assertGreater(dividend.date,last_dividend_date)
             last_dividend_date = dividend.date
             dividend = dividends.next()
         regen_dividend_data = collection.find_one({ 'Adjustment': 'Dividends' },{ '_id': 0, 'Interval': 0 })
@@ -117,15 +119,24 @@ class TestPrice(testing.Test):
         self.assertEqual(adjustments_dividend_data['Time'],regen_dividend_data['Time'])
         self.assertTrue(adjustments_dividend_data['Dividends'] == regen_dividend_data['Dividends'])
         last_adjustment_date = None
-        for adjustment in adjustments:
+        adjustments.sort('date',reverse=True)
+        adjustment = adjustments.next()
+        while adjustment is not None:
             if last_adjustment_date is not None:
-                self.assertLess(adjustment['Date'],last_adjustment_date)
-            last_adjustment_date = adjustment['Date']
-            if 'Dividend' in adjustment:
-                self.assertEqual(adjustment['Dividend'],dividends[adjustment['Date']]['Adjusted Dividend'])
-            if 'Price Adjustment' in adjustment:
-                self.assertEqual(adjustment['Price Adjustment'],splits[adjustment['Date']]['Price/Dividend Adjustment'])
-                self.assertEqual(adjustment['Volume Adjustment'],splits[adjustment['Date']]['Volume Adjustment'])
+                self.assertLess(adjustment.date,last_adjustment_date)
+            last_adjustment_date = adjustment.date
+            if adjustment.get('dividend') is not None:
+                print('ALEX1')
+                print(adjustment.date)
+                print(type(adjustment.date))
+                dividend = dividends.get_by_attribute('date',adjustment.date)
+                print(dividend)
+                # self.assertEqual(adjustment.dividend,dividends[adjustment['Date']]['Adjusted Dividend'])
+            if adjustment.get('price_adjustment') is not None:
+                print('ALEX2')
+                #self.assertEqual(adjustment.price_adjustment,splits[adjustment['Date']]['Price/Dividend Adjustment'])
+                #self.assertEqual(adjustment.volume_adjustment,splits[adjustment['Date']]['Volume Adjustment'])
+            adjustment = adjustments.next()
         adjustment_data = collection.find_one({ 'Adjustment': 'Merged' },{ '_id': 0, 'Interval': 0 })
         regen_adjustments = self.adjustments.adjustments(TEST_SYMBOL_DIVSPLIT,regen=True)
         regen_adjustment_data = collection.find_one({ 'Adjustment': 'Merged' },{ '_id': 0, 'Interval': 0 })

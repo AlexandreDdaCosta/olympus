@@ -1,9 +1,9 @@
 # Core constants and classes
 
-import os, re, shutil, stat
+import jsonschema, os, re, shutil, stat
 
 from datetime import datetime as dt
-from jsonschema import validate
+from jsonschema import Draft7Validator
 from jsonschema.exceptions import ValidationError
 from os.path import isfile
 
@@ -14,12 +14,17 @@ CLIENT_CERT='/etc/ssl/localcerts/client-key-crt.pem'
 # Date formats based on ISO 8601
 DATE_STRING_FORMAT = "%Y-%m-%d"
 DATETIME_STRING_MILLISECONDS_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
+
+# Services
 MONGODB_SERVICE = 'mongodb'
 REDIS_SERVICE = 'redis'
-RESTAPI_RUN_USERNAME = 'node'
 RESTAPI_SERVICE = 'restapi'
-
 PASSWORD_ENABLED_SERVICES = [ MONGODB_SERVICE, REDIS_SERVICE, RESTAPI_SERVICE ]
+
+RESTAPI_RUN_USERNAME = 'node'
+def is_datetime(checker,instance):
+    return isinstance(instance,dt)
+VALIDATOR = jsonschema.validators.extend(Draft7Validator,type_checker=Draft7Validator.TYPE_CHECKER.redefine('datetime', is_datetime))
 
 class FileFinder():
     # Retrieves location of system files
@@ -42,7 +47,7 @@ class Return():
         self.String = String()
         validation_error = None
         try:
-            validate(instance=data,schema=schema)
+            VALIDATOR(schema=schema).validate(data)
         except ValidationError as e:
             validation_error = 'Return data validation error occurred: ' + e.args[0]
         except:
