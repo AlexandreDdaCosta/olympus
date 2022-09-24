@@ -1,5 +1,37 @@
 # Various local schemas used for returned data
 
+ADJUSTMENTS_SCHEMA = {
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "Date": {
+      "convert_type": "date_object",
+      "description": "Split date",
+      "type": "string"
+    },
+    "Dividend": {
+      "description": "Value for adjusted dividend",
+      "type": "number"
+    },
+    "Price Adjustment": {
+      "convert_name": "PriceAdjustment",
+      "description": "Factor by which raw dividend amounts are multiplied to get their adjusted values",
+      "type": "number"
+    },
+    "Volume Adjustment": {
+      "convert_name": "VolumeAdjustment",
+      "description": "Factor by which raw volume is multiplied to get its adjusted value",
+      "type": "number"
+    }
+  },
+  "oneOf": [
+    {"required": [ "Dividend" ]},
+    {"required": [ "Price Adjustment", "Volume Adjustment" ]}
+  ],
+  "required": [
+    "Date"
+  ]
+}
 DIVIDENDS_SCHEMA = {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",

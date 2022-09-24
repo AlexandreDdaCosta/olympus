@@ -115,6 +115,11 @@ class Series():
             self.series = []
         self.series.append(new_object)
 
+    def count(self):
+        if self.series is None:
+            return 0
+        return len(self.series)
+
     def first(self):
         # First object in series
         if self.series is None:

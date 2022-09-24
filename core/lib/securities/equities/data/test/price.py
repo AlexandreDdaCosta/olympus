@@ -106,7 +106,6 @@ class TestPrice(testing.Test):
         self.assertGreater(regen_split_data['Time'],first_regen_split_data['Time'])
         if initial_dividend_data is not None:
             self.assertGreater(regen_dividend_data['Time'],initial_dividend_data['Time'])
-        return #ALEX
         # Data checks for all returned adjustments and adjustment dates
         with self.assertRaises(SymbolNotFoundError):
             dividends = self.adjustments.adjustments(TEST_SYMBOL_FAKE)

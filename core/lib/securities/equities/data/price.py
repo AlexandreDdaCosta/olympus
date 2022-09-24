@@ -244,43 +244,42 @@ date more recent than or matching the date of the most recent split is therefore
         if adjustments_data is None:
             regen = True
         if regen is True or self._is_stale_data(adjustments_data['Time Dividends']) or self._is_stale_data(adjustments_data['Time Splits']):
-            (splits_data,splits_date) = self.splits(symbol,**kwargs)
-            (dividends_data,dividends_date) = self.dividends(symbol,return_date=True,**kwargs) 
+            splits = self.splits(symbol,**kwargs) 
+            splits_date = self.splits_series.query_date
+            dividends = self.dividends(symbol,**kwargs) 
+            dividends_date = dividends.query_date
             adjustments = []
-            if splits_data is not None:
-                split_entries = list(splits_data.items())
-                split_count = len(split_entries)
-                split_index = 0
-            if dividends_data is not None:
-                for dividend_date, dividend_dict in dividends_data.items():
-                    dividend_adjustment = dividend_dict['Adjusted Dividend']
-                    if splits_data is not None and split_index < split_count:
-                        loop_index = split_index
-                        dividend_written = False
-                        for index in range(loop_index, split_count):
-                            split_date = split_entries[index][0]
-                            split_dict = split_entries[index][1]
-                            if dividend_date > split_date:
-                                adjustments.append({ 'Date': dividend_date, 'Dividend': dividend_adjustment })
-                                dividend_written = True
-                                break
-                            elif dividend_date == split_date:
-                                adjustments.append({ 'Date': dividend_date, 'Dividend': dividend_adjustment, 'Price Adjustment': split_dict['Price Dividend Adjustment'], 'Volume Adjustment': split_dict['Volume Adjustment'] })
-                                split_index = split_index + 1
-                                dividend_written = True
-                                break
-                            else: # dividend_date < split_date
-                                adjustments.append({ 'Date': split_date, 'Price Adjustment': split_dict['Price Dividend Adjustment'], 'Volume Adjustment': split_dict['Volume Adjustment'] })
-                                split_index = split_index + 1
-                        if dividend_written is False:
-                            adjustments.append({ 'Date': dividend_date, 'Dividend': dividend_adjustment })
+            split_index = 0
+            if dividends is not None:
+                dividend = dividends.next()
+                while dividend is not None:
+                    print('ALEX WHILE 1')
+                    if dividend.get('adjusted_dividend') is not None:
+                        dividend_adjustment = dividend.adjusted_dividend
                     else:
-                        adjustments.append({ 'Date': dividend_date, 'Dividend': dividend_adjustment })
-            if splits_data is not None:
-                for index in range(split_index, split_count):
-                    split_date = split_entries[split_index][0]
-                    split_dict = split_entries[split_index][1]
-                    adjustments.append({ 'Date': split_date, 'Price Adjustment': split_dict['Price Dividend Adjustment'], 'Volume Adjustment': split_dict['Volume Adjustment'] })
+                        dividend_adjustment = dividend.dividend
+                    dividend_written = False
+                    split = splits.next()
+                    while split is not None:
+                        print('ALEX WHILE 2')
+                        if dividend.date > split.date:
+                            adjustments.append({ 'Date': dividend.date, 'Dividend': dividend_adjustment })
+                            dividend_written = True
+                            break
+                        elif dividend.date == split.date:
+                            adjustments.append({ 'Date': dividend.date, 'Dividend': dividend_adjustment, 'Price Adjustment': split.price_dividend_adjustment, 'Volume Adjustment': split.volume_adjustment })
+                            dividend_written = True
+                            break
+                        else: # dividend_date < split_date
+                            adjustments.append({ 'Date': split.date, 'Price Adjustment': split.price_dividend_adjustment, 'Volume Adjustment': split.volume_adjustment })
+                        split = splits.next()
+                    if dividend_written is False:
+                        adjustments.append({ 'Date': dividend.date, 'Dividend': dividend_adjustment })
+                    dividend = dividends.next()
+            while split is not None:
+                print('ALEX WHILE 3')
+                adjustments.append({ 'Date': split.date, 'Price Adjustment': split.price_dividend_adjustment, 'Volume Adjustment': split.volume_adjustment })
+                split = splits.next()
             if len(adjustments) == 0:
                 adjustments = None
             write_dict = {}
@@ -301,7 +300,6 @@ date more recent than or matching the date of the most recent split is therefore
         if symbol_verify is True:
             self.symbol_reader.get_symbol(symbol)
         regen = kwargs.get('regen',False)
-        return_date = kwargs.get('return_date',False)
         dividend_collection = 'price.' + symbol
         target_file = self.download_directory()+symbol+'-dividends.csv'
         collection = self.db[dividend_collection]
