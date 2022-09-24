@@ -12,7 +12,7 @@ import olympus.securities.equities.data.alphavantage as alphavantage
 import olympus.securities.equities.data.tdameritrade as ameritrade
 import olympus.securities.equities.data.symbols as symbols
 
-from olympus import FileFinder, Return, Series, USER
+from olympus import DATE_STRING_FORMAT, FileFinder, Return, Series, USER
 from olympus.securities import Quote
 from olympus.securities.equities import SCHEMA_FILE_DIRECTORY
 from olympus.securities.equities.data import REQUEST_TIMEOUT
@@ -23,7 +23,6 @@ socket.setdefaulttimeout(REQUEST_TIMEOUT) # For urlretrieve
 
 DEFAULT_INTRADAY_FREQUENCY = 30
 DEFAULT_INTRADAY_PERIOD = 10
-DIVIDEND_FORMAT = { "Dividend":float, "Adjusted Dividend":float }
 INTRADAY_PRICE_KEYS = [ "Open", "High", "Low", "Close" ]
 MAP_INTRADAY_PRICE_KEYS = {
     "Open": "open",
@@ -166,10 +165,15 @@ class _Adjustments(Series):
             adjustment_data = {}
             format_index = 0
             for key in database_format:
-                adjustment_data[key] = data[adjustment_date][format_index]
+                try:
+                    adjustment_data[key] = data[adjustment_date][format_index]
+                except IndexError:
+                    break
+                except:
+                    raise
                 format_index = format_index + 1
-                # Date is the key to the database structure
-                adjustment_data['Date'] = adjustment_date
+            # Date is the key to the database structure
+            adjustment_data['Date'] = adjustment_date
             data_object = Return(json_schema,adjustment_data)
             self.add(data_object)
         self.sort('date',reverse=True)
@@ -335,10 +339,10 @@ date more recent than or matching the date of the most recent split is therefore
                     # Here we have the dividend adjusted for any subsequent or concurrent splits.
                     # Determine the unadjusted value, and store that.
                     # If the adjusted value is different, store that as well.
-                    adjustment_factors = self.split_adjustment(symbol,dividend_date,regen=regen,symbol_verify=False)
+                    adjustment_factors = self.split_adjustment(symbol,dt.strptime(dividend_date,DATE_STRING_FORMAT),regen=regen,symbol_verify=False)
                     if adjustment_factors is not None:
                         # Use the reciprocal of the price/dividend adjustment to undo the split adjustment on the dividend
-                        json_dividend.append(round(float(adjustment_factors['Price Dividend Adjustment']) * adjusted_dividend,2))
+                        json_dividend.append(round(float(adjustment_factors.price_dividend_adjustment) * adjusted_dividend,2))
                     json_dividend.append(adjusted_dividend)
                     if json_dividends is None:
                         json_dividends = {}
@@ -441,15 +445,16 @@ date more recent than or matching the date of the most recent split is therefore
         # Returns split adjustment values for unadjusted prices on a given date
         symbol = str(symbol).upper()
         if self.split_adjusted_symbol is None or self.split_adjusted_symbol != symbol or self.split_data_date is None or self._is_stale_data(self.split_data_date):
-            #(self.split_adjustment_data,self.split_data_date) = self.splits(symbol,**kwargs) 
             self.splits_series = self.splits(symbol,**kwargs) 
             self.split_data_date = self.splits_series.query_date
             self.split_adjusted_symbol = symbol
-        #if self.split_adjustment_data is not None:
-        if self.splits_series.list() is not None:
-            for adjustment_date in reversed(self.split_adjustment_data):
-                if value_date < adjustment_date:
-                    return(self.split_adjustment_data[adjustment_date])
+        if self.splits_series.have_objects() is True:
+            self.splits_series.sort('date',reverse=True)
+            entry = self.splits_series.next()
+            while entry is not None:
+                if value_date < entry.date:
+                    return(entry)
+                entry = self.splits_series.next()
         return None
 
     def _is_stale_data(self,refresh_date):
@@ -723,11 +728,11 @@ my current judgment is that these differences will not grossly affect the desire
             returndata = interval_data['Quotes']
         # Trim data outside of requested date range
         if start_date is not None:
-            start_date = dt.strptime(start_date,"%Y-%m-%d")
-            returndata = {key: value for key, value in returndata.items() if dt.strptime(key,"%Y-%m-%d") >= start_date}
+            start_date = dt.strptime(start_date,DATE_STRING_FORMAT)
+            returndata = {key: value for key, value in returndata.items() if dt.strptime(key,DATE_STRING_FORMAT) >= start_date}
         if end_date is not None:
-            end_date = dt.strptime(end_date,"%Y-%m-%d")
-            returndata = {key: value for key, value in returndata.items() if dt.strptime(key,"%Y-%m-%d") <= end_date}
+            end_date = dt.strptime(end_date,DATE_STRING_FORMAT)
+            returndata = {key: value for key, value in returndata.items() if dt.strptime(key,DATE_STRING_FORMAT) <= end_date}
         # Format returned data using data headers
         formatted_returndata = {}
         details_length = len(PRICE_FORMAT)
@@ -828,7 +833,7 @@ class Weekly(Daily):
         last_start_date_of_week = None
         weekly_quotes = {}
         for quote_date in daily_quotes:
-            day_of_week = dt.strptime(quote_date,'%Y-%m-%d').isoweekday()
+            day_of_week = dt.strptime(quote_date,DATE_STRING_FORMAT).isoweekday()
             if last_day_of_week is not None and day_of_week < last_day_of_week:
                 quote = self.merge.set_quote()
                 weekly_quotes[last_start_date_of_week] = quote
@@ -846,9 +851,9 @@ class Weekly(Daily):
     def _verify_period(self,period):
         start_date = super()._verify_period(period)
         if start_date is not None:
-            day_of_week = dt.strptime(start_date,'%Y-%m-%d').isoweekday()
+            day_of_week = dt.strptime(start_date,DATE_STRING_FORMAT).isoweekday()
             if day_of_week > 1 and day_of_week < 6:
-                start_date = str(dt.strptime(start_date,'%Y-%m-%d') - timedelta(days=(day_of_week-1)))[0:10]
+                start_date = str(dt.strptime(start_date,DATE_STRING_FORMAT) - timedelta(days=(day_of_week-1)))[0:10]
         return start_date
 
 class Monthly(Daily):
@@ -1041,7 +1046,7 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
             if end_date < oldest_available_date:
                 raise Exception('For a minute frequency of ' + str(frequency) + ', the oldest available date is ' + oldest_available_date + '.')
             if period is not None and start_date is None:
-                if dt.strptime(end_date,"%Y-%m-%d") - timedelta(days=period-1) < dt.strptime(oldest_available_date,"%Y-%m-%d"):
+                if dt.strptime(end_date,DATE_STRING_FORMAT) - timedelta(days=period-1) < dt.strptime(oldest_available_date,DATE_STRING_FORMAT):
                     raise Exception('Cannot retrieve data for requested end date ' + end_date + ' and period ' + str(period) + ' with frequency ' + str(frequency) + ' since oldest available date is ' + oldest_available_date + '.')
             end_date = dt(int(end_date[:4]), int(end_date[-5:-3]), int(end_date[-2:]), 0, 0, 0).strftime('%s')
             end_date = int(end_date) * 1000 # Milliseconds

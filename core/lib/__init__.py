@@ -11,6 +11,7 @@ USER = 'olympus'
 
 ARGON2_CONFIG = { "memory_cost": 64*1024, "parallelism": 1, "salt_bytes": 16, "time_cost": 3 }
 CLIENT_CERT='/etc/ssl/localcerts/client-key-crt.pem'
+# Date formats based on ISO 8601
 DATE_STRING_FORMAT = "%Y-%m-%d"
 DATETIME_STRING_MILLISECONDS_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 MONGODB_SERVICE = 'mongodb'

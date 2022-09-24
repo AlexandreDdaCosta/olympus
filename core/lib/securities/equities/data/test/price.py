@@ -94,12 +94,12 @@ class TestPrice(testing.Test):
         initial_dividend_data = collection.find_one({ 'Adjustment': 'Dividends' },{ '_id': 0, 'Interval': 0 })
         dividends = self.adjustments.dividends(TEST_SYMBOL_DIVSPLIT,regen=True)
         last_dividend_date = None
-
-        for dividend_date in dividends:
-            validate(instance=dividends[dividend_date],schema=dividend_schema)
+        dividend = dividends.next()
+        while dividend is not None:
             if last_dividend_date is not None:
-                self.assertLess(dividend_date,last_dividend_date)
-            last_dividend_date = dividend_date
+                self.assertLess(dividend.date,last_dividend_date)
+            last_dividend_date = dividend.date
+            dividend = dividends.next()
         regen_dividend_data = collection.find_one({ 'Adjustment': 'Dividends' },{ '_id': 0, 'Interval': 0 })
         # Regenerating dividend data should regenerate split data due to dependencies
         regen_split_data = collection.find_one({ 'Adjustment': 'Splits' },{ '_id': 0, 'Interval': 0 })

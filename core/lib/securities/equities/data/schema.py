@@ -21,7 +21,6 @@ DIVIDENDS_SCHEMA = {
     }
   },
   "required": [
-    "Adjusted Dividend",
     "Date",
     "Dividend"
   ]
