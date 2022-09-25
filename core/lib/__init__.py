@@ -2,9 +2,8 @@
 
 import jsonschema, os, re, shutil, stat
 
+from datetime import datetime as dt, timezone
 from dateutil import tz
-from datetime import datetime as dt
-from datetime import timezone
 from jsonschema import Draft7Validator
 from jsonschema.exceptions import ValidationError
 from os.path import isfile
@@ -21,7 +20,10 @@ DATE_STRING_FORMAT = "%Y-%m-%d"
 DATETIME_STRING_MILLISECONDS_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 # Add-on jsonschema type
 def is_datetime(checker,instance):
-    return isinstance(instance,dt)
+    # Only timezone-aware datetime allowed
+    if isinstance(instance,dt) and instance.tzinfo is not None:
+        return True
+    return False
 VALIDATOR = jsonschema.validators.extend(Draft7Validator,type_checker=Draft7Validator.TYPE_CHECKER.redefine('datetime', is_datetime))
 
 # Services
@@ -31,9 +33,10 @@ RESTAPI_SERVICE = 'restapi'
 PASSWORD_ENABLED_SERVICES = [ MONGODB_SERVICE, REDIS_SERVICE, RESTAPI_SERVICE ]
 
 class Dates():
-    # Some useful date methods
 
     def utc_date_to_timezone_date(self,utc_date,date_timezone=None):
+        # MongoDB assumes all stored dates are UTC, and pymongo also returns dates as UTC.
+        # This explains the need for this function
         tz_date = utc_date.replace(tzinfo=timezone.utc)
         if date_timezone is not None:
             # Parameter "timezone" should be the recognized English-language time zone identifier; e.g., "America/New_York"

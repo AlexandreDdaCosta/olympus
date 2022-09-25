@@ -31,6 +31,7 @@ ADJUSTMENTS_SCHEMA = {
     "Date"
   ]
 }
+
 DIVIDENDS_SCHEMA = {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
@@ -55,6 +56,71 @@ DIVIDENDS_SCHEMA = {
   "required": [
     "Date",
     "Dividend"
+  ]
+}
+
+PRICE_SCHEMA = {
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "adjusted close": {
+      "convert_name": "adjustedClose",
+      "description": "Last traded price of security, modified for splits and dividends",
+      "type": "number"
+    },
+    "adjusted high": {
+      "convert_name": "adjustedHigh",
+      "description": "Maximum trading price of security, modified for splits and dividends",
+      "type": "number"
+    },
+    "adjusted low": {
+      "convert_name": "adjustedLow",
+      "description": "Minimum trading price of security, modified for splits and dividends",
+      "type": "number"
+    },
+    "adjusted open": {
+      "convert_name": "adjustedOpen",
+      "description": "Starting trading price of security, modified for splits and dividends",
+      "type": "number"
+    },
+    "adjusted volume": {
+      "convert_name": "adjustedVolume",
+      "description": "Number of shares traded for time period, modified for splits",
+      "type": "integer"
+    },
+    "close": {
+      "description": "Last traded price of security",
+      "type": "number"
+    },
+    "datetime": {
+      "convert_name": "date",
+      "description": "Date/time period associated with price quote",
+      "type": "datetime"
+    },
+    "high": {
+      "description": "Maximum trading price of security",
+      "type": "number"
+    },
+    "low": {
+      "description": "Minimum trading price of security",
+      "type": "number"
+    },
+    "open": {
+      "description": "Starting trading price of security",
+      "type": "number"
+    },
+    "volume": {
+      "description": "Number of shares traded for time period",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "close",
+    "datetime",
+    "high",
+    "low",
+    "open",
+    "volume"
   ]
 }
 
