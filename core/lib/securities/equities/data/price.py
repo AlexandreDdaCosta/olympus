@@ -1,8 +1,7 @@
 import collections, datetime, json, os, re, shutil, socket, subprocess, time
 
-from datetime import date, timedelta, timezone
+from datetime import date, timedelta
 from datetime import datetime as dt
-from dateutil import tz
 from dateutil.parser import parse
 from file_read_backwards import FileReadBackwards
 from jsonschema import validate
@@ -13,7 +12,7 @@ import olympus.securities.equities.data.alphavantage as alphavantage
 import olympus.securities.equities.data.tdameritrade as ameritrade
 import olympus.securities.equities.data.symbols as symbols
 
-from olympus import DATE_STRING_FORMAT, FileFinder, Return, Series, USER
+from olympus import DATE_STRING_FORMAT, Dates, FileFinder, Return, Series, USER
 from olympus.securities import Quote
 from olympus.securities.equities import SCHEMA_FILE_DIRECTORY
 from olympus.securities.equities.data import REQUEST_TIMEOUT
@@ -33,7 +32,7 @@ MAP_INTRADAY_PRICE_KEYS = {
     "Volume": "volume"
     }
 PRICE_FORMAT = [ "Open", "High", "Low", "Close", "Volume", "Adjusted Open", "Adjusted High", "Adjusted Low", "Adjusted Close", "Adjusted Volume" ]
-TIMEZONE = tz.gettz("America/New_York")
+TIMEZONE = "America/New_York"
 VALID_DAILY_WEEKLY_PERIODS = {'1M':30,'3M':91,'6M':183,'1Y':365,'2Y':730,'5Y':1825,'10Y':3652,'20Y':7305,'All':None}
 VALID_INTRADAY_FREQUENCIES = {1:50, 5:260, 10:260, 15:260, 30:260}
 # Keys: Frequency of quote (in minutes)
@@ -233,6 +232,7 @@ date more recent than or matching the date of the most recent split is therefore
         self.adjustment_split_date = None
         self.adjusted_symbol = None
         self.adjustment_data = None
+        self.date_utils = Dates()
         self.schema_parser = SchemaParser()
         self.split_adjusted_symbol = None
         self.split_data_date = None
@@ -251,8 +251,8 @@ date more recent than or matching the date of the most recent split is therefore
         if adjustments_data is None:
             regen = True
         else:
-            dividends_query_time = adjustments_data['Time Dividends'].replace(tzinfo=datetime.timezone.utc).astimezone(TIMEZONE)
-            splits_query_time = adjustments_data['Time Splits'].replace(tzinfo=datetime.timezone.utc).astimezone(TIMEZONE)
+            dividends_query_time = self.date_utils.utc_date_to_timezone_date(adjustments_data['Time Dividends'],TIMEZONE)
+            splits_query_time = self.date_utils.utc_date_to_timezone_date(adjustments_data['Time Splits'],TIMEZONE)
         if regen is True or self._is_stale_data(dividends_query_time) or self._is_stale_data(splits_query_time):
             splits = self.splits(symbol,**kwargs) 
             splits_date = self.splits_series.query_date
@@ -291,6 +291,8 @@ date more recent than or matching the date of the most recent split is therefore
                 split = splits.next()
             if len(adjustments) == 0:
                 adjustments = None
+            else:
+                adjustments = sorted(adjustments, key=lambda k: k['Date'], reverse=True)
             write_dict = {}
             write_dict['Time'] = dt.now().astimezone()
             write_dict['Adjustment'] = 'Merged'
@@ -299,7 +301,6 @@ date more recent than or matching the date of the most recent split is therefore
             write_dict['Adjustments'] = adjustments
             collection.delete_many({ 'Adjustment': 'Merged' })
             collection.insert_one(write_dict)
-            #ALEX
             returndata = adjustments
             query_date = write_dict['Time']
         else:
@@ -323,13 +324,13 @@ date more recent than or matching the date of the most recent split is therefore
         start_dividend_date = None
         end_dividend_date = None
         if dividend_data is not None:
-            query_date = dividend_data['Time'].replace(tzinfo=datetime.timezone.utc).astimezone()
+            query_date = self.date_utils.utc_date_to_timezone_date(dividend_data['Time'])
             if dividend_data['Start Date'] is not None:
-                start_dividend_date = dividend_data['Start Date'].replace(tzinfo=datetime.timezone.utc).astimezone(TIMEZONE)
+                start_dividend_date = self.date_utils.utc_date_to_timezone_date(dividend_data['Start Date'],TIMEZONE)
             else:
                 start_dividend_date = None
             if dividend_data['End Date'] is not None:
-                end_dividend_date = dividend_data['End Date'].replace(tzinfo=datetime.timezone.utc).astimezone(TIMEZONE)
+                end_dividend_date = self.date_utils.utc_date_to_timezone_date(dividend_data['End Date'],TIMEZONE)
             else:
                 end_dividend_date = None
         if regen is False and dividend_data is not None:
@@ -348,7 +349,7 @@ date more recent than or matching the date of the most recent split is therefore
                     json_dividend = []
                     line = line.rstrip()
                     pieces = line.rstrip().split(',')
-                    dividend_date = dt.strptime(pieces[0],DATE_STRING_FORMAT).astimezone(TIMEZONE)
+                    dividend_date = self.date_utils.utc_date_to_timezone_date(dt.strptime(pieces[0],DATE_STRING_FORMAT),TIMEZONE)
                     json_dividend.append(dividend_date)
                     adjusted_dividend = float(pieces[1])
                     if (start_dividend_date is None or start_dividend_date >= dividend_date):
@@ -373,6 +374,8 @@ date more recent than or matching the date of the most recent split is therefore
                 write_dict['Format'] = database_format
                 write_dict['Start Date'] = start_dividend_date
                 write_dict['End Date'] = end_dividend_date
+                if json_dividends is not None:
+                    json_dividends = sorted(json_dividends, key=lambda k: k[0], reverse=True)
                 write_dict['Dividends'] = json_dividends
                 collection.delete_many({ 'Adjustment': 'Dividends' })
                 collection.insert_one(write_dict)
@@ -399,13 +402,13 @@ date more recent than or matching the date of the most recent split is therefore
         start_split_date = None
         end_split_date = None
         if split_data is not None:
-            query_date = split_data['Time'].replace(tzinfo=datetime.timezone.utc).astimezone()
+            query_date = self.date_utils.utc_date_to_timezone_date(split_data['Time'])
             if split_data['Start Date'] is not None:
-                start_split_date = split_data['Start Date'].replace(tzinfo=datetime.timezone.utc).astimezone(TIMEZONE)
+                start_split_date = self.date_utils.utc_date_to_timezone_date(split_data['Start Date'],TIMEZONE)
             else:
                 start_split_date = None
             if split_data['End Date'] is not None:
-                end_split_date = split_data['End Date'].replace(tzinfo=datetime.timezone.utc).astimezone(TIMEZONE)
+                end_split_date = self.date_utils.utc_date_to_timezone_date(split_data['End Date'],TIMEZONE)
             else:
                 end_split_date = None
         if regen is False and split_data is not None:
@@ -429,7 +432,7 @@ date more recent than or matching the date of the most recent split is therefore
             for split_date in sorted(splits.keys(),reverse=True):
                 split_date_string = split_date
                 json_split = []
-                split_date = dt.strptime(split_date,DATE_STRING_FORMAT).astimezone(TIMEZONE)
+                split_date = self.date_utils.utc_date_to_timezone_date(dt.strptime(split_date,DATE_STRING_FORMAT),TIMEZONE)
                 json_split.append(split_date)
                 if (start_split_date is None or start_split_date >= split_date):
                     start_split_date = split_date
@@ -458,6 +461,8 @@ date more recent than or matching the date of the most recent split is therefore
             write_dict['Format'] = database_format
             write_dict['Start Date'] = start_split_date
             write_dict['End Date'] = end_split_date
+            if json_splits is not None:
+                json_splits = sorted(json_splits, key=lambda k: k[0], reverse=True)
             write_dict['Splits'] = json_splits
             collection.delete_many({ 'Adjustment': 'Splits' })
             collection.insert_one(write_dict)

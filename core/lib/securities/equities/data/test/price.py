@@ -2,7 +2,7 @@
 
 import json, jsonschema, os, re, sys, time, unittest
 
-from datetime import date, timedelta
+from datetime import date, timedelta, timezone
 from datetime import datetime as dt
 from jsonschema import validate
 
@@ -10,7 +10,7 @@ import olympus.securities.equities.data as data
 import olympus.securities.equities.data.price as price
 import olympus.testing as testing
 
-from olympus import String, USER
+from olympus import Dates, String, USER
 from olympus.securities.equities import *
 from olympus.securities.equities.data.datetime import OLDEST_QUOTE_DATE, DateVerifier
 from olympus.securities.equities.data.price import *
@@ -63,6 +63,7 @@ class TestPrice(testing.Test):
         self.intraday = price.Intraday(username)
         self.latest = price.Latest(username)
         self.mongo_data = data.Connection(username)
+        self.date_utils = Dates()
 
     def test_adjustments(self):
         string = String()
@@ -122,20 +123,18 @@ class TestPrice(testing.Test):
         adjustments.sort('date',reverse=True)
         adjustment = adjustments.next()
         while adjustment is not None:
+            timezone_date = self.date_utils.utc_date_to_timezone_date(adjustment.date,TIMEZONE)
             if last_adjustment_date is not None:
-                self.assertLess(adjustment.date,last_adjustment_date)
-            last_adjustment_date = adjustment.date
+                self.assertLess(timezone_date,last_adjustment_date)
+            last_adjustment_date = timezone_date
             if adjustment.get('dividend') is not None:
-                print('ALEX1')
-                print(adjustment.date)
-                print(type(adjustment.date))
-                dividend = dividends.get_by_attribute('date',adjustment.date)
-                print(dividend)
-                # self.assertEqual(adjustment.dividend,dividends[adjustment['Date']]['Adjusted Dividend'])
+                dividend = dividends.get_by_attribute('date',timezone_date)
+                self.assertEqual(timezone_date,dividend.date)
             if adjustment.get('price_adjustment') is not None:
-                print('ALEX2')
-                #self.assertEqual(adjustment.price_adjustment,splits[adjustment['Date']]['Price/Dividend Adjustment'])
-                #self.assertEqual(adjustment.volume_adjustment,splits[adjustment['Date']]['Volume Adjustment'])
+                split = splits.get_by_attribute('date',timezone_date)
+                self.assertEqual(timezone_date,split.date)
+                self.assertEqual(adjustment.price_adjustment,split.price_dividend_adjustment)
+                self.assertEqual(adjustment.volume_adjustment,split.volume_adjustment)
             adjustment = adjustments.next()
         adjustment_data = collection.find_one({ 'Adjustment': 'Merged' },{ '_id': 0, 'Interval': 0 })
         regen_adjustments = self.adjustments.adjustments(TEST_SYMBOL_DIVSPLIT,regen=True)

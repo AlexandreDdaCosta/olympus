@@ -2,7 +2,9 @@
 
 import jsonschema, os, re, shutil, stat
 
+from dateutil import tz
 from datetime import datetime as dt
+from datetime import timezone
 from jsonschema import Draft7Validator
 from jsonschema.exceptions import ValidationError
 from os.path import isfile
@@ -11,9 +13,16 @@ USER = 'olympus'
 
 ARGON2_CONFIG = { "memory_cost": 64*1024, "parallelism": 1, "salt_bytes": 16, "time_cost": 3 }
 CLIENT_CERT='/etc/ssl/localcerts/client-key-crt.pem'
-# Date formats based on ISO 8601
+RESTAPI_RUN_USERNAME = 'node'
+
+# Dates
+# Formats based on ISO 8601
 DATE_STRING_FORMAT = "%Y-%m-%d"
 DATETIME_STRING_MILLISECONDS_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
+# Add-on jsonschema type
+def is_datetime(checker,instance):
+    return isinstance(instance,dt)
+VALIDATOR = jsonschema.validators.extend(Draft7Validator,type_checker=Draft7Validator.TYPE_CHECKER.redefine('datetime', is_datetime))
 
 # Services
 MONGODB_SERVICE = 'mongodb'
@@ -21,10 +30,18 @@ REDIS_SERVICE = 'redis'
 RESTAPI_SERVICE = 'restapi'
 PASSWORD_ENABLED_SERVICES = [ MONGODB_SERVICE, REDIS_SERVICE, RESTAPI_SERVICE ]
 
-RESTAPI_RUN_USERNAME = 'node'
-def is_datetime(checker,instance):
-    return isinstance(instance,dt)
-VALIDATOR = jsonschema.validators.extend(Draft7Validator,type_checker=Draft7Validator.TYPE_CHECKER.redefine('datetime', is_datetime))
+class Dates():
+    # Some useful date methods
+
+    def utc_date_to_timezone_date(self,utc_date,date_timezone=None):
+        tz_date = utc_date.replace(tzinfo=timezone.utc)
+        if date_timezone is not None:
+            # Parameter "timezone" should be the recognized English-language time zone identifier; e.g., "America/New_York"
+            date_timezone = tz.gettz(date_timezone)
+            return tz_date.astimezone(date_timezone)
+        else:
+            # By default return using local time zone
+            return tz_date.astimezone()
 
 class FileFinder():
     # Retrieves location of system files
