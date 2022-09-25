@@ -715,7 +715,6 @@ my current judgment is that these differences will not grossly affect the desire
                         regen = True
             if regen is False:
                 adjuster = _PriceAdjuster(symbol,self.username,regen=regen_adjustments,symbol_verify=False)
-                #adjustments = self._init_adjustments(symbol,regen_adjustments)
                 subprocess.check_output("/usr/bin/sed -i '1d' " + target_file, shell=True)
                 with FileReadBackwards(target_file, encoding="utf-8") as f:
                     for line in f:
@@ -727,7 +726,6 @@ my current judgment is that these differences will not grossly affect the desire
             os.remove(target_file)
         if regen is True:
             adjuster = _PriceAdjuster(symbol,self.username,regen=regen_adjustments,symbol_verify=False)
-            #adjustments = self._init_adjustments(symbol,regen_adjustments)
             url = self._daily_quote_url(symbol)
             response = urlretrieve(url,target_file)
             # The initial response contains split-only adjusted prices, ordered from oldest to newest.

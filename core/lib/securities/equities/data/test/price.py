@@ -66,6 +66,7 @@ class TestPrice(testing.Test):
         self.date_utils = Dates()
 
     def test_adjustments(self):
+        return #ALEX
         string = String()
         # Splits
         with self.assertRaises(SymbolNotFoundError):
@@ -346,7 +347,6 @@ class TestPrice(testing.Test):
         self.assertTrue(TEST_SYMBOL_FAKE_TWO in result.unknown_symbols)
 
     def test_intraday(self):
-        return #ALEX
         date_verifier = DateVerifier()
         two_days_ago = (dt.now() - timedelta(days=2)).strftime("%Y-%m-%d")
         today = dt.now().strftime("%Y-%m-%d")
