@@ -12,7 +12,8 @@ import olympus.testing as testing
 
 from olympus import Dates, String, USER
 from olympus.securities.equities import *
-from olympus.securities.equities.data.datetime import OLDEST_QUOTE_DATE, DateVerifier
+from olympus.securities.equities.data import TIMEZONE
+from olympus.securities.equities.data.datetime import OLDEST_QUOTE_DATE, DateVerifier, TradingDates
 from olympus.securities.equities.data.price import *
 from olympus.securities.equities.data.symbols import SymbolNotFoundError
 
@@ -64,6 +65,7 @@ class TestPrice(testing.Test):
         self.latest = price.Latest(username)
         self.mongo_data = data.Connection(username)
         self.date_utils = Dates()
+        self.trading_dates = TradingDates()
 
     def test_adjustments(self):
         return #ALEX
@@ -143,7 +145,6 @@ class TestPrice(testing.Test):
         self.assertGreater(regen_adjustment_data['Time'],adjustment_data['Time'])
 
     def test_daily(self):
-        return #ALEX
         '''
         price_collection = 'price.AAPL'
         collection = self.mongo_data.db[price_collection]
@@ -355,10 +356,7 @@ class TestPrice(testing.Test):
         self.assertTrue(TEST_SYMBOL_FAKE_TWO in result.unknown_symbols)
 
     def test_intraday(self):
-        date_verifier = DateVerifier()
-        two_days_ago = (dt.now() - timedelta(days=2)).strftime("%Y-%m-%d")
-        today = dt.now().strftime("%Y-%m-%d")
-        yesterday = (dt.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+        return #ALEX
         with self.assertRaises(SymbolNotFoundError):
             self.intraday.quote(TEST_SYMBOL_FAKE)
         # Check for valid frequencies and periods
@@ -382,30 +380,35 @@ class TestPrice(testing.Test):
         self.assertEqual(period,self.intraday.DEFAULT_INTRADAY_PERIOD)
         # The next two series use the default values for period and frequency
         quotes = self.intraday.quote(TEST_SYMBOL_DIV)
-        # ALEXSTOP
-        return #ALEX
-        for quote_date in quotes:
-            date_verifier.verify_date(quote_date)
-            last_quote_time = None
-            for quote_time in quotes[quote_date]:
-                # Check for valid keys in returned data with no missing keys
-                for quote_key in PRICE_FORMAT:
-                    self.assertKeyInDict(quote_key,quotes[quote_date][quote_time])
-                for quote_date_key in quotes[quote_date][quote_time]:
-                    self.assertKeyInDict(quote_date_key,PRICE_FORMAT)
-                if last_quote_time is not None:
-                    previous_date_time = dt.strptime(quote_date + ' ' + last_quote_time, "%Y-%m-%d %H:%M:%S")
-                    current_date_time = dt.strptime(quote_date + ' ' + quote_time, "%Y-%m-%d %H:%M:%S")
-                    self.assertEqual(self.intraday.DEFAULT_INTRADAY_FREQUENCY, int((current_date_time - previous_date_time).total_seconds()/60))
-                    last_quote_time = quote_time
+        quote = quotes.next()
+        last_quote_time = None
+        while quote is not None:
+            if last_quote_time is not None and quote.date.day == last_quote_time.day:
+                # Extended hours quotes occasonally skip intervals, presumably because of a lack of trading activity
+                if last_quote_time.hour >= 9 and last_quote_time.minute >=30 and last_quote_time.hour < 16:
+                    self.assertEqual(self.intraday.DEFAULT_INTRADAY_FREQUENCY, int((quote.date - last_quote_time).total_seconds()/60))
+            last_quote_time = quote.date
+            quote = quotes.next()
         quotes = self.intraday.quote(TEST_SYMBOL_DIV,need_extended_hours_data=False)
-        for quote_date in quotes:
-            open_time = list(quotes[quote_date].keys())[0]
-            self.assertEqual(open_time,REGULAR_MARKET_OPEN_TIME)
-            close_time = dt.strptime(quote_date + ' ' + REGULAR_MARKET_CLOSE_TIME, "%Y-%m-%d %H:%M:%S")
-            last_quote_time = list(quotes[quote_date].keys())[-1]
-            last_time = dt.strptime(quote_date + ' ' + last_quote_time, "%Y-%m-%d %H:%M:%S")
-            self.assertEqual(close_time,last_time + timedelta(minutes=self.intraday.DEFAULT_INTRADAY_FREQUENCY))
+        quote = quotes.next()
+        last_quote_time = None
+        while quote is not None:
+            if last_quote_time is None:
+                half_days = self.trading_dates.half_days(quote.date)
+            if last_quote_time is None or quote.date.day > last_quote_time.day or quote.date.month > last_quote_time.month:
+                self.assertEqual(REGULAR_MARKET_OPEN_TIME,quote.date.strftime("%H:%M:%S"))
+            if last_quote_time is not None and (quote.date.day > last_quote_time.day or quote.date.month > last_quote_time.month):
+                yesterday_close_time_string = (last_quote_time + timedelta(minutes=self.intraday.DEFAULT_INTRADAY_FREQUENCY)).strftime("%H:%M:%S")
+                midnight_quote_date = dt(quote.date.year, quote.date.month, quote.date.day, 0, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE))
+                if half_days is None or midnight_quote_date not in half_days:
+                    self.assertEqual(REGULAR_MARKET_CLOSE_TIME,yesterday_close_time_string)
+                else:
+                    self.assertEqual(SHORTENED_MARKET_CLOSE_TIME,yesterday_close_time_string)
+            last_quote_time = quote.date
+            quote = quotes.next()
+        today = dt.now().astimezone()
+        yesterday = today - timedelta(days=1)
+        two_days_ago = today - timedelta(days=2)
         for period in self.intraday.VALID_INTRADAY_PERIODS:
             with self.assertRaises(Exception):
                 # Cannot specify period and start_date together
@@ -415,26 +418,25 @@ class TestPrice(testing.Test):
                 # If we have an end date, the number of available periods will be limited based on the frequency of data requested.
                 # Here we generate this error (or another date error)
                 oldest_available_date = self.intraday.oldest_available_date(frequency)
-                error_date = (dt.strptime(oldest_available_date,"%Y-%m-%d") + timedelta(days=period-2)).strftime("%Y-%m-%d")
+                error_date = oldest_available_date + timedelta(days=period-2)
                 with self.assertRaises(Exception):
                     self.intraday.quote(TEST_SYMBOL_NODIVSPLIT,need_extended_hours_data=False,period=period,frequency=frequency,end_date=error_date)
-                quotes = self.intraday.quote(TEST_SYMBOL_DIVSPLIT,period=period,frequency=frequency)
-                self.assertEqual(period,len(quotes.keys()))
-                for quote_date in quotes:
-                    last_quote_time = None
-                    for quote_time in quotes[quote_date]:
-                        if last_quote_time is not None:
-                            previous_date_time = dt.strptime(quote_date + ' ' + last_quote_time, "%Y-%m-%d %H:%M:%S")
-                            current_date_time = dt.strptime(quote_date + ' ' + quote_time, "%Y-%m-%d %H:%M:%S")
-                            self.assertEqual(frequency, int((current_date_time - previous_date_time).total_seconds()/60))
-                            last_quote_time = quote_time
+                # The next series is limited to regular trading hours to ensure there are no time periods with no data
+                quotes = self.intraday.quote(TEST_SYMBOL_DIVSPLIT,period=period,frequency=frequency,need_extended_hours_data=False)
+                last_quote_time = None
+                quote = quotes.next()
+                while quote is not None:
+                    if last_quote_time is not None and quote.date.year == last_quote_time.year and quote.date.month == last_quote_time.month and quote.date.day == last_quote_time.day:
+                        self.assertEqual(frequency, int((quote.date - last_quote_time).total_seconds()/60))
+                    last_quote_time = quote.date
+                    quote = quotes.next()
         # Checks for bad absolute and relative dates
-        too_old_date = (dt.strptime(OLDEST_QUOTE_DATE, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
+        too_old_date = OLDEST_QUOTE_DATE - timedelta(days=1)
         with self.assertRaises(Exception):
             self.intraday.quote(TEST_SYMBOL_SPLIT,start_date=too_old_date)
         with self.assertRaises(Exception):
             self.intraday.quote(TEST_SYMBOL_SPLIT,end_date=too_old_date)
-        tomorrow = (dt.now() + timedelta(days=1)).strftime("%Y-%m-%d")
+        tomorrow = dt.now().astimezone() + timedelta(days=1)
         with self.assertRaises(Exception):
             self.intraday.quote(TEST_SYMBOL_SPLIT,start_date=tommorow)
         with self.assertRaises(Exception):
@@ -443,9 +445,9 @@ class TestPrice(testing.Test):
             self.intraday.quote(TEST_SYMBOL_SPLIT,end_date=two_days_ago,start_date=yesterday)
         for frequency in self.intraday.VALID_INTRADAY_FREQUENCIES:
             earliest_available_date = self.intraday.oldest_available_date(frequency)
-            too_early = (dt.strptime(earliest_available_date, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
-            day_delta = round((dt.now() - dt(day=int(earliest_available_date[-2:]), month=int(earliest_available_date[-5:-3]), year=int(earliest_available_date[:4]))).days / 2)
-            half_way_end_date = (dt.now() - timedelta(days=day_delta)).strftime("%Y-%m-%d")
+            too_early = earliest_available_date - timedelta(days=1)
+            day_delta = round((dt.now().astimezone() - dt(earliest_available_date.year, earliest_available_date.month, earliest_available_date.day).replace(tzinfo=tz.gettz())).days / 2)
+            half_way_end_date = dt.now().astimezone() - timedelta(days=day_delta)
             # Checks for dates that are too early when combined with a frequency
             with self.assertRaises(Exception):
                 self.intraday.quote(TEST_SYMBOL_SPLIT,frequency=frequency,start_date=too_early)
@@ -453,10 +455,16 @@ class TestPrice(testing.Test):
                 self.intraday.quote(TEST_SYMBOL_SPLIT,frequency=frequency,end_date=too_early)
             # Proper date ranges
             quotes = self.intraday.quote(TEST_SYMBOL_SPLIT,frequency=frequency,start_date=earliest_available_date)
-            self.assertGreaterEqual(list(quotes.keys())[0],earliest_available_date)
-            self.assertGreaterEqual(today,list(quotes.keys())[-1])
+            first_quote = quotes.first()
+            last_quote = quotes.last()
+            self.assertGreaterEqual(first_quote.date,earliest_available_date)
+            self.assertGreaterEqual(today,last_quote.date)
             quotes = self.intraday.quote(TEST_SYMBOL_SPLIT,frequency=frequency,end_date=half_way_end_date)
-            self.assertGreaterEqual(half_way_end_date,list(quotes.keys())[-1])
+            last_quote = quotes.last()
+            # We convert these dates to midnight because the API will return a full day's price date regardless of the exact time of day requested as an end date
+            midnight_half_way_end_date = dt(half_way_end_date.year, half_way_end_date.month, half_way_end_date.day, 0, 0, 0).replace(tzinfo=tz.gettz())
+            midnight_last_quote_date = dt(last_quote.date.year, last_quote.date.month, last_quote.date.day, 0, 0, 0).replace(tzinfo=tz.gettz())
+            self.assertGreaterEqual(midnight_half_way_end_date,midnight_last_quote_date)
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:

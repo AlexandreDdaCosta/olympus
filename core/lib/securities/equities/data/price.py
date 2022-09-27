@@ -15,14 +15,13 @@ import olympus.securities.equities.data.symbols as symbols
 from olympus import DATE_STRING_FORMAT, Dates, FileFinder, Return, Series, USER
 from olympus.securities import Quote
 from olympus.securities.equities import SCHEMA_FILE_DIRECTORY
-from olympus.securities.equities.data import REQUEST_TIMEOUT
+from olympus.securities.equities.data import REQUEST_TIMEOUT, TIMEZONE
 from olympus.securities.equities.data.datetime import DateVerifier
 from olympus.securities.equities.data.schema import ADJUSTMENTS_SCHEMA, DIVIDENDS_SCHEMA, PRICE_SCHEMA, SPLITS_SCHEMA, SchemaParser
 
 socket.setdefaulttimeout(REQUEST_TIMEOUT) # For urlretrieve
 
 PRICE_FORMAT = [ "Open", "High", "Low", "Close", "Volume", "Adjusted Open", "Adjusted High", "Adjusted Low", "Adjusted Close", "Adjusted Volume" ]
-TIMEZONE = "America/New_York" # Price quotes follow regular market open time in NYC
 VALID_DAILY_WEEKLY_PERIODS = {'1M':30,'3M':91,'6M':183,'1Y':365,'2Y':730,'5Y':1825,'10Y':3652,'20Y':7305,'All':None}
 VALID_MONTHLY_PERIODS = ['1Y','2Y','5Y','10Y','20Y','All']
 
@@ -341,7 +340,7 @@ date more recent than or matching the date of the most recent split is therefore
                     json_dividend = []
                     line = line.rstrip()
                     pieces = line.rstrip().split(',')
-                    dividend_date = self.date_utils.utc_date_to_timezone_date(dt.strptime(pieces[0],DATE_STRING_FORMAT),TIMEZONE)
+                    dividend_date = dt.strptime(pieces[0],DATE_STRING_FORMAT).replace(tzinfo=tz.gettz(TIMEZONE))
                     json_dividend.append(dividend_date)
                     adjusted_dividend = float(pieces[1])
                     if (start_dividend_date is None or start_dividend_date >= dividend_date):
@@ -375,6 +374,11 @@ date more recent than or matching the date of the most recent split is therefore
                 returndata = write_dict['Dividends']
             os.remove(target_file)
         if returndata is None and dividend_data is not None:
+            # Database dates need to be made time zone aware
+            index = 0
+            for dividend in dividend_data['Dividends']:
+                dividend_data['Dividends'][index][0] = dividend_data['Dividends'][index][0].replace(tzinfo=tz.gettz(TIMEZONE))
+                index = index + 1
             returndata = dividend_data['Dividends']
         return_object = _Adjustments('dividend',returndata,query_date)
         return return_object
@@ -424,7 +428,7 @@ date more recent than or matching the date of the most recent split is therefore
             for split_date in sorted(splits.keys(),reverse=True):
                 split_date_string = split_date
                 json_split = []
-                split_date = self.date_utils.utc_date_to_timezone_date(dt.strptime(split_date,DATE_STRING_FORMAT),TIMEZONE)
+                split_date = dt.strptime(split_date,DATE_STRING_FORMAT).replace(tzinfo=tz.gettz(TIMEZONE))
                 json_split.append(split_date)
                 if (start_split_date is None or start_split_date >= split_date):
                     start_split_date = split_date
@@ -462,6 +466,11 @@ date more recent than or matching the date of the most recent split is therefore
             returndata = write_dict['Splits']
             os.remove(target_file)
         if returndata is None and split_data is not None:
+            # Database dates need to be made time zone aware
+            index = 0
+            for split in split_data['Splits']:
+                split_data['Splits'][index][0] = split_data['Splits'][index][0].replace(tzinfo=tz.gettz(TIMEZONE))
+                index = index + 1
             returndata = split_data['Splits']
         return_object = _Adjustments('split',returndata,query_date)
         return return_object
@@ -1016,8 +1025,8 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
         return return_object
 
     def oldest_available_date(self,frequency):
-        min_date = dt.now().astimezone() - timedelta(self.VALID_INTRADAY_FREQUENCIES[frequency] - 1) # Inclusive of today, so minus 1
-        return "%d-%02d-%02d" % (min_date.year,min_date.month,min_date.day)
+        now = dt.now().astimezone()
+        return (dt(now.year, now.month, now.day, 0, 0, 0) - timedelta(self.VALID_INTRADAY_FREQUENCIES[frequency] - 1)).replace(tzinfo=tz.gettz()) # Inclusive of today, so minus 1
 
     def valid_frequency(self,frequency):
         if frequency not in self.VALID_INTRADAY_FREQUENCIES.keys():
@@ -1038,17 +1047,17 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
         oldest_available_date = self.oldest_available_date(frequency)
         if start_date is not None:
             if start_date < oldest_available_date:
-                raise Exception('For a minute frequency of ' + str(frequency) + ', the oldest available date is ' + oldest_available_date + '.')
-            start_date = dt(int(start_date[:4]), int(start_date[-5:-3]), int(start_date[-2:]), 0, 0, 0).strftime('%s')
+                raise Exception('For a minute frequency of ' + str(frequency) + ', the oldest available date is ' + str(oldest_available_date) + '.')
+            start_date = start_date.strftime('%s')
             start_date = int(start_date) * 1000 # Milliseconds per API
         if end_date is not None:
             if end_date < oldest_available_date:
-                raise Exception('For a minute frequency of ' + str(frequency) + ', the oldest available date is ' + oldest_available_date + '.')
+                raise Exception('For a minute frequency of ' + str(frequency) + ', the oldest available date is ' + str(oldest_available_date) + '.')
             if period is not None and start_date is None:
-                if dt.strptime(end_date,DATE_STRING_FORMAT) - timedelta(days=period-1) < dt.strptime(oldest_available_date,DATE_STRING_FORMAT):
-                    raise Exception('Cannot retrieve data for requested end date ' + end_date + ' and period ' + str(period) + ' with frequency ' + str(frequency) + ' since oldest available date is ' + oldest_available_date + '.')
-            end_date = dt(int(end_date[:4]), int(end_date[-5:-3]), int(end_date[-2:]), 0, 0, 0).strftime('%s')
-            end_date = int(end_date) * 1000 # Milliseconds
+                if end_date - timedelta(days=period-1) < oldest_available_date:
+                    raise Exception('Cannot retrieve data for requested end date ' + end_date + ' and period ' + str(period) + ' with frequency ' + str(frequency) + ' since oldest available date is ' + str(oldest_available_date) + '.')
+            end_date = end_date.strftime('%s')
+            end_date = int(end_date) * 1000 # Milliseconds per API
         return start_date, end_date
 
 class _LatestQuotes(Series):

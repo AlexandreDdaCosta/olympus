@@ -54,3 +54,4 @@ SCHEMA_FILE_DIRECTORY = os.path.dirname(os.path.realpath(__file__)) + '/schema/'
 # These settings are temporary
 REGULAR_MARKET_OPEN_TIME = '09:30:00'
 REGULAR_MARKET_CLOSE_TIME = '16:00:00'
+SHORTENED_MARKET_CLOSE_TIME = '13:00:00'

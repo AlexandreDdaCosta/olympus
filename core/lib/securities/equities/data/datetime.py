@@ -1,27 +1,27 @@
 import numpy
 
-from dateutil import easter
+from dateutil import easter, tz
 from dateutil.relativedelta import MO, relativedelta
 from datetime import datetime as dt
 from datetime import timedelta
 
 from olympus import DATE_STRING_FORMAT as QUOTE_DATE_FORMAT
+from olympus.securities.equities.data import TIMEZONE
 
 HALF_DAY_NAMES = ['Independence Eve','Black Friday','Christmas Eve']
 HOLIDAY_NAMES = ['New Years Day','MLK Day','Presidents Day','Good Friday','Memorial Day','Juneteenth','Independence Day','Labor Day','Thanksgiving','Christmas']
-OLDEST_QUOTE_DATE = '1990-01-01'
+OLDEST_QUOTE_DATE = dt.strptime('1990-01-01', QUOTE_DATE_FORMAT).replace(tzinfo=tz.gettz(TIMEZONE))
 
 class DateVerifier(object):
 
     def verify_date(self,trading_date):
-        return dt.strptime(trading_date, QUOTE_DATE_FORMAT)
+        trading_date.strftime('%s')
 
     def verify_date_range(self,start_date,end_date,**kwargs):
         allow_future_end_date = kwargs.get('allow_future_end_date',True)
         null_start_date = kwargs.get('null_start_date',False)
         keep_null_end_date = kwargs.get('keep_null_end_date',False)
-        now = dt.now().astimezone()
-        today = "%d-%02d-%02d" % (now.year,now.month,now.day)
+        today = dt.now().astimezone()
         if null_start_date is False and start_date is None:
             raise Exception('Parameter start_date cannot be None; set keyword null_start_date = True to override.')
         if start_date is not None:
@@ -30,6 +30,7 @@ class DateVerifier(object):
                 raise Exception('Start date cannot be less than ' + OLDEST_QUOTE_DATE)
             if start_date > today:
                 raise Exception('Start date cannot be in the future.')
+            start_date = dt(start_date.year, start_date.month, start_date.day, 0, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE))
         if end_date is not None:
             self.verify_date(end_date)
             if start_date is not None and end_date <= start_date:
@@ -38,6 +39,7 @@ class DateVerifier(object):
                 raise Exception('End date cannot be less than ' + OLDEST_QUOTE_DATE)
             if allow_future_end_date is False and end_date > today:
                 raise Exception('End date cannot be in the future.')
+            end_date = dt(end_date.year, end_date.month, end_date.day, 0, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE))
         elif keep_null_end_date is False:
             end_date = today
         return start_date, end_date
@@ -62,8 +64,8 @@ class TradingDates(DateVerifier):
         else:
             days_count = 0
         (start_date, end_date) = self.verify_date_range(start_date,end_date)
-        start_year = int(start_date[:4])
-        end_year = int(end_date[:4])
+        start_year = start_date.year
+        end_year = end_date.year
         name_date = None
         if half_days is True:
             name_list = HALF_DAY_NAMES
@@ -80,7 +82,9 @@ class TradingDates(DateVerifier):
                             days_count = days_count + 1
             start_year = start_year + 1
         if return_list is True:
-            return days_list
+            if days_list:
+                return days_list
+            return None
         return days_count
 
     def half_days(self,start_date,end_date=None):
@@ -94,11 +98,13 @@ class TradingDates(DateVerifier):
         # between two dates, inclusive.
         # If no end date is given, will use today's date
         holiday_count = self.holidays(start_date,end_date)
+        start_date = "%d-%02d-%02d" % (start_date.year,start_date.month,start_date.day)
         if end_date is None:
             now = dt.now().astimezone()
             today = "%d-%02d-%02d" % (now.year,now.month,now.day)
             trading_days = numpy.busday_count(start_date,today,'Mon Tue Wed Thu Fri') - holiday_count
         else:
+            end_date = "%d-%02d-%02d" % (end_date.year,end_date.month,end_date.day)
             trading_days = numpy.busday_count(start_date,end_date,'Mon Tue Wed Thu Fri') - holiday_count
         return trading_days
 
@@ -147,7 +153,7 @@ class TradingDates(DateVerifier):
         else:
             raise Exception('Unknown holiday ' + holiday + '. Valid holidays are: ' + ', ' . join(HOLIDAY_NAMES))
         if holiday_datetime is not None:
-            holiday_datetime = "%d-%02d-%02d" % (holiday_datetime.year,holiday_datetime.month,holiday_datetime.day)
+            holiday_datetime = holiday_datetime.replace(tzinfo=tz.gettz(TIMEZONE))
         return holiday_datetime
 
     def _eve_holiday(self,year,month,day):
