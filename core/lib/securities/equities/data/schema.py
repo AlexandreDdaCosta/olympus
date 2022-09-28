@@ -63,64 +63,75 @@ PRICE_SCHEMA = {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "adjusted close": {
-      "convert_name": "adjustedClose",
+    "Adjusted Close": {
+      "db_order": 10,
+      "convert_name": "AdjustedClose",
       "description": "Last traded price of security, modified for splits and dividends",
       "type": "number"
     },
-    "adjusted high": {
-      "convert_name": "adjustedHigh",
+    "Adjusted High": {
+      "convert_name": "AdjustedHigh",
+      "db_order": 8,
       "description": "Maximum trading price of security, modified for splits and dividends",
       "type": "number"
     },
-    "adjusted low": {
-      "convert_name": "adjustedLow",
+    "Adjusted Low": {
+      "convert_name": "AdjustedLow",
+      "db_order": 9,
       "description": "Minimum trading price of security, modified for splits and dividends",
       "type": "number"
     },
-    "adjusted open": {
-      "convert_name": "adjustedOpen",
+    "Adjusted Open": {
+      "convert_name": "AdjustedOpen",
+      "db_order": 7,
       "description": "Starting trading price of security, modified for splits and dividends",
       "type": "number"
     },
-    "adjusted volume": {
-      "convert_name": "adjustedVolume",
+    "Adjusted Volume": {
+      "db_order": 11,
+      "convert_name": "AdjustedVolume",
       "description": "Number of shares traded for time period, modified for splits",
       "type": "integer"
     },
-    "close": {
+    "Close": {
+      "db_order": 5,
       "description": "Last traded price of security",
       "type": "number"
     },
-    "datetime": {
-      "convert_name": "date",
+    "Datetime": {
+      "convert_name": "Date",
+      "db_order": 1,
       "description": "Date/time period associated with price quote",
       "type": "datetime"
     },
-    "high": {
+    "High": {
+      "db_order": 3,
       "description": "Maximum trading price of security",
       "type": "number"
     },
-    "low": {
+    "Low": {
+      "db_order": 4,
       "description": "Minimum trading price of security",
       "type": "number"
     },
-    "open": {
+    "Open": {
+      "db_order": 2,
       "description": "Starting trading price of security",
       "type": "number"
     },
-    "volume": {
+    "Volume": {
+      "db_order": 6,
       "description": "Number of shares traded for time period",
       "type": "integer"
     }
   },
   "required": [
-    "close",
-    "datetime",
-    "high",
-    "low",
-    "open",
-    "volume"
+    "Close",
+    "Datetime",
+    "High",
+    "Low",
+    "Open",
+    "Volume"
   ]
 }
 

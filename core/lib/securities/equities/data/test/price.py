@@ -145,25 +145,23 @@ class TestPrice(testing.Test):
         self.assertGreater(regen_adjustment_data['Time'],adjustment_data['Time'])
 
     def test_daily(self):
-        '''
-        price_collection = 'price.AAPL'
-        collection = self.mongo_data.db[price_collection]
-        data = collection.find_one({ 'Adjustment': 'Splits' } , { 'Splits': { '$elemMatch': { '$elemMatch': { '$eq': 224 } } } })
-        print(data)
-        collection.update_one( {{ 'Adjustment': 'Splits' } , { 'Splits': { '$elemMatch': { '$elemMatch': { '$eq': 224 } } } } }, {})
-        #collection.update_one({'Interval': '1d'},{ "$set": {'Quotes.'+interval_date: json_quote}}, upsert=True)
-        '''
+        #data = collection.find_one({ 'Adjustment': 'Dividends' } , { 'Dividends': { '$elemMatch': { '1': { '$eq': 3.30 } } } })
+        #date_to_update = dt(2014, 5, 8, 4, 0, 0)
+        #collection.update_one( { 'Adjustment': 'Dividends' , 'Dividends': { '$elemMatch': { '0': { '$eq': date_to_update  } } } }, { '$set': { "Dividends.$.1": 3.29 } })
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.daily.quote(TEST_SYMBOL_FAKE)
+        quotes = self.daily.quote(TEST_SYMBOL_DIV,regen=True)
         # Compare returned data to database
         price_collection = 'price.' + TEST_SYMBOL_DIVSPLIT
         collection = self.mongo_data.db[price_collection]
         quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT)
-        first_date = list(quotes)[0]
+        quotes.sort('date')
+        first_date = quotes.first()
         init_quote_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0, 'Quotes': 0 })
         quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,regen=True)
         regen_quote_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0, 'Quotes': 0 })
         self.assertGreater(regen_quote_data['Time'],init_quote_data['Time'])
+        return #ALEXHERE
         # Check for invalid dates
         with self.assertRaises(Exception):
             self.daily.quote(TEST_SYMBOL_DIVSPLIT,start_date='2022-02-29')

@@ -130,25 +130,28 @@ Notes:
 
 '''
 
-# Classes for returned adjustment data
+# Classes for returned data with adjustments
 
-class _Adjustments(Series):
+class _AdjustedData(Series):
 
-    def __init__(self,adjustment_type,data,query_date):
-        super(_Adjustments,self).__init__()
-        self.query_date = query_date
+    def __init__(self,adjustment_type,data,query_date=None):
+        super(_AdjustedData,self).__init__()
+        if query_date is not None:
+            self.query_date = query_date
         if data is None:
             return
         schema_parser = SchemaParser()
         if adjustment_type == 'dividend':
             json_schema = DIVIDENDS_SCHEMA
-        elif adjustment_type == 'split':
-            json_schema = SPLITS_SCHEMA
         elif adjustment_type == 'merged':
             json_schema = ADJUSTMENTS_SCHEMA
+        elif adjustment_type == 'price':
+            json_schema = PRICE_SCHEMA
+        elif adjustment_type == 'split':
+            json_schema = SPLITS_SCHEMA
         else:
-            raise Exception('Unrecognized adjustment type ' + str(adjustment_type) + 'given to _Adjustments object')
-        if adjustment_type == 'dividend' or adjustment_type == 'split':
+            raise Exception('Unrecognized adjustment type ' + str(adjustment_type) + 'given to _AdjustedData object')
+        if adjustment_type == 'dividend' or adjustment_type == 'price' or adjustment_type == 'split':
             for entry in data:
                 database_format = schema_parser.database_format_columns(json_schema)
                 adjustment_data = {}
@@ -161,6 +164,8 @@ class _Adjustments(Series):
                     except:
                         raise
                     format_index = format_index + 1
+                    if key == 'Datetime':
+                        adjustment_data[key] = adjustment_data[key].replace(tzinfo=tz.gettz(TIMEZONE))
                 data_object = Return(json_schema,adjustment_data)
                 self.add(data_object)
         else:
@@ -297,7 +302,7 @@ date more recent than or matching the date of the most recent split is therefore
         else:
             returndata = adjustments_data['Adjustments']
             query_date = adjustments_data['Time']
-        return_object = _Adjustments('merged',returndata,query_date)
+        return_object = _AdjustedData('merged',returndata,query_date)
         return return_object
 
     def dividends(self,symbol,**kwargs):
@@ -374,13 +379,16 @@ date more recent than or matching the date of the most recent split is therefore
                 returndata = write_dict['Dividends']
             os.remove(target_file)
         if returndata is None and dividend_data is not None:
-            # Database dates need to be made time zone aware
-            index = 0
-            for dividend in dividend_data['Dividends']:
-                dividend_data['Dividends'][index][0] = dividend_data['Dividends'][index][0].replace(tzinfo=tz.gettz(TIMEZONE))
-                index = index + 1
+            '''
+            if dividend_data['Dividends'] is not None:
+                # Database dates need to be made time zone aware
+                index = 0
+                for dividend in dividend_data['Dividends']:
+                    dividend_data['Dividends'][index][0] = dividend_data['Dividends'][index][0].replace(tzinfo=tz.gettz(TIMEZONE))
+                    index = index + 1
+            '''
             returndata = dividend_data['Dividends']
-        return_object = _Adjustments('dividend',returndata,query_date)
+        return_object = _AdjustedData('dividend',returndata,query_date)
         return return_object
 
     def splits(self,symbol,**kwargs):
@@ -466,13 +474,16 @@ date more recent than or matching the date of the most recent split is therefore
             returndata = write_dict['Splits']
             os.remove(target_file)
         if returndata is None and split_data is not None:
-            # Database dates need to be made time zone aware
-            index = 0
-            for split in split_data['Splits']:
-                split_data['Splits'][index][0] = split_data['Splits'][index][0].replace(tzinfo=tz.gettz(TIMEZONE))
-                index = index + 1
+            '''
+            if split_data['Splits'] is not None:
+                # Database dates need to be made time zone aware
+                index = 0
+                for split in split_data['Splits']:
+                    split_data['Splits'][index][0] = split_data['Splits'][index][0].replace(tzinfo=tz.gettz(TIMEZONE))
+                    index = index + 1
+            '''
             returndata = split_data['Splits']
-        return_object = _Adjustments('split',returndata,query_date)
+        return_object = _AdjustedData('split',returndata,query_date)
         return return_object
 
     def split_adjustment(self,symbol,value_date,**kwargs):
@@ -502,15 +513,12 @@ date more recent than or matching the date of the most recent split is therefore
         # If now is a weekend day, generated before 9:00 last Friday
         stale = False
         now = dt.now().astimezone()
-        time_zone_offset_string = str(now)[-5:]
         weekday_no = now.weekday()
         yesterday = now - timedelta(days = 1)
         if weekday_no < 5:
             # Weekday
-            nine_pm_yesterday = "%d-%02d-%02d 21:00:00.000000-" % (yesterday.year,yesterday.month,yesterday.day) + time_zone_offset_string
-            nine_pm_yesterday_object = parse(nine_pm_yesterday)
-            nine_pm = "%d-%02d-%02d 21:00:00.000000-" % (now.year,now.month,now.day) + time_zone_offset_string
-            nine_pm_object = parse(nine_pm)
+            nine_pm_yesterday_object = dt(yesterday.year, yesterday.month, yesterday.day, 21, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE))
+            nine_pm_object = dt(now.year, now.month, now.day, 21, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE))
             if now <= nine_pm_object and refresh_date < nine_pm_yesterday_object:
                 stale = True
             elif now > nine_pm_object and refresh_date < nine_pm_object:
@@ -518,8 +526,7 @@ date more recent than or matching the date of the most recent split is therefore
         else:
             # Weekend
             last_friday = now - timedelta(days=(weekday_no-4))
-            last_friday_string = "%d-%02d-%02d 21:00:00.000000-04:00" % (last_friday.year,last_friday.month,last_friday.day)
-            last_friday_object = parse(last_friday_string)
+            last_friday_object = dt(last_friday.year, last_friday.month, last_friday.day, 21, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE))
             if refresh_date < last_friday_object:
                 stale = True
         return stale
@@ -632,6 +639,7 @@ my current judgment is that these differences will not grossly affect the desire
 
     def __init__(self,username=USER,**kwargs):
         super(Daily,self).__init__(username,**kwargs)
+        self.date_utils = Dates()
 
     def quote(self,symbol,**kwargs):
         symbol = str(symbol).upper()
@@ -645,7 +653,8 @@ my current judgment is that these differences will not grossly affect the desire
         period = kwargs.get('period',None)
         start_date = kwargs.get('start_date',None)
         end_date = kwargs.get('end_date',None)
-        self.today = str(date.today())
+        now = dt.now().astimezone()
+        self.today = dt(now.year, now.month, now.day, 0, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE))
         if period is not None:
             if start_date is not None or end_date is not None:
                 raise Exception('Cannot specify both a time period and a start/end date.')
@@ -660,11 +669,10 @@ my current judgment is that these differences will not grossly affect the desire
             date_verifier.verify_date(end_date)
             if end_date > self.today:
                 raise Exception('Requested end date in the future.')
-        now = dt.now().astimezone()
         price_collection = 'price.' + symbol
         returndata = None
+        return_object = Series()
         target_file = self.download_directory()+symbol+'-daily.csv'
-
         # First we check/update stored data to save on bandwidth
         collection = self.db[price_collection]
         interval_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0 })
@@ -672,23 +680,19 @@ my current judgment is that these differences will not grossly affect the desire
         self.start_date_daily = None
         self.end_date_daily = None
         self.cutoff_today = False
-        time_zone_offset_string = str(now)[-5:]
-        nine_pm_today = "%d-%02d-%02d 21:00:00.000000-" % (now.year,now.month,now.day) + time_zone_offset_string
-        nine_pm_object = parse(nine_pm_today)
+        nine_pm_object = dt(now.year, now.month, now.day, 21, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE))
         if now < nine_pm_object:
             self.cutoff_today = True
-
         if interval_data is not None:
-            self.start_date_daily = interval_data['Start Date']
-            self.end_date_daily = interval_data['End Date']
+            self.start_date_daily = self.date_utils.utc_date_to_timezone_date(interval_data['Start Date'],TIMEZONE)
+            self.end_date_daily = self.date_utils.utc_date_to_timezone_date(interval_data['End Date'],TIMEZONE)
         if regen is False and interval_data is not None:
-            stale = self._is_stale_data(interval_data['Time'])
+            stale = self._is_stale_data(interval_data['Time'].replace(tzinfo=tz.gettz(TIMEZONE)))
         elif interval_data is None:
             regen = True
         if regen is False and stale is True:
             if self.end_date_daily is not None:
-                year,month,day = map(int,self.end_date_daily.rstrip().split('-'))
-                period1 = str(int(dt(year, month, day, 0, 0, 0).timestamp()))
+                period1 = dt(self.end_date_daily.year, self.end_date_daily.month, self.end_date_daily.day, 0, 0, 0).timestamp()
             url = self._daily_quote_url(symbol,period1)
             response = urlretrieve(url,target_file)
             with open(target_file,'r') as f:
@@ -696,6 +700,7 @@ my current judgment is that these differences will not grossly affect the desire
                 if self.end_date_daily is not None:
                     compare_line = f.readline().rstrip()
                     pieces = compare_line.rstrip().split(',')
+                    # ALEXFIX
                     if round(interval_data['Quotes'][self.end_date_daily][3],2) != round(float(pieces[5]),2):
                         # There's been a price adjustment, regenerate everything
                         regen = True
@@ -706,9 +711,10 @@ my current judgment is that these differences will not grossly affect the desire
                     for line in f:
                         (json_quote,interval_date) = self._parse_daily(line,adjuster)
                         if json_quote is not None:
+                            # ALEXFIX
                             collection.update_one({'Interval': '1d'},{ "$set": {'Quotes.'+interval_date: json_quote}}, upsert=True)
                             interval_data['Quotes'][interval_date] = json_quote
-                    collection.update_one({'Interval': '1d'},{ "$set":  {'End Date': self.end_date_daily, 'Start Date': self.start_date_daily, 'Time': str(now)}})
+                    collection.update_one({'Interval': '1d'},{ "$set":  {'End Date': self.end_date_daily, 'Start Date': self.start_date_daily, 'Time': now }})
             os.remove(target_file)
         if regen is True:
             adjuster = _PriceAdjuster(symbol,self.username,regen=regen_adjustments,symbol_verify=False)
@@ -719,48 +725,40 @@ my current judgment is that these differences will not grossly affect the desire
                 self._verify_csv_daily_format(f.readline())
             # Remove the first line of the target file prior to reading price data in reverse.
             subprocess.check_output("/usr/bin/sed -i '1d' " + target_file, shell=True)
-            # Read file line-by-line in reverse (newest to oldest), since adjustments occur from
-            # the most recent data (always as-traded).
+            # Read file line-by-line in reverse (newest to oldest), since adjustments occur from the most recent data (always as-traded).
             with FileReadBackwards(target_file, encoding="utf-8") as f:
-                json_quotes = {}
+                json_quotes = []
                 for line in f:
-                    (json_quote,interval_date) = self._parse_daily(line,adjuster)
+                    (json_quote,discard) = self._parse_daily(line,adjuster)
                     if json_quote is not None:
-                        json_quotes[interval_date] = json_quote
+                        json_quotes.append(json_quote)
             write_dict = {}
-            write_dict['Time'] = str(now)
+            write_dict['Time'] = now
             write_dict['Interval'] = '1d'
-            write_dict['Format'] = PRICE_FORMAT
+            database_format = self.schema_parser.database_format_columns(PRICE_SCHEMA)
+            write_dict['Format'] = database_format
             write_dict['Start Date'] = self.start_date_daily
             write_dict['End Date'] = self.end_date_daily
-            write_dict['Quotes'] = {key:json_quotes[key] for key in sorted(json_quotes)}
+            write_dict['Quotes'] = json_quotes
             collection.delete_many({ 'Interval': '1d' })
             collection.insert_one(write_dict)
             interval_data = write_dict
             returndata = write_dict['Quotes']
             os.remove(target_file)
-
         if returndata is None:
             returndata = interval_data['Quotes']
         # Trim data outside of requested date range
+        # ALEXFIX
+        '''
         if start_date is not None:
             start_date = dt.strptime(start_date,DATE_STRING_FORMAT)
             returndata = {key: value for key, value in returndata.items() if dt.strptime(key,DATE_STRING_FORMAT) >= start_date}
         if end_date is not None:
             end_date = dt.strptime(end_date,DATE_STRING_FORMAT)
             returndata = {key: value for key, value in returndata.items() if dt.strptime(key,DATE_STRING_FORMAT) <= end_date}
-        # Format returned data using data headers
-        formatted_returndata = {}
-        details_length = len(PRICE_FORMAT)
-        for quote_date in returndata:
-            formatted_returndata[quote_date] = {}
-            quote_length = len(returndata[quote_date])
-            for index in range(0, details_length):
-                if index >= quote_length:
-                    formatted_returndata[quote_date][PRICE_FORMAT[index]] = returndata[quote_date][index-5]
-                else:
-                    formatted_returndata[quote_date][PRICE_FORMAT[index]] = returndata[quote_date][index]
-        return collections.OrderedDict(sorted(formatted_returndata.items()))
+        '''
+        return_object = _AdjustedData('price',returndata,None)
+        return return_object
 
     def _daily_quote_url(self,symbol,period1='0'):
         period2 = '9999999999' # To the present day, and beyooond
@@ -785,41 +783,38 @@ my current judgment is that these differences will not grossly affect the desire
         # 4. Use reported volume as adjusted volume.
         line = line.rstrip()
         pieces = line.rstrip().split(',')
-        interval_date = str(pieces[0])
+        interval_date_string = str(pieces[0])
+        interval_date = dt.strptime(interval_date_string,DATE_STRING_FORMAT)
+        interval_date_object = dt(interval_date.year, interval_date.month, interval_date.day, 0, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE))
         if self.cutoff_today and interval_date == self.today:
             return None, None
-        if (self.start_date_daily is None or self.start_date_daily >= interval_date):
-            self.start_date_daily = interval_date
-        if (self.end_date_daily is None or self.end_date_daily <= interval_date):
-            self.end_date_daily = interval_date
+        if (self.start_date_daily is None or self.start_date_daily >= interval_date_object):
+            self.start_date_daily = interval_date_object
+        if (self.end_date_daily is None or self.end_date_daily <= interval_date_object):
+            self.end_date_daily = interval_date_object
         quote = []
-        if adjuster.have_adjustments() is False:
+        quote.append(interval_date_object)
+        if adjuster.have_adjustments() is True:
+            adjuster.date_iterator(interval_date_object,float(pieces[4]))
+            quote.append(round(float(pieces[1]) * float(adjuster.price_adjustment),2)) # Open
+            quote.append(round(float(pieces[2]) * float(adjuster.price_adjustment),2)) # High
+            quote.append(round(float(pieces[3]) * float(adjuster.price_adjustment),2)) # Low
+            quote.append(round(float(pieces[4]) * float(adjuster.price_adjustment),2)) # Close
+            quote.append(int(int(pieces[6]) * float(adjuster.volume_adjustment))) # Volume
+            if adjuster.dividend_adjustment != 1.0:
+                # Adjusted prices rounded to 6 places for better accuracy when plotting small adjusted numbers
+                quote.append(round(float(pieces[1]) * adjuster.dividend_adjustment,6)) # Adjusted open
+                quote.append(round(float(pieces[2]) * adjuster.dividend_adjustment,6)) # Adjusted high
+                quote.append(round(float(pieces[3]) * adjuster.dividend_adjustment,6)) # Adjusted low
+                quote.append(round(float(pieces[5]),6)) # Adjusted close
+                quote.append(int(pieces[6])) # Adjusted volume
+        else:
             quote.append(round(float(pieces[1]),2)) # Open
             quote.append(round(float(pieces[2]),2)) # High
             quote.append(round(float(pieces[3]),2)) # Low
             quote.append(round(float(pieces[4]),2)) # Close
             quote.append(int(pieces[6])) # Volume
-        else:
-            adjuster.date_iterator(interval_date,float(pieces[4]))
-            if adjuster.get_dividend_adjustment() == 1.0 and adjuster.get_price_adjustment() == 1:
-                quote.append(round(float(pieces[1]),2)) # Open
-                quote.append(round(float(pieces[2]),2)) # High
-                quote.append(round(float(pieces[3]),2)) # Low
-                quote.append(round(float(pieces[4]),2)) # Close
-                quote.append(int(pieces[6])) # Volume
-            else:
-                quote.append(round(float(pieces[1]) * float(adjuster.get_price_adjustment()),2)) # Open
-                quote.append(round(float(pieces[2]) * float(adjuster.get_price_adjustment()),2)) # High
-                quote.append(round(float(pieces[3]) * float(adjuster.get_price_adjustment()),2)) # Low
-                quote.append(round(float(pieces[4]) * float(adjuster.get_price_adjustment()),2)) # Close
-                quote.append(int(int(pieces[6]) * float(adjuster.get_volume_adjustment()))) # Volume
-                # Adjusted prices rounded to 6 places for better accuracy when plotting small adjusted numbers
-                quote.append(round(float(pieces[1]) * adjuster.get_dividend_adjustment(),6)) # Adjusted open
-                quote.append(round(float(pieces[2]) * adjuster.get_dividend_adjustment(),6)) # Adjusted high
-                quote.append(round(float(pieces[3]) * adjuster.get_dividend_adjustment(),6)) # Adjusted low
-                quote.append(round(float(pieces[5]),6)) # Adjusted close
-                quote.append(int(pieces[6])) # Adjusted volume
-        return (quote,interval_date)
+        return (quote, interval_date_object)
 
     def _verify_csv_daily_format(self,first_line):
         if not re.match(r'^Date,Open,High,Low,Close,Adj Close,Volume',first_line):
@@ -995,12 +990,12 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
         # "response['candles']" is a list in ascending date order, so read the list backwards to correctly apply adjustments
         for quote in reversed(response['candles']): # Most recent date/time first
             quote_date = dt.fromtimestamp(quote['datetime']/1000)
-            quote['datetime'] = quote_date.replace(tzinfo=tz.gettz(TIMEZONE))
+            quote['Datetime'] = quote_date.replace(tzinfo=tz.gettz(TIMEZONE))
             quote_date_midnight = dt(quote_date.year,quote_date.month,quote_date.day)
             quote_date_midnight = quote_date_midnight.replace(tzinfo=tz.gettz(TIMEZONE))
             data = {}
             if adjuster.have_adjustments() is True:
-                data['datetime'] = quote['datetime']
+                data['Datetime'] = quote['Datetime']
                 adjuster.date_iterator(quote_date_midnight,daily_close)
                 for key in quote:
                     if key == 'datetime':
@@ -1009,16 +1004,19 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
                     if key == 'volume':
                         # Volume is split-adjusted already.
                         # For true volume, apply the adjuster (un)adjustment
-                        data[key] = int(quote[key] * adjuster.volume_adjustment)
-                        data[adjusted_key] = quote[key]
+                        data[key.title()] = int(quote[key] * adjuster.volume_adjustment)
+                        data[adjusted_key.title()] = quote[key]
                     else:
                         # Price is split-adjusted already.
                         # For true price, apply the price (un)adjustment
                         # For adjusted price, apply the dividend adjustment
-                        data[key] = round(quote[key] * adjuster.price_adjustment,2)
-                        data[adjusted_key] = round(quote[key] * adjuster.dividend_adjustment,6)
+                        data[key.title()] = round(quote[key] * adjuster.price_adjustment,2)
+                        data[adjusted_key.title()] = round(quote[key] * adjuster.dividend_adjustment,6)
             else:
-                data = quote
+                uppercase_quote = {}
+                for key in quote:
+                    uppercase_quote[key.title()] = quote[key]
+                data = uppercase_quote
             data_object = Return(PRICE_SCHEMA,data)
             return_object.add(data_object)
         return_object.sort('date')
