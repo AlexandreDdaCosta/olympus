@@ -156,7 +156,7 @@ class TestPrice(testing.Test):
         collection = self.mongo_data.db[price_collection]
         quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT)
         quotes.sort('date')
-        first_date = quotes.first()
+        first_date = quotes.first().date
         init_quote_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0, 'Quotes': 0 })
         quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,regen=True)
         regen_quote_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0, 'Quotes': 0 })
@@ -184,8 +184,7 @@ class TestPrice(testing.Test):
         with self.assertRaises(Exception):
             self.daily.quote(TEST_SYMBOL_DIVSPLIT,period='1Y',end_date=a_while_ago)
         quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,start_date=a_while_ago,end_date=today)
-        curr_range_date = None
-        return #ALEXHERE
+        last_quote_time = None
         quote = quotes.next()
         while quote is not None:
             if last_quote_time is not None and quote.date.day == last_quote_time.day:
@@ -194,33 +193,38 @@ class TestPrice(testing.Test):
                     self.assertEqual(self.intraday.DEFAULT_INTRADAY_FREQUENCY, int((quote.date - last_quote_time).total_seconds()/60))
             last_quote_time = quote.date
             quote = quotes.next()
-        for range_date in quotes:
+        curr_range_date = None
+        quote = quotes.next(reset=True)
+        while quote is not None:
             # Verify returned data format and contents for a valid daily quote request
             if curr_range_date is None:
-                self.assertGreaterEqual(range_date,a_while_ago)
-            validate(instance=quotes[range_date],schema=QUOTE_SCHEMA)
-            self.assertLessEqual(quotes[range_date]['Adjusted Close'],quotes[range_date]['Close'])
-            self.assertLessEqual(quotes[range_date]['Adjusted Low'],quotes[range_date]['Low'])
-            self.assertLessEqual(quotes[range_date]['Adjusted High'],quotes[range_date]['High'])
-            self.assertLessEqual(quotes[range_date]['Adjusted Open'],quotes[range_date]['Open'])
-            self.assertGreaterEqual(quotes[range_date]['Adjusted Volume'],quotes[range_date]['Volume'])
-            self.assertGreaterEqual(quotes[range_date]['High'],quotes[range_date]['Close'])
-            self.assertGreaterEqual(quotes[range_date]['High'],quotes[range_date]['Low'])
-            self.assertGreaterEqual(quotes[range_date]['High'],quotes[range_date]['Open'])
-            self.assertLessEqual(quotes[range_date]['Low'],quotes[range_date]['Close'])
-            self.assertLessEqual(quotes[range_date]['Low'],quotes[range_date]['Open'])
+                self.assertGreaterEqual(quote.date,a_while_ago)
+            if 'adjusted_close' in quote.list():
+                self.assertLess(quote.adjusted_close,quote.close)
+                self.assertLess(quote.adjusted_low,quote.low)
+                self.assertLess(quote.adjusted_high,quote.high)
+                self.assertLess(quote.adjusted_open,quote.open)
+                self.assertGreater(quote.adjusted_volume,quote.volume)
+            self.assertGreaterEqual(quote.high,quote.close)
+            self.assertGreater(quote.high,quote.low)
+            self.assertGreaterEqual(quote.high,quote.open)
+            self.assertLessEqual(quote.low,quote.close)
+            self.assertLessEqual(quote.low,quote.open)
             curr_range_date = range_date
+            quote = quotes.next()
         self.assertLessEqual(curr_range_date,today)
         for period in VALID_DAILY_WEEKLY_PERIODS.keys():
             # Check range of raturned dates for all valid periods
             quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,period=period)
-            first_period_date = list(quotes)[0]
+            first_period_date = quotes.last().date
             if period == 'All':
                 self.assertEqual(first_date,first_period_date)
             else:    
                 past_days = VALID_DAILY_WEEKLY_PERIODS[period] + 4 # Add 4 in case of mid-week day adjustment
-                max_past_date = str(date.today() - timedelta(days=past_days))
+                now = dt.now().astimezone()
+                max_past_date = (dt(now.year, now.month, now.day, 0, 0, 0) - timedelta(days=past_days)).replace(tzinfo=tz.gettz(TIMEZONE))
                 self.assertLessEqual(max_past_date,first_period_date)
+        return #ALEXFIX
         # Remove the last price record by date, then get the quote again. Check that the record was restored.
         interval_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0 })
         last_date = None

@@ -379,14 +379,12 @@ date more recent than or matching the date of the most recent split is therefore
                 returndata = write_dict['Dividends']
             os.remove(target_file)
         if returndata is None and dividend_data is not None:
-            '''
             if dividend_data['Dividends'] is not None:
                 # Database dates need to be made time zone aware
                 index = 0
                 for dividend in dividend_data['Dividends']:
                     dividend_data['Dividends'][index][0] = dividend_data['Dividends'][index][0].replace(tzinfo=tz.gettz(TIMEZONE))
                     index = index + 1
-            '''
             returndata = dividend_data['Dividends']
         return_object = _AdjustedData('dividend',returndata,query_date)
         return return_object
@@ -474,14 +472,12 @@ date more recent than or matching the date of the most recent split is therefore
             returndata = write_dict['Splits']
             os.remove(target_file)
         if returndata is None and split_data is not None:
-            '''
             if split_data['Splits'] is not None:
                 # Database dates need to be made time zone aware
                 index = 0
                 for split in split_data['Splits']:
                     split_data['Splits'][index][0] = split_data['Splits'][index][0].replace(tzinfo=tz.gettz(TIMEZONE))
                     index = index + 1
-            '''
             returndata = split_data['Splits']
         return_object = _AdjustedData('split',returndata,query_date)
         return return_object
@@ -692,7 +688,7 @@ my current judgment is that these differences will not grossly affect the desire
             regen = True
         if regen is False and stale is True:
             if self.end_date_daily is not None:
-                period1 = dt(self.end_date_daily.year, self.end_date_daily.month, self.end_date_daily.day, 0, 0, 0).timestamp()
+                period1 = int(dt(self.end_date_daily.year, self.end_date_daily.month, self.end_date_daily.day, 0, 0, 0).timestamp())
             url = self._daily_quote_url(symbol,period1)
             response = urlretrieve(url,target_file)
             with open(target_file,'r') as f:
@@ -700,9 +696,18 @@ my current judgment is that these differences will not grossly affect the desire
                 if self.end_date_daily is not None:
                     compare_line = f.readline().rstrip()
                     pieces = compare_line.rstrip().split(',')
-                    # ALEXFIX
-                    if round(interval_data['Quotes'][self.end_date_daily][3],2) != round(float(pieces[5]),2):
-                        # There's been a price adjustment, regenerate everything
+                    quote = None
+                    quote_date = None
+                    for quote in interval_data['Quotes']:
+                        quote_date = self.date_utils.utc_date_to_timezone_date(quote[0],TIMEZONE)
+                        if quote_date != self.end_date_daily:
+                            continue
+                        break
+                    if quote_date != self.end_date_daily:
+                        # Never found the saved end date in the database quotes  although we should have; regenerate everything
+                        regen = True
+                    elif round(quote[4],2) != round(float(pieces[5]),2):
+                        # There's been a price adjustment; regenerate everything
                         regen = True
             if regen is False:
                 adjuster = _PriceAdjuster(symbol,self.username,regen=regen_adjustments,symbol_verify=False)
@@ -752,6 +757,11 @@ my current judgment is that these differences will not grossly affect the desire
                 returndata = [item for item in returndata if self.date_utils.utc_date_to_timezone_date(item[0],TIMEZONE) >= start_date]
             if end_date is not None:
                 returndata = [item for item in returndata if self.date_utils.utc_date_to_timezone_date(item[0],TIMEZONE) <= end_date]
+            # Database dates need to be made time zone aware
+            index = 0
+            for entry in returndata:
+                returndata[index][0] = self.date_utils.utc_date_to_timezone_date(returndata[index][0],TIMEZONE)
+                index = index + 1
         else:
             if start_date is not None:
                 returndata = [item for item in returndata if item[0] >= start_date]
@@ -760,9 +770,9 @@ my current judgment is that these differences will not grossly affect the desire
         return_object = _AdjustedData('price',returndata,None)
         return return_object
 
-    def _daily_quote_url(self,symbol,period1='0'):
+    def _daily_quote_url(self,symbol,period1=0):
         period2 = '9999999999' # To the present day, and beyooond
-        return 'https://query1.finance.yahoo.com/v7/finance/download/' + symbol + '?period1=' + period1 + '&period2=' + period2 + '&interval=1d&events=history'
+        return 'https://query1.finance.yahoo.com/v7/finance/download/' + symbol + '?period1=' + str(period1) + '&period2=' + period2 + '&interval=1d&events=history'
 
     def _init_adjustments(self,symbol,regen):
         adjustments = self.adjustments(symbol,regen=regen,symbol_verify=False)
@@ -825,7 +835,8 @@ my current judgment is that these differences will not grossly affect the desire
         if period not in VALID_DAILY_WEEKLY_PERIODS.keys():
             raise Exception('Invalid period specified; must be one of the following: ' + ', ' . join(VALID_DAILY_WEEKLY_PERIODS))
         if VALID_DAILY_WEEKLY_PERIODS[period] is not None:
-            start_date = str(date.today() - timedelta(days=VALID_DAILY_WEEKLY_PERIODS[period]))
+            now = dt.now().astimezone()
+            start_date = (dt(now.year, now.month, now.day, 0, 0, 0) - timedelta(days=VALID_DAILY_WEEKLY_PERIODS[period])).replace(tzinfo=tz.gettz(TIMEZONE))
         else:
             start_date = None
         return start_date
