@@ -23,12 +23,16 @@ class Connection(redis.Connection):
             data = json.dumps(data)
             headers['Content-Length'] = str(len(data));
         func = getattr(requests, method)
-        response = func(
-            RESTAPI_URL+endpoint,
-            cert = CLIENT_CERT,
-            data = data,
-            headers = headers
-        )
+        response = None
+        try:
+            response = func(
+                RESTAPI_URL+endpoint,
+                cert = CLIENT_CERT,
+                data = data,
+                headers = headers
+            )
+        except:
+            raise RestAPIError(response)
         if (response.status_code == 401):
             # If unauthorized, could be invalidated tokens.
             # Wipe out local token as precaution, then retry
@@ -37,12 +41,18 @@ class Connection(redis.Connection):
             if hasattr(self,'access_token_expiration'):
                 delattr(self,'access_token_expiration')
             headers['Authorization'] = 'Bearer ' + self._token(True)
-            return func(
-                RESTAPI_URL+endpoint,
-                cert = CLIENT_CERT,
-                data = data,
-                headers = headers
-            )
+            response = None
+            try:
+                return func(
+                    RESTAPI_URL+endpoint,
+                    cert = CLIENT_CERT,
+                    data = data,
+                    headers = headers
+                )
+            except:
+                raise RestAPIError(response)
+        elif response.status_code != 200:
+            raise RestAPIError(response)
         return response
 
     def _token(self,test_access=False):
@@ -78,19 +88,27 @@ class Connection(redis.Connection):
                             return self.access_token;
                 # 3c.  Query back end
                 data = json.dumps({ 'username': self.username })
-                response = requests.post(
-                    RESTAPI_URL+'/auth/refresh',
-                    cert=CLIENT_CERT,
-                    data=data,
-                    headers={
-                        'Authorization': 'Bearer ' + refresh_token,
-                        'Content-Type': 'application/json',
-                        'Content-Length': str(len(data))
-                        }
-                )
-                content = json.loads(response.content)
-                if (response.status_code == 200):
+                response = None
+                try:
+                    response = requests.post(
+                        RESTAPI_URL+'/auth/refresh',
+                        cert=CLIENT_CERT,
+                        data=data,
+                        headers={
+                            'Authorization': 'Bearer ' + refresh_token,
+                            'Content-Type': 'application/json',
+                            'Content-Length': str(len(data))
+                            }
+                    )
+                except:
+                    lockfilehandle.close()
+                    raise RestAPIError(response)
+                if response.status_code != 200 and response.status_code != 401:
+                    lockfilehandle.close()
+                    raise RestAPIError(response)
+                if response.status_code == 200:
                     # 3d.  Update redis with fresh settings
+                    content = json.loads(response.content)
                     redis_client.hset('user:' + self.username + ':restapi:token', 'access_token_expiration', content['access_token_expiration'])
                     redis_client.hset('user:' + self.username + ':restapi:token', 'access_token', content['access_token'])
                     redis_client.hset('user:' + self.username + ':restapi:token', 'refresh_token_expiration', content['refresh_token_expiration'])
@@ -99,7 +117,7 @@ class Connection(redis.Connection):
                     self.access_token = content['access_token']
                     self.access_token_expiration = content['access_token_expiration']
                     return self.access_token;
-                elif (response.status_code == 401):
+                else: # 401
                     # If unauthorized, could be invalidated tokens.
                     # Wipe out local tokens as precaution
                     redis_client.delete('user:' + self.username + ':restapi:token')
@@ -108,9 +126,6 @@ class Connection(redis.Connection):
                         delattr(self,'access_token')
                     if hasattr(self,'access_token_expiration'):
                         delattr(self,'access_token_expiration')
-                else:
-                    lockfilehandle.close()
-                    raise Exception('Restapi connection failed: ' + content['message'])
 
         # 4. Fall back to username/password auth
         # 4a. Lock execution file
@@ -126,15 +141,21 @@ class Connection(redis.Connection):
         # 4c.  Query back end
         password = self.get_service_password(RESTAPI_SERVICE)
         data = json.dumps({ 'username': self.username, 'password': password })
-        response = requests.post(
-            RESTAPI_URL+'/auth/login',
-            cert=CLIENT_CERT,
-            data=data,
-            headers={
-                'Content-Type': 'application/json',
-                'Content-Length': str(len(data))
-                }
-        )
+        response = None
+        try:
+            response = requests.post(
+                RESTAPI_URL+'/auth/login',
+                cert=CLIENT_CERT,
+                data=data,
+                headers={
+                    'Content-Type': 'application/json',
+                    'Content-Length': str(len(data))
+                    }
+            )
+        except:
+            raise RestAPIError(response)
+        if response.status_code != 200:
+            raise RestAPIError(response)
         content = json.loads(response.content)
         if (content['message'] != 'Login successful.'):
             lockfilehandle.close()
@@ -154,14 +175,18 @@ class Connection(redis.Connection):
         url = RESTAPI_URL+'/auth/ping'
         if (refresh is True):
             url += 'r'
-        response = requests.post(
-            url,
-            cert=CLIENT_CERT,
-            headers={
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json'
-            }
-        )
+        response = None
+        try:
+            response = requests.post(
+                url,
+                cert=CLIENT_CERT,
+                headers={
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                }
+            )
+        except:
+            raise RestAPIError(response)
         if (response.status_code == 200):
             return True
         else:
@@ -182,3 +207,25 @@ class Connection(redis.Connection):
             except:
                 raise
         return lockfilehandle
+
+class RestAPIError(Exception):
+    """ 
+    Raised for failed backend REST calls
+    Attributes:
+        response: Response, if any, from backend Rest service
+    """
+
+    def __init__(self, response):
+        self.response = response
+        self.message = 'Rest API failure. '
+        super().__init__(self.message)
+
+    def __str__(self):
+        message = self.message
+        if self.response is None:
+            message = message + 'No response to attempted call of backend API server.'
+        else:
+            message = message + 'Status code ' + str(self.response.status_code) + ': ' + str(self.response.reason) + '.'
+            if self.response.status_code == 502: # Ouch!
+                message = message + ' Backend API isn\'t responding!'
+        return message
