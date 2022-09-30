@@ -145,15 +145,12 @@ class TestPrice(testing.Test):
         self.assertGreater(regen_adjustment_data['Time'],adjustment_data['Time'])
 
     def test_daily(self):
-        #data = collection.find_one({ 'Adjustment': 'Dividends' } , { 'Dividends': { '$elemMatch': { '1': { '$eq': 3.30 } } } })
-        #date_to_update = dt(2014, 5, 8, 4, 0, 0)
-        #collection.update_one( { 'Adjustment': 'Dividends' , 'Dividends': { '$elemMatch': { '0': { '$eq': date_to_update  } } } }, { '$set': { "Dividends.$.1": 3.29 } })
+        price_collection = 'price.' + TEST_SYMBOL_DIVSPLIT
+        collection = self.mongo_data.db[price_collection]
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.daily.quote(TEST_SYMBOL_FAKE)
         quotes = self.daily.quote(TEST_SYMBOL_DIV,regen=True)
         # Compare returned data to database
-        price_collection = 'price.' + TEST_SYMBOL_DIVSPLIT
-        collection = self.mongo_data.db[price_collection]
         quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT)
         quotes.sort('date')
         first_date = quotes.first().date
@@ -204,13 +201,13 @@ class TestPrice(testing.Test):
                 self.assertLess(quote.adjusted_low,quote.low)
                 self.assertLess(quote.adjusted_high,quote.high)
                 self.assertLess(quote.adjusted_open,quote.open)
-                self.assertGreater(quote.adjusted_volume,quote.volume)
+                self.assertGreaterEqual(quote.adjusted_volume,quote.volume)
             self.assertGreaterEqual(quote.high,quote.close)
             self.assertGreater(quote.high,quote.low)
             self.assertGreaterEqual(quote.high,quote.open)
             self.assertLessEqual(quote.low,quote.close)
             self.assertLessEqual(quote.low,quote.open)
-            curr_range_date = range_date
+            curr_range_date = quote.date
             quote = quotes.next()
         self.assertLessEqual(curr_range_date,today)
         for period in VALID_DAILY_WEEKLY_PERIODS.keys():
@@ -224,28 +221,31 @@ class TestPrice(testing.Test):
                 now = dt.now().astimezone()
                 max_past_date = (dt(now.year, now.month, now.day, 0, 0, 0) - timedelta(days=past_days)).replace(tzinfo=tz.gettz(TIMEZONE))
                 self.assertLessEqual(max_past_date,first_period_date)
-        return #ALEXFIX
         # Remove the last price record by date, then get the quote again. Check that the record was restored.
+        quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,regen=True)
         interval_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0 })
         last_date = None
         previous_date = None
-        for quote_date in sorted(interval_data['Quotes']):
-            previous_date = last_date
-            if last_date is None or last_date < quote_date:
-                last_date = quote_date
+        for quote_date in sorted(interval_data['Quotes'], key=lambda k: k[0], reverse=True):
+            if last_date is None:
+                last_date = self.date_utils.utc_date_to_timezone_date(quote_date[0],TIMEZONE)
+                continue
+            if previous_date is None:
+                previous_date = self.date_utils.utc_date_to_timezone_date(quote_date[0],TIMEZONE)
+                break
         if previous_date is not None:
-            last_quote_saved = interval_data['Quotes'][last_date]
-            # Test for regeneration of missing dates by simulating the result from one trading day
-            # previous after doing full regen
-            year,month,day = map(int,previous_date.split('-'))
-            time_string = "%d-%02d-%02d 00:00:00.000000-04:00" % (year,month,day)
-            collection.update_one({ 'Interval': '1d' },{ "$unset": { 'Quotes.'+last_date: 1 }})
-            collection.update_one({ 'Interval': '1d' },{ "$set":  { 'End Date': previous_date, 'Time': time_string }})
-            interval_data = collection.find_one({ 'Interval': '1d',  },{ '_id': 0, 'Interval': 0 })
-            self.assertTrue(previous_date in interval_data['Quotes']);
-            self.assertFalse(last_date in interval_data['Quotes']);
+            # Test for regeneration of missing dates by simulating the result from one trading day previous after doing full regen
+            time_object = dt(previous_date.year, previous_date.month, previous_date.day, 23, 0, 0).replace(tzinfo=tz.gettz())
+            collection.update_one( { 'Interval': '1d', 'Quotes': { '$elemMatch': { '0': { '$eq': last_date  } } } }, { '$unset': { "Quotes.$": 1 } })
+            collection.update_one( { 'Interval': '1d' }, { '$pull': { 'Quotes': None } } )
+            collection.update_one({ 'Interval': '1d' }, { "$set":  { 'End Date': previous_date, 'Time': time_object }})
+            data = collection.find_one({ 'Interval': '1d' } , { 'Quotes': { '$elemMatch': { '0': { '$eq': last_date } } } })
+            self.assertFalse('Quotes' in data)
+            data = collection.find_one({ 'Interval': '1d' } , { 'Quotes': { '$elemMatch': { '0': { '$eq': previous_date } } } })
+            self.assertTrue('Quotes' in data)
             quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT)
-            self.assertTrue(last_date in quotes);
+            data = collection.find_one({ 'Interval': '1d' } , { 'Quotes': { '$elemMatch': { '0': { '$eq': last_date } } } })
+            self.assertTrue('Quotes' in data)
     
     def test_weekly(self):
         return #ALEX

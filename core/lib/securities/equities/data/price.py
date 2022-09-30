@@ -649,8 +649,8 @@ my current judgment is that these differences will not grossly affect the desire
         period = kwargs.get('period',None)
         start_date = kwargs.get('start_date',None)
         end_date = kwargs.get('end_date',None)
-        now = dt.now().astimezone()
-        self.today = now
+        self.today = dt.now().astimezone().replace(tzinfo=tz.gettz(TIMEZONE))
+        self.midnight_today = dt(self.today.year, self.today.month, self.today.day, 0, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE))
         if period is not None:
             if start_date is not None or end_date is not None:
                 raise Exception('Cannot specify both a time period and a start/end date.')
@@ -676,8 +676,8 @@ my current judgment is that these differences will not grossly affect the desire
         self.start_date_daily = None
         self.end_date_daily = None
         self.cutoff_today = False
-        nine_pm_object = dt(now.year, now.month, now.day, 21, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE))
-        if now < nine_pm_object:
+        nine_pm_object = dt(self.today.year, self.today.month, self.today.day, 21, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE))
+        if self.today < nine_pm_object:
             self.cutoff_today = True
         if interval_data is not None:
             self.start_date_daily = self.date_utils.utc_date_to_timezone_date(interval_data['Start Date'],TIMEZONE)
@@ -704,7 +704,7 @@ my current judgment is that these differences will not grossly affect the desire
                             continue
                         break
                     if quote_date != self.end_date_daily:
-                        # Never found the saved end date in the database quotes  although we should have; regenerate everything
+                        # Never found the saved end date in the database quotes although we should have; regenerate everything
                         regen = True
                     elif round(quote[4],2) != round(float(pieces[5]),2):
                         # There's been a price adjustment; regenerate everything
@@ -716,10 +716,10 @@ my current judgment is that these differences will not grossly affect the desire
                     for line in f:
                         (json_quote,interval_date) = self._parse_daily(line,adjuster)
                         if json_quote is not None:
-                            # ALEXFIX
-                            collection.update_one({'Interval': '1d'},{ "$set": {'Quotes.'+interval_date: json_quote}}, upsert=True)
-                            interval_data['Quotes'][interval_date] = json_quote
-                    collection.update_one({'Interval': '1d'},{ "$set":  {'End Date': self.end_date_daily, 'Start Date': self.start_date_daily, 'Time': now }})
+                            collection.update_one( { 'Interval': '1d', 'Quotes': { '$elemMatch': { '0': { '$eq': interval_date  } } } }, { '$unset': { "Quotes.$": 1 } } )
+                            collection.update_one( { 'Interval': '1d' }, { '$pull': { 'Quotes': None } } )
+                            collection.update_one( { 'Interval': '1d'}, { '$addToSet': { 'Quotes': json_quote } } )
+                    collection.update_one({'Interval': '1d'},{ "$set":  {'End Date': self.end_date_daily, 'Start Date': self.start_date_daily, 'Time': self.today }})
             os.remove(target_file)
         if regen is True:
             adjuster = _PriceAdjuster(symbol,self.username,regen=regen_adjustments,symbol_verify=False)
@@ -738,7 +738,7 @@ my current judgment is that these differences will not grossly affect the desire
                     if json_quote is not None:
                         json_quotes.append(json_quote)
             write_dict = {}
-            write_dict['Time'] = now
+            write_dict['Time'] = self.today
             write_dict['Interval'] = '1d'
             database_format = self.schema_parser.database_format_columns(PRICE_SCHEMA)
             write_dict['Format'] = database_format
@@ -796,9 +796,8 @@ my current judgment is that these differences will not grossly affect the desire
         interval_date_string = str(pieces[0])
         interval_date = dt.strptime(interval_date_string,DATE_STRING_FORMAT)
         interval_date_object = dt(interval_date.year, interval_date.month, interval_date.day, 0, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE))
-        if self.cutoff_today and interval_date_object == self.today:
-            if interval_date_object.year == self.today.year and interval_date_object.month == self.today.month and interval_date_object.day == self.today.day:
-                return None, None
+        if self.cutoff_today is True and interval_date_object == self.midnight_today:
+            return None, None
         if (self.start_date_daily is None or self.start_date_daily >= interval_date_object):
             self.start_date_daily = interval_date_object
         if (self.end_date_daily is None or self.end_date_daily <= interval_date_object):
