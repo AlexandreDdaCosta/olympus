@@ -654,7 +654,7 @@ my current judgment is that these differences will not grossly affect the desire
         start_date = kwargs.get('start_date',None)
         end_date = kwargs.get('end_date',None)
         now = dt.now().astimezone()
-        self.today = dt(now.year, now.month, now.day, 0, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE))
+        self.today = now
         if period is not None:
             if start_date is not None or end_date is not None:
                 raise Exception('Cannot specify both a time period and a start/end date.')
@@ -747,16 +747,16 @@ my current judgment is that these differences will not grossly affect the desire
             os.remove(target_file)
         if returndata is None:
             returndata = interval_data['Quotes']
-        # Trim data outside of requested date range
-        # ALEXFIX
-        '''
-        if start_date is not None:
-            start_date = dt.strptime(start_date,DATE_STRING_FORMAT)
-            returndata = {key: value for key, value in returndata.items() if dt.strptime(key,DATE_STRING_FORMAT) >= start_date}
-        if end_date is not None:
-            end_date = dt.strptime(end_date,DATE_STRING_FORMAT)
-            returndata = {key: value for key, value in returndata.items() if dt.strptime(key,DATE_STRING_FORMAT) <= end_date}
-        '''
+            # Trim data outside of requested date range
+            if start_date is not None:
+                returndata = [item for item in returndata if self.date_utils.utc_date_to_timezone_date(item[0],TIMEZONE) >= start_date]
+            if end_date is not None:
+                returndata = [item for item in returndata if self.date_utils.utc_date_to_timezone_date(item[0],TIMEZONE) <= end_date]
+        else:
+            if start_date is not None:
+                returndata = [item for item in returndata if item[0] >= start_date]
+            if end_date is not None:
+                returndata = [item for item in returndata if item[0] <= end_date]
         return_object = _AdjustedData('price',returndata,None)
         return return_object
 
@@ -779,15 +779,16 @@ my current judgment is that these differences will not grossly affect the desire
         # Received data is split-adjusted only, excluding adjusted close. Therefore:
         # 1. Ignore the reported "Adjusted Close" in all lines (pieces[5])
         # 2. Remove split adjustments for price and volume to get as-traded prices and volumes
-        # 3. Apply dividend adjustments to price to get split- and dvidend-adjusted prices.
+        # 3. Apply dividend adjustments to price to get split- and dividend-adjusted prices.
         # 4. Use reported volume as adjusted volume.
         line = line.rstrip()
         pieces = line.rstrip().split(',')
         interval_date_string = str(pieces[0])
         interval_date = dt.strptime(interval_date_string,DATE_STRING_FORMAT)
         interval_date_object = dt(interval_date.year, interval_date.month, interval_date.day, 0, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE))
-        if self.cutoff_today and interval_date == self.today:
-            return None, None
+        if self.cutoff_today and interval_date_object == self.today:
+            if interval_date_object.year == self.today.year and interval_date_object.month == self.today.month and interval_date_object.day == self.today.day:
+                return None, None
         if (self.start_date_daily is None or self.start_date_daily >= interval_date_object):
             self.start_date_daily = interval_date_object
         if (self.end_date_daily is None or self.end_date_daily <= interval_date_object):

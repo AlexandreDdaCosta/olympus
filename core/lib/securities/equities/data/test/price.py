@@ -2,8 +2,8 @@
 
 import json, jsonschema, os, re, sys, time, unittest
 
-from datetime import date, timedelta, timezone
-from datetime import datetime as dt
+from datetime import date, datetime as dt, timedelta, timezone
+from dateutil import tz
 from jsonschema import validate
 
 import olympus.securities.equities.data as data
@@ -161,21 +161,20 @@ class TestPrice(testing.Test):
         quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,regen=True)
         regen_quote_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0, 'Quotes': 0 })
         self.assertGreater(regen_quote_data['Time'],init_quote_data['Time'])
-        return #ALEXHERE
         # Check for invalid dates
         with self.assertRaises(Exception):
-            self.daily.quote(TEST_SYMBOL_DIVSPLIT,start_date='2022-02-29')
+            self.daily.quote(TEST_SYMBOL_DIVSPLIT,start_date=dt(2022, 2, 29, 0, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE)))
         with self.assertRaises(Exception):
-            self.daily.quote(TEST_SYMBOL_DIVSPLIT,end_date='2022-02-29')
+            self.daily.quote(TEST_SYMBOL_DIVSPLIT,end_date=dt(2022, 2, 29, 0, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE)))
         with self.assertRaises(Exception):
             self.daily.quote(TEST_SYMBOL_DIVSPLIT,start_date='BADLYFORMATTEDDATE')
         with self.assertRaises(Exception):
             self.daily.quote(TEST_SYMBOL_DIVSPLIT,end_date='BADLYFORMATTEDDATE')
-        tomorrow = str(date.today() + timedelta(days=1))
+        tomorrow = (dt.now().astimezone() + timedelta(days=1)).replace(tzinfo=tz.gettz(TIMEZONE))
         with self.assertRaises(Exception):
             self.daily.quote(TEST_SYMBOL_DIVSPLIT,start_date=tomorrow)
-        a_while_ago = str(date.today() - timedelta(days=90))
-        today = str(date.today())
+        a_while_ago = (dt.now().astimezone() - timedelta(days=90)).replace(tzinfo=tz.gettz(TIMEZONE))
+        today = dt.now().astimezone().replace(tzinfo=tz.gettz(TIMEZONE))
         with self.assertRaises(Exception):
             self.daily.quote(TEST_SYMBOL_DIVSPLIT,start_date=today,end_date=a_while_ago)
         with self.assertRaises(Exception):
@@ -186,6 +185,15 @@ class TestPrice(testing.Test):
             self.daily.quote(TEST_SYMBOL_DIVSPLIT,period='1Y',end_date=a_while_ago)
         quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,start_date=a_while_ago,end_date=today)
         curr_range_date = None
+        return #ALEXHERE
+        quote = quotes.next()
+        while quote is not None:
+            if last_quote_time is not None and quote.date.day == last_quote_time.day:
+                # Extended hours quotes occasonally skip intervals, presumably because of a lack of trading activity
+                if last_quote_time.hour >= 9 and last_quote_time.minute >=30 and last_quote_time.hour < 16:
+                    self.assertEqual(self.intraday.DEFAULT_INTRADAY_FREQUENCY, int((quote.date - last_quote_time).total_seconds()/60))
+            last_quote_time = quote.date
+            quote = quotes.next()
         for range_date in quotes:
             # Verify returned data format and contents for a valid daily quote request
             if curr_range_date is None:
