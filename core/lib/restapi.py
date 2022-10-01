@@ -24,6 +24,8 @@ class Connection(redis.Connection):
             headers['Content-Length'] = str(len(data));
         func = getattr(requests, method)
         response = None
+        text = RESTAPI_URL+endpoint,
+        print(text)
         try:
             response = func(
                 RESTAPI_URL+endpoint,
@@ -51,8 +53,6 @@ class Connection(redis.Connection):
                 )
             except:
                 raise RestAPIError(response)
-        elif response.status_code != 200:
-            raise RestAPIError(response)
         return response
 
     def _token(self,test_access=False):
