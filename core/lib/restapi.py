@@ -24,8 +24,6 @@ class Connection(redis.Connection):
             headers['Content-Length'] = str(len(data));
         func = getattr(requests, method)
         response = None
-        text = RESTAPI_URL+endpoint,
-        print(text)
         try:
             response = func(
                 RESTAPI_URL+endpoint,
