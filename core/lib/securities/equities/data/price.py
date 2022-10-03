@@ -850,12 +850,28 @@ class Weekly(Daily):
         kwargs.pop('start_date',None)
         kwargs.pop('end_date',None)
         daily_quotes = super().quote(symbol,period=period,**kwargs)
-        self.merge.reset_quote()
+        daily_quotes.sort('date')
         last_day_of_week = None
-        last_start_date_of_week = None
-        weekly_quotes = {}
-        for quote_date in daily_quotes:
-            day_of_week = dt.strptime(quote_date,DATE_STRING_FORMAT).isoweekday()
+        weekly_quotes = []
+        quote = daily_quotes.next()
+        while quote is not None:
+            day_of_week = quote.date.isoweekday()
+            if last_day_of_week is None or day_of_week < last_day_of_week:
+                # New week or first week
+                if last_day_of_week is None:
+                    pass
+                self.merge.start_quote(quote)
+            else:
+                # Still reading week already started
+                pass
+            last_day_of_week = day_of_week
+            quote = daily_quotes.next()
+        return_object = _AdjustedData('price',weekly_quotes,None)
+        return return_object
+        #ALEX
+        #self.merge.reset_quote()
+        #last_start_date_of_week = None
+        while quote is None: #DUMMYLINE
             if last_day_of_week is not None and day_of_week < last_day_of_week:
                 quote = self.merge.set_quote()
                 weekly_quotes[last_start_date_of_week] = quote
@@ -863,15 +879,17 @@ class Weekly(Daily):
                 self.merge.init_quote(daily_quotes[quote_date])
             else:
                 if last_start_date_of_week is None:
-                    last_start_date_of_week = quote_date
+                    last_start_date_of_week = quote.date
                 self.merge.compare_quotes(daily_quotes[quote_date])
             last_day_of_week = day_of_week
         quote = self.merge.set_quote()
         weekly_quotes[last_start_date_of_week] = quote
-        return weekly_quotes
 
     def _verify_period(self,period):
         start_date = super()._verify_period(period)
+        print('start_date')
+        print(start_date)
+        print(type(start_date))
         if start_date is not None:
             day_of_week = dt.strptime(start_date,DATE_STRING_FORMAT).isoweekday()
             if day_of_week > 1 and day_of_week < 6:
@@ -925,7 +943,36 @@ class Monthly(Daily):
 
 class QuoteMerger():
 
+    def __init__(self):
+        schema_parser = SchemaParser()
+        database_format = schema_parser.database_format_columns(PRICE_SCHEMA)
+        print(database_format)
+        for price_property in PRICE_SCHEMA['properties']:
+            print(price_property)
+        '''
+                adjustment_data = {}
+                format_index = 0
+                for key in database_format:
+                    try:
+                        adjustment_data[key] = entry[format_index]
+                    except IndexError:
+                        break
+                    except:
+                        raise
+                    format_index = format_index + 1
+                    if key == 'Datetime':
+                        adjustment_data[key] = adjustment_data[key].replace(tzinfo=tz.gettz(TIMEZONE))
+        '''
+
+    def finalize_quote(self):
+        quote = {}
+        return quote
+
+    def start_quote(self):
+        pass
+
     def compare_quotes(self,quote):
+        return #ALEX
         for item in ['Open','Adjusted Open']:
             if getattr(self,item) is None:
                 setattr(self,item, quote[item])

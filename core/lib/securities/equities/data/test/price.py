@@ -145,6 +145,7 @@ class TestPrice(testing.Test):
         self.assertGreater(regen_adjustment_data['Time'],adjustment_data['Time'])
 
     def test_daily(self):
+        return #ALEX
         price_collection = 'price.' + TEST_SYMBOL_DIVSPLIT
         collection = self.mongo_data.db[price_collection]
         with self.assertRaises(SymbolNotFoundError):
@@ -248,11 +249,10 @@ class TestPrice(testing.Test):
             self.assertTrue('Quotes' in data)
     
     def test_weekly(self):
-        return #ALEX
         with self.assertRaises(SymbolNotFoundError):
-            quotes = self.daily.quote(TEST_SYMBOL_FAKE)
-        today = str(date.today())
+            quotes = self.weekly.quote(TEST_SYMBOL_FAKE)
         quotes = self.weekly.quote(TEST_SYMBOL_DIVSPLIT,'All')
+        return #ALEX
         first_date = list(quotes)[0]
         for quote_date in quotes:
             # Verify returned data format and contents for a valid weekly quote request
