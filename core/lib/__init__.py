@@ -56,24 +56,26 @@ class FileFinder():
         return base_location + schema_name + '.json'
 
 class Return():
-    # Stored returned data in object form
+    # Stores returned data in object form
 
-    def __init__(self,schema,data):
+    def __init__(self,schema,data,**kwargs):
         if not isinstance(schema,dict):
             raise Exception('Parameter "schema" must be of type dict.')
         if not isinstance(data,dict):
             raise Exception('Parameter "data" must be of type dict.')
+        no_data_validation = kwargs.get('no_data_validation',False)
         self.Attributes = []
         self.String = String()
-        validation_error = None
-        try:
-            VALIDATOR(schema=schema).validate(data)
-        except ValidationError as e:
-            validation_error = 'Return data validation error occurred: ' + e.args[0]
-        except:
-            raise
-        if validation_error is not None:
-            raise Exception(validation_error)
+        if no_data_validation is False:
+            validation_error = None
+            try:
+                VALIDATOR(schema=schema).validate(data)
+            except ValidationError as e:
+                validation_error = 'Return data validation error occurred: ' + e.args[0]
+            except:
+                raise
+            if validation_error is not None:
+                raise Exception(validation_error)
         for name in data:
             original_name = name
             if schema['properties'][original_name]['type'] == 'null' or data[original_name] == '':
@@ -206,7 +208,6 @@ class Series():
 
     def sort(self,attribute,**kwargs):
         # Sort an object series by an attribute
-        print('ALEX INITSORT')
         if self.items_type != object:
             raise Exception('This method may only be called for a series of objects.')
         if self.series is not None:
