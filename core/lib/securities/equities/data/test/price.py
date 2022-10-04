@@ -68,7 +68,7 @@ class TestPrice(testing.Test):
         self.trading_dates = TradingDates()
 
     def test_adjustments(self):
-        return #ALEX
+        #return #ALEX
         string = String()
         # Splits
         with self.assertRaises(SymbolNotFoundError):
@@ -78,8 +78,9 @@ class TestPrice(testing.Test):
         price_collection = 'price.' + TEST_SYMBOL_DIVSPLIT
         collection = self.mongo_data.db[price_collection]
         initial_split_data = collection.find_one({ 'Adjustment': 'Splits' },{ '_id': 0, 'Interval': 0 })
+        print('ALEX SPLITSORT1')
         splits = self.adjustments.splits(TEST_SYMBOL_DIVSPLIT,regen=True)
-        splits.sort('date')
+        print('ALEX SPLITSORT2')
         last_split_date = None
         entry = splits.next()
         while entry is not None:
@@ -146,20 +147,27 @@ class TestPrice(testing.Test):
 
     def test_daily(self):
         return #ALEX
+        quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT)
+        print('ALEX1')
         price_collection = 'price.' + TEST_SYMBOL_DIVSPLIT
         collection = self.mongo_data.db[price_collection]
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.daily.quote(TEST_SYMBOL_FAKE)
+        print('ALEX1a')
         quotes = self.daily.quote(TEST_SYMBOL_DIV,regen=True)
+        print('ALEX1b')
         # Compare returned data to database
         quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT)
-        quotes.sort('date')
+        print('ALEX1c')
         first_date = quotes.first().date
+        print('ALEX1d')
         init_quote_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0, 'Quotes': 0 })
         quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,regen=True)
+        print('ALEX1e')
         regen_quote_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0, 'Quotes': 0 })
         self.assertGreater(regen_quote_data['Time'],init_quote_data['Time'])
         # Check for invalid dates
+        print('ALEX2')
         with self.assertRaises(Exception):
             self.daily.quote(TEST_SYMBOL_DIVSPLIT,start_date=dt(2022, 2, 29, 0, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE)))
         with self.assertRaises(Exception):
@@ -171,6 +179,7 @@ class TestPrice(testing.Test):
         tomorrow = (dt.now().astimezone() + timedelta(days=1)).replace(tzinfo=tz.gettz(TIMEZONE))
         with self.assertRaises(Exception):
             self.daily.quote(TEST_SYMBOL_DIVSPLIT,start_date=tomorrow)
+        print('ALEX3')
         a_while_ago = (dt.now().astimezone() - timedelta(days=90)).replace(tzinfo=tz.gettz(TIMEZONE))
         today = dt.now().astimezone().replace(tzinfo=tz.gettz(TIMEZONE))
         with self.assertRaises(Exception):
@@ -181,9 +190,12 @@ class TestPrice(testing.Test):
             self.daily.quote(TEST_SYMBOL_DIVSPLIT,period='1Y',start_date=a_while_ago)
         with self.assertRaises(Exception):
             self.daily.quote(TEST_SYMBOL_DIVSPLIT,period='1Y',end_date=a_while_ago)
+        print('ALEX4')
         quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,start_date=a_while_ago,end_date=today)
         last_quote_time = None
         quote = quotes.next()
+        print(quote.date)
+        print(ALEX)
         while quote is not None:
             if last_quote_time is not None and quote.date.day == last_quote_time.day:
                 # Extended hours quotes occasonally skip intervals, presumably because of a lack of trading activity
@@ -215,6 +227,7 @@ class TestPrice(testing.Test):
             # Check range of raturned dates for all valid periods
             quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,period=period)
             first_period_date = quotes.last().date
+            print(first_period_date)
             if period == 'All':
                 self.assertEqual(first_date,first_period_date)
             else:    
@@ -249,10 +262,10 @@ class TestPrice(testing.Test):
             self.assertTrue('Quotes' in data)
     
     def test_weekly(self):
+        return #ALEX
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.weekly.quote(TEST_SYMBOL_FAKE)
         quotes = self.weekly.quote(TEST_SYMBOL_DIVSPLIT,'All')
-        return #ALEX
         first_date = list(quotes)[0]
         for quote_date in quotes:
             # Verify returned data format and contents for a valid weekly quote request

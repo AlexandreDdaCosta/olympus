@@ -145,15 +145,13 @@ class _AdjustedData(Series):
             json_schema = DIVIDENDS_SCHEMA
         elif adjustment_type == 'merged':
             json_schema = ADJUSTMENTS_SCHEMA
-        elif adjustment_type == 'price':
-            json_schema = PRICE_SCHEMA
         elif adjustment_type == 'split':
             json_schema = SPLITS_SCHEMA
         else:
             raise Exception('Unrecognized adjustment type ' + str(adjustment_type) + 'given to _AdjustedData object')
-        if adjustment_type == 'dividend' or adjustment_type == 'price' or adjustment_type == 'split':
+        database_format = schema_parser.database_format_columns(json_schema)
+        if adjustment_type == 'dividend' or adjustment_type == 'split':
             for entry in data:
-                database_format = schema_parser.database_format_columns(json_schema)
                 adjustment_data = {}
                 format_index = 0
                 for key in database_format:
@@ -163,9 +161,9 @@ class _AdjustedData(Series):
                         break
                     except:
                         raise
-                    format_index = format_index + 1
                     if key == 'Datetime':
                         adjustment_data[key] = adjustment_data[key].replace(tzinfo=tz.gettz(TIMEZONE))
+                    format_index = format_index + 1
                 data_object = Return(json_schema,adjustment_data)
                 self.add(data_object)
         else:
@@ -174,7 +172,65 @@ class _AdjustedData(Series):
                     entry['Date'] = entry['Date'].replace(tzinfo=tz.gettz(TIMEZONE))
                 data_object = Return(json_schema,entry)
                 self.add(data_object)
-        self.sort('date',reverse=True)
+        print('ALEX SORT1')
+        self.sort('date')
+        #ALEX self.sort('date',reverse=True)
+
+class _PriceData(Series):
+    # A list of lists. Unlike the "Series", formats data as requested by accessors.
+
+    def __init__(self,data,query_date=None):
+        super(_PriceData,self).__init__()
+        if query_date is not None:
+            self.query_date = query_date
+        if data is None:
+            return
+        self.series = data
+        schema_parser = SchemaParser()
+        self.database_format = schema_parser.database_format_columns(PRICE_SCHEMA)
+        print('ALEX SORT2')
+        self.sort()
+
+    def first(self,**kwargs):
+        quote = super(_PriceData,self).first()
+        return self._format_quote(quote,**kwargs)
+
+    def last(self,**kwargs):
+        quote = super(_PriceData,self).last()
+        return self._format_quote(quote,**kwargs)
+
+    def next(self,**kwargs):
+        # Implemented differently due to occasional very large data sets with pricing
+        quote = super(_PriceData,self).next(**kwargs)
+        return self._format_quote(quote,**kwargs)
+
+    def _format_quote(self,quote,**kwargs):
+        if quote is None:
+            return None
+        return_raw_data = kwargs.pop('return_raw_data',False)
+        return_data = {}
+        format_index = 0
+        for key in self.database_format:
+            try:
+                return_data[key] = quote[format_index]
+            except IndexError:
+                break
+            except:
+                raise
+            if key == 'Datetime':
+                return_data[key] = return_data[key].replace(tzinfo=tz.gettz(TIMEZONE))
+            format_index = format_index + 1
+        if return_raw_data is True:
+            return return_data
+        return Return(PRICE_SCHEMA,return_data)
+
+    def sort(self,**kwargs):
+        print('ALEX PRICESORT')
+        # Sorts price quotes by date.
+        # When sorting arrays, python uses first element, which in this case is the date
+        if self.series is not None:
+            reverse = kwargs.get('reverse',False)
+            self.series = sorted(self.series, reverse=reverse)
 
 class Adjustments(data.Connection):
     '''
@@ -248,10 +304,12 @@ date more recent than or matching the date of the most recent split is therefore
         if regen is True or self._is_stale_data(dividends_query_time) or self._is_stale_data(splits_query_time):
             splits = self.splits(symbol,**kwargs)
             splits_date = splits.query_date
-            splits.sort('date')
+            #print('ALEX SORT3')
+            #ALEX splits.sort('date')
             dividends = self.dividends(symbol,**kwargs) 
             dividends_date = dividends.query_date
-            dividends.sort('date')
+            #print('ALEX SORT4')
+            #ALEX dividends.sort('date')
             adjustments = []
             dividend = None
             split = None
@@ -489,8 +547,9 @@ date more recent than or matching the date of the most recent split is therefore
             self.splits_series = self.splits(symbol,**kwargs) 
             self.split_data_date = self.splits_series.query_date
             self.split_adjusted_symbol = symbol
-        if self.splits_series.have_objects() is True:
-            self.splits_series.sort('date')
+        if self.splits_series.have_items() is True:
+            #print('ALEX SORT5')
+            #ALEX self.splits_series.sort('date')
             entry = self.splits_series.next(reset=True)
             while entry is not None:
                 if value_date < entry.date:
@@ -543,6 +602,7 @@ Built with the understanding that daily close prices are split adjusted
         symbol_verify = kwargs.get('symbol_verify',True)
         self.symbol_adjustments = self.adjustments(symbol,regen=regen,symbol_verify=symbol_verify)
         if self.symbol_adjustments is not None:
+            print('ALEX SORT6')
             self.symbol_adjustments.sort('date',reverse=True)
             self.next_adjustment = self.symbol_adjustments.next()
             self.dividend_adjustment = self.DEFAULT_DIVIDEND_ADJUSTMENT
@@ -767,7 +827,7 @@ my current judgment is that these differences will not grossly affect the desire
                 returndata = [item for item in returndata if item[0] >= start_date]
             if end_date is not None:
                 returndata = [item for item in returndata if item[0] <= end_date]
-        return_object = _AdjustedData('price',returndata,None)
+        return_object = _PriceData(returndata,None)
         return return_object
 
     def _daily_quote_url(self,symbol,period1=0):
@@ -840,50 +900,77 @@ my current judgment is that these differences will not grossly affect the desire
             start_date = None
         return start_date
 
+class _QuoteMerger():
+
+    def __init__(self):
+        self.quote = None
+
+    def finalize_quote(self):
+        quote = self.quote
+        self.quote = None
+        return quote
+
+    def merge_quote(self,quote):
+        if self.quote is None:
+            self.quote = {}
+        for item in ['Open','Adjusted Open']:
+            if item not in self.quote and item in quote:
+                self.quote[item] = quote[item]
+        return #ALEX
+        if 'Adjusted Close' not in self.quote and 'Adjusted Close' in quote:
+            if 'Close' not in self.quote:
+                self.quote['Adjusted Close'] = quote['Adjusted Close']
+            else:
+                self.quote['Adjusted Close'] = quote['Close']
+        elif 'Adjusted Close' in self.quote:
+            if 'Adjusted Close' in quote:
+                self.quote['Adjusted Close'] = quote['Adjusted Close']
+            else:
+                self.quote['Adjusted Close'] = quote['Close']
+        self.quote['Close'] = quote['Close']
+
+        if 'High' not in self.quote or quote['High'] > self.quote['High']:
+            self.quote['High'] = quote['High']
+        for item in ['Open','Adjusted Open']:
+            if getattr(self,item) is None:
+                setattr(self,item, quote[item])
+        for item in ['High','Adjusted High']:
+            if getattr(self,item) is None or quote[item] > getattr(self,item):
+                setattr(self,item,quote[item])
+        for item in ['Low','Adjusted Low']:
+            if getattr(self,item) is None or quote[item] < getattr(self,item):
+                setattr(self,item,quote[item])
+        for item in ['Close','Adjusted Close']:
+            setattr(self,item,quote[item])
+        for item in ['Volume','Adjusted Volume']:
+            setattr(self,item,getattr(self,item) + quote[item])
+
 class Weekly(Daily):
 
     def __init__(self,username=USER,**kwargs):
         super(Weekly,self).__init__(username,**kwargs)
-        self.merge = QuoteMerger()
 
     def quote(self,symbol,period='1Y',**kwargs):
         kwargs.pop('start_date',None)
         kwargs.pop('end_date',None)
         daily_quotes = super().quote(symbol,period=period,**kwargs)
-        daily_quotes.sort('date')
         last_day_of_week = None
         weekly_quotes = []
-        quote = daily_quotes.next()
+        quote = daily_quotes.next(return_raw_data=True)
+        merge = _QuoteMerger()
         while quote is not None:
-            day_of_week = quote.date.isoweekday()
-            if last_day_of_week is None or day_of_week < last_day_of_week:
-                # New week or first week
-                if last_day_of_week is None:
-                    pass
-                self.merge.start_quote(quote)
-            else:
-                # Still reading week already started
-                pass
-            last_day_of_week = day_of_week
-            quote = daily_quotes.next()
-        return_object = _AdjustedData('price',weekly_quotes,None)
-        return return_object
-        #ALEX
-        #self.merge.reset_quote()
-        #last_start_date_of_week = None
-        while quote is None: #DUMMYLINE
+            day_of_week = quote['Datetime'].isoweekday()
             if last_day_of_week is not None and day_of_week < last_day_of_week:
-                quote = self.merge.set_quote()
-                weekly_quotes[last_start_date_of_week] = quote
-                last_start_date_of_week = quote_date
-                self.merge.init_quote(daily_quotes[quote_date])
-            else:
-                if last_start_date_of_week is None:
-                    last_start_date_of_week = quote.date
-                self.merge.compare_quotes(daily_quotes[quote_date])
+                # New week
+                weekly_quotes.append(merge.finalize_quote())
+            merge.merge_quote(quote)
             last_day_of_week = day_of_week
-        quote = self.merge.set_quote()
-        weekly_quotes[last_start_date_of_week] = quote
+            quote = daily_quotes.next(return_raw_data=True)
+        final_week = merge.finalize_quote()
+        if final_week is not None:
+            weekly_quotes.append(final_week)
+        return_object = _PriceData(weekly_quotes,None)
+        return return_object
 
     def _verify_period(self,period):
         start_date = super()._verify_period(period)
@@ -900,7 +987,7 @@ class Monthly(Daily):
 
     def __init__(self,username=USER,**kwargs):
         super(Monthly,self).__init__(username,**kwargs)
-        self.merge = QuoteMerger()
+        self.merge = _QuoteMerger()
 
     def quote(self,symbol,period='5Y',**kwargs):
         kwargs.pop('start_date',None)
@@ -940,68 +1027,6 @@ class Monthly(Daily):
             now = dt.now().astimezone()
             start_date = "%d-%02d-%02d" % (now.year - int(period),now.month,1)
         return start_date
-
-class QuoteMerger():
-
-    def __init__(self):
-        schema_parser = SchemaParser()
-        database_format = schema_parser.database_format_columns(PRICE_SCHEMA)
-        print(database_format)
-        for price_property in PRICE_SCHEMA['properties']:
-            print(price_property)
-        '''
-                adjustment_data = {}
-                format_index = 0
-                for key in database_format:
-                    try:
-                        adjustment_data[key] = entry[format_index]
-                    except IndexError:
-                        break
-                    except:
-                        raise
-                    format_index = format_index + 1
-                    if key == 'Datetime':
-                        adjustment_data[key] = adjustment_data[key].replace(tzinfo=tz.gettz(TIMEZONE))
-        '''
-
-    def finalize_quote(self):
-        quote = {}
-        return quote
-
-    def start_quote(self):
-        pass
-
-    def compare_quotes(self,quote):
-        return #ALEX
-        for item in ['Open','Adjusted Open']:
-            if getattr(self,item) is None:
-                setattr(self,item, quote[item])
-        for item in ['High','Adjusted High']:
-            if getattr(self,item) is None or quote[item] > getattr(self,item):
-                setattr(self,item,quote[item])
-        for item in ['Low','Adjusted Low']:
-            if getattr(self,item) is None or quote[item] < getattr(self,item):
-                setattr(self,item,quote[item])
-        for item in ['Close','Adjusted Close']:
-            setattr(self,item,quote[item])
-        for item in ['Volume','Adjusted Volume']:
-            setattr(self,item,getattr(self,item) + quote[item])
-
-    def init_quote(self,quote):
-        for label in PRICE_FORMAT:
-            setattr(self,label,quote[label])
-
-    def reset_quote(self):
-        for label in PRICE_FORMAT:
-            setattr(self,label,None)
-        setattr(self,'Adjusted Volume',0)
-        setattr(self,'Volume',0)
-
-    def set_quote(self):
-        quote = {}
-        for label in PRICE_FORMAT:
-            quote[label] = getattr(self,label)
-        return quote
 
 class Intraday(ameritrade.Connection):
     '''
@@ -1077,7 +1102,8 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
                 data = uppercase_quote
             data_object = Return(PRICE_SCHEMA,data)
             return_object.add(data_object)
-        return_object.sort('date')
+        #print('ALEX SORT7')
+        #ALEX return_object.sort('date')
         return return_object
 
     def oldest_available_date(self,frequency):
@@ -1178,7 +1204,7 @@ class Latest(ameritrade.Connection):
             if result.unknown_symbols is not None:
                 for unknown_symbol in result.unknown_symbols:
                     return_object.add_unknown_symbol(unknown_symbol)
-                if result.have_objects() is False:
+                if result.have_items() is False:
                     return return_object
             params['symbol'] = ','.join(result.get_symbols())
         else:

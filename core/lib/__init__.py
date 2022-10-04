@@ -126,19 +126,20 @@ class Return():
             raise Exception('Unrecognized new data type ' + str(new_type))
 
 class Series():
-    # A list of objects. Preserves order in which objects are added unless resorted.
+    # A list of data with object-handling abilities (the default). Preserves order in which items are added unless resorted.
 
-    def __init__(self):
+    def __init__(self,**kwargs):
         self.index = 0
         self.series = None
+        self.items_type = kwargs.get('items_type',object)
 
-    def add(self,new_object):
-        # Add object to series
-        if not isinstance(new_object, object):
-            raise Exception('Series object only accepts other objects for addition to the series.')
+    def add(self,new_item):
+        # Add item to series
+        if not isinstance(new_item, self.items_type):
+            raise Exception('Series object only accepts items of type ' + str(self.items_type) + 'for addition to the series.')
         if self.series is None:
             self.series = []
-        self.series.append(new_object)
+        self.series.append(new_item)
 
     def count(self):
         if self.series is None:
@@ -146,15 +147,17 @@ class Series():
         return len(self.series)
 
     def first(self):
-        # First object in series
+        # First item in series
         if self.series is None:
             return None
         return self.series[0]
 
     def get_by_attribute(self,attribute,value):
-        # Returns all objects in a series for which the attribute matches a specific value
+        # Returns items in an object series for which an attribute matches a specific value
         if self.series is None:
             return None
+        if self.items_type != object:
+            raise Exception('This method may only be called for a series of objects.')
         results = None
         for each_object in self.series:
             if hasattr(each_object,attribute) and getattr(each_object,attribute) == value:
@@ -168,18 +171,21 @@ class Series():
         return results
 
     def get_by_index(self,index):
-        # Get object in series according to fixed order
+        # Get item in series according to fixed order
         if self.series is None:
             return None
         return self.series[index]
 
-    def have_objects(self):
+    def have_items(self):
         if self.series is None:
             return False
         return True
 
+    def items(self):
+        return self.series
+
     def last(self):
-        # Last object in series
+        # Last item in series
         if self.series is None:
             return None
         return self.series[-1]
@@ -198,11 +204,11 @@ class Series():
         self.index = self.index + 1
         return item
 
-    def objects(self):
-        return self.series
-
     def sort(self,attribute,**kwargs):
-        # Sort the series by an object attribute
+        # Sort an object series by an attribute
+        print('ALEX INITSORT')
+        if self.items_type != object:
+            raise Exception('This method may only be called for a series of objects.')
         if self.series is not None:
             reverse = kwargs.get('reverse',False)
             self.series = sorted(self.series, key=lambda s: getattr(s,attribute), reverse=reverse)

@@ -334,7 +334,7 @@ class _Symbols(Series):
         return self.get_by_attribute('symbol',symbol)
 
     def get_symbols(self):
-        objects = self.objects()
+        objects = self.items()
         if objects is not None:
             symbols = []
             for symbol_object in objects:
