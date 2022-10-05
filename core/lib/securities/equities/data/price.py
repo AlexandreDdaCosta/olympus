@@ -1070,6 +1070,13 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
     def __init__(self,username=USER,**kwargs):
         super(Intraday,self).__init__(username,**kwargs)
         self.symbol_reader = symbols.Read(username,**kwargs)
+        schema_parser = SchemaParser()
+        self.database_format = schema_parser.database_format_columns(PRICE_SCHEMA)
+        self.item_map = {}
+        index = 0
+        for item in self.database_format:
+            self.item_map[item] = index
+            index = index + 1
 
     def quote(self,symbol,frequency=DEFAULT_INTRADAY_FREQUENCY,**kwargs):
         symbol = str(symbol).upper()
@@ -1097,6 +1104,9 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
         daily_close = None
         candle_count = len(response['candles'])
         candle_index = candle_count - 1
+        intraday_data = [] #ALEX Switch to _PriceData object
+        print(self.database_format)
+        print(self.item_map)
         # "response['candles']" is a list in ascending date order, so read the list backwards to correctly apply adjustments
         for quote in reversed(response['candles']): # Most recent date/time first
             quote_date = dt.fromtimestamp(quote['datetime']/1000)
@@ -1108,7 +1118,7 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
                 data['Datetime'] = quote['Datetime']
                 adjuster.date_iterator(quote_date_midnight,daily_close)
                 for key in quote:
-                    if key == 'datetime':
+                    if key == 'datetime' or key == 'Datetime':
                         continue
                     adjusted_key = 'adjusted ' + key
                     if key == 'volume':
@@ -1127,8 +1137,12 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
                 for key in quote:
                     uppercase_quote[key.title()] = quote[key]
                 data = uppercase_quote
-            data_object = Return(PRICE_SCHEMA,data)
+            #ALEX
+            #data_object = Return(PRICE_SCHEMA,data)
+            #print(data)
+            data_object = Return(PRICE_SCHEMA,data,no_data_validation=True)
             return_object.add(data_object)
+        #return_object = _PriceData(returndata,None)
         return_object.sort('date')
         return return_object
 
@@ -1198,7 +1212,7 @@ class _LatestQuotes(Series):
         return self.get_by_attribute('symbol',symbol)
 
     def get_quotes(self):
-        return self.objects()
+        return self.items()
 
 class Latest(ameritrade.Connection):
 

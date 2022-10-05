@@ -353,6 +353,14 @@ class TestPrice(testing.Test):
         self.assertTrue(TEST_SYMBOL_FAKE_TWO in result.unknown_symbols)
 
     def test_intraday(self):
+        frequency = 30
+        earliest_available_date = self.intraday.oldest_available_date(frequency)
+        print(frequency)
+        print(earliest_available_date)
+        quotes = self.intraday.quote(TEST_SYMBOL_SPLIT,frequency=frequency,start_date=earliest_available_date)
+        #quote = quotes.next(return_raw_data=True)
+        #while quote is not None:
+        #    quote = quotes.next(return_raw_data=True)
         return #ALEX
         with self.assertRaises(SymbolNotFoundError):
             self.intraday.quote(TEST_SYMBOL_FAKE)
