@@ -17,34 +17,6 @@ from olympus.securities.equities.data.datetime import OLDEST_QUOTE_DATE, DateVer
 from olympus.securities.equities.data.price import *
 from olympus.securities.equities.data.symbols import SymbolNotFoundError
 
-QUOTE_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "Adjusted Close": { "type": "number" },
-        "Adjusted High": { "type": "number" },
-        "Adjusted Low": { "type": "number" },
-        "Adjusted Open": { "type": "number" },
-        "Adjusted Volume": { "type": "integer" },
-        "Close": { "type": "number" },
-        "High": { "type": "number" },
-        "Low": { "type": "number" },
-        "Open": { "type": "number" },
-        "Volume": { "type": "integer" } 
-    },
-    "required": [
-        "Adjusted Close",
-        "Adjusted High",
-        "Adjusted Low",
-        "Adjusted Open",
-        "Adjusted Volume",
-        "Close",
-        "High",
-        "Low",
-        "Open",
-        "Volume"
-    ]
-}
-
 # Standard run parameters:
 # sudo su -s /bin/bash -c '... price.py' USER
 # Optionally:
@@ -147,26 +119,19 @@ class TestPrice(testing.Test):
     def test_daily(self):
         return #ALEX
         quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT)
-        print('ALEX1')
         price_collection = 'price.' + TEST_SYMBOL_DIVSPLIT
         collection = self.mongo_data.db[price_collection]
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.daily.quote(TEST_SYMBOL_FAKE)
-        print('ALEX1a')
         quotes = self.daily.quote(TEST_SYMBOL_DIV,regen=True)
-        print('ALEX1b')
         # Compare returned data to database
         quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT)
-        print('ALEX1c')
         first_date = quotes.first().date
-        print('ALEX1d')
         init_quote_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0, 'Quotes': 0 })
         quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,regen=True)
-        print('ALEX1e')
         regen_quote_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0, 'Quotes': 0 })
         self.assertGreater(regen_quote_data['Time'],init_quote_data['Time'])
         # Check for invalid dates
-        print('ALEX2')
         with self.assertRaises(Exception):
             self.daily.quote(TEST_SYMBOL_DIVSPLIT,start_date=dt(2022, 2, 29, 0, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE)))
         with self.assertRaises(Exception):
@@ -178,7 +143,6 @@ class TestPrice(testing.Test):
         tomorrow = (dt.now().astimezone() + timedelta(days=1)).replace(tzinfo=tz.gettz(TIMEZONE))
         with self.assertRaises(Exception):
             self.daily.quote(TEST_SYMBOL_DIVSPLIT,start_date=tomorrow)
-        print('ALEX3')
         a_while_ago = (dt.now().astimezone() - timedelta(days=90)).replace(tzinfo=tz.gettz(TIMEZONE))
         today = dt.now().astimezone().replace(tzinfo=tz.gettz(TIMEZONE))
         with self.assertRaises(Exception):
@@ -189,12 +153,9 @@ class TestPrice(testing.Test):
             self.daily.quote(TEST_SYMBOL_DIVSPLIT,period='1Y',start_date=a_while_ago)
         with self.assertRaises(Exception):
             self.daily.quote(TEST_SYMBOL_DIVSPLIT,period='1Y',end_date=a_while_ago)
-        print('ALEX4')
         quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,start_date=a_while_ago,end_date=today)
         last_quote_time = None
         quote = quotes.next()
-        print(quote.date)
-        print(ALEX)
         while quote is not None:
             if last_quote_time is not None and quote.date.day == last_quote_time.day:
                 # Extended hours quotes occasonally skip intervals, presumably because of a lack of trading activity
@@ -208,11 +169,15 @@ class TestPrice(testing.Test):
             # Verify returned data format and contents for a valid daily quote request
             if curr_range_date is None:
                 self.assertGreaterEqual(quote.date,a_while_ago)
-            if 'adjusted_close' in quote.list():
+            if quote.adjusted_close is not None:
                 self.assertLess(quote.adjusted_close,quote.close)
+            if quote.adjusted_low is not None:
                 self.assertLess(quote.adjusted_low,quote.low)
+            if quote.adjusted_high is not None:
                 self.assertLess(quote.adjusted_high,quote.high)
+            if quote.adjusted_open is not None:
                 self.assertLess(quote.adjusted_open,quote.open)
+            if quote.adjusted_volume is not None:
                 self.assertGreaterEqual(quote.adjusted_volume,quote.volume)
             self.assertGreaterEqual(quote.high,quote.close)
             self.assertGreater(quote.high,quote.low)
@@ -225,8 +190,7 @@ class TestPrice(testing.Test):
         for period in VALID_DAILY_WEEKLY_PERIODS.keys():
             # Check range of raturned dates for all valid periods
             quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,period=period)
-            first_period_date = quotes.last().date
-            print(first_period_date)
+            first_period_date = quotes.first().date
             if period == 'All':
                 self.assertEqual(first_date,first_period_date)
             else:    
@@ -264,30 +228,34 @@ class TestPrice(testing.Test):
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.weekly.quote(TEST_SYMBOL_FAKE)
         quotes = self.weekly.quote(TEST_SYMBOL_DIVSPLIT,'All')
-        return #ALEX
-        first_date = list(quotes)[0]
-        for quote_date in quotes:
-            # Verify returned data format and contents for a valid weekly quote request
-            validate(instance=quotes[quote_date],schema=QUOTE_SCHEMA)
-            self.assertLessEqual(quotes[quote_date]['Adjusted Close'],quotes[quote_date]['Close'])
-            self.assertLessEqual(quotes[quote_date]['Adjusted Low'],quotes[quote_date]['Low'])
-            self.assertLessEqual(quotes[quote_date]['Adjusted High'],quotes[quote_date]['High'])
-            self.assertLessEqual(quotes[quote_date]['Adjusted Open'],quotes[quote_date]['Open'])
-            self.assertGreaterEqual(quotes[quote_date]['Adjusted Volume'],quotes[quote_date]['Volume'])
-            self.assertGreaterEqual(quotes[quote_date]['High'],quotes[quote_date]['Close'])
-            self.assertGreaterEqual(quotes[quote_date]['High'],quotes[quote_date]['Low'])
-            self.assertGreaterEqual(quotes[quote_date]['High'],quotes[quote_date]['Open'])
-            self.assertLessEqual(quotes[quote_date]['Low'],quotes[quote_date]['Close'])
-            self.assertLessEqual(quotes[quote_date]['Low'],quotes[quote_date]['Open'])
+        first_date = quotes.first().date
+        quote = quotes.next()
+        while quote is not None:
+            # Verify returned data for a valid weekly quote request
+            if quote.adjusted_close is not None:
+                self.assertLessEqual(quote.adjusted_close,quote.close)
+            if quote.adjusted_low is not None:
+                self.assertLessEqual(quote.adjusted_low,quote.low)
+            if quote.adjusted_high is not None:
+                self.assertLessEqual(quote.adjusted_high,quote.high)
+            if quote.adjusted_open is not None:
+                self.assertLessEqual(quote.adjusted_open,quote.open)
+            if quote.adjusted_volume is not None:
+                self.assertGreaterEqual(quote.adjusted_volume,quote.volume)
+            self.assertGreaterEqual(quote.high,quote.close)
+            self.assertGreaterEqual(quote.high,quote.low)
+            self.assertGreaterEqual(quote.high,quote.open)
+            self.assertLessEqual(quote.low,quote.close)
+            self.assertLessEqual(quote.low,quote.open)
+            quote = quotes.next()
         for period in VALID_DAILY_WEEKLY_PERIODS.keys():
             if period == 'All':
                 continue
             # Verify returned date ranges for all valid periods
             past_days = VALID_DAILY_WEEKLY_PERIODS[period] + 4 # Add 4 in case of weekday adjustment
-            max_past_date = str(date.today() - timedelta(days=past_days))
-            print('ALEX QUERY2') 
+            max_past_date = (dt.now().astimezone() - timedelta(days=past_days)).replace(tzinfo=tz.gettz(TIMEZONE))
             quotes = self.weekly.quote(TEST_SYMBOL_DIV,period)
-            first_period_date = list(quotes)[0]
+            first_period_date = quotes.first().date
             self.assertLessEqual(first_date,first_period_date)
             self.assertLessEqual(max_past_date,first_period_date)
 
@@ -295,31 +263,36 @@ class TestPrice(testing.Test):
         return #ALEX
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.monthly.quote(TEST_SYMBOL_FAKE)
-        today = str(date.today())
         quotes = self.monthly.quote(TEST_SYMBOL_DIVSPLIT,period='All')
-        first_date = list(quotes)[0]
-        for quote_date in quotes:
-            # Verify returned data format and contents for a valid monthly quote request
-            validate(instance=quotes[quote_date],schema=QUOTE_SCHEMA)
-            self.assertLessEqual(quotes[quote_date]['Adjusted Close'],quotes[quote_date]['Close'])
-            self.assertLessEqual(quotes[quote_date]['Adjusted Low'],quotes[quote_date]['Low'])
-            self.assertLessEqual(quotes[quote_date]['Adjusted High'],quotes[quote_date]['High'])
-            self.assertLessEqual(quotes[quote_date]['Adjusted Open'],quotes[quote_date]['Open'])
-            self.assertGreaterEqual(quotes[quote_date]['Adjusted Volume'],quotes[quote_date]['Volume'])
-            self.assertGreaterEqual(quotes[quote_date]['High'],quotes[quote_date]['Close'])
-            self.assertGreaterEqual(quotes[quote_date]['High'],quotes[quote_date]['Low'])
-            self.assertGreaterEqual(quotes[quote_date]['High'],quotes[quote_date]['Open'])
-            self.assertLessEqual(quotes[quote_date]['Low'],quotes[quote_date]['Close'])
-            self.assertLessEqual(quotes[quote_date]['Low'],quotes[quote_date]['Open'])
+        first_date = quotes.first().date
+        quote = quotes.next()
+        while quote is not None:
+            # Verify returned data for a valid monthly quote request
+            if quote.adjusted_close is not None:
+                self.assertLessEqual(quote.adjusted_close,quote.close)
+            if quote.adjusted_low is not None:
+                self.assertLessEqual(quote.adjusted_low,quote.low)
+            if quote.adjusted_high is not None:
+                self.assertLessEqual(quote.adjusted_high,quote.high)
+            if quote.adjusted_open is not None:
+                self.assertLessEqual(quote.adjusted_open,quote.open)
+            if quote.adjusted_volume is not None:
+                self.assertGreaterEqual(quote.adjusted_volume,quote.volume)
+            self.assertGreaterEqual(quote.high,quote.close)
+            self.assertGreaterEqual(quote.high,quote.low)
+            self.assertGreaterEqual(quote.high,quote.open)
+            self.assertLessEqual(quote.low,quote.close)
+            self.assertLessEqual(quote.low,quote.open)
+            quote = quotes.next()
         for period in VALID_MONTHLY_PERIODS:
             if period == 'All':
                 continue
             # Verify returned date ranges for all valid periods
             past_period = int(re.sub(r"[Y]", "", period))
             now = dt.now().astimezone()
-            max_past_date = "%d-%02d-%02d" % (now.year - int(past_period),now.month,1)
+            max_past_date = dt(now.year - int(past_period),now.month,1,0,0,0).replace(tzinfo=tz.gettz(TIMEZONE))
             quotes = self.monthly.quote(TEST_SYMBOL_DIVSPLIT,period)
-            first_period_date = list(quotes)[0]
+            first_period_date = quotes.first().date
             self.assertLessEqual(first_date,first_period_date)
             self.assertLessEqual(max_past_date,first_period_date)
 

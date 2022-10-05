@@ -187,6 +187,7 @@ class _PriceData(Series):
         self.series = data
         schema_parser = SchemaParser()
         self.database_format = schema_parser.database_format_columns(PRICE_SCHEMA)
+        self.database_format_length = len(self.database_format)
         # This data gets sorted from oldest to newest to follow a natural time progression
         self.sort()
 
@@ -209,13 +210,11 @@ class _PriceData(Series):
         return_raw_data = kwargs.pop('return_raw_data',False)
         return_data = {}
         format_index = 0
+        if len(quote) < self.database_format_length:
+            # Daily quotes sometimes don't arrive with adjusted values
+            quote.extend([None,None,None,None,None])
         for key in self.database_format:
-            try:
-                return_data[key] = quote[format_index]
-            except IndexError:
-                break
-            except:
-                raise
+            return_data[key] = quote[format_index]
             if key == 'Datetime':
                 return_data[key] = return_data[key].replace(tzinfo=tz.gettz(TIMEZONE))
             format_index = format_index + 1
@@ -902,14 +901,6 @@ class _QuoteMerger():
             index = index + 1
         self._init_quote()
 
-    def _init_quote(self):
-        self.quote = []
-        for detail in self.database_format:
-            if detail in ['Volume', 'Adjusted Volume']:
-                self.quote.append(0)
-                continue
-            self.quote.append(None)
-
     def finalize_quote(self):
         quote = self.quote
         self._init_quote()
@@ -931,26 +922,38 @@ class _QuoteMerger():
                 pass
             else:
                 self.quote[self.item_map['Adjusted Close']] = quote['Close']
-        if self.quote[self.item_map['High']] is None or quote['High'] > self.quote[self.item_map['High']]:
-            self.quote[self.item_map['High']] = quote['High']
-        if 'Adjusted High' in quote:
-            if self.quote[self.item_map['Adjusted High']] is None or quote['Adjusted High'] > self.quote[self.item_map['Adjusted High']]:
-                self.quote[self.item_map['Adjusted High']] = quote['Adjusted High']
+        self._low_high_merge(quote,'High')
+        self._low_high_merge(quote,'Low')
+        if self.quote[self.item_map['Volume']] is None:
+            self.quote[self.item_map['Volume']] = 0
+        self.quote[self.item_map['Volume']] = self.quote[self.item_map['Volume']] + quote['Volume']
+        if 'Adjusted Volume' in quote:
+            if self.quote[self.item_map['Adjusted Volume']] is None:
+                self.quote[self.item_map['Adjusted Volume']] = 0
+            self.quote[self.item_map['Adjusted Volume']] = self.quote[self.item_map['Adjusted Volume']] + quote['Adjusted Volume']
         else:
-            if self.quote[self.item_map['Adjusted High']] is None:
+            if self.quote[self.item_map['Adjusted Volume']] is None:
                 pass
-            elif quote['High'] > self.quote[self.item_map['Adjusted High']]:
-                self.quote[self.item_map['Adjusted High']] = quote['High']
             else:
-                self.quote[self.item_map['Adjusted High']] = self.quote[self.item_map['High']]
+                self.quote[self.item_map['Adjusted Volume']] = self.quote[self.item_map['Adjusted Volume']] + quote['Volume']
 
-        return #ALEX
+    def _init_quote(self):
+        self.quote = []
+        for detail in self.database_format:
+            self.quote.append(None)
 
-        for item in ['Low','Adjusted Low']:
-            if getattr(self,item) is None or quote[item] < getattr(self,item):
-                setattr(self,item,quote[item])
-        for item in ['Volume','Adjusted Volume']:
-            setattr(self,item,getattr(self,item) + quote[item])
+    def _low_high_merge(self,quote,key):
+        adjusted_key = 'Adjusted ' + key
+        if self.quote[self.item_map[key]] is None or (key == 'High' and quote[key] > self.quote[self.item_map[key]]) or (key == 'Low' and quote[key] < self.quote[self.item_map[key]]):
+            self.quote[self.item_map[key]] = quote[key]
+        if adjusted_key in quote:
+            if (self.quote[self.item_map[adjusted_key]] is None) or (key == 'High' and quote[adjusted_key] > self.quote[self.item_map[adjusted_key]]) or (key == 'Low' and quote[adjusted_key] < self.quote[self.item_map[adjusted_key]]):
+                self.quote[self.item_map[adjusted_key]] = quote[adjusted_key]
+        else:
+            if self.quote[self.item_map[adjusted_key]] is None:
+                pass
+            elif (key == 'High' and quote[key] > self.quote[self.item_map[adjusted_key]]) or (key == 'Low' and quote[key] < self.quote[self.item_map[adjusted_key]]):
+                self.quote[self.item_map[adjusted_key]] = quote[key]
 
 class Weekly(Daily):
 
@@ -971,8 +974,7 @@ class Weekly(Daily):
             if last_day_of_week is not None:
                 if day_of_week < last_day_of_week:
                     # New week
-                    append_quote = merge.finalize_quote()
-                    weekly_quotes.append(append_quote)
+                    weekly_quotes.append(merge.finalize_quote())
                     quote_datetime = quote['Datetime'] - timedelta(days=(day_of_week-1))
                 else:
                     quote['Datetime'] = quote_datetime
@@ -986,17 +988,15 @@ class Weekly(Daily):
         final_week = merge.finalize_quote()
         if final_week is not None:
             weekly_quotes.append(final_week)
-        for entry in weekly_quotes:
-            print(entry)
         return_object = _PriceData(weekly_quotes,None)
         return return_object
 
     def _verify_period(self,period):
         start_date = super()._verify_period(period)
         if start_date is not None:
-            day_of_week = dt.strptime(start_date,DATE_STRING_FORMAT).isoweekday()
+            day_of_week = start_date.isoweekday()
             if day_of_week > 1 and day_of_week < 6:
-                start_date = str(dt.strptime(start_date,DATE_STRING_FORMAT) - timedelta(days=(day_of_week-1)))[0:10]
+                start_date = start_date - timedelta(days=(day_of_week-1))
         return start_date
 
 class Monthly(Daily):
@@ -1012,26 +1012,31 @@ class Monthly(Daily):
             daily_quotes = super().quote(symbol,start_date=start_date,**kwargs)
         else:
             daily_quotes = super().quote(symbol,**kwargs)
-        self.merge.reset_quote()
-        last_start_date_of_month = None
+        quote = daily_quotes.next(return_raw_data=True)
+        merge = _QuoteMerger()
         previous_month = None
-        monthly_quotes = {}
-        for quote_date in daily_quotes:
-            month = quote_date[5:-3]
-            year = quote_date[0:4]
-            if previous_month is not None and month != previous_month:
-                quote = self.merge.set_quote()
-                monthly_quotes[last_start_date_of_month] = quote
-                last_start_date_of_month = year + '-' + month + '-' + '01'
-                self.merge.init_quote(daily_quotes[quote_date])
+        quote_datetime = None
+        monthly_quotes = []
+        while quote is not None:
+            month = quote['Datetime'].month
+            year = quote['Datetime'].year
+            if previous_month is not None:
+                if month != previous_month:
+                    # New month
+                    monthly_quotes.append(merge.finalize_quote())
+                    quote_datetime = dt(year,month,1,0,0,0).replace(tzinfo=tz.gettz(TIMEZONE))
+                quote['Datetime'] = quote_datetime
             else:
-                if last_start_date_of_month is None:
-                    last_start_date_of_month = year + '-' + month + '-' + '01'
-                self.merge.compare_quotes(daily_quotes[quote_date])
+                quote_datetime = dt(year,month,1,0,0,0).replace(tzinfo=tz.gettz(TIMEZONE))
+                quote['Datetime'] = quote_datetime
+            merge.merge_quote(quote)
             previous_month = month
-        quote = self.merge.set_quote()
-        monthly_quotes[last_start_date_of_month] = quote
-        return monthly_quotes
+            quote = daily_quotes.next(return_raw_data=True)
+        final_month = merge.finalize_quote()
+        if final_month is not None:
+            monthly_quotes.append(final_month)
+        return_object = _PriceData(monthly_quotes,None)
+        return return_object
 
     def _verify_period(self,period):
         if period not in VALID_MONTHLY_PERIODS:
@@ -1040,7 +1045,7 @@ class Monthly(Daily):
         if period != 'All':
             period = re.sub(r"[Y]", "", period) # All periods are in the form "#Y", with "Y" signifying years
             now = dt.now().astimezone()
-            start_date = "%d-%02d-%02d" % (now.year - int(period),now.month,1)
+            start_date = dt(now.year - int(period),now.month,1,0,0,0).replace(tzinfo=tz.gettz())
         return start_date
 
 class Intraday(ameritrade.Connection):
