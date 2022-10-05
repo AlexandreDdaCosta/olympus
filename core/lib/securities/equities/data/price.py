@@ -915,7 +915,7 @@ class _QuoteMerger():
             if self.quote[self.item_map[item]] is None and item in quote:
                 self.quote[self.item_map[item]] = quote[item]
         self.quote[self.item_map['Close']] = quote['Close']
-        if 'Adjusted Close' in quote:
+        if quote['Adjusted Close'] is not None:
             self.quote[self.item_map['Adjusted Close']] = quote['Adjusted Close']
         else:
             if self.quote[self.item_map['Adjusted Close']] is None:
@@ -927,7 +927,7 @@ class _QuoteMerger():
         if self.quote[self.item_map['Volume']] is None:
             self.quote[self.item_map['Volume']] = 0
         self.quote[self.item_map['Volume']] = self.quote[self.item_map['Volume']] + quote['Volume']
-        if 'Adjusted Volume' in quote:
+        if quote['Adjusted Volume'] is not None:
             if self.quote[self.item_map['Adjusted Volume']] is None:
                 self.quote[self.item_map['Adjusted Volume']] = 0
             self.quote[self.item_map['Adjusted Volume']] = self.quote[self.item_map['Adjusted Volume']] + quote['Adjusted Volume']
@@ -944,15 +944,22 @@ class _QuoteMerger():
 
     def _low_high_merge(self,quote,key):
         adjusted_key = 'Adjusted ' + key
-        if self.quote[self.item_map[key]] is None or (key == 'High' and quote[key] > self.quote[self.item_map[key]]) or (key == 'Low' and quote[key] < self.quote[self.item_map[key]]):
+        if (
+            self.quote[self.item_map[key]] is None 
+            or (key == 'High' and quote[key] > self.quote[self.item_map[key]]) 
+            or (key == 'Low' and quote[key] < self.quote[self.item_map[key]])
+        ):
             self.quote[self.item_map[key]] = quote[key]
-        if adjusted_key in quote:
+        if quote[adjusted_key] is not None:
             if (self.quote[self.item_map[adjusted_key]] is None) or (key == 'High' and quote[adjusted_key] > self.quote[self.item_map[adjusted_key]]) or (key == 'Low' and quote[adjusted_key] < self.quote[self.item_map[adjusted_key]]):
                 self.quote[self.item_map[adjusted_key]] = quote[adjusted_key]
         else:
             if self.quote[self.item_map[adjusted_key]] is None:
                 pass
-            elif (key == 'High' and quote[key] > self.quote[self.item_map[adjusted_key]]) or (key == 'Low' and quote[key] < self.quote[self.item_map[adjusted_key]]):
+            elif (
+                (key == 'High' and quote[key] > self.quote[self.item_map[adjusted_key]]) 
+                or (key == 'Low' and quote[key] < self.quote[self.item_map[adjusted_key]])
+            ):
                 self.quote[self.item_map[adjusted_key]] = quote[key]
 
 class Weekly(Daily):

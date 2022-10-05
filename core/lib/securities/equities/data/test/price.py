@@ -225,6 +225,7 @@ class TestPrice(testing.Test):
             self.assertTrue('Quotes' in data)
     
     def test_weekly(self):
+        return #ALEX
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.weekly.quote(TEST_SYMBOL_FAKE)
         quotes = self.weekly.quote(TEST_SYMBOL_DIVSPLIT,'All')
