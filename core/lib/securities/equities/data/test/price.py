@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-import json, jsonschema, os, re, sys, time, unittest
+import json, jsonschema, os, pwd, re, sys, time, unittest
 
+from argparse import ArgumentParser
 from datetime import date, datetime as dt, timedelta, timezone
 from dateutil import tz
 from jsonschema import validate
@@ -18,31 +19,31 @@ from olympus.securities.equities.data.price import *
 from olympus.securities.equities.data.symbols import SymbolNotFoundError
 
 # Standard run parameters:
-# sudo su -s /bin/bash -c '... price.py' USER
-# Optionally:
-# '... price.py <current_run_username>'
+# sudo su -s /bin/bash -c '... price.py' <current user OS name>
+
+parser = ArgumentParser(sys.argv)
+parser.add_argument("-u","--username",action="store",default=pwd.getpwuid(os.getuid())[0],help="Specify a user name under which test should run.")
+parser.add_argument("-t","--test",action="store",default='all',help="Specify the name of a single test to run.")
+parser.add_argument("-v","--verbose",action="store_true",help="Chatty output.")
+args = parser.parse_args()
 
 class TestPrice(testing.Test):
 
     def setUp(self):
-        if len(sys.argv) == 2:
-            username = self.validRunUser(sys.argv[1])
-        else:
-            username = self.validRunUser(USER)
-        self.adjustments = price.Adjustments(username)
-        self.daily = price.Daily(username)
-        self.weekly = price.Weekly(username)
-        self.monthly = price.Monthly(username)
-        self.intraday = price.Intraday(username)
-        self.latest = price.Latest(username)
-        self.mongo_data = data.Connection(username)
+        self.username = self.validRunUser(args.username)
+        self.mongo_data = data.Connection(self.username)
         self.date_utils = Dates()
         self.trading_dates = TradingDates()
 
     def test_adjustments(self):
-        return #ALEX
+        if args.test != 'all' and args.test != 'adjustments':
+            return
+        if args.verbose is True:
+            print('Testing: Adjustments.')
         string = String()
-        # Splits
+        if args.verbose is True:
+            print('Splits.')
+        self.adjustments = price.Adjustments(self.username)
         with self.assertRaises(SymbolNotFoundError):
             self.adjustments.splits(TEST_SYMBOL_FAKE)
         splits = self.adjustments.splits(TEST_SYMBOL_NODIVSPLIT)
@@ -59,11 +60,13 @@ class TestPrice(testing.Test):
                 self.assertLess(entry.date,last_split_date)
             last_split_date = entry.date
             entry = splits.next()
-        # Check that data was regenerated
+        if args.verbose is True:
+            print('Checking for regeneration.')
         first_regen_split_data = collection.find_one({ 'Adjustment': 'Splits' },{ '_id': 0, 'Interval': 0 })
         if initial_split_data is not None:
             self.assertGreater(first_regen_split_data['Time'],initial_split_data['Time'])
-        # Dividends
+        if args.verbose is True:
+            print('Dividends.')
         with self.assertRaises(SymbolNotFoundError):
             dividends = self.adjustments.dividends(TEST_SYMBOL_FAKE)
         dividends = self.adjustments.dividends(TEST_SYMBOL_NODIVSPLIT)
@@ -80,12 +83,12 @@ class TestPrice(testing.Test):
             last_dividend_date = dividend.date
             dividend = dividends.next()
         regen_dividend_data = collection.find_one({ 'Adjustment': 'Dividends' },{ '_id': 0, 'Interval': 0 })
-        # Regenerating dividend data should regenerate split data due to dependencies
         regen_split_data = collection.find_one({ 'Adjustment': 'Splits' },{ '_id': 0, 'Interval': 0 })
         self.assertGreater(regen_split_data['Time'],first_regen_split_data['Time'])
         if initial_dividend_data is not None:
             self.assertGreater(regen_dividend_data['Time'],initial_dividend_data['Time'])
-        # Data checks for all returned adjustments and adjustment dates
+        if args.verbose is True:
+            print('Data checks.')
         with self.assertRaises(SymbolNotFoundError):
             dividends = self.adjustments.adjustments(TEST_SYMBOL_FAKE)
         adjustments = self.adjustments.adjustments(TEST_SYMBOL_DIVSPLIT)
@@ -117,7 +120,11 @@ class TestPrice(testing.Test):
         self.assertGreater(regen_adjustment_data['Time'],adjustment_data['Time'])
 
     def test_daily(self):
-        return #ALEX
+        if args.test != 'all' and args.test != 'daily':
+            return
+        if args.verbose is True:
+            print('Testing: Daily quotes.')
+        self.daily = price.Daily(self.username)
         quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT)
         price_collection = 'price.' + TEST_SYMBOL_DIVSPLIT
         collection = self.mongo_data.db[price_collection]
@@ -131,7 +138,8 @@ class TestPrice(testing.Test):
         quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,regen=True)
         regen_quote_data = collection.find_one({ 'Interval': '1d' },{ '_id': 0, 'Interval': 0, 'Quotes': 0 })
         self.assertGreater(regen_quote_data['Time'],init_quote_data['Time'])
-        # Check for invalid dates
+        if args.verbose is True:
+            print('Invalid date checks.')
         with self.assertRaises(Exception):
             self.daily.quote(TEST_SYMBOL_DIVSPLIT,start_date=dt(2022, 2, 29, 0, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE)))
         with self.assertRaises(Exception):
@@ -165,8 +173,9 @@ class TestPrice(testing.Test):
             quote = quotes.next()
         curr_range_date = None
         quote = quotes.next(reset=True)
+        if args.verbose is True:
+            print('Verification of valid quote.')
         while quote is not None:
-            # Verify returned data format and contents for a valid daily quote request
             if curr_range_date is None:
                 self.assertGreaterEqual(quote.date,a_while_ago)
             if quote.adjusted_close is not None:
@@ -187,6 +196,8 @@ class TestPrice(testing.Test):
             curr_range_date = quote.date
             quote = quotes.next()
         self.assertLessEqual(curr_range_date,today)
+        if args.verbose is True:
+            print('Reviewing all valid periods.')
         for period in VALID_DAILY_WEEKLY_PERIODS.keys():
             # Check range of raturned dates for all valid periods
             quotes = self.daily.quote(TEST_SYMBOL_DIVSPLIT,period=period)
@@ -225,7 +236,11 @@ class TestPrice(testing.Test):
             self.assertTrue('Quotes' in data)
     
     def test_weekly(self):
-        return #ALEX
+        if args.test != 'all' and args.test != 'weekly':
+            return
+        if args.verbose is True:
+            print('Testing: Weekly quotes.')
+        self.weekly = price.Weekly(self.username)
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.weekly.quote(TEST_SYMBOL_FAKE)
         quotes = self.weekly.quote(TEST_SYMBOL_DIVSPLIT,'All')
@@ -261,7 +276,11 @@ class TestPrice(testing.Test):
             self.assertLessEqual(max_past_date,first_period_date)
 
     def test_monthly(self):
-        return #ALEX
+        if args.test != 'all' and args.test != 'monthly':
+            return
+        if args.verbose is True:
+            print('Testing: Monthly quotes.')
+        self.monthly = price.Monthly(self.username)
         with self.assertRaises(SymbolNotFoundError):
             quotes = self.monthly.quote(TEST_SYMBOL_FAKE)
         quotes = self.monthly.quote(TEST_SYMBOL_DIVSPLIT,period='All')
@@ -298,7 +317,11 @@ class TestPrice(testing.Test):
             self.assertLessEqual(max_past_date,first_period_date)
 
     def test_latest(self):
-        return #ALEX
+        if args.test != 'all' and args.test != 'latest':
+            return
+        if args.verbose is True:
+            print('Testing: Latest quote.')
+        self.latest = price.Latest(self.username)
         result = self.latest.quote(TEST_SYMBOL_DIV.lower())
         symbol = TEST_SYMBOL_DIV.upper()
         # Verify returned data format and contents
@@ -353,15 +376,11 @@ class TestPrice(testing.Test):
         self.assertTrue(TEST_SYMBOL_FAKE_TWO in result.unknown_symbols)
 
     def test_intraday(self):
-        frequency = 30
-        earliest_available_date = self.intraday.oldest_available_date(frequency)
-        print(frequency)
-        print(earliest_available_date)
-        quotes = self.intraday.quote(TEST_SYMBOL_SPLIT,frequency=frequency,start_date=earliest_available_date)
-        #quote = quotes.next(return_raw_data=True)
-        #while quote is not None:
-        #    quote = quotes.next(return_raw_data=True)
-        return #ALEX
+        if args.test != 'all' and args.test != 'Intraday':
+            return
+        if args.verbose is True:
+            print('Testing: Intraday quotes.')
+        self.intraday = price.Intraday(self.username)
         with self.assertRaises(SymbolNotFoundError):
             self.intraday.quote(TEST_SYMBOL_FAKE)
         # Check for valid frequencies and periods
@@ -385,15 +404,15 @@ class TestPrice(testing.Test):
         self.assertEqual(period,self.intraday.DEFAULT_INTRADAY_PERIOD)
         # The next two series use the default values for period and frequency
         quotes = self.intraday.quote(TEST_SYMBOL_DIV)
-        quote = quotes.next()
+        quote = quotes.next(return_raw_data=True)
         last_quote_time = None
         while quote is not None:
-            if last_quote_time is not None and quote.date.day == last_quote_time.day:
+            if last_quote_time is not None and quote['Date'].day == last_quote_time.day:
                 # Extended hours quotes occasonally skip intervals, presumably because of a lack of trading activity
                 if last_quote_time.hour >= 9 and last_quote_time.minute >=30 and last_quote_time.hour < 16:
-                    self.assertEqual(self.intraday.DEFAULT_INTRADAY_FREQUENCY, int((quote.date - last_quote_time).total_seconds()/60))
-            last_quote_time = quote.date
-            quote = quotes.next()
+                    self.assertEqual(self.intraday.DEFAULT_INTRADAY_FREQUENCY, int((quote['Date'] - last_quote_time).total_seconds()/60))
+            last_quote_time = quote['Date']
+            quote = quotes.next(return_raw_data=True)
         quotes = self.intraday.quote(TEST_SYMBOL_DIV,need_extended_hours_data=False)
         quote = quotes.next()
         last_quote_time = None
@@ -472,7 +491,7 @@ class TestPrice(testing.Test):
             self.assertGreaterEqual(midnight_half_way_end_date,midnight_last_quote_date)
 
 if __name__ == '__main__':
-    if len(sys.argv) == 2:
+    if len(sys.argv) > 1:
         unittest.main(argv=['run_username'])
     else:
         unittest.main()

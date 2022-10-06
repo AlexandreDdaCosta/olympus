@@ -212,11 +212,16 @@ class _PriceData(Series):
         format_index = 0
         if len(quote) < self.database_format_length:
             # Daily quotes sometimes don't arrive with adjusted values
-            quote.extend([None,None,None,None,None])
+            quote = quote + [None] * (self.database_format_length - len(quote))
         for key in self.database_format:
-            return_data[key] = quote[format_index]
             if key == 'Datetime':
-                return_data[key] = return_data[key].replace(tzinfo=tz.gettz(TIMEZONE))
+                # Note that we rename this one as in the schema
+                if return_raw_data is True:
+                    return_data['Date'] = quote[format_index].replace(tzinfo=tz.gettz(TIMEZONE))
+                else:
+                    return_data[key] = quote[format_index].replace(tzinfo=tz.gettz(TIMEZONE))
+            else:
+                return_data[key] = quote[format_index]
             format_index = format_index + 1
         if return_raw_data is True:
             return return_data
@@ -910,7 +915,7 @@ class _QuoteMerger():
 
     def merge_quote(self,quote):
         if self.quote[self.item_map['Datetime']] is None:
-            self.quote[self.item_map['Datetime']] = quote['Datetime']
+            self.quote[self.item_map['Datetime']] = quote['Date']
         for item in ['Open','Adjusted Open']:
             if self.quote[self.item_map[item]] is None and item in quote:
                 self.quote[self.item_map[item]] = quote[item]
@@ -977,18 +982,18 @@ class Weekly(Daily):
         quote_datetime = None
         weekly_quotes = []
         while quote is not None:
-            day_of_week = quote['Datetime'].isoweekday()
+            day_of_week = quote['Date'].isoweekday()
             if last_day_of_week is not None:
                 if day_of_week < last_day_of_week:
                     # New week
                     weekly_quotes.append(merge.finalize_quote())
-                    quote_datetime = quote['Datetime'] - timedelta(days=(day_of_week-1))
+                    quote_datetime = quote['Date'] - timedelta(days=(day_of_week-1))
                 else:
-                    quote['Datetime'] = quote_datetime
+                    quote['Date'] = quote_datetime
             else:
                 if day_of_week > 1:
-                    quote_datetime = quote['Datetime'] - timedelta(days=(day_of_week-1))
-                    quote['Datetime'] = quote_datetime
+                    quote_datetime = quote['Date'] - timedelta(days=(day_of_week-1))
+                    quote['Date'] = quote_datetime
             merge.merge_quote(quote)
             last_day_of_week = day_of_week
             quote = daily_quotes.next(return_raw_data=True)
@@ -1025,17 +1030,17 @@ class Monthly(Daily):
         quote_datetime = None
         monthly_quotes = []
         while quote is not None:
-            month = quote['Datetime'].month
-            year = quote['Datetime'].year
+            month = quote['Date'].month
+            year = quote['Date'].year
             if previous_month is not None:
                 if month != previous_month:
                     # New month
                     monthly_quotes.append(merge.finalize_quote())
                     quote_datetime = dt(year,month,1,0,0,0).replace(tzinfo=tz.gettz(TIMEZONE))
-                quote['Datetime'] = quote_datetime
+                quote['Date'] = quote_datetime
             else:
                 quote_datetime = dt(year,month,1,0,0,0).replace(tzinfo=tz.gettz(TIMEZONE))
-                quote['Datetime'] = quote_datetime
+                quote['Date'] = quote_datetime
             merge.merge_quote(quote)
             previous_month = month
             quote = daily_quotes.next(return_raw_data=True)
@@ -1072,6 +1077,7 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
         self.symbol_reader = symbols.Read(username,**kwargs)
         schema_parser = SchemaParser()
         self.database_format = schema_parser.database_format_columns(PRICE_SCHEMA)
+        self.database_format_length = len(self.database_format)
         self.item_map = {}
         index = 0
         for item in self.database_format:
@@ -1104,46 +1110,40 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
         daily_close = None
         candle_count = len(response['candles'])
         candle_index = candle_count - 1
-        intraday_data = [] #ALEX Switch to _PriceData object
-        print(self.database_format)
-        print(self.item_map)
+        intraday_data = []
         # "response['candles']" is a list in ascending date order, so read the list backwards to correctly apply adjustments
         for quote in reversed(response['candles']): # Most recent date/time first
             quote_date = dt.fromtimestamp(quote['datetime']/1000)
-            quote['Datetime'] = quote_date.replace(tzinfo=tz.gettz(TIMEZONE))
+            quote['datetime'] = quote_date.replace(tzinfo=tz.gettz(TIMEZONE))
             quote_date_midnight = dt(quote_date.year,quote_date.month,quote_date.day)
             quote_date_midnight = quote_date_midnight.replace(tzinfo=tz.gettz(TIMEZONE))
-            data = {}
+            data = [None] * self.database_format_length
             if adjuster.have_adjustments() is True:
-                data['Datetime'] = quote['Datetime']
+                data[self.item_map['datetime'.title()]] = quote['datetime']
                 adjuster.date_iterator(quote_date_midnight,daily_close)
                 for key in quote:
-                    if key == 'datetime' or key == 'Datetime':
+                    write_key=key.title()
+                    if key == 'datetime':
                         continue
-                    adjusted_key = 'adjusted ' + key
+                    adjusted_key = 'Adjusted ' + write_key
                     if key == 'volume':
                         # Volume is split-adjusted already.
                         # For true volume, apply the adjuster (un)adjustment
-                        data[key.title()] = int(quote[key] * adjuster.volume_adjustment)
-                        data[adjusted_key.title()] = quote[key]
+                        data[self.item_map[write_key]] = int(quote[key] * adjuster.volume_adjustment)
+                        if adjuster.volume_adjustment != 1:
+                            data[self.item_map[adjusted_key]] = quote[key]
                     else:
                         # Price is split-adjusted already.
                         # For true price, apply the price (un)adjustment
                         # For adjusted price, apply the dividend adjustment
-                        data[key.title()] = round(quote[key] * adjuster.price_adjustment,2)
-                        data[adjusted_key.title()] = round(quote[key] * adjuster.dividend_adjustment,6)
+                        data[self.item_map[write_key]] = round(quote[key] * adjuster.price_adjustment,2)
+                        if adjuster.volume_adjustment != 1:
+                            data[self.item_map[adjusted_key]] = round(quote[key] * adjuster.dividend_adjustment,6)
             else:
-                uppercase_quote = {}
                 for key in quote:
-                    uppercase_quote[key.title()] = quote[key]
-                data = uppercase_quote
-            #ALEX
-            #data_object = Return(PRICE_SCHEMA,data)
-            #print(data)
-            data_object = Return(PRICE_SCHEMA,data,no_data_validation=True)
-            return_object.add(data_object)
-        #return_object = _PriceData(returndata,None)
-        return_object.sort('date')
+                    data[self.item_map[key.title()]] = quote[key]
+            intraday_data.append(data)
+        return_object = _PriceData(intraday_data,None)
         return return_object
 
     def oldest_available_date(self,frequency):
