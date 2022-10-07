@@ -12,21 +12,17 @@ from olympus.securities.equities.data.symbols import SymbolNotFoundError
 
 # Standard run parameters:
 # sudo su -s /bin/bash -c '... symbols.py' USER
-# Optionally:
-# '... symbols.py <current_run_username>'
 
 class TestSymbols(testing.Test):
 
-    def setUp(self):
-        if len(sys.argv) == 2:
-            username = self.validRunUser(sys.argv[1])
-        else:
-            username = self.validRunUser(USER)
-        self.symbols = symbols.Read(username)
-        self.adjustments = price.Adjustments(username)
+    def __init__(self,test_case):
+        super(TestSymbols,self).__init__(test_case)
+        self.symbols = symbols.Read(self.username)
 
     def test_symbol(self):
-        return #ALEX
+        if self.skip_test('symbol'):
+            return
+        self.print_test('Individual symbols from backend')
         with self.assertRaises(SymbolNotFoundError):
             self.symbols.get_symbol(TEST_SYMBOL_FAKE)
         result = self.symbols.get_symbol(TEST_SYMBOL_DIVSPLIT)
@@ -53,8 +49,10 @@ class TestSymbols(testing.Test):
         self.assertEqual(result.symbol, TEST_SYMBOL_INDEX)
 
     def test_symbols(self):
-        return #ALEX
-        # Multiple symbols, including unknown/invalid
+        if self.skip_test('symbols'):
+            return
+        self.print_test('Symbol sets from backend')
+        self.print('Multiple symbols, including unknown/invalid.')
         # Note that symbol_result is the same object returned by get_symbol
         with self.assertRaises(Exception):
             self.symbols.get_symbols(TEST_SYMBOL_ETF)
@@ -102,25 +100,33 @@ class TestSymbols(testing.Test):
     def test_test_symbols(self):
         # These checks verify that our test symbols are still valid based on the
         # existence of dividends or splits
-        dividends = self.adjustments.dividends(TEST_SYMBOL_DIV)
+        if self.skip_test('testsymbols'):
+            return
+        self.print_test('Checking continuing validity of test symbols')
+        adjustments = price.Adjustments(self.username)
+        self.print('Dividend symbol [' + TEST_SYMBOL_DIV + '].')
+        dividends = adjustments.dividends(TEST_SYMBOL_DIV)
         self.assertIsNotNone(dividends.first())
-        splits = self.adjustments.splits(TEST_SYMBOL_DIV)
+        splits = adjustments.splits(TEST_SYMBOL_DIV)
         self.assertIsNone(splits.first())
-        dividends = self.adjustments.dividends(TEST_SYMBOL_SPLIT)
+        self.print('Split symbol [' + TEST_SYMBOL_SPLIT + '].')
+        dividends = adjustments.dividends(TEST_SYMBOL_SPLIT)
         self.assertIsNone(dividends.first())
-        splits = self.adjustments.splits(TEST_SYMBOL_SPLIT)
+        splits = adjustments.splits(TEST_SYMBOL_SPLIT)
         self.assertIsNotNone(splits.first())
-        dividends = self.adjustments.dividends(TEST_SYMBOL_DIVSPLIT)
+        self.print('Split + dividend symbol [' + TEST_SYMBOL_DIVSPLIT + '].')
+        dividends = adjustments.dividends(TEST_SYMBOL_DIVSPLIT)
         self.assertIsNotNone(dividends.first())
-        splits = self.adjustments.splits(TEST_SYMBOL_DIVSPLIT)
+        splits = adjustments.splits(TEST_SYMBOL_DIVSPLIT)
         self.assertIsNotNone(splits.first())
-        dividends = self.adjustments.dividends(TEST_SYMBOL_NODIVSPLIT)
+        self.print('No split / no dividend symbol [' + TEST_SYMBOL_NODIVSPLIT + '].')
+        dividends = adjustments.dividends(TEST_SYMBOL_NODIVSPLIT)
         self.assertIsNone(dividends.first())
-        splits = self.adjustments.splits(TEST_SYMBOL_NODIVSPLIT)
+        splits = adjustments.splits(TEST_SYMBOL_NODIVSPLIT)
         self.assertIsNone(splits.first())
 
 if __name__ == '__main__':
-    if len(sys.argv) == 2:
-        unittest.main(argv=['run_username'])
+    if len(sys.argv) > 1:
+        unittest.main(argv=['username'])
     else:
         unittest.main()

@@ -1,4 +1,6 @@
-import argparse, inspect, os, pwd, random, re, string, sys, unittest
+import inspect, os, pwd, random, re, string, sys, unittest
+
+from argparse import ArgumentError, ArgumentParser
 
 DEFAULT_STRING_LENGTH = 60
 GREP_TEXT = 'Search string located in file.'
@@ -13,7 +15,17 @@ XOR_TEXT = 'One or the other value must be true, but both cannot be.'
 TEST_ENVIRONMENT = 'test'
 TEST_PREFIX = 'olympustest_'
 
+parser = ArgumentParser(sys.argv)
+parser.add_argument("-u","--username",action="store",default=pwd.getpwuid(os.getuid())[0],help="Specify a user name under which test should run.")
+parser.add_argument("-t","--test",action="store",default='all',help="Specify the name of a single test to run.")
+parser.add_argument("-v","--verbose",action="store_true",help="Chatty output.")
+
 class Test(unittest.TestCase):
+
+    def __init__(self,test_case):
+        super(Test,self).__init__(test_case)
+        self.args = parser.parse_args()
+        self.username = self.validRunUser(self.args.username)
 
     # Assertions
     
@@ -84,6 +96,15 @@ class Test(unittest.TestCase):
 
     # Utilities
 
+    def add_argument(self,*args,**kwargs):
+        try:
+            parser.add_argument(*args,**kwargs)
+            self.args = parser.parse_args()
+        except ArgumentError as e:
+            pass
+        except:
+            raise
+
     def file(self):
         caller = inspect.stack()[1]
         return caller[1]
@@ -96,8 +117,22 @@ class Test(unittest.TestCase):
         caller = inspect.stack()[1]
         return caller[2]
 
+    def print(self,message):
+        if self.args.verbose is True:
+            print(message)
+
+    def print_test(self,test):
+        if self.args.verbose is True:
+            print('\nTest: ' + str(test) + '.')
+
     def random_string(self,length=DEFAULT_STRING_LENGTH):
         return ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(length))
+
+    def skip_test(self,test_case):
+        if self.args.test != 'all' and self.args.test != test_case:
+            self.print('\nSkip test: ' + test_case + '.')
+            return True
+        return False
     
     def validRunUser(self,username):
         username = str(username)
