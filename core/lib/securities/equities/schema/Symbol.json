@@ -54,6 +54,10 @@
       "pattern": "^[A-Z.$^]+$",
       "type": "string"
     },
+    "Time": {
+      "description": "ISO date when record was created, returned as a timezone-aware UTC time string",
+      "type": "string"
+    },
     "Watchlists": {
       "description": "Names of the lists of monitored securities to which this symbol belongs",
       "type": "array"
@@ -63,6 +67,7 @@
   "required": [
     "Name",
     "Security Class",
-    "Symbol"
+    "Symbol",
+    "Time"
   ]
 }

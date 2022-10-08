@@ -1,5 +1,6 @@
 import codecs, csv, json, jsonschema, os, re, subprocess, time
 
+from datetime import datetime as dt
 from jsonschema import validate
 
 import olympus.restapi as restapi
@@ -95,6 +96,7 @@ class InitSymbols(data.Initializer):
                     company['Security Class'] = SECURITY_CLASS_STOCK
                     company['Symbol'] = company.pop('symbol')
                     added_symbols[company['Symbol']] = True
+                    company['Time'] = dt.now().astimezone()
                     json_write.append(company)
                 collection.insert_many(json_write)
             except:
@@ -149,6 +151,7 @@ class InitSymbols(data.Initializer):
                     entry['Symbol'] = re.sub("^\.", "", entry['Original Symbol'])
                 else:
                     entry['Security Class'] = SECURITY_CLASS_ETF
+                entry['Time'] = dt.now().astimezone()
                 if entry['Symbol'] in added_symbols:
                     continue
                 added_symbols[entry['Symbol']] = True
@@ -218,6 +221,7 @@ class InitSymbols(data.Initializer):
                     entry['Security Class'] = SECURITY_CLASS_ETF
                 else:
                     entry['Security Class'] = SECURITY_CLASS_STOCK
+                entry['Time'] = dt.now().astimezone()
                 json_write.append(entry)
             collection.insert_many(json_write)
         except:
