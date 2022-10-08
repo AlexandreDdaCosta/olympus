@@ -87,7 +87,7 @@ users:
         - user:olympus: readWrite
     redis:
       keys:
-        - equities
+        - securities:equities
       password: {{ salt['cmd.shell'](random_password_generator) }}
     restapi:
       password: {{ salt['cmd.shell'](random_password_generator) }}
