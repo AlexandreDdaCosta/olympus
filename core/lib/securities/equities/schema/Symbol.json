@@ -19,6 +19,10 @@
       "pattern": "^amex|nasdaq|nyse$",
       "type": "string"
     },
+    "Expiration": {
+      "description": "Date past which data needs to be refreshed; UTC ISO timezone-aware string",
+      "type": "string"
+    },
     "Industry": {
       "description": "Economic sub-sector in which company operates",
       "type": "string"

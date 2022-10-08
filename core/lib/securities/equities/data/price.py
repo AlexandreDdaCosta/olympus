@@ -2,7 +2,6 @@ import collections, datetime, json, os, re, shutil, socket, subprocess, time
 
 from datetime import date, datetime as dt, timedelta
 from dateutil import tz
-from dateutil.parser import parse
 from file_read_backwards import FileReadBackwards
 from jsonschema import validate
 from urllib.request import urlretrieve

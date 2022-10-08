@@ -1,6 +1,7 @@
 import codecs, csv, json, jsonschema, os, re, subprocess, time
 
 from datetime import datetime as dt
+from dateutil.parser import parse
 from jsonschema import validate
 
 import olympus.restapi as restapi
@@ -355,13 +356,41 @@ class Read(restapi.Connection):
         schema_file_name = file_finder.schema_file(SCHEMA_FILE_DIRECTORY,'Symbol')
         with open(schema_file_name) as schema_file:
             self.json_schema = json.load(schema_file)
+        self.redis_symbol_lockfile = self.lockfile_directory()+'redis_symbol.pid'
 
     def get_symbol(self,symbol,**kwargs):
         symbol = str(symbol).upper()
+        redis_client = self.client()
+        '''
+        redis_stored_symbol = redis_client.hgetall('securities:equities:' + symbol)
+        if redis_stored_symbol is not None:
+            if ('Expiration' in redis_stored_symbol and int(redis_stored_symbol['Expiration']) > int(time.time()) + 30):
+                if 'Capitalization' in redis_stored_symbol:
+                    redis_stored_symbol['Capitalization'] = int(redis_stored_symbol['Capitalization'])
+                if 'Watchlists' in redis_stored_symbol:
+                    redis_stored_symbol['Watchlists'] = list(redis_stored_symbol['Watchlists'])
+                print(redis_stored_symbol)
+                return_object = Return(self.json_schema,redis_stored_symbol)
+                return return_object
+        '''
         response = self.call('/equities/symbol/'+symbol)
         if (response.status_code == 404):
            raise SymbolNotFoundError(symbol)
-        return_object = Return(self.json_schema,json.loads(response.content)['symbol'])
+        content = json.loads(response.content)['symbol']
+        lockfilehandle = self._lock(self.redis_symbol_lockfile)
+        try:
+            redis_client.delete('securities:equities:' + symbol)
+            # Calculate an expiration time
+            now = dt.now().astimezone()
+            print(now)
+            for key in content:
+                redis_client.hset('securities:equities:' + symbol, key, str(content[key]))
+            redis_client.hset('securities:equities:' + symbol, 'Expiration', int(now.timestamp()))
+            lockfilehandle.close()
+        except:
+            lockfilehandle.close()
+            raise
+        return_object = Return(self.json_schema,content)
         return return_object
 
     def get_symbols(self,symbols,**kwargs):

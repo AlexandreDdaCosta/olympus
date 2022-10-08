@@ -19,16 +19,6 @@ async function findEquityTokenDocument(dataSource) {
 async function findSymbol(symbol) {
   const connection = await mongoConnection.getInstance();
   let db = connection.db('equities');
-  try {
-    cursor = await db.collection('price.AAPL').find({ 'Interval': { '$in': ['1d', '2d'] } }, { projection: { _id: 0, Quotes: { $elemMatch: { 1: .14 } }, Time: 1 } } );
-    cursor.toArray(function(err, documents) {
-      console.log(documents)
-      console.log(documents[0]['Quotes'])
-    });
-  }
-  catch (err) {
-    console.log(err);
-  }
   return await db.collection('symbols').findOne({ 'Symbol': symbol }, { projection: { _id: 0 }});
 }
 

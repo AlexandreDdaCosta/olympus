@@ -1,6 +1,6 @@
 # Core procedures for connection to restapi back end
 
-import fcntl, json, requests, time
+import json, requests, time
 
 from olympus import CLIENT_CERT, REDIS_SERVICE, RESTAPI_SERVICE, USER, User
 
@@ -72,7 +72,7 @@ class Connection(redis.Connection):
             elif ('refresh_token_expiration' in redis_stored_tokens and int(redis_stored_tokens['refresh_token_expiration']) > int(time.time()) + 30):
                 refresh_token = redis_stored_tokens['refresh_token']
                 # 3a.  Lock execution file
-                lockfilehandle = self._token_lock()
+                lockfilehandle = self._lock(self.token_lockfile)
                 # 3b.  Query redis, confirm issue
                 redis_stored_tokens = redis_client.hgetall('user:' + self.username + ':restapi:token')
                 if redis_stored_tokens is not None:
@@ -127,7 +127,7 @@ class Connection(redis.Connection):
 
         # 4. Fall back to username/password auth
         # 4a. Lock execution file
-        lockfilehandle = self._token_lock()
+        lockfilehandle = self._lock(self.token_lockfile)
         # 4b. Query redis, confirm issue
         redis_stored_tokens = redis_client.hgetall('user:' + self.username + ':restapi:token')
         if redis_stored_tokens is not None:
@@ -189,22 +189,6 @@ class Connection(redis.Connection):
             return True
         else:
             return False
-
-    def _token_lock(self):
-        for i in range(5):
-            try:
-                lockfilehandle = open(self.token_lockfile,'w')
-                fcntl.flock(lockfilehandle,fcntl.LOCK_EX|fcntl.LOCK_NB)
-                break
-            except OSError as e:
-                if (i == 4):
-                    # Last iteration
-                    raise
-                else:
-                    time.sleep(5)
-            except:
-                raise
-        return lockfilehandle
 
 class RestAPIError(Exception):
     """ 

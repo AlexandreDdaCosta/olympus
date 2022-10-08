@@ -1,4 +1,4 @@
-import fcntl, json, time
+import json, time
 
 import olympus.restapi as restapi
 
@@ -27,7 +27,7 @@ class Connection(restapi.Connection):
                     setattr(self,key,redis_stored_tokens[key])
                 return self.token
         # 3. Refresh/create via restapi query
-        lockfilehandle = self._provider_token_lock()
+        lockfilehandle = self._lock(self.provider_lockfile)
         try:
             response = self.call('/token/equities/' + self.provider + '/')
             content = json.loads(response.content)
@@ -51,19 +51,3 @@ class Connection(restapi.Connection):
             lockfilehandle.close()
             raise
         return self.token
-
-    def _provider_token_lock(self):
-        for i in range(5):
-            try:
-                lockfilehandle = open(self.provider_lockfile,'w')
-                fcntl.flock(lockfilehandle,fcntl.LOCK_EX|fcntl.LOCK_NB)
-                break
-            except OSError as e:
-                if (i == 4):
-                    # Last iteration
-                    raise
-                else:
-                    time.sleep(5)
-            except:
-                raise
-        return lockfilehandle

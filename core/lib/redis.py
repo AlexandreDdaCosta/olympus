@@ -1,6 +1,6 @@
 # Core procedures for connection to redis
 
-import redis
+import fcntl, redis
 
 from olympus import REDIS_SERVICE, USER, User
 
@@ -15,3 +15,20 @@ class Connection(User):
         r = redis.Redis()
         redis_client = r.from_url('redis://' + self.username + ':' + redis_password + '@localhost:6379/0',decode_responses=True)
         return redis_client
+
+    def _lock(self,filename):
+        for i in range(5):
+            try:
+                lockfilehandle = open(filename,'w')
+                fcntl.flock(lockfilehandle,fcntl.LOCK_EX|fcntl.LOCK_NB)
+                break
+            except OSError as e:
+                if (i == 4):
+                    # Last iteration
+                    raise
+                else:
+                    time.sleep(5)
+            except:
+                raise
+        return lockfilehandle
+
