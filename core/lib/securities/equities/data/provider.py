@@ -18,7 +18,7 @@ class Connection(restapi.Connection):
             return self.token
         # 2. Current and valid access token in redis?
         redis_client = self.client()
-        redis_stored_tokens = redis_client.hgetall('user:' + self.username + ':equities:token:' + self.provider)
+        redis_stored_tokens = redis_client.hgetall('user:' + self.username + ':securities:equities:token:' + self.provider)
         if redis_stored_tokens is not None:
             if ('expiration' in redis_stored_tokens and int(redis_stored_tokens['expiration']) > int(time.time()) + 30):
                 for key in redis_stored_tokens:
@@ -40,11 +40,11 @@ class Connection(restapi.Connection):
                     continue
                 if (key == 'expiration'):
                     key_found = True
-                redis_client.hset('user:' + self.username + ':equities:token:' + self.provider, key, content[key])
+                redis_client.hset('user:' + self.username + ':securities:equities:token:' + self.provider, key, content[key])
                 setattr(self,key,content[key])
             if (not key_found):
                 # Set a one-week default expiration if none defined
-                redis_client.hset('user:' + self.username + ':equities:token:' + self.provider, 'expiration', int(time.time()) + 604800)
+                redis_client.hset('user:' + self.username + ':securities:equities:token:' + self.provider, 'expiration', int(time.time()) + 604800)
                 setattr(self,'expiration',int(time.time()) + 604800)
             lockfilehandle.close()
         except:

@@ -249,3 +249,9 @@ initialize_olympus_equities:
     - require: 
       - node-backend
 
+# Remove all symbol data stored in redis across all minions
+regen_equities_symbols_redis:
+  cmd.run:
+    - name: salt '*' redis.delete_securities_equities_symbols
+    - require: 
+      - initialize_olympus_equities

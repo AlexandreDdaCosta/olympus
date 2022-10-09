@@ -1,6 +1,7 @@
 import codecs, csv, json, jsonschema, os, re, subprocess, time
 
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta
+from dateutil import tz
 from dateutil.parser import parse
 from jsonschema import validate
 
@@ -9,6 +10,7 @@ import olympus.securities.equities.data as data
 
 from olympus import FileFinder, Return, Series, USER
 from olympus.securities.equities import CONFIG_FILE_DIRECTORY, INDEX_CLASS, SCHEMA_FILE_DIRECTORY, SECURITY_CLASS_ETF, SECURITY_CLASS_STOCK
+from olympus.securities.equities.data import TIMEZONE
 
 ETF_INDEX_DATA_FILE_NAME = 'usexchange-etf+indexlist.csv'
 ETF_INDEX_DATA_URL = 'http://masterdatareports.com/Download-Files/AllTypes.csv'
@@ -360,32 +362,43 @@ class Read(restapi.Connection):
 
     def get_symbol(self,symbol,**kwargs):
         symbol = str(symbol).upper()
+        reset = kwargs.pop('reset',False)
         redis_client = self.client()
-        '''
-        redis_stored_symbol = redis_client.hgetall('securities:equities:' + symbol)
-        if redis_stored_symbol is not None:
-            if ('Expiration' in redis_stored_symbol and int(redis_stored_symbol['Expiration']) > int(time.time()) + 30):
-                if 'Capitalization' in redis_stored_symbol:
-                    redis_stored_symbol['Capitalization'] = int(redis_stored_symbol['Capitalization'])
-                if 'Watchlists' in redis_stored_symbol:
-                    redis_stored_symbol['Watchlists'] = list(redis_stored_symbol['Watchlists'])
-                print(redis_stored_symbol)
-                return_object = Return(self.json_schema,redis_stored_symbol)
-                return return_object
-        '''
+        if reset is False:
+            # Can also reset by deleting this redis entry, which results in regeneration from the source
+            redis_stored_symbol = redis_client.hgetall('securities:equities:symbol:' + symbol)
+            if redis_stored_symbol is not None and redis_stored_symbol:
+                if ('Expiration' in redis_stored_symbol and int(redis_stored_symbol['Expiration']) > int(time.time()) + 5):
+                    if 'Capitalization' in redis_stored_symbol:
+                        redis_stored_symbol['Capitalization'] = int(redis_stored_symbol['Capitalization'])
+                    if 'Watchlists' in redis_stored_symbol:
+                        redis_stored_symbol['Watchlists'] = json.loads(redis_stored_symbol['Watchlists'])
+                    return_object = Return(self.json_schema,redis_stored_symbol)
+                    return return_object
         response = self.call('/equities/symbol/'+symbol)
         if (response.status_code == 404):
            raise SymbolNotFoundError(symbol)
         content = json.loads(response.content)['symbol']
         lockfilehandle = self._lock(self.redis_symbol_lockfile)
         try:
-            redis_client.delete('securities:equities:' + symbol)
-            # Calculate an expiration time
-            now = dt.now().astimezone()
-            print(now)
+            redis_client.delete('securities:equities:symbol:' + symbol)
             for key in content:
-                redis_client.hset('securities:equities:' + symbol, key, str(content[key]))
-            redis_client.hset('securities:equities:' + symbol, 'Expiration', int(now.timestamp()))
+                if key == 'Watchlists':
+                    # Compose array string suitable for later json processing
+                    orig_watchlists = content['Watchlists']
+                    watchlists = re.sub(r'\'','"', str(content['Watchlists']))
+                    redis_client.hset('securities:equities:symbol:' + symbol, key, watchlists)
+                else:
+                    redis_client.hset('securities:equities:symbol:' + symbol, key, str(content[key]))
+            # Calculate and write an expiration time
+            # At the sources, new data updates are approximately every weekday at 6PM.
+            # We'll use the next 3 am to be ready for the early session at a minimum, which also considers the possibility of weekend updates.
+            expire_time = dt.now().astimezone().replace(tzinfo=tz.gettz(TIMEZONE))
+            if expire_time.hour >= 3:
+                expire_time = expire_time + timedelta(days=1)
+            expiration_epochseconds = int( dt(expire_time.year, expire_time.month, expire_time.day, 3, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE)).timestamp() )
+            redis_client.hset('securities:equities:symbol:' + symbol, 'Expiration', expiration_epochseconds)
+            content['Expiration'] = str(expiration_epochseconds)
             lockfilehandle.close()
         except:
             lockfilehandle.close()
@@ -393,7 +406,7 @@ class Read(restapi.Connection):
         return_object = Return(self.json_schema,content)
         return return_object
 
-    def get_symbols(self,symbols,**kwargs):
+    def get_symbols(self,symbols):
         if not isinstance(symbols, list):
             raise Exception('Parameter "symbols" must be a list of security symbols.')
         symbol_string = ','.join([str(symbol).upper() for symbol in symbols])

@@ -28,14 +28,19 @@ class TestSymbols(testing.Test):
         result = self.symbols.get_symbol(TEST_SYMBOL_DIVSPLIT)
         attributes = result.list()
         for attribute in attributes:
+            if attribute == 'watchlists':
+                self.assertEqual(type(result.watchlists), list)
             result.get(attribute)
         self.assertEqual(result.exchange, TEST_SYMBOL_DIVSPLIT_EXCHANGE)
         self.assertIsNotNone(result.name)
         self.assertEqual(result.security_class, SECURITY_CLASS_STOCK)
         self.assertEqual(result.symbol, TEST_SYMBOL_DIVSPLIT)
         result = self.symbols.get_symbol(TEST_SYMBOL_ETF)
+        self.assertEqual(type(result.watchlists), list)
         attributes = result.list()
         for attribute in attributes:
+            if attribute == 'watchlists':
+                self.assertEqual(type(result.watchlists), list)
             result.get(attribute)
         self.assertIsNotNone(result.name)
         self.assertEqual(result.security_class, SECURITY_CLASS_ETF)
@@ -43,7 +48,13 @@ class TestSymbols(testing.Test):
         result = self.symbols.get_symbol(TEST_SYMBOL_INDEX)
         attributes = result.list()
         for attribute in attributes:
+            if attribute == 'watchlists':
+                self.assertEqual(type(result.watchlists), list)
             result.get(attribute)
+        self.assertIsNotNone(result.name)
+        self.assertEqual(result.security_class, INDEX_CLASS)
+        self.assertEqual(result.symbol, TEST_SYMBOL_INDEX)
+        result = self.symbols.get_symbol(TEST_SYMBOL_INDEX,reset=True)
         self.assertIsNotNone(result.name)
         self.assertEqual(result.security_class, INDEX_CLASS)
         self.assertEqual(result.symbol, TEST_SYMBOL_INDEX)
