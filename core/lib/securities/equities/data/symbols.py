@@ -383,7 +383,12 @@ class Read(restapi.Connection):
         try:
             redis_client.delete('securities:equities:symbol:' + symbol)
             for key in content:
-                if key == 'Watchlists':
+                if key == 'Time':
+                    # Change to record creation time
+                    now = str(dt.now().astimezone())
+                    content['Time'] = now
+                    redis_client.hset('securities:equities:symbol:' + symbol, 'Time', now)
+                elif key == 'Watchlists':
                     # Compose array string suitable for later json processing
                     orig_watchlists = content['Watchlists']
                     watchlists = re.sub(r'\'','"', str(content['Watchlists']))

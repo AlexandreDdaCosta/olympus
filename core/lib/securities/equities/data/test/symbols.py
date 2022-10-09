@@ -6,7 +6,10 @@ import olympus.securities.equities.data.price as price
 import olympus.securities.equities.data.symbols as symbols
 import olympus.testing as testing
 
+from datetime import datetime as dt
+
 from olympus import USER
+from olympus.redis import Connection
 from olympus.securities.equities import *
 from olympus.securities.equities.data.symbols import SymbolNotFoundError
 
@@ -54,10 +57,17 @@ class TestSymbols(testing.Test):
         self.assertIsNotNone(result.name)
         self.assertEqual(result.security_class, INDEX_CLASS)
         self.assertEqual(result.symbol, TEST_SYMBOL_INDEX)
+        redis_connection = Connection(self.username)
+        redis_client = redis_connection.client()
+        redis_time = redis_client.hget('securities:equities:symbol:' + TEST_SYMBOL_INDEX, 'Time')
+        pre_reset_time = dt.strptime(redis_time, "%Y-%m-%d %H:%M:%S.%f%z")
         result = self.symbols.get_symbol(TEST_SYMBOL_INDEX,reset=True)
         self.assertIsNotNone(result.name)
         self.assertEqual(result.security_class, INDEX_CLASS)
         self.assertEqual(result.symbol, TEST_SYMBOL_INDEX)
+        redis_time = redis_client.hget('securities:equities:symbol:' + TEST_SYMBOL_INDEX, 'Time')
+        post_reset_time = dt.strptime(redis_time, "%Y-%m-%d %H:%M:%S.%f%z")
+        self.assertGreater(post_reset_time, pre_reset_time)
 
     def test_symbols(self):
         if self.skip_test('symbols'):
