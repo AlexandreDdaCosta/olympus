@@ -66,6 +66,10 @@
       "pattern": "^[A-Z0-9]{9}$",
       "type": "string"
     },
+    "datetime": {
+      "description": "ISO date for quote",
+      "type": "datetime"
+    },
     "delayed": {
       "description": "True if price quote is not real time",
       "type": "boolean"
