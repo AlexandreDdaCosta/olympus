@@ -971,9 +971,8 @@ class Weekly(Daily):
     def __init__(self,username=USER,**kwargs):
         super(Weekly,self).__init__(username,**kwargs)
 
-    def quote(self,symbol,period='1Y',**kwargs):
-        kwargs.pop('start_date',None)
-        kwargs.pop('end_date',None)
+    def quote(self,symbol,**kwargs):
+        period = kwargs.pop('period','1Y')
         daily_quotes = super().quote(symbol,period=period,**kwargs)
         quote = daily_quotes.next(return_raw_data=True)
         merge = _QuoteMerger()
@@ -1264,5 +1263,7 @@ class Latest(ameritrade.Connection):
         if have_quoted_symbols is True:
             for quote_symbol in response:
                 quote = response[quote_symbol]
+                # Add an ISO date for simplicity
+                quote['date'] = dt.fromtimestamp(quote['tradeTimeInLong']/1000).replace(tzinfo=tz.gettz(TIMEZONE))
                 return_object.add_symbol(quote_symbol,quote)
         return return_object

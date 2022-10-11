@@ -89,6 +89,12 @@ class Return():
             underscore_name = self.String.pascal_case_to_underscore(name)
             setattr(self,underscore_name,data[original_name])
             self.Attributes.append(underscore_name)
+            if 'duplicate_as' in schema['properties'][original_name]:
+                underscore_name = self.String.pascal_case_to_underscore(schema['properties'][original_name]['duplicate_as'])
+                if 'duplicate_value' in schema['properties'][original_name]:
+                    data[original_name] = schema['properties'][original_name]['duplicate_value']
+                setattr(self,underscore_name,data[original_name])
+                self.Attributes.append(underscore_name)
 
     def add(self,name,value):
         # Add the odd attribute

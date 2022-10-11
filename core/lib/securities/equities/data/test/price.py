@@ -219,7 +219,7 @@ class TestPrice(testing.Test):
         with self.assertRaises(SymbolNotFoundError):
             quotes = weekly.quote(TEST_SYMBOL_FAKE)
         now = dt.now().astimezone()
-        quotes = weekly.quote(TEST_SYMBOL_DIVSPLIT,'All')
+        quotes = weekly.quote(TEST_SYMBOL_DIVSPLIT,period='All')
         first_date = quotes.first().date
         quote = quotes.next()
         self.print('Verify returned data for a valid weekly quote request.')
@@ -246,7 +246,7 @@ class TestPrice(testing.Test):
                 continue
             past_days = VALID_DAILY_WEEKLY_PERIODS[period] + 4 # Add 4 in case of weekday adjustment
             max_past_date = (dt(now.year,now.month,now.day,0,0,0) - timedelta(days=past_days)).replace(tzinfo=tz.gettz(TIMEZONE))
-            quotes = weekly.quote(TEST_SYMBOL_DIV,period)
+            quotes = weekly.quote(TEST_SYMBOL_DIV,period=period)
             first_period_date = quotes.first().date
             self.assertLessEqual(first_date,first_period_date)
             self.assertLessEqual(max_past_date,first_period_date)

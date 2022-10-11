@@ -58,6 +58,8 @@
     },
     "closePrice": {
       "convert_name": "close",
+      "duplicate_as": "adjustedClose",
+      "duplicate_value": null,
       "description": "Price of last executed trade in last completed session",
       "type": "number"
     },
@@ -66,7 +68,7 @@
       "pattern": "^[A-Z0-9]{9}$",
       "type": "string"
     },
-    "datetime": {
+    "date": {
       "description": "ISO date for quote",
       "type": "datetime"
     },
@@ -107,6 +109,8 @@
     },
     "highPrice": {
       "convert_name": "high",
+      "duplicate_as": "adjustedHigh",
+      "duplicate_value": null,
       "description": "Maximum execution amount in last completed session",
       "type": "number"
     },
@@ -125,6 +129,8 @@
     },
     "lowPrice": {
       "convert_name": "low",
+      "duplicate_as": "adjustedLow",
+      "duplicate_value": null,
       "description": "Minimum execution amount in last completed session",
       "type": "number"
     },
@@ -159,6 +165,8 @@
     },
     "openPrice": {
       "convert_name": "open",
+      "duplicate_as": "adjustedOpen",
+      "duplicate_value": null,
       "description": "Initial trade price during trading session for which the quote is diplayed",
       "type": "number"
     },
@@ -212,6 +220,9 @@
       "type": "integer"
     },
     "totalVolume": {
+      "convert_name": "volume",
+      "duplicate_as": "adjustedVolume",
+      "duplicate_value": null,
       "description": "Number of shares traded in the quoted trading session",
       "type": "integer"
     },
