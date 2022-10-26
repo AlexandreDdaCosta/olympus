@@ -177,30 +177,42 @@ class _AdjustedData(Series):
 class _PriceData(Series):
     # A list of lists. Unlike the "Series", formats data only as requested by accessors.
 
-    def __init__(self,data,query_date=None):
+    def __init__(self,data,query_date=None,preformat=False):
         super(_PriceData,self).__init__()
         if query_date is not None:
             self.query_date = query_date
         if data is None:
             return
-        self.series = data
         schema_parser = SchemaParser()
         self.database_format = schema_parser.database_format_columns(PRICE_SCHEMA)
         self.database_format_length = len(self.database_format)
+        self.preformatted = preformat
+        if preformat is True:
+            self.series = []
+            for quote in data:
+                self.series.append(self._format_quote(quote))
+        else:
+            self.series = data
         # This data gets sorted from oldest to newest to follow a natural time progression
         self.sort()
 
     def first(self,**kwargs):
         quote = super(_PriceData,self).first()
+        if self.preformatted is True:
+            return quote
         return self._format_quote(quote,**kwargs)
 
     def last(self,**kwargs):
         quote = super(_PriceData,self).last()
+        if self.preformatted is True:
+            return quote
         return self._format_quote(quote,**kwargs)
 
     def next(self,**kwargs):
         # Implemented differently due to occasional very large data sets with pricing
         quote = super(_PriceData,self).next(**kwargs)
+        if self.preformatted is True:
+            return quote
         return self._format_quote(quote,**kwargs)
 
     def _format_quote(self,quote,**kwargs):
@@ -229,9 +241,12 @@ class _PriceData(Series):
     def sort(self,**kwargs):
         # Sorts price quotes by date.
         # When sorting arrays, python uses first element, which in this case is the date
-        if self.series is not None:
-            reverse = kwargs.get('reverse',False)
-            self.series = sorted(self.series, reverse=reverse)
+        if self.preformatted is False:
+            if self.series is not None:
+                reverse = kwargs.get('reverse',False)
+                self.series = sorted(self.series, reverse=reverse)
+        else:
+            super(_PriceData,self).sort('date',**kwargs)
 
 class Adjustments(data.Connection):
     '''
@@ -694,6 +709,7 @@ my current judgment is that these differences will not grossly affect the desire
         symbol = str(symbol).upper()
         symbol_data = self.symbol_reader.get_symbol(symbol)
         date_verifier = DateVerifier()
+        preformat = kwargs.get('preformat',False)
         regen = kwargs.get('regen',False)
         if regen is True:
             regen_adjustments = True
@@ -819,8 +835,7 @@ my current judgment is that these differences will not grossly affect the desire
                 returndata = [item for item in returndata if item[0] >= start_date]
             if end_date is not None:
                 returndata = [item for item in returndata if item[0] <= end_date]
-        print('Alternate return object')
-        return_object = _PriceData(returndata,None)
+        return_object = _PriceData(returndata,None,preformat)
         return return_object
 
     def _daily_quote_url(self,symbol,period1=0):
@@ -973,6 +988,7 @@ class Weekly(Daily):
 
     def quote(self,symbol,**kwargs):
         period = kwargs.pop('period','1Y')
+        preformat = kwargs.pop('preformat',False)
         daily_quotes = super().quote(symbol,period=period,**kwargs)
         quote = daily_quotes.next(return_raw_data=True)
         merge = _QuoteMerger()
@@ -998,7 +1014,7 @@ class Weekly(Daily):
         final_week = merge.finalize_quote()
         if final_week is not None:
             weekly_quotes.append(final_week)
-        return_object = _PriceData(weekly_quotes,None)
+        return_object = _PriceData(weekly_quotes,None,preformat)
         return return_object
 
     def _verify_period(self,period):
@@ -1017,6 +1033,7 @@ class Monthly(Daily):
     def quote(self,symbol,period='5Y',**kwargs):
         kwargs.pop('start_date',None)
         kwargs.pop('end_date',None)
+        preformat = kwargs.pop('preformat',False)
         start_date = self._verify_period(period)
         if start_date is not None:
             daily_quotes = super().quote(symbol,start_date=start_date,**kwargs)
@@ -1045,7 +1062,7 @@ class Monthly(Daily):
         final_month = merge.finalize_quote()
         if final_month is not None:
             monthly_quotes.append(final_month)
-        return_object = _PriceData(monthly_quotes,None)
+        return_object = _PriceData(monthly_quotes,None,preformat)
         return return_object
 
     def _verify_period(self,period):
@@ -1087,6 +1104,7 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
         self.symbol_reader.get_symbol(symbol)
         self.valid_frequency(frequency)
         need_extended_hours_data = kwargs.get('need_extended_hours_data',True)
+        preformat = kwargs.pop('preformat',False)
         period = kwargs.get('period',None)
         end_date = kwargs.get('end_date',None)
         start_date = kwargs.get('start_date',None)
@@ -1140,7 +1158,7 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
                 for key in quote:
                     data[self.item_map[key.title()]] = quote[key]
             intraday_data.append(data)
-        return_object = _PriceData(intraday_data,None)
+        return_object = _PriceData(intraday_data,None,preformat)
         return return_object
 
     def oldest_available_date(self,frequency):
