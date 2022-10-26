@@ -175,7 +175,7 @@ class _AdjustedData(Series):
         self.sort('date',reverse=True)
 
 class _PriceData(Series):
-    # A list of lists. Unlike the "Series", formats data as requested by accessors.
+    # A list of lists. Unlike the "Series", formats data only as requested by accessors.
 
     def __init__(self,data,query_date=None):
         super(_PriceData,self).__init__()
@@ -720,7 +720,6 @@ my current judgment is that these differences will not grossly affect the desire
                 raise Exception('Requested end date in the future.')
         price_collection = 'price.' + symbol
         returndata = None
-        return_object = Series()
         target_file = self.download_directory()+symbol+'-daily.csv'
         # First we check/update stored data to save on bandwidth
         collection = self.db[price_collection]
@@ -820,6 +819,7 @@ my current judgment is that these differences will not grossly affect the desire
                 returndata = [item for item in returndata if item[0] >= start_date]
             if end_date is not None:
                 returndata = [item for item in returndata if item[0] <= end_date]
+        print('Alternate return object')
         return_object = _PriceData(returndata,None)
         return return_object
 
@@ -1102,7 +1102,6 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
         response = self.request('marketdata/' + symbol + '/pricehistory',params)
         if response['symbol'] != symbol:
             raise Exception('Incorrect symbol ' + str(response['symbol']) + ' returned by API call.')
-        return_object = Series()
         adjuster = _PriceAdjuster(symbol,self.username,regen=False,symbol_verify=False)
         last_quote_date = None
         daily_close = None
