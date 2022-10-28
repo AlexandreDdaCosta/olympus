@@ -9,24 +9,16 @@ from olympus.securities.equities.algo.market_key.livermore import Calculate
 from olympus.securities.equities import BUY, SELL, SYMBOL
 
 parser = ArgumentParser(sys.argv)
+parser.add_argument("-i","--interval",default='1d',help="Quotes intervals for which to produce the chart")
 parser.add_argument("-l","--latest",action='store_true',default=False,help="Include latest data in evaluation")
 parser.add_argument("-s","--symbol",default=SYMBOL,help="US equity symbol")
-parser.add_argument("-t","--thresholds",help="Overides for CONTINUATION/REVERSAL/SHORT_DISTANCE, express as an ordered list",nargs=3)
 parser.add_argument("-v","--verbose",action="store_true",help="Chatty output")
 args = parser.parse_args()
 
 if args.verbose is True:
     start = time.time()
-calculator = Calculate(args.symbol)
-if args.thresholds:
-    threshold = {}
-    threshold['Continuation'] = args.thresholds[0]
-    threshold['Reversal'] = args.thresholds[1]
-    threshold['Short Distance'] = args.thresholds[2]
-    thresholds = [threshold]
-else:
-    thresholds = THRESHOLDS
-chart = calculator.chartpoints(latest=args.latest,thresholds=thresholds) 
+calculator = Calculate()
+chart = calculator.chartpoints(args.symbol,args.interval,latest=args.latest)
 
 if chart.last_entry():
     print('CHART DATES')
