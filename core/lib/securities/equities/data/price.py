@@ -333,7 +333,7 @@ date more recent than or matching the date of the most recent split is therefore
                     else:
                         dividend_adjustment = dividend.dividend
                     dividend_written = False
-                    split = splits.next()
+                    split = splits.next(reset=True)
                     while split is not None:
                         if dividend.date > split.date:
                             adjustments.append({ 'Date': dividend.date, 'Dividend': dividend_adjustment })
@@ -351,7 +351,7 @@ date more recent than or matching the date of the most recent split is therefore
                     dividend = dividends.next()
             if splits is not None:
                 if split is None:
-                    split = splits.next()
+                    split = splits.next(reset=True)
                 while split is not None:
                     adjustments.append({ 'Date': split.date, 'Price Adjustment': split.price_dividend_adjustment, 'Volume Adjustment': split.volume_adjustment })
                     split = splits.next()
