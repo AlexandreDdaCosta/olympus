@@ -4,19 +4,18 @@ import sys, time
 
 from argparse import ArgumentParser
 
+from olympus.securities.equities import BUY, SELL
 from olympus.securities.equities.algo.market_key import *
 from olympus.securities.equities.algo.market_key.livermore import Calculate
-from olympus.securities.equities import BUY, SELL, SYMBOL
+from olympus.securities.equities import SYMBOL
 
 parser = ArgumentParser(sys.argv)
-parser.add_argument("-i","--interval",default='1d',help="Quotes intervals for which to produce the chart")
+parser.add_argument("-i","--interval",default=DEFAULT_INTERVAL,help="Quotes intervals for which to produce the chart: " + str(VALID_INTERVALS) + "; default is '" + DEFAULT_INTERVAL + "'")
 parser.add_argument("-l","--latest",action='store_true',default=False,help="Include latest data in evaluation")
-parser.add_argument("-s","--symbol",default=SYMBOL,help="US equity symbol")
-parser.add_argument("-v","--verbose",action="store_true",help="Chatty output")
-args = parser.parse_args()
+parser.add_argument("-s","--symbol",default=SYMBOL,help="US equity symbol; default is '" + SYMBOL + "'")
+args, unknown = parser.parse_known_args()
 
-if args.verbose is True:
-    start = time.time()
+start = time.time()
 calculator = Calculate()
 chart = calculator.chartpoints(args.symbol,args.interval,latest=args.latest)
 
@@ -54,6 +53,5 @@ if chart.last_entry():
     #'''
 else:
     raise Exception('Empty chart')
-if args.verbose is True:
-    end = time.time()
-    print('Elapsed seconds: ' + str(end - start))
+end = time.time()
+print('Elapsed seconds: ' + str(end - start))
