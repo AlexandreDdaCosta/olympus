@@ -40,8 +40,6 @@ bigdata-pip3-packages:
 pip3-packages:
   jsonschema:
     version: == 4.4.0
-  keyboard:
-    version: == 0.13.5
   pymongo:
     version: == 4.1.0
   wget:
