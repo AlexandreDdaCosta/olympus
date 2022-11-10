@@ -4,12 +4,14 @@ import sys, time
 
 from argparse import ArgumentParser
 
+from olympus.debug import DebuggerArgs
 from olympus.securities.equities import BUY, SELL
 from olympus.securities.equities.algo.market_key import *
 from olympus.securities.equities.algo.market_key.livermore import Calculate
 from olympus.securities.equities import SYMBOL
 
-parser = ArgumentParser(sys.argv)
+debugger_arguments = DebuggerArgs()
+parser = debugger_arguments.add_arguments()
 parser.add_argument("-i","--interval",default=DEFAULT_INTERVAL,help="Quotes intervals for which to produce the chart: " + str(VALID_INTERVALS) + "; default is '" + DEFAULT_INTERVAL + "'")
 parser.add_argument("-l","--latest",action='store_true',default=False,help="Include latest data in evaluation")
 parser.add_argument("-s","--symbol",default=SYMBOL,help="US equity symbol; default is '" + SYMBOL + "'")

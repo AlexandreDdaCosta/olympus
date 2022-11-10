@@ -11,9 +11,20 @@ parser.add_argument("-D","--debug",action='store_true',help="Executes built-in p
 parser.add_argument("-L","--debug_level",default=DEFAULT_DEBUG_LEVEL,help="Get more debugging output by increasing this setting; levels " + str(DEBUG_LEVELS) + " available; default is '" + str(DEFAULT_DEBUG_LEVEL)  + "'")
 parser.add_argument("-V","--verbose",action="store_true",help="Chatty output")
 
+class DebuggerArgs():
+
+    def add_arguments(self):
+        parser = ArgumentParser(sys.argv)
+        parser.add_argument("-D","--debug",action='store_true',help="Executes built-in pauses with data dumps suitable for deep debugging")
+        parser.add_argument("-L","--debug_level",default=DEFAULT_DEBUG_LEVEL,help="Get more debugging output by increasing this setting; levels " + str(DEBUG_LEVELS) + " available; default is '" + str(DEFAULT_DEBUG_LEVEL)  + "'")
+        parser.add_argument("-V","--verbose",action="store_true",help="Chatty output")
+        return parser
+
 class Debugger():
 
     def __init__(self,**kwargs):
+        debugger_arguments = DebuggerArgs()
+        parser = debugger_arguments.add_arguments()
         self.args, unknown = parser.parse_known_args()
         self.last_source_file = None
 
