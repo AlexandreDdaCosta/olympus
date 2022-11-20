@@ -10,10 +10,10 @@ MINIMUM_ATR_PERIODS = 8
 MAXIMUM_ATR_PERIODS = 50
 
 DEFAULT_MOVING_AVERAGE_TYPE = 'Simple'
-DEFAULT_MOVING_AVERAGE_PERIODS = 50
+DEFAULT_MOVING_AVERAGE_PERIODS = 20
 MINIMUM_MOVING_AVERAGE_PERIODS = 8
 MAXIMUM_MOVING_AVERAGE_PERIODS = 200
-VALID_MOVING_AVERAGE_TYPES = ['Exponential', 'Hull', 'Simple']
+VALID_MOVING_AVERAGE_TYPES = ['Simple','Exponential', 'Hull']
 
 PRICE_ROUNDER = 6
 
@@ -121,7 +121,8 @@ class MovingAverage(Series):
             if period <= periods:
                 period = period + 1
             else:
-                quotes.pop()
+                quotes.pop(0)
+                quotes_adjusted.pop(0)
             quotes.append(quote.close)
             if quote.adjusted_close is not None:
                 quotes_adjusted.append(quote.adjusted_close)
@@ -129,8 +130,8 @@ class MovingAverage(Series):
                 quotes_adjusted.append(quote.close)
             ma_entry = types.SimpleNamespace()
             ma_entry.date = quote.date
-            ma_entry.moving_average = sum(quotes) / len(quotes)
-            ma_entry.moving_average_adjusted = sum(quotes_adjusted) / len(quotes_adjusted)
+            ma_entry.moving_average = round(sum(quotes) / len(quotes), 2)
+            ma_entry.moving_average_adjusted = round(sum(quotes_adjusted) / len(quotes_adjusted), 6)
             self.add(ma_entry)
             quote = price_series.next()
 

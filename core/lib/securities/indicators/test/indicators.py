@@ -63,7 +63,7 @@ class TestIndicators(testing.Test):
                     price = equity_price.Intraday(self.username)
                 quotes = price.quote(test_symbol)
                 for average_type in VALID_MOVING_AVERAGE_TYPES:
-                    self.print_test("%s %s moving average for test symbol %s" % (average_type,test_period,test_symbol))
+                    self.print_test("%s %s moving average for test symbol %s, %d period" % (average_type,test_period,test_symbol,DEFAULT_MOVING_AVERAGE_PERIODS))
                     with self.assertRaises(Exception):
                         indicators.MovingAverage(quotes,average_type=average_type,periods=0)
                     with self.assertRaises(Exception):
@@ -71,7 +71,17 @@ class TestIndicators(testing.Test):
                     with self.assertRaises(Exception):
                         indicators.MovingAverage(quotes,average_type=average_type,periods='foobar')
                     ma_series = indicators.MovingAverage(quotes,average_type=average_type,periods=DEFAULT_MOVING_AVERAGE_PERIODS)
-                    print(ma_series.next())
+                    self.assertEqual(quotes.count(),ma_series.count())
+                    ma_entry = ma_series.next()
+                    quote = quotes.next(reset=True)
+                    while ma_entry is not None:
+                        for known_attribute in ['moving_average','moving_average_adjusted']:
+                            self.assertTrue(known_attribute in ma_entry.__dict__)
+                            self.assertIsNotNone(getattr(ma_entry,known_attribute))
+                        self.assertEqual(str(ma_entry.date),str(quote.date))
+                        ma_entry = ma_series.next()
+                        quote = quotes.next()
+
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
