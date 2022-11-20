@@ -58,7 +58,7 @@ class FileFinder():
 class Return():
     # Stores returned data in object form
 
-    def __init__(self,schema,data,**kwargs):
+    def __init__(self,data,schema,**kwargs):
         if not isinstance(schema,dict):
             raise Exception('Parameter "schema" must be of type dict.')
         if not isinstance(data,dict):
@@ -140,6 +140,8 @@ class Series():
         self.index = 0
         self.series = None
         self.items_type = kwargs.get('items_type',object)
+        self.reverse_sort = None
+        self.sort_attribute = None
 
     def add(self,new_item):
         # Add item to series
@@ -216,9 +218,15 @@ class Series():
         # Sort an object series by an attribute
         if self.items_type != object:
             raise Exception('This method may only be called for a series of objects.')
+        reverse = kwargs.get('reverse',False)
+        # Re-use last sort if possible:
+        if self.reverse_sort is not None:
+            if self.sort_attribute == attribute and self.reverse_sort == reverse:
+                return
         if self.series is not None:
-            reverse = kwargs.get('reverse',False)
             self.series = sorted(self.series, key=lambda s: getattr(s,attribute), reverse=reverse)
+            self.reverse_sort = reverse
+            self.sort_attribute = attribute
 
 class String():
     # Some useful string methods

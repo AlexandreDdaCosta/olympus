@@ -163,13 +163,13 @@ class _AdjustedData(Series):
                     if key == 'Datetime':
                         adjustment_data[key] = adjustment_data[key].replace(tzinfo=tz.gettz(TIMEZONE))
                     format_index = format_index + 1
-                data_object = Return(json_schema,adjustment_data)
+                data_object = Return(adjustment_data,json_schema)
                 self.add(data_object)
         else:
             for entry in data:
                 if 'Date' in entry:
                     entry['Date'] = entry['Date'].replace(tzinfo=tz.gettz(TIMEZONE))
-                data_object = Return(json_schema,entry)
+                data_object = Return(entry,json_schema)
                 self.add(data_object)
         # This data is sorted from newest to oldest to simplify calculation and application of adjustments
         self.sort('date',reverse=True)
@@ -236,7 +236,7 @@ class _PriceData(Series):
             format_index = format_index + 1
         if return_raw_data is True:
             return return_data
-        return Return(PRICE_SCHEMA,return_data,no_data_validation=True)
+        return Return(return_data,PRICE_SCHEMA,no_data_validation=True)
 
     def sort(self,**kwargs):
         # Sorts price quotes by date.
@@ -244,7 +244,11 @@ class _PriceData(Series):
         if self.preformatted is False:
             if self.series is not None:
                 reverse = kwargs.get('reverse',False)
+                # Re-use last sort if possible:
+                if self.reverse_sort is not None and self.reverse_sort == reverse:
+                    return
                 self.series = sorted(self.series, reverse=reverse)
+                self.reverse_sort = reverse
         else:
             super(_PriceData,self).sort('date',**kwargs)
 
@@ -1206,7 +1210,7 @@ class _LatestQuotes(Series):
         self.unquoted_symbols = None
 
     def add_symbol(self,symbol,data):
-        latest_price_object = Return(self.json_schema,data)
+        latest_price_object = Return(data,self.json_schema)
         self.add(latest_price_object)
 
     def add_unknown_symbol(self,symbol):

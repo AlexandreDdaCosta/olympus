@@ -2,41 +2,37 @@
 
 import json, sys, unittest
 
-import olympus.securities.equities.data.price as equity_pricing
+import olympus.securities.equities.data.price as equity_price
 import olympus.securities.indicators as indicators
 import olympus.testing as testing
 
 from olympus import USER
 from olympus.securities.equities import *
-from olympus.securities.indicators import DEFAULT_ATR_LENGTH, DEFAULT_MOVING_AVERAGE_TYPE, VALID_MOVING_AVERAGE_TYPES
+from olympus.securities.indicators import *
 
 # Standard run parameters:
-# sudo su -s /bin/bash -c '... indicators.py' USER
-# Optionally:
-# '... indicators.py <current_run_username>'
+# sudo su -s /bin/bash -c '... indicators.py' <current user OS name>
 
-class TestEquityIndicators(testing.Test):
+class TestIndicators(testing.Test):
 
-    def setUp(self):
-        if len(sys.argv) == 2:
-            username = self.validRunUser(sys.argv[1])
-        else:
-            username = self.validRunUser(USER)
-        self.daily = equity_pricing.Daily(username)
-        self.indicators = indicators.Indicators()
+    def __init__(self,test_case):
+        super(TestIndicators,self).__init__(test_case)
 
     def test_atr(self):
-        daily_series = self.daily.quote(TEST_SYMBOL_NODIVSPLIT)
-        atr = self.indicators.average_true_range(daily_series)
-        print(json.dumps(atr,indent=4))
-
-    def test_moving_average(self):
-        daily_series = self.daily.quote(TEST_SYMBOL_NODIVSPLIT)
-        ma = self.indicators.moving_average(daily_series)
-        print(json.dumps(ma,indent=4))
+        if self.skip_test('atr'):
+            return
+        self.print_test('Calculating average true ranges')
+        self.print_test('Daily ATR for test symbol ' + TEST_SYMBOL_NODIVSPLIT)
+        daily = equity_price.Daily(self.username)
+        quotes = daily.quote(TEST_SYMBOL_NODIVSPLIT)
+        with self.assertRaises(Exception):
+            atr_series = indicators.AverageTrueRange(quotes,periods=0)
+        with self.assertRaises(Exception):
+            atr_series = indicators.AverageTrueRange(quotes,periods=1000000)
+        atr_series = indicators.AverageTrueRange(quotes,periods=DEFAULT_ATR_PERIODS)
 
 if __name__ == '__main__':
-    if len(sys.argv) == 2:
-        unittest.main(argv=['run_username'])
+    if len(sys.argv) > 1:
+        unittest.main(argv=['username'])
     else:
         unittest.main()

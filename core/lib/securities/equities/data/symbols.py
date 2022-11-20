@@ -330,7 +330,7 @@ class _Symbols(Series):
         self.unknown_symbols = None
 
     def add_symbol(self,symbol,data):
-        symbol_object = Return(self.json_schema,data)
+        symbol_object = Return(data,self.json_schema)
         self.add(symbol_object)
 
     def add_unknown_symbols(self,unknown_symbols):
@@ -373,7 +373,7 @@ class Read(restapi.Connection):
                         redis_stored_symbol['Capitalization'] = int(redis_stored_symbol['Capitalization'])
                     if 'Watchlists' in redis_stored_symbol:
                         redis_stored_symbol['Watchlists'] = json.loads(redis_stored_symbol['Watchlists'])
-                    return_object = Return(self.json_schema,redis_stored_symbol)
+                    return_object = Return(redis_stored_symbol,self.json_schema)
                     return return_object
         response = self.call('/equities/symbol/'+symbol)
         if (response.status_code == 404):
@@ -408,7 +408,7 @@ class Read(restapi.Connection):
         except:
             lockfilehandle.close()
             raise
-        return_object = Return(self.json_schema,content)
+        return_object = Return(content,self.json_schema)
         return return_object
 
     def get_symbols(self,symbols):
