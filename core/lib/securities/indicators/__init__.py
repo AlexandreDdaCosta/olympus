@@ -48,7 +48,6 @@ class AverageTrueRange(Series):
                 atr_entry.atr = round(float(last_atr), 2)
                 atr_entry.atr_adjusted = round(float(last_atr_adjusted), 2)
             self.add(atr_entry)
-            print(atr_entry)
             previous_quote = quote
             quote = price_series.next()
 
