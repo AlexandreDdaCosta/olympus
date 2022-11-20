@@ -28,7 +28,7 @@ class TestPrice(testing.Test):
         super(TestPrice,self).__init__(test_case)
 
     def test_adjustments(self):
-        if self.skip_test('adjustments'):
+        if self.skip_test():
             return
         self.print_test('Adjustments to prices and volume')
         mongo_data = Connection(self.username)
@@ -108,7 +108,7 @@ class TestPrice(testing.Test):
         self.assertGreater(regen_adjustment_data['Time'],adjustment_data['Time'])
 
     def test_daily(self):
-        if self.skip_test('daily'):
+        if self.skip_test():
             return
         self.print_test('Daily quotes')
         daily = price.Daily(self.username)
@@ -212,7 +212,7 @@ class TestPrice(testing.Test):
             self.assertTrue('Quotes' in data)
     
     def test_weekly(self):
-        if self.skip_test('weekly'):
+        if self.skip_test():
             return
         self.print_test('Weekly quotes')
         weekly = price.Weekly(self.username)
@@ -252,7 +252,7 @@ class TestPrice(testing.Test):
             self.assertLessEqual(max_past_date,first_period_date)
 
     def test_monthly(self):
-        if self.skip_test('monthly'):
+        if self.skip_test():
             return
         self.print_test('Monthly quotes')
         monthly = price.Monthly(self.username)
@@ -292,7 +292,7 @@ class TestPrice(testing.Test):
             self.assertLessEqual(max_past_date,first_period_date)
 
     def test_latest(self):
-        if self.skip_test('latest'):
+        if self.skip_test():
             return
         self.print_test('Latest quotes')
         latest = price.Latest(self.username)
@@ -350,7 +350,7 @@ class TestPrice(testing.Test):
         self.assertTrue(TEST_SYMBOL_FAKE_TWO in result.unknown_symbols)
 
     def test_intraday(self):
-        if self.skip_test('intraday'):
+        if self.skip_test():
             return
         self.print_test('Intraday quotes')
         intraday = price.Intraday(self.username)

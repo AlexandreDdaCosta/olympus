@@ -123,12 +123,13 @@ class Test(unittest.TestCase):
 
     def print_test(self,test):
         if self.args.verbose is True:
-            print('\nTest: ' + str(test) + '.')
+            print('Test: ' + str(test) + '.')
 
     def random_string(self,length=DEFAULT_STRING_LENGTH):
         return ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(length))
 
-    def skip_test(self,test_case):
+    def skip_test(self):
+        test_case = re.sub('^test_', '', inspect.getframeinfo(sys._getframe(1)).function)
         if self.args.test != 'all' and self.args.test != test_case:
             self.print('\nSkip test: ' + test_case + '.')
             return True

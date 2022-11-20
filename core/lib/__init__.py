@@ -96,6 +96,9 @@ class Return():
                 setattr(self,underscore_name,data[original_name])
                 self.Attributes.append(underscore_name)
 
+    def __repr__(self):
+        return "Return(%s)" % (self.__dict__)
+
     def add(self,name,value):
         # Add the odd attribute
         name = str(name)

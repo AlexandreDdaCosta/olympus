@@ -23,7 +23,7 @@ class TestSymbols(testing.Test):
         self.symbols = symbols.Read(self.username)
 
     def test_symbol(self):
-        if self.skip_test('symbol'):
+        if self.skip_test():
             return
         self.print_test('Individual symbols from backend')
         with self.assertRaises(SymbolNotFoundError):
@@ -70,7 +70,7 @@ class TestSymbols(testing.Test):
         self.assertGreater(post_reset_time, pre_reset_time)
 
     def test_symbols(self):
-        if self.skip_test('symbols'):
+        if self.skip_test():
             return
         self.print_test('Symbol sets from backend')
         self.print('Multiple symbols, including unknown/invalid.')
@@ -121,7 +121,7 @@ class TestSymbols(testing.Test):
     def test_test_symbols(self):
         # These checks verify that our test symbols are still valid based on the
         # existence of dividends or splits
-        if self.skip_test('testsymbols'):
+        if self.skip_test():
             return
         self.print_test('Checking continuing validity of test symbols')
         adjustments = price.Adjustments(self.username)
