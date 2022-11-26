@@ -1,7 +1,7 @@
 import json, re, types
 
 from datetime import datetime as dt
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
 from olympus import Return, Series
 
@@ -15,13 +15,15 @@ MINIMUM_MOVING_AVERAGE_PERIODS = 8
 MAXIMUM_MOVING_AVERAGE_PERIODS = 200
 VALID_MOVING_AVERAGE_TYPES = ['Simple','Exponential', 'Hull']
 
-PRICE_ROUNDER = 6
+PRICE_ROUNDER_ADJUSTED = 6
+PRICE_ROUNDER_AS_TRADED = 2
 
 class AverageTrueRange(Series):
     # Calculates periodic true range and average true range for a price series
 
     def __init__(self,price_series,**kwargs):
         super(AverageTrueRange,self).__init__()
+        self.math = _Math()
         periods = int(kwargs.pop('periods', DEFAULT_ATR_PERIODS))
         if periods < MINIMUM_ATR_PERIODS or periods > MAXIMUM_ATR_PERIODS:
             raise Exception('Parameter for "periods" (%s) is not within the available range: %s to %s' % (periods,MINIMUM_ATR_PERIODS,MAXIMUM_ATR_PERIODS))
@@ -36,13 +38,13 @@ class AverageTrueRange(Series):
         while quote is not None:
             atr_entry = types.SimpleNamespace()
             atr_entry.date = quote.date
-            atr_entry.true_range = self._round(self._true_range(quote,previous_quote))
-            atr_entry.true_range_adjusted = self._round(self._true_range(quote,previous_quote,True))
+            atr_entry.true_range = self.math._round(self._true_range(quote,previous_quote))
+            atr_entry.true_range_adjusted = self.math._round(self._true_range(quote,previous_quote,True),PRICE_ROUNDER_ADJUSTED)
             if period <= periods:
                 atr_sum = atr_sum + Decimal(str(atr_entry.true_range))
-                atr_entry.atr = self._round(atr_sum / period)
+                atr_entry.atr = self.math._round(atr_sum / period)
                 atr_sum_adjusted = atr_sum_adjusted + Decimal(str(atr_entry.true_range_adjusted))
-                atr_entry.atr_adjusted = self._round(atr_sum_adjusted / period)
+                atr_entry.atr_adjusted = self.math._round(atr_sum_adjusted / period,PRICE_ROUNDER_ADJUSTED)
                 if period == periods:
                     last_atr = Decimal(atr_entry.atr)
                     last_atr_adjusted = Decimal(atr_entry.atr_adjusted)
@@ -50,14 +52,11 @@ class AverageTrueRange(Series):
             else:
                 last_atr = ((last_atr * (periods - 1)) + Decimal(atr_entry.true_range)) / periods 
                 last_atr_adjusted = ((last_atr_adjusted * (periods - 1)) + Decimal(atr_entry.true_range_adjusted)) / periods
-                atr_entry.atr = self._round(last_atr)
-                atr_entry.atr_adjusted = self._round(last_atr_adjusted)
+                atr_entry.atr = self.math._round(last_atr)
+                atr_entry.atr_adjusted = self.math._round(last_atr_adjusted,PRICE_ROUNDER_ADJUSTED)
             self.add(atr_entry)
             previous_quote = quote
             quote = price_series.next()
-
-    def _round(self,value):
-        return round(float(value), PRICE_ROUNDER)
 
     def _true_range(self,quote,previous_quote=None,adjusted=False):
         if adjusted is False:
@@ -88,6 +87,7 @@ class MovingAverage(Series):
 
     def __init__(self,price_series,**kwargs):
         super(MovingAverage,self).__init__()
+        self.math = _Math()
         periods = int(kwargs.pop('periods', DEFAULT_MOVING_AVERAGE_PERIODS))
         average_type = kwargs.pop('average_type', DEFAULT_MOVING_AVERAGE_TYPE)
         if periods < MINIMUM_MOVING_AVERAGE_PERIODS or periods > MAXIMUM_MOVING_AVERAGE_PERIODS:
@@ -103,35 +103,89 @@ class MovingAverage(Series):
             func(price_series,periods)
 
     def _exponential(self,price_series,periods):
+        price_series.sort()
+        k = Decimal(2 / (periods + 1)) # Weighting factor for EMA
+        divisor = 0
+        period = 1
+        previous_ema = 0.0
+        previous_ema_adjusted = 0.0
+        quotes_totals = 0
+        quotes_adjusted_totals = 0
         quote = price_series.next(reset=True)
         while quote is not None:
+            ma_entry = types.SimpleNamespace()
+            ma_entry.date = quote.date
+            if period <= periods:
+                divisor = divisor + 1
+                quotes_totals = quotes_totals + quote.close
+                if quote.adjusted_close is not None:
+                    quotes_adjusted_totals = quotes_adjusted_totals + quote.adjusted_close
+                else:
+                    quotes_adjusted_totals = quotes_adjusted_totals + quote.close
+                ma_entry.moving_average = self.math._round(quotes_totals / divisor)
+                ma_entry.moving_average_adjusted = self.math._round(quotes_adjusted_totals / divisor, PRICE_ROUNDER_ADJUSTED)
+                period = period + 1
+            else:
+                # EMA = k * (current price - previous EMA) + previous EMA
+                ma_entry.moving_average = self.math._round(( k * (Decimal(str(quote.close)) - previous_ema) ) + previous_ema)
+                if quote.adjusted_close is not None:
+                    ma_entry.moving_average_adjusted = self.math._round(( k * (Decimal(str(quote.adjusted_close)) - previous_ema_adjusted) ) + previous_ema_adjusted, PRICE_ROUNDER_ADJUSTED)
+                else:
+                    ma_entry.moving_average_adjusted = self.math._round(( k * (Decimal(str(quote.close)) - previous_ema_adjusted) ) + previous_ema_adjusted, PRICE_ROUNDER_ADJUSTED)
+            previous_ema = Decimal(str(ma_entry.moving_average))
+            previous_ema_adjusted = Decimal(str(ma_entry.moving_average_adjusted))
+            self.add(ma_entry)
             quote = price_series.next()
 
     def _hull(self,price_series,periods):
+        price_series.sort()
+        divisor = 0
+        period = 1
+        quotes = []
+        quotes_totals = 0
+        quotes_adjusted = []
+        quotes_adjusted_totals = 0
         quote = price_series.next(reset=True)
         while quote is not None:
+            ma_entry = types.SimpleNamespace()
+            ma_entry.date = quote.date
+            if period <= periods:
+                divisor = divisor + period
+                period = period + 1
+            else:
+                pass
+            self.add(ma_entry)
             quote = price_series.next()
 
     def _simple(self,price_series,periods):
+        price_series.sort()
         quote = price_series.next(reset=True)
+        divisor = 0
         period = 1
         quotes = []
+        quotes_totals = 0
         quotes_adjusted = []
+        quotes_adjusted_totals = 0
         while quote is not None:
-            if period <= periods:
-                period = period + 1
-            else:
-                quotes.pop(0)
-                quotes_adjusted.pop(0)
-            quotes.append(quote.close)
-            if quote.adjusted_close is not None:
-                quotes_adjusted.append(quote.adjusted_close)
-            else:
-                quotes_adjusted.append(quote.close)
             ma_entry = types.SimpleNamespace()
             ma_entry.date = quote.date
-            ma_entry.moving_average = round(sum(quotes) / len(quotes), 2)
-            ma_entry.moving_average_adjusted = round(sum(quotes_adjusted) / len(quotes_adjusted), 6)
+            if period <= periods:
+                divisor = divisor + 1
+                period = period + 1
+            else:
+                quotes_totals = quotes_totals - quotes.pop(0)
+                quotes_adjusted_totals = quotes_adjusted_totals - quotes_adjusted.pop(0)
+            quotes.append(quote.close)
+            quotes_totals = quotes_totals + quote.close
+            ma_entry.moving_average = self.math._round(quotes_totals / divisor)
+            if quote.adjusted_close is not None:
+                quotes_adjusted.append(quote.adjusted_close)
+                quotes_adjusted_totals = quotes_adjusted_totals + quote.adjusted_close
+                ma_entry.moving_average_adjusted = self.math._round(quotes_adjusted_totals / divisor, PRICE_ROUNDER_ADJUSTED)
+            else:
+                quotes_adjusted.append(quote.close)
+                quotes_adjusted_totals = quotes_adjusted_totals + quote.close
+                ma_entry.moving_average_adjusted = self.math._round(quotes_adjusted_totals / divisor, PRICE_ROUNDER_ADJUSTED)
             self.add(ma_entry)
             quote = price_series.next()
 
@@ -140,3 +194,8 @@ class RiskRange():
 # Calculates tradeable risk ranges for securities based on price, volume, and historic volatility
 
     pass
+
+class _Math():
+
+    def _round(self,value,rounding_factor=PRICE_ROUNDER_AS_TRADED):
+        return round(float(value), rounding_factor)

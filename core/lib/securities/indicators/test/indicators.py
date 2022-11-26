@@ -54,7 +54,8 @@ class TestIndicators(testing.Test):
         self.print_test('Calculating moving averages')
         #for test_symbol in [TEST_SYMBOL_DIVSPLIT,TEST_SYMBOL_DIV,TEST_SYMBOL_SPLIT,TEST_SYMBOL_NODIVSPLIT]:
         for test_symbol in [TEST_SYMBOL_NODIVSPLIT]:
-            for test_period in ['daily','intraday']:
+            #for test_period in ['daily','intraday']:
+            for test_period in ['daily']:
                 with self.assertRaises(Exception):
                     indicators.MovingAverage(quotes,average_type='Foobar',periods=DEFAULT_MOVING_AVERAGE_PERIODS)
                 if test_period == 'daily':
@@ -63,6 +64,8 @@ class TestIndicators(testing.Test):
                     price = equity_price.Intraday(self.username)
                 quotes = price.quote(test_symbol)
                 for average_type in VALID_MOVING_AVERAGE_TYPES:
+                    if average_type != 'Hull': #ALEX
+                        continue
                     self.print_test("%s %s moving average for test symbol %s, %d period" % (average_type,test_period,test_symbol,DEFAULT_MOVING_AVERAGE_PERIODS))
                     with self.assertRaises(Exception):
                         indicators.MovingAverage(quotes,average_type=average_type,periods=0)
@@ -75,6 +78,7 @@ class TestIndicators(testing.Test):
                     ma_entry = ma_series.next()
                     quote = quotes.next(reset=True)
                     while ma_entry is not None:
+                        print(ma_entry)
                         for known_attribute in ['moving_average','moving_average_adjusted']:
                             self.assertTrue(known_attribute in ma_entry.__dict__)
                             self.assertIsNotNone(getattr(ma_entry,known_attribute))
