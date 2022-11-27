@@ -1,4 +1,4 @@
-import json, re, types
+import json, math, re, types
 
 from datetime import datetime as dt
 from decimal import Decimal, ROUND_HALF_UP
@@ -139,23 +139,67 @@ class MovingAverage(Series):
 
     def _hull(self,price_series,periods):
         price_series.sort()
-        divisor = 0
         period = 1
         quotes = []
-        quotes_totals = 0
         quotes_adjusted = []
-        quotes_adjusted_totals = 0
+        quote = price_series.next(reset=True)
+        summation = 0
+        wma = []
+        wma_adjusted = []
+        while quote is not None:
+            quotes.append(quote.close)
+            if quote.adjusted_close is not None:
+                quotes_adjusted.append(quote.adjusted_close)
+            else:
+                quotes_adjusted.append(quote.close)
+            if period <= periods:
+                summation = summation + period
+                half_summation = 0
+                half_summation_periods = math.ceil(len(quotes)/2)
+                while half_summation_periods > 0:
+                    half_summation = half_summation + half_summation_periods
+                    half_summation_periods = half_summation_periods - 1
+                period = period + 1
+            else:
+                quotes.pop(0)
+                quotes_adjusted.pop(0)
+            wma1 = self._weighted(quotes,math.ceil(len(quotes)/2),half_summation)
+            wma1_adjusted = self._weighted(quotes_adjusted,math.ceil(len(quotes_adjusted)/2),half_summation,PRICE_ROUNDER_ADJUSTED)
+            wma2 = self._weighted(quotes,len(quotes),summation)
+            wma2_adjusted = self._weighted(quotes_adjusted,len(quotes_adjusted),summation,PRICE_ROUNDER_ADJUSTED)
+            wma_value = (2 * wma1) - wma2
+            wma.append(wma_value)
+            wma_value_adjusted = (2 * wma1_adjusted) - wma2_adjusted
+            wma_adjusted.append(wma_value_adjusted)
+            quote = price_series.next()
+        lower_index = 0
+        upper_index = 1 
+        period = 1
+        periods = round(math.sqrt(periods))
+        summation = 1
         quote = price_series.next(reset=True)
         while quote is not None:
             ma_entry = types.SimpleNamespace()
             ma_entry.date = quote.date
-            if period <= periods:
-                divisor = divisor + period
-                period = period + 1
-            else:
-                pass
+            ma_entry.moving_average = self._weighted(wma[lower_index:upper_index],period,summation)
+            ma_entry.moving_average_adjusted = self._weighted(wma_adjusted[lower_index:upper_index],period,summation,PRICE_ROUNDER_ADJUSTED)
             self.add(ma_entry)
+            if period < periods:
+                period = period + 1
+                summation = summation + period
+            else:
+                lower_index = lower_index + 1
+            upper_index = upper_index + 1
             quote = price_series.next()
+
+    def _weighted(self,price_array,periods,summation,rounding_factor=PRICE_ROUNDER_AS_TRADED):
+        average = 0.0
+        for price in reversed(price_array):
+            average = average + ( (price * periods) / summation)
+            periods = periods - 1
+            if periods == 0:
+                break
+        return self.math._round(average,rounding_factor)
 
     def _simple(self,price_series,periods):
         price_series.sort()
