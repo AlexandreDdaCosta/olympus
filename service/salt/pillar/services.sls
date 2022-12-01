@@ -40,6 +40,8 @@ bigdata-pip3-packages:
 pip3-packages:
   jsonschema:
     version: == 4.4.0
+  pycodestyle:
+    version: == 2.10.0
   pymongo:
     version: == 4.1.0
   wget:
