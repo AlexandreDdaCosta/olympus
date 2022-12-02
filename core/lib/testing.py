@@ -1,4 +1,11 @@
-import inspect, os, pwd, random, re, string, sys, unittest
+import inspect
+import os
+import pwd
+import random
+import re
+import string
+import sys
+import unittest
 
 from argparse import ArgumentError, ArgumentParser
 
@@ -16,93 +23,102 @@ TEST_ENVIRONMENT = 'test'
 TEST_PREFIX = 'olympustest_'
 
 parser = ArgumentParser(sys.argv)
-parser.add_argument("-u","--username",action="store",default=pwd.getpwuid(os.getuid())[0],help="Specify a user name under which test should run.")
-parser.add_argument("-t","--test",action="store",default='all',help="Specify the name of a single test to run.")
-parser.add_argument("-v","--verbose",action="store_true",help="Chatty output.")
+parser.add_argument("-u", "--username",
+                    action="store",
+                    default=pwd.getpwuid(os.getuid())[0],
+                    help="Specify a user name under which test should run.")
+parser.add_argument("-t", "--test",
+                    action="store",
+                    default='all',
+                    help="Specify the name of a single test to run.")
+parser.add_argument("-v", "--verbose",
+                    action="store_true",
+                    help="Chatty output.")
+
 
 class Test(unittest.TestCase):
 
-    def __init__(self,test_case):
-        super(Test,self).__init__(test_case)
+    def __init__(self, test_case):
+        super(Test, self).__init__(test_case)
         self.args = parser.parse_args()
         self.username = self.validRunUser(self.args.username)
 
     # Assertions
-    
-    def assertGrepFile(self,filename,text,description=GREP_TEXT):
-        file = open(filename,"r")
+
+    def assertGrepFile(self, filename, text, description=GREP_TEXT):
+        file = open(filename, "r")
         where = file.tell()
-        while True:    
+        while True:
             line = file.readline()
             if not line:
                 break
-            if re.search(text,line):
+            if re.search(text, line):
                 file.close()
                 return where
             where = file.tell()
         file.close()
         raise AssertionError(description)
-    
-    def assertInError(self,result):
+
+    def assertInError(self, result):
         if result.in_error():
             raise AssertionError(result.description())
             return True
         return False
 
-    def assertIsFloat(self,value,description=NOT_FLOAT_TEXT):
+    def assertIsFloat(self, value, description=NOT_FLOAT_TEXT):
         try:
             float(value)
             return
         except ValueError:
             raise AssertionError(description)
 
-    def assertIsNone(self,value,description=NOT_NONE_TEXT):
+    def assertIsNone(self, value, description=NOT_NONE_TEXT):
         if value is None:
             return
         raise AssertionError(description)
-    
-    def assertIsNotNone(self,value,description=NONE_TEXT):
+
+    def assertIsNotNone(self, value, description=NONE_TEXT):
         if value is not None:
             return
         raise AssertionError(description)
-    
-    def assertKeyInDict(self,key,dictionary):
+
+    def assertKeyInDict(self, key, dictionary):
         if key not in dictionary:
             raise AssertionError('Key ' + str(key) + ' not in dict.')
 
-    def assertMatchesRegex(self,string,regex,description=MATCH_TEXT):
+    def assertMatchesRegex(self, string, regex, description=MATCH_TEXT):
         if not regex.match(string):
             raise AssertionError(description)
-    
-    def assertNotGrepFile(self,filename,text,description=NO_GREP_TEXT):
-        file = open(filename,"r")
+
+    def assertNotGrepFile(self, filename, text, description=NO_GREP_TEXT):
+        file = open(filename, "r")
         where = file.tell()
-        while True:    
+        while True:
             line = file.readline()
             if not line:
                 break
-            if re.search(text,line):
+            if re.search(text, line):
                 file.close()
                 raise AssertionError(description)
         file.close()
-    
-    def assertSearchRegex(self,string,regex,description=SEARCH_TEXT):
+
+    def assertSearchRegex(self, string, regex, description=SEARCH_TEXT):
         if not regex.search(string):
             raise AssertionError(description)
-    
-    def assertXor(self,x,y,description=XOR_TEXT):
+
+    def assertXor(self, x, y, description=XOR_TEXT):
         if not bool((x and not y) or (not x and y)):
             raise AssertionError(description)
 
     # Utilities
 
-    def add_argument(self,*args,**kwargs):
+    def add_argument(self, *args, **kwargs):
         try:
-            parser.add_argument(*args,**kwargs)
+            parser.add_argument(*args, **kwargs)
             self.args = parser.parse_args()
         except ArgumentError as e:
             pass
-        except:
+        except e:
             raise
 
     def file(self):
@@ -117,28 +133,33 @@ class Test(unittest.TestCase):
         caller = inspect.stack()[1]
         return caller[2]
 
-    def print(self,message):
+    def print(self, message):
         if self.args.verbose is True:
             print(message)
 
-    def print_test(self,test):
+    def print_test(self, test):
         if self.args.verbose is True:
-            print('Test: ' + str(test) + '.')
+            print(f'Test: {test}.')
 
-    def random_string(self,length=DEFAULT_STRING_LENGTH):
-        return ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(length))
+    def random_string(self, length=DEFAULT_STRING_LENGTH):
+        return ''.join(
+                random.choice(string.ascii_uppercase + string.digits)
+                for x in range(length))
 
     def skip_test(self):
-        test_case = re.sub('^test_', '', inspect.getframeinfo(sys._getframe(1)).function)
+        test_case = re.sub('^test_',
+                           '',
+                           inspect.getframeinfo(sys._getframe(1)).function)
         if self.args.test != 'all' and self.args.test != test_case:
             self.print('\nSkip test: ' + test_case + '.')
             return True
         return False
-    
-    def validRunUser(self,username):
+
+    def validRunUser(self, username):
         username = str(username)
         uid = os.getuid()
         run_username = pwd.getpwuid(uid)[0]
         if username != run_username:
-            raise Exception('Run user ' + run_username + ' does not match required run user ' + username)
+            raise Exception(f'Run user {run_username} does not match '
+                            'required run user {username}')
         return username
