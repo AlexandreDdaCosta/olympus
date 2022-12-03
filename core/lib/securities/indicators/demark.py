@@ -15,6 +15,8 @@ class Sequential(Series):
     DEFAULT_FORMATION_PERIODS = 9
     MINIMUM_FORMATION_PERIODS = 9
     MAXIMUM_FORMATION_PERIODS = 13
+    LONG_LOOKBACK = 4  # Periods
+    SHORT_LOOKBACK = 2  # Periods
 
     def __init__(self, price_series, **kwargs):
         super(Sequential, self).__init__()
@@ -49,3 +51,5 @@ class Sequential(Series):
         quote = price_series.next(reset=True)
         while quote is not None:
             quote = price_series.next()
+
+

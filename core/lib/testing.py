@@ -22,24 +22,48 @@ XOR_TEXT = 'One or the other value must be true, but both cannot be.'
 TEST_ENVIRONMENT = 'test'
 TEST_PREFIX = 'olympustest_'
 
-parser = ArgumentParser(sys.argv)
-parser.add_argument("-u", "--username",
-                    action="store",
+parser = ArgumentParser(sys.argv, conflict_handler='resolve')
+parser.add_argument('-u', '--username',
+                    action='store',
                     default=pwd.getpwuid(os.getuid())[0],
-                    help="Specify a user name under which test should run.")
-parser.add_argument("-t", "--test",
-                    action="store",
+                    help='Specify a user name under which test should run.')
+parser.add_argument('-t', '--test',
+                    action='store',
                     default='all',
-                    help="Specify the name of a single test to run.")
-parser.add_argument("-v", "--verbose",
-                    action="store_true",
-                    help="Chatty output.")
+                    help='Specify the name of a single test to run.')
+parser.add_argument('-v', '--verbose',
+                    action='store_true',
+                    help='Chatty output.')
 
 
 class Test(unittest.TestCase):
 
-    def __init__(self, test_case):
+    def __init__(self, test_case, **kwargs):
+        parser_args = kwargs.pop('parser_args', None)
         super(Test, self).__init__(test_case)
+        if parser_args is not None:
+            for parser_arg in parser_args:
+                action = None
+                choices = None
+                default = None
+                help = None
+                if len(parser_arg) > 2:
+                    if 'action' in parser_arg[2]:
+                        action = parser_arg[2]['action']
+                    if 'choices' in parser_arg[2]:
+                        choices = parser_arg[2]['choices']
+                    if 'default' in parser_arg[2]:
+                        default = parser_arg[2]['default']
+                    if 'help' in parser_arg[2]:
+                        help = parser_arg[2]['help']
+                parser.add_argument(
+                        parser_arg[0],
+                        parser_arg[1],
+                        action=action,
+                        choices=choices,
+                        default=default,
+                        help=help
+                        )
         self.args = parser.parse_args()
         self.username = self.validRunUser(self.args.username)
 

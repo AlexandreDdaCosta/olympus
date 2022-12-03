@@ -16,22 +16,53 @@ from olympus.securities.indicators.demark import *
 # sudo su -s /bin/bash -c '... indicators.py' <desired run user ID>
 
 
-class TestIndicators(testing.Test):
+class TestDemark(testing.Test):
 
     def __init__(self, test_case):
-        super(TestIndicators, self).__init__(test_case)
+        parser_args = []
+        parser_args.append(
+                ('-p',
+                 '--period',
+                 {
+                     'action': 'store',
+                     'choices': ['all', 'intraday', 'daily'],
+                     'default': 'all',
+                     'help': 'Conduct tests for only indicated time period.'
+                     }
+                 ))
+        parser_args.append(
+                ('-s',
+                 '--symbol',
+                 {
+                     'action': 'store',
+                     'default': None,
+                     'help': 'Conduct tests for only indicated symbol.'
+                     }
+                 ))
+        super(TestDemark, self).__init__(
+                test_case,
+                parser_args=parser_args)
 
     def test_sequential(self):
         if self.skip_test():
             return
         self.print_test('Calculating TD Sequential')
-        # for test_symbol in [TEST_SYMBOL_DIVSPLIT,
-        #                    TEST_SYMBOL_DIV,
-        #                    TEST_SYMBOL_SPLIT,
-        #                    TEST_SYMBOL_NODIVSPLIT]:
-        for test_symbol in [TEST_SYMBOL_NODIVSPLIT]:
-            # for test_period in ['Daily', 'Intraday']:
-            for test_period in ['Daily']:
+        if self.args.symbol is None:
+            symbol_list = [
+                    TEST_SYMBOL_DIVSPLIT,
+                    TEST_SYMBOL_DIV,
+                    TEST_SYMBOL_SPLIT,
+                    TEST_SYMBOL_NODIVSPLIT]
+        else:
+            symbol_list = []
+            symbol_list.append(self.args.symbol.upper())
+        for test_symbol in symbol_list:
+            if self.args.period == 'all':
+                test_periods = ['Daily', 'Intraday']
+            else:
+                test_periods = []
+                test_periods.append(self.args.period.capitalize())
+            for test_period in test_periods:
                 self.print_test("%s TD Sequential for test symbol %s"
                                 % (test_period, test_symbol))
                 if test_period == 'Daily':
