@@ -48,11 +48,7 @@ class TestIndicators(testing.Test):
             return
         self.print_test('Calculating average true ranges')
         if self.args.symbol is None:
-            symbol_list = [
-                    TEST_SYMBOL_DIVSPLIT,
-                    TEST_SYMBOL_DIV,
-                    TEST_SYMBOL_SPLIT,
-                    TEST_SYMBOL_NODIVSPLIT]
+            symbol_list = TEST_SYMBOLS
         else:
             symbol_list = []
             symbol_list.append(self.args.symbol.upper())
@@ -101,11 +97,7 @@ class TestIndicators(testing.Test):
             return
         self.print_test('Calculating moving averages')
         if self.args.symbol is None:
-            symbol_list = [
-                    TEST_SYMBOL_DIVSPLIT,
-                    TEST_SYMBOL_DIV,
-                    TEST_SYMBOL_SPLIT,
-                    TEST_SYMBOL_NODIVSPLIT]
+            symbol_list = TEST_SYMBOLS
         else:
             symbol_list = []
             symbol_list.append(self.args.symbol.upper())

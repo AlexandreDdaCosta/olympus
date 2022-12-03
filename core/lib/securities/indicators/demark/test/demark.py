@@ -5,15 +5,15 @@ import sys
 import unittest
 
 import olympus.securities.equities.data.price as equity_price
-import olympus.securities.indicators.demark as demark
+import olympus.securities.indicators.demark.sequential as sequential
 import olympus.testing as testing
 
 from olympus import USER
 from olympus.securities.equities import *
-from olympus.securities.indicators.demark import *
+from olympus.securities.indicators.demark.sequential import *
 
 # Standard run parameters:
-# sudo su -s /bin/bash -c '... indicators.py' <desired run user ID>
+# sudo su -s /bin/bash -c '... demark.py' <desired run user ID>
 
 
 class TestDemark(testing.Test):
@@ -48,11 +48,7 @@ class TestDemark(testing.Test):
             return
         self.print_test('Calculating TD Sequential')
         if self.args.symbol is None:
-            symbol_list = [
-                    TEST_SYMBOL_DIVSPLIT,
-                    TEST_SYMBOL_DIV,
-                    TEST_SYMBOL_SPLIT,
-                    TEST_SYMBOL_NODIVSPLIT]
+            symbol_list = TEST_SYMBOLS
         else:
             symbol_list = []
             symbol_list.append(self.args.symbol.upper())
@@ -70,33 +66,22 @@ class TestDemark(testing.Test):
                 else:  # Intraday
                     price = equity_price.Intraday(self.username)
                 quotes = price.quote(test_symbol)
-                '''
                 with self.assertRaises(Exception):
-                    indicators.AverageTrueRange(quotes, periods=0)
+                    sequential.Sequential(quotes, array_periods=0)
                 with self.assertRaises(Exception):
-                    indicators.AverageTrueRange(quotes, periods=1000000)
+                    sequential.Sequential(quotes, array_periods=1000000)
                 with self.assertRaises(Exception):
-                    indicators.AverageTrueRange(quotes, periods='foobar')
-                atr_series = indicators.AverageTrueRange(
+                    sequential.Sequential(quotes, array_periods='foobar')
+                with self.assertRaises(Exception):
+                    sequential.Sequential(quotes, formation_periods=0)
+                with self.assertRaises(Exception):
+                    sequential.Sequential(quotes, formation_periods=1000000)
+                with self.assertRaises(Exception):
+                    sequential.Sequential(quotes, formation_periods='foobar')
+                obj = sequential.Sequential(
                         quotes,
-                        periods=DEFAULT_ATR_PERIODS)
-                self.assertEqual(quotes.count(), atr_series.count())
-                atr_entry = atr_series.next()
-                quote = quotes.next(reset=True)
-                while atr_entry is not None:
-                    for known_attribute in [
-                            'atr',
-                            'atr_adjusted',
-                            'date',
-                            'true_range',
-                            'true_range_adjusted']:
-                        self.assertTrue(known_attribute in atr_entry.__dict__)
-                        self.assertIsNotNone(getattr(atr_entry,
-                                                     known_attribute))
-                    self.assertEqual(str(atr_entry.date), str(quote.date))
-                    atr_entry = atr_series.next()
-                    quote = quotes.next()
-                '''
+                        array_periods=DEFAULT_ARRAY_PERIODS,
+                        formation_periods=DEFAULT_FORMATION_PERIODS)
 
 
 if __name__ == '__main__':
