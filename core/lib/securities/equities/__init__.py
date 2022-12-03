@@ -41,11 +41,6 @@ INDEX_CLASS = 'Index'
 SECURITY_CLASS_ETF = 'ETF'
 SECURITY_CLASS_STOCK = 'Stock'
 
-# Signals and positioning
-
-BUY = 'Buy'
-SELL = 'Sell'
-
 # Quantities (defaults)
 
 STOP_LOSS = .98  # Two percent stop loss on buy/short
