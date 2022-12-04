@@ -208,6 +208,13 @@ class _PriceData(Series):
             return quote
         return self._format_quote(quote,**kwargs)
 
+    def lookback(self, positions, **kwargs):
+        # Implemented differently due to occasional very large data sets with pricing
+        quote = super(_PriceData,self).lookback(positions)
+        if self.preformatted is True:
+            return quote
+        return self._format_quote(quote, **kwargs)
+
     def next(self,**kwargs):
         # Implemented differently due to occasional very large data sets with pricing
         quote = super(_PriceData,self).next(**kwargs)

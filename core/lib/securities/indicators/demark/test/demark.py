@@ -65,7 +65,7 @@ class TestDemark(testing.Test):
                     price = equity_price.Daily(self.username)
                 else:  # Intraday
                     price = equity_price.Intraday(self.username)
-                quotes = price.quote(test_symbol)
+                quotes = price.quote(test_symbol, preformat=True)
                 with self.assertRaises(Exception):
                     sequential.Sequential(quotes, array_periods=0)
                 with self.assertRaises(Exception):

@@ -234,6 +234,13 @@ class Series():
             return None
         return self.series[-1]
 
+    def lookback(self, positions):
+        # Retrieves past items in relation to current index
+        lookback_index = self.index - int(positions)
+        if lookback_index < 0:
+            return None
+        return self.series[lookback_index]
+
     def next(self, **kwargs):
         # Used to iterate through the series
         if not self.series:
