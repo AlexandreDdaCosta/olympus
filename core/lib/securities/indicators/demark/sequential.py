@@ -7,6 +7,7 @@ from olympus import Series
 from olympus.securities import BUY, SELL
 from olympus.securities.indicators import Math
 
+# Adjustable settings and their limits
 DEFAULT_ARRAY_PERIODS = 13
 MINIMUM_ARRAY_PERIODS = 8
 MAXIMUM_ARRAY_PERIODS = 18
@@ -19,10 +20,27 @@ SHORT_LOOKBACK = 2  # Periods
 # List of rules that apply to buy and sell signals:
 RULES = {
     1: {
+        "Name": "Bearish TD Price Flip",
+        "Description": "A Bearish TD Price Flip occurs when the market "
+                       "records a close greater than the close four bars "
+                       "earlier, immediately followed by a close less than "
+                       "the close four bars earlier."
+       },
+    2: {
+        "Name": "Bullish TD Price Flip",
+        "Description": "A Bullish TD Price Flip occurs when the market "
+                       "records a close less than the close four bars before, "
+                       "immediately followed by a close greater than the "
+                       "close four bars earlier."
+       },
+    3: {
         "Name": None,
         "Description": None
        }
 }
+
+# Miscellaneous
+BULL_BEAR_TYPES = [BUY, SELL]
 
 
 class _Date():
@@ -47,24 +65,37 @@ class _Date():
         pass
 
 
-class _Signal(SimpleNamespace):
-    # Buy/sell signals
-    # The internal "Signals" series is composed of these
+class _DateAggregator(SimpleNamespace):
 
-    def __init__(self, date, signal_type, rule):
-        super(_Signal, self).__init__()
-        self.date = date
-        self.type = signal_type
-        self.rule = rule
+    def __init__(self, price_series):
+        super(_DateAggregator, self).__init__()
+        self.flip_lookback = price_series.lookback(LONG_LOOKBACK + 1)
+        self.long_lookback = price_series.lookback(LONG_LOOKBACK)
+        self.short_lookback = price_series.lookback(SHORT_LOOKBACK)
+        self.previous_day = price_series.lookback(1)
+
+
+class _PriceFlip(SimpleNamespace):
+
+    def __init__(self, flip_type, quotes):
+        super(_PriceFlip, self).__init__()
+        self.type = flip_type
+        if self.type == BUY:
+            self.rule = RULES[1]
+        else:  # SELL
+            self.rule = RULES[2]
 
 
 class _Sequential():
 
-    def __init__(self, date, setup_type):
+    def __init__(self, date, sequence_type, aggregator):
         self.date = date
-        self.type = setup_type
         self.dates = []
         self.dates.append(date)
+        if sequence_type not in BULL_BEAR_TYPES:
+            raise Exception('Bad value for sequence_type.')
+        self.price_flip = _PriceFlip(sequence_type, aggregator)
+        self.type = self.price_flip.type
 
     def add_date(self, date):
         self.dates.append(date)
@@ -76,16 +107,27 @@ class _Sequential():
         return len(self.dates)
 
 
-class _Resistance():
-    # A TD Setup Trend upper price extreme
+class _Signal(SimpleNamespace):
+    # Buy/sell signals
+    # The internal "Signals" series is composed of these
+
+    def __init__(self, date, signal_type, rule):
+        super(_Signal, self).__init__()
+        self.date = date
+        self.type = signal_type
+        self.rule = rule
+
+
+class _Support():
+    # A TD Setup Trend lower price extreme
 
     def __init__(self, date, price):
         self.date = date
         self.price = price
 
 
-class _Support():
-    # A TD Setup Trend lower price extreme
+class _Resistance():
+    # A TD Setup Trend upper price extreme
 
     def __init__(self, date, price):
         self.date = date
@@ -139,65 +181,64 @@ class Sequential(Series):
 
     def _chartpoints(self, price_series):
         # Main internal function that creates the sequential chart
+        self.cancelled_setups = []
         self.setup = None
         self.countdown = None
         self.resistance = None
         self.support = None
         self.signals = Series()
-        flip_lookback = price_series.lookback(LONG_LOOKBACK + 1)
-        long_lookback = price_series.lookback(LONG_LOOKBACK)
-        short_lookback = price_series.lookback(SHORT_LOOKBACK)
-        previous_day = price_series.lookback(1)
+        aggregator = _DateAggregator(price_series)
         quote = price_series.next(reset=True)
         while quote is not None:
             (self.high, self.low, self.close) = self._which_price(quote)
-            if flip_lookback is not None:
+            if aggregator.flip_lookback is not None:
                 # Must be able to look at least this far back
                 # to initiate and manage chart points
                 #
                 # Check for Bearish or Bullish TD Price Flip
                 #
-                (flip_high, flip_low, flip_close) = self._which_price(
-                        flip_lookback)
-                (long_high, long_low, long_close) = self._which_price(
-                        long_lookback)
-                (short_high, short_low, short_close) = self._which_price(
-                        short_lookback)
+                (flip_high, flip_low, flip_close) = \
+                    self._which_price(aggregator.flip_lookback)
+                (long_high, long_low, long_close) = \
+                    self._which_price(aggregator.long_lookback)
+                (short_high, short_low, short_close) = \
+                    self._which_price(aggregator.short_lookback)
                 (previous_high, previous_low, previous_close) = \
-                    self._which_price(previous_day)
-                #
-                # A Bearish TD Price Flip occurs when the market records a
-                # close greater than the close four bars earlier, immediately
-                # followed by a close less than the close four bars earlier.
-                #
+                    self._which_price(aggregator.previous_day)
+                # Bearish TD Price Flip
                 if (
                         previous_close > flip_close and
                         self.close < long_close):
-                    self.setup = _Sequential(quote.date, BUY)
-                #
-                # A Bullish TD Price Flip occurs when the market records a
-                # close less than the close four bars before, immediately
-                # followed by a close greater than the close four bars earlier.
-                #
+                    if self.setup is not None:
+                        self.cancelled_setups.append(self.setup)
+                    self.setup = _Sequential(quote.date, BUY, aggregator)
+                # Bullish TD Price Flip
                 elif (
                         previous_close < flip_close and
                         self.close > long_close):
-                    self.setup = _Sequential(quote.date, SELL)
+                    if self.setup is not None:
+                        self.cancelled_setups.append(self.setup)
+                    self.setup = _Sequential(quote.date, SELL, aggregator)
                 else:
                     if self.setup is not None:
                         if self.setup.type == BUY:
                             if self.close < long_close:
-                                self.setup.add_date(quote.date)
+                                self.setup.add_date(aggregator)
                             else:
+                                self.cancelled_setups.append(self.setup)
                                 self.setup = None
                         else:  # SELL
                             if self.close > long_close:
-                                self.setup.add_date(quote.date)
+                                self.setup.add_date(aggregator)
                             else:
+                                self.cancelled_setups.append(self.setup)
                                 self.setup = None
                         if self.setup.complete(self.formation_periods):
                             # TD Setup complete
+                            # Write out data to individual dates
+                            # ALEX
                             self.setup = None
+                    '''
                     if self.countdown is not None:
                         if self.countdown.type == BUY:
                             pass  # ALEX self.array_periods
@@ -206,10 +247,8 @@ class Sequential(Series):
                         if self.countdown.complete(self.array_periods):
                             # TD Countdown complete
                             self.countdown = None
-            flip_lookback = price_series.lookback(LONG_LOOKBACK + 1)
-            long_lookback = price_series.lookback(LONG_LOOKBACK)
-            short_lookback = price_series.lookback(SHORT_LOOKBACK)
-            previous_day = price_series.lookback(1)
+                    '''
+            aggregator = _DateAggregator(price_series)
             quote = price_series.next()
 
     def _add_meta(self, key, data):
