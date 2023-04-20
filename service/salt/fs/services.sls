@@ -102,3 +102,7 @@ redis-service:
     - mode: 0644
     - source: salt://services/files/nosuspend.conf
     - user: root
+
+no-suspend-operation:
+  cmd.run:
+    - name: systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
