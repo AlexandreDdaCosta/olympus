@@ -98,7 +98,7 @@ redis-service:
 /etc/systemd/sleep.conf.d/nosuspend.conf:
   file.managed:
     - group: root
-    - makedirs: False
+    - makedirs: True
     - mode: 0644
     - source: salt://services/files/nosuspend.conf
     - user: root
