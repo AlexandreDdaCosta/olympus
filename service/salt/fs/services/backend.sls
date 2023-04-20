@@ -29,23 +29,24 @@ include:
 
 {% for packagename, package in pillar.get('backend-npm-packages', {}).items() %}
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
-{{ packagename }}:
-    npm.installed:
-      - force_reinstall: True
+{{ packagename }}-npm-backend:
+  npm.installed:
+    - force_reinstall: True
 {% elif package != None and 'version' in package %}
 {% if pillar.pkg_noversion is not defined or not pillar.pkg_noversion %}
 {{ packagename }}@{{ package['version'] }}:
-    npm.installed:
+  npm.installed:
 {% else %}
 {{ packagename }}:
-    npm.installed:
+  npm.installed:
 {% endif %}
 {% else %}
 {{ packagename }}:
-    npm.installed:
+  npm.installed:
 {% endif %}
-      - require:
-        - sls: package
+    - name: {{ packagename }}
+    - require:
+      - sls: package
 {% endfor %}
 
 /etc/postgresql/14/main/pg_hba.conf:
