@@ -24,7 +24,7 @@ packages:
   build-essential:
     version: 12.9
   curl:
-    version: 7.82.0-2~bpo11+1
+    version: 7.88.1-7~bpo11+2
   fail2ban:
     version: 0.11.2-2
   libuser:
@@ -36,9 +36,9 @@ packages:
   ntpdate:
     version: 1:4.2.8p15+dfsg-1
   openssh-client:
-    version: 1:8.4p1-5
+    version: 1:8.4p1-5+deb11u1
   openssh-server:
-    version: 1:8.4p1-5
+    version: 1:8.4p1-5+deb11u1
   python3-argon2:
     version: 18.3.0-2+b2
   python3-dev:
@@ -52,6 +52,6 @@ packages:
   sysfsutils:
     version: 2.1.0+repack-7
   sudo:
-    version: 1.9.5p2-3
+    version: 1.9.5p2-3+deb11u1
   vim:
     version: 2:8.2.2434-3+deb11u1
