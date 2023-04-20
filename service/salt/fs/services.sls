@@ -95,3 +95,10 @@ redis-service:
     - watch:
       - file: /etc/redis/redis.conf
 
+/etc/systemd/sleep.conf.d/nosuspend.conf:
+  file.managed:
+    - group: root
+    - makedirs: False
+    - mode: 0644
+    - source: salt://services/files/nosuspend.conf
+    - user: root
