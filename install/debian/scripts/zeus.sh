@@ -107,19 +107,21 @@ then
     echo 'ERROR: Unable to configure git repository; exiting.' 1>&2
     exit 1
 fi
-if [ ! -d ../../../BAK/repository/$GIT_REPO ]
+if [ ! -d ../../../BAK/repository ]
 then
-    echo "ERROR: Git repository [../../../BAK/repository/$GIT_REPO] not found in installation source; exiting." 1>&2
+    echo "ERROR: Git repository collection [../../../BAK/repository] not found in installation source; exiting." 1>&2
     exit 1
 fi
-cp -rp ../../../BAK/repository/$GIT_REPO $GIT_PATH
+cp -rp ../../../BAK/repository/*.git $GIT_PATH
 if [ $? != 0 ]
 then
-    echo "ERROR: Unable to copy git repository to [$GIT_PATH]; exiting." 1>&2
+    echo "ERROR: Unable to copy git repository collection to [$GIT_PATH]; exiting." 1>&2
     exit 1
 fi
-chmod -R g+ws $GIT_PATH/$GIT_REPO
-chgrp -R $GIT_OWNER $GIT_PATH/$GIT_REPO
+/usr/bin/find $GIT_PATH/*.git -type d -exec chmod 2775 {} \;
+/usr/bin/find $GIT_PATH/*.git -type f -exec chmod 0664 {} \;
+chown -R $GIT_OWNER $GIT_PATH/*.git
+chgrp -R $GIT_OWNER $GIT_PATH/*.git
 
 echo 'Updating salt configuration.'
 cd /etc/salt/master.d
