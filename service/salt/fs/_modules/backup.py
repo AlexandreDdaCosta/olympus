@@ -33,10 +33,10 @@ def usb_backup_olympus():
     # Make backups
     # Git repository
     _backup_directory(mount_directory + '/BAK/repository', '/home/git/repository')
-    # Working git directory
-    _backup_directory(mount_directory + '/BAK/olympus', '/home/' + user + '/olympus')
+    # Working git repository directory
+    _backup_directory(mount_directory + '/BAK/repo', '/home/' + user + '/repo')
     # Debian installation files
-    _backup_directory(mount_directory + '/install', '/home/' + user + '/olympus/install')
+    _backup_directory(mount_directory + '/install', '/home/' + user + '/repo/olympus/install')
     cmd = "chown -R " + user + ":" + user + " " + mount_directory
     p = subprocess.check_call(cmd,shell=True)
 
