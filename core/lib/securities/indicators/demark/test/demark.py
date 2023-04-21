@@ -5,12 +5,11 @@ import sys
 import unittest
 
 import olympus.securities.equities.data.price as equity_price
-import olympus.securities.indicators.demark.sequential as sequential
+import olympus.securities.indicators.demark.algo.sequential as sequential
 import olympus.testing as testing
 
 from olympus import USER
 from olympus.securities.equities import *
-from olympus.securities.indicators.demark.sequential import *
 
 # Standard run parameters:
 # sudo su -s /bin/bash -c '... demark.py' <desired run user ID>
