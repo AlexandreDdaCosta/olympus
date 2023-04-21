@@ -27,6 +27,8 @@ packages:
     version: 7.88.1-7~bpo11+2
   fail2ban:
     version: 0.11.2-2
+  git-filter-repo:
+    version: 2.34.0-1~bpo11+1
   libuser:
     version: 1:0.62~dfsg-0.4
   mongodb-org:
