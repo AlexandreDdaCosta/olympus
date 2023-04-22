@@ -102,8 +102,8 @@ option is a systemd user service.
 git push github
 ```
 
-Now you can navigate to the [the Github repository's home page](https://github.com/AlexandreDdaCosta/olympus). The header
+Now you can navigate to [the Github repository's home page](https://github.com/AlexandreDdaCosta/olympus). The header
 will show an updated commit count as well as updated details for the latest commit. On
-[the main home page for the Github account] (https://github.com/AlexandreDdaCosta),
+[the main home page for the Github account](https://github.com/AlexandreDdaCosta),
 the **Contribution activity** section will list the added commits, and the
 contribution graph will show an increase in the number of contributions for that date. 
