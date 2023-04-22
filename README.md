@@ -5,7 +5,7 @@ This is the primary repository for the olympus project.
 ## Developer notes for pushing working olympus repository to Github
 
 *Note*: The first series of operations are one-time only, but they may be repeated as needed should a system
-need to be restored.
+require restoration.
 
 ### Create bare repository on Github
 
@@ -14,7 +14,8 @@ need to be restored.
 * Under **Description**, enter "Primary repository for the Olympus project."
 * Choose the "Public" visibility option.
 * Do not add the README file, and leave **Add .gitignore** and **Choose a license** as *None*. This will
-create a bare repository, which will facilitate pushing the existing local repository to github.
+create a bare repository, which will facilitate pushing the existing local repository to github. These
+files are necessary, though, so be sure to create them in the local working repository.
 * Submit with the **Create repository** button.
 
 ### Change default branch on Github to "master"
@@ -36,7 +37,7 @@ Enter passphrase (empty for no passphrase):
 Enter same passphrase again:
 ```
 
-The passphrase will be needed to add the newly-generated private SSH key to ssh-agent.
+The passphrase will be regularly needed to add the newly-generated private SSH key to ssh-agent.
 
 ###  Add the newly-created public key to Github account settings.
 
@@ -59,6 +60,15 @@ The passphrase will be needed to add the newly-generated private SSH key to ssh-
 git remote add github https://github.com/AlexandreDdaCosta/olympus.git
 ```
 
+### Add the following lines to *~/ssh/config* 
+
+```
+Host github.com
+    IdentityFile ~/.ssh/id_github
+```
+
+This ensures that the new SSH keypair is loaded whenever ssh-agent is started.
+
 *Note*: The remaining operations are followed for every push to Github.
 
 ### Start ssh-agent.
@@ -77,8 +87,14 @@ After starting ssh-agent, use this command to test whether the SSH push is corre
 ```
 ssh -T git@github.com
 ...
+Enter passphrase for key '/home/alex/.ssh/id_github':
+...
 Hi AlexandreDdaCosta! You've successfully authenticated, but GitHub does not provide shell access.
 ```
+
+Alternatively, ssh-agent can be configured to start automatically on log-in. For some discussion on this topic,
+[read this thread on stackoverflow](https://stackoverflow.com/questions/18880024/start-ssh-agent-on-login). The best
+option is a systemd user service.
 
 ### Once all code for the push has been committed to the local repository, push all updates to Github.  
 
