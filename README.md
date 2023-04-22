@@ -4,7 +4,7 @@ This is the primary repository for the olympus project.
 
 ## Developer notes for pushing working olympus repository to Github
 
-*Note*: The first series of operations are one-time only, but may be repeated as needed should a system
+*Note*: The first series of operations are one-time only, but they may be repeated as needed should a system
 need to be restored.
 
 ### Create bare repository on Github
@@ -41,21 +41,19 @@ The passphrase will be needed to add the newly-generated private SSH key to ssh-
 ###  Add the newly-created public key to Github account settings.
 
 * Copy the contents of */home/alex/.ssh/id_github.pub* to the clipboard.
-* Navigate to [the repository's general settings page](https://github.com/AlexandreDdaCosta/olympus/settings).
-* While logged-in to the Github account, use the account menu drop-down to navigate to the [SSH and GPG keys page](https://github.com/settings/keys)
-under *Settings*.
+* While logged-in to the Github account, use the account menu drop-down on the top right to navigate to the 
+[SSH and GPG keys page](https://github.com/settings/keys) under *Settings*.
 * Use the **New SSH key** button to bring up the **SSH keys / Add new** option. Fill in the options as follows:
 
-**Title** *Push key from olympus source.*
+**Title**. *Push key from olympus source.*
 
-**Key type** *Authentication key*
+**Key type**. *Authentication key*
 
-**Key** Paste in *id_github.pub* from the clipboard.
+**Key**. Paste in *id_github.pub* from the clipboard.
 
 * Submit the form with the **Add ssh key** button.
 
-### On the development machine, change directory to the local working olympus repository and set up a new remote to handle
-push/pull commands to/from the Github repository.
+### On the development machine, change directory to the local working olympus repository and set up a new remote to handle push/pull commands to/from the Github repository.
 
 ```
 git remote add github https://github.com/AlexandreDdaCosta/olympus.git
@@ -63,7 +61,9 @@ git remote add github https://github.com/AlexandreDdaCosta/olympus.git
 
 *Note*: The remaining operations are followed for every push to Github.
 
-### Start ssh-agent. If working in a terminal, this can happen once per session.
+### Start ssh-agent.
+
+If working in a terminal, this can happen once per session.
 
 ```
 eval "$(ssh-agent -s)"
@@ -87,6 +87,7 @@ git push github
 ```
 
 Now you can navigate to the [the Github repository's home page](https://github.com/AlexandreDdaCosta/olympus). The header
-will show an updated commit count as well as updated details for the latest commit. On [the main home page for the ithub account]
-(https://github.com/AlexandreDdaCosta), the **Contribution activity** section will list the added commits, and the
-contribution graph will show an increase in the numbr of contributions for that date. 
+will show an updated commit count as well as updated details for the latest commit. On
+[the main home page for the Github account] (https://github.com/AlexandreDdaCosta),
+the **Contribution activity** section will list the added commits, and the
+contribution graph will show an increase in the number of contributions for that date. 
