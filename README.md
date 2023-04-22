@@ -28,7 +28,9 @@ The command for this is "ssh-keygen" and proceeds as follows:
 
 ```
 ssh-keygen -t rsa -b 4096 -C "alexandre.dias.dacosta@gmail.com"
+...
 Generating public/private rsa key pair.
+...
 Enter file in which to save the key (/home/alex/.ssh/id_rsa): /home/alex/.ssh/id_github
 Enter passphrase (empty for no passphrase):
 Enter same passphrase again:
@@ -45,10 +47,46 @@ under *Settings*.
 * Use the **New SSH key** button to bring up the **SSH keys / Add new** option. Fill in the options as follows:
 
 **Title** *Push key from olympus source.*
+
 **Key type** *Authentication key*
+
 **Key** Paste in *id_github.pub* from the clipboard.
 
 * Submit the form with the **Add ssh key** button.
 
+### On the development machine, change directory to the local working olympus repository and set up a new remote to handle
+push/pull commands to/from the Github repository.
+
+```
+git remote add github https://github.com/AlexandreDdaCosta/olympus.git
+```
+
 *Note*: The remaining operations are followed for every push to Github.
 
+### Start ssh-agent. If working in a terminal, this can happen once per session.
+
+```
+eval "$(ssh-agent -s)"
+```
+
+**IMPORTANT!** If starting ssh-agent in this manner, be sure that you start agent **in the same terminal from which you will
+subsequently issue the git push command!**
+
+After starting ssh-agent, use this command to test whether the SSH push is correctly configured:
+
+```
+ssh -T git@github.com
+...
+Hi AlexandreDdaCosta! You've successfully authenticated, but GitHub does not provide shell access.
+```
+
+### Once all code for the push has been committed to the local repository, push all updates to Github.  
+
+```
+git push github
+```
+
+Now you can navigate to the [the Github repository's home page](https://github.com/AlexandreDdaCosta/olympus). The header
+will show an updated commit count as well as updated details for the latest commit. On [the main home page for the ithub account]
+(https://github.com/AlexandreDdaCosta), the **Contribution activity** section will list the added commits, and the
+contribution graph will show an increase in the numbr of contributions for that date. 
