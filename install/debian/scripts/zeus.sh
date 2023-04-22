@@ -123,6 +123,10 @@ fi
 chown -R $GIT_OWNER $GIT_PATH/*.git
 chgrp -R $GIT_OWNER $GIT_PATH/*.git
 
+echo 'Updating global git username and email address.'
+git config --global user.name "$GIT_USERNAME"
+git config --global user.email "$GIT_EMAIL"
+
 echo 'Updating salt configuration.'
 cd /etc/salt/master.d
 echo 'Extracting /etc/salt/master.d/core.conf.'
