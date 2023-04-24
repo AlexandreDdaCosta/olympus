@@ -12,7 +12,7 @@ Sizes are calculated by taking simple averages of the grouped resolutions.
 
 A placeholder is used to simplify css conditionals, giving at least two height options at each major width break point (320, 640, 992, 1280, 1920).
 
-
+```
 Target resolutions              Target image dimensions
 ******************              ***********************
 
@@ -61,4 +61,4 @@ r. 1680 x 1050                  ....
 
 s. 1920 x 1080                  1920 x 1140
 t. 1920 x 1200                   
-
+```
