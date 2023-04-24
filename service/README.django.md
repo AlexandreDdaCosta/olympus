@@ -1,7 +1,6 @@
-TOPICS
-------
+# Django front end for olympus
 
-1. Guide to organizing imagery for proper display under a responsive set-up.
+## Guide to organizing imagery for proper display under a responsive set-up
 
 Use the following resolution guide when editing images. All the listed resolutions need to be tested and verified.
 
