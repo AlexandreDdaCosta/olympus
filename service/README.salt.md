@@ -1,7 +1,7 @@
 # Saltstack service command hints
 
 The following are key commands used as part of regular system maintenance and development under Saltstack.
-As indicated by the use of **sudo**, these are for the use by administrative users with the proper privilege.
+As indicated by the use of **sudo**, these are for the use of administrative users with the proper privilege.
 
 * Reset pillar
 
@@ -58,7 +58,7 @@ zeus:
     thorium
 ```
 
-** Global configuration update for all minions
+* Global configuration update for all minions
 
 ```
 sudo -i salt '*' state.highstate -v
@@ -68,11 +68,14 @@ sudo -i salt '*' state.highstate pillar='{"pkg_latest": true}' -v
 ```
 
 The pillar setting forces all installed packages to update to latest versions.
-Afterwards, run *./service/salt/util/package_version_repo_updater.pl* in
-a working olympus git repository to generate updated package specifications in
-pillar files.
+Afterwards, run *./service/salt/util/package_version_repo_updater.pl* in a working olympus
+git repository on the updated server to generate updated package specifications in
+pillar files. These updated pillar files appear in "/tmp"; the updater will identify
+them by name, and each file maps to a specific existing pillar file. These newly-generated
+files should then be copied into the working repository and pushed to the local git
+master.
 
-** Selected configuration update
+* Selected configuration update
 
 ```
 sudo -i salt '*' state.sls <STATENAME> -v
@@ -80,7 +83,7 @@ sudo -i salt '*' state.sls <STATENAME> -v
 
 Run specified state file. Salt also will run any states which the selected state requires.
 
-** Machne shut-down
+* Machine shut-down
 
 ```
 sudo -i salt '*' state.sls shutdown -v
