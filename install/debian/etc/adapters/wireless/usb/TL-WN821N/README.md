@@ -5,8 +5,10 @@ open-source driver for the Realtek RTL8192EU software used to drive a specific
 wireless dongle. The target server is a Dell Poweredge R140 without built-in
 wireless.
 
-Once the system has been set up and running, the latter steps outlined here
-can be used to rebuild the driver in the event of a kernel upgrade.
+Once the system has been set up and running, these instructions can be used
+to rebuild the driver in the event of a kernel upgrade. Start with installing
+the headers for the new kernel. It's also a good idea to be sure that the 
+build kit is fully up-to-date.
 
 Build steps for user "root":
 
@@ -60,7 +62,7 @@ make install
 After a successful build, the make directory will include *8192eu.ko*, which
 is the new kernel module.
 
-## Activate the new kernel module.
+## Activate the new kernel module
 
 ```
 modprobe 8192eu
