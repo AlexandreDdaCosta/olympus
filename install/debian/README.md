@@ -46,3 +46,11 @@ Now you can access the USB contents. In our example, to run the networking insta
 ```
 sudo /media/olympus/install/debian/scripts/networking.sh
 ```
+
+It's good practice to remove the mount point once you're done with it:
+
+```
+sudo umount /media/olympus
+sudo rmdir /media/olympus
+```
+

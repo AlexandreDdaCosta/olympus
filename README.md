@@ -2,6 +2,28 @@
 
 This is the primary repository for the olympus project.
 
+## INTRODUCTION
+
+The goal of the olympus project is to create a web platform for both
+development and deployment. It is designed around regularly-maintained,
+enterprise-class software, and can be scaled up to major deployments and down
+to a single, home-based server. The ideal use-case is of a small, local
+installation using a number of tiny servers as nodes. The tiny server class
+has the advantage of being both economical and low on power consumption.
+A single, robustly-built data center class server can host olympus, but
+power consumption can be the equivalent of 8-10 tiny servers. In its expanded 
+configuration, olympus has three core servers:
+
+* Interface (web-facing),
+* Supervisor (controller)
+* Database/file server. 
+
+Olympus allows a fourth type of server, the "worker" class, which can be 
+spun up or down as needed for processing-intensive tasks. This last type of
+node is a good place to use an enterprise-class server, since the occasional
+use envisioned of the worker class means that power consumption will
+remain reasonable.
+
 ## Developer notes for pushing working olympus repository to Github
 
 *Note*: The first series of operations are one-time only, but they may be

@@ -1,4 +1,4 @@
-# Wireless USB driver for olympus installation
+# Wireless USB driver for olympus
 
 The latest version of this driver was built on a Debian 11 system using an
 open-source driver for the Realtek RTL8192EU software used to drive a specific
@@ -43,7 +43,7 @@ apt-get install gcc-10 git build-essential
 apt-get install linux-headers-$(uname -r)
 ```
 
-## Clone the open-source driver repository from github
+## Clone the open-source driver repository from Github
 
 ```
 git clone https://github.com/clnhub/rtl8192eu-linux.git

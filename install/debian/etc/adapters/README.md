@@ -9,8 +9,8 @@ Each hardware directory may include the following:
 
 Identification and installation details for the hardware.
 
-### **HARDWARE_MODEL**. Formal identifier.
-### **HARDWARE_NAME**. Descriptive string.
+* **HARDWARE_MODEL**. Formal identifier.
+* **HARDWARE_NAME**. Descriptive string.
 
 ## README.md
 
