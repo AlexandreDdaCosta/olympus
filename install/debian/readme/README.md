@@ -1,4 +1,4 @@
-* olympus USB installation
+# olympus USB installation
 
 A quick dummy's reminder of how to use this USB installation on Linux.
 
@@ -27,7 +27,7 @@ Here the correct device is /dev/sdb2
 * Create temporary mount point
 
 ```
-mkdir /media/olympus
+sudo mkdir /media/olympus
 ```
 
 Here, *olympus* is used for the directory name, but any other valid name will 
@@ -38,9 +38,11 @@ work. Set permissions according to the user(s) you wish to have access.
 In our example:
 
 ```
-mount /dev/sdb2 /media/olympus
+sudo mount /dev/sdb2 /media/olympus
 ```
 
 Now you can access the USB contents. In our example, to run the networking installation routine:
 
-/media/olympus/install/debian/scripts/networking.sh
+```
+sudo /media/olympus/install/debian/scripts/networking.sh
+```
