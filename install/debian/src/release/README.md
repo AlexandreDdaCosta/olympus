@@ -19,7 +19,7 @@ source packages.*
 * Download each required package
 
 ```
-* apt-get install --download-only <package>
+apt-get install --download-only <package>
 ```
 
 Downloads get written to "/var/cache/apt/archives".
