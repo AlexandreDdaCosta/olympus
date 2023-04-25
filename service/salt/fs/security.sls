@@ -55,7 +55,7 @@ openssh-server-service:
         - file: /etc/ssh/sshd_config
         - pkg: openssh-server
 
-systmctl_enable_user_sshagent
+systmctl_enable_user_sshagent:
   cmd.run:
     - name: systemctl --user enable ssh-agent
 
