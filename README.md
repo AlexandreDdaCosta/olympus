@@ -85,6 +85,8 @@ the identity file to the agent.
 ssh-add ~/.ssh/id_github
 ...
 Enter passphrase for key '/home/alex/.ssh/id_github':
+...
+Identity added: /home/alex/.ssh/id_github (alexandre.dias.dacosta@gmail.com)
 ```
 
 Note that adding a private key to the agent requires that the user enter the

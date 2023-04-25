@@ -49,8 +49,7 @@ git clone https://github.com/clnhub/rtl8192eu-linux.git
 
 **TIP**: Change directory to */tmp* before cloning repository.
 
-## Change directory into the clones repository, build, and install the new
-kernel module.
+## Build, and install the new kernel module
 
 ```
 cd rtl8192eu-linux

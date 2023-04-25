@@ -9,10 +9,10 @@ Each hardware directory may include the following:
 
 Identification and installation details for the hardware.
 
-**HARDWARE_MODEL**. Formal identifier.
-**HARDWARE_NAME**. Descriptive string.
+### **HARDWARE_MODEL**. Formal identifier.
+### **HARDWARE_NAME**. Descriptive string.
 
-## notes.README
+## README.md
 
 Useful installation documentation and commentary. Build instructions
 for modules.
