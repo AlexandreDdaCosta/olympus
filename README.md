@@ -42,7 +42,7 @@ Enter same passphrase again:
 The passphrase will be regularly needed to add the newly-generated private SSH
 key to ssh-agent.
 
-###  Add the newly-created public key to Github account settings.
+### Add the newly-created public key to Github account settings
 
 * Copy the contents of */home/alex/.ssh/id_github.pub* to the clipboard.
 * While logged-in to the Github account, use the account menu drop-down on the
@@ -59,7 +59,9 @@ Fill in the options as follows:
 
 * Submit the form with the **Add ssh key** button.
 
-### On the development machine, change directory to the local working olympus
+### Add a local repository entry for the remote Github repository
+
+On the development machine, change directory to the local working olympus
 repository and set up a new remote to handle push/pull commands to/from the
 Github repository.
 
@@ -76,6 +78,19 @@ Host github.com
 
 This ensures that the new SSH keypair is loaded whenever ssh-agent is started.
 
+Alternatively, if ssh-agent is already started (next step), use *ssh-add* to add
+the identity file to the agent.
+
+```
+ssh-add ~/.ssh/id_github
+...
+Enter passphrase for key '/home/alex/.ssh/id_github':
+```
+
+Note that adding a private key to the agent requires that the user enter the
+passphrase used to protect the key. Naturally, this assumes that the user has
+correctly created the key with password protection.
+
 *Note*: The remaining operations are followed for every push to Github.
 
 ### Start ssh-agent.
@@ -88,6 +103,8 @@ eval "$(ssh-agent -s)"
 
 **IMPORTANT!** If starting ssh-agent in this manner, be sure that you start
 agent **in the same terminal from which you will subsequently issue the git push command!**
+Other, existing shell sessions will not be able to access the newly-started
+agent.
 
 After starting ssh-agent, use this command to test whether the SSH push is
 correctly configured:
@@ -101,13 +118,14 @@ Hi AlexandreDdaCosta! You've successfully authenticated, but GitHub does not
 provide shell access.
 ```
 
+Note that the request for a passphrase will only appear at this stage if the
+passphrase hasn't already been entered during the session via *ssh-add*.
+
 Alternatively, ssh-agent can be configured to start automatically on log-in.
 For some discussion on this topic,
 [read this thread on stackoverflow](https://stackoverflow.com/questions/18880024/start-ssh-agent-on-login).
-The best option is a systemd user service.
 
-### Once all code for the push has been committed to the local repository, push
-all updates to Github.  
+### Push repository updates to Github
 
 ```
 git push github
