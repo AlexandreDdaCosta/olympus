@@ -22,7 +22,7 @@ Device      Start      End  Sectors  Size Type
 /dev/sdb2  411648 15685631 15273984  7.3G Linux filesystem
 ```
 
-Here the correct device is /dev/sdb2
+Here the correct device is **/dev/sdb2**.
 
 * Create temporary mount point
 
