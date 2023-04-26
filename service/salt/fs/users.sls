@@ -83,17 +83,23 @@ user_{{ username }}:
     - name: /home/{{ username }}/.ssh/authorized_keys
     - user: {{ username }}
 
-{{ username }}-ssh-agent.service:
-  file.managed:
-    - dir_mode: 0750
+{{ username }}-systemd-user-directory
+  file.directory:
+    - dir_mode: 0750 
     - group: {{ username }}
     - makedirs: True
-    - mode: 0640
     - name: /home/{{ username }}/.config/systemd/user/ssh-agent.service
     - recurse:
       - user
       - group
       - mode
+    - user: {{ username }}
+
+{{ username }}-ssh-agent.service:
+  file.managed:
+    - group: {{ username }}
+    - mode: 0640
+    - name: /home/{{ username }}/.config/systemd/user/ssh-agent.service
     - source: salt://users/.ssh/files/ssh-agent.service
     - user: {{ username }}
 
@@ -104,10 +110,6 @@ user_{{ username }}:
     - makedirs: True
     - mode: 0640
     - name: /home/{{ username }}/.config/environment.d/ssh_auth_socket.conf
-    - recurse:
-      - user
-      - group
-      - mode
     - source: salt://users/.ssh/files/ssh_auth_socket.conf
     - user: {{ username }}
 
