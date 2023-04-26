@@ -69,7 +69,7 @@ user_{{ username }}:
 {{ username }}-sshconfig:
   file.managed:
     - group: {{ username }}
-    - mode: 0644
+    - mode: 0640
     - name: /home/{{ username }}/.ssh/config
     - user: {{ username }}
     - source: salt://users/.ssh/config.jinja
@@ -79,26 +79,26 @@ user_{{ username }}:
   file.managed:
     - contents: {{ user['ssh_public_key'] }}
     - group: {{ username }}
-    - mode: 0750
+    - mode: 0640
     - name: /home/{{ username }}/.ssh/authorized_keys
     - user: {{ username }}
 
 {{ username }}-ssh-agent.service:
   file.managed:
-    - dir_mode: 0640
+    - dir_mode: 0750
     - group: {{ username }}
     - makedirs: True
-    - mode: 0750
+    - mode: 0640
     - name: /home/{{ username }}/.config/systemd/user/ssh-agent.service
     - source: salt://users/.ssh/files/ssh-agent.service
     - user: {{ username }}
 
 {{ username }}-ssh_auth_socket.conf:
   file.managed:
-    - dir_mode: 0640
+    - dir_mode: 0750
     - group: {{ username }}
     - makedirs: True
-    - mode: 0750
+    - mode: 0640
     - name: /home/{{ username }}/.config/environment.d/ssh_auth_socket.conf
     - source: salt://users/.ssh/files/ssh_auth_socket.conf
     - user: {{ username }}
