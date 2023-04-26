@@ -83,12 +83,12 @@ user_{{ username }}:
     - name: /home/{{ username }}/.ssh/authorized_keys
     - user: {{ username }}
 
-{{ username }}-systemd-user-directory
+{{ username }}-systemd-user-directory:
   file.directory:
     - dir_mode: 0750 
     - group: {{ username }}
     - makedirs: True
-    - name: /home/{{ username }}/.config/systemd/user/ssh-agent.service
+    - name: /home/{{ username }}/.config/systemd/user
     - recurse:
       - user
       - group
