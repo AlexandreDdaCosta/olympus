@@ -83,34 +83,6 @@ user_{{ username }}:
     - name: /home/{{ username }}/.ssh/authorized_keys
     - user: {{ username }}
 
-{{ username }}-ssh-agent.service:
-  file.managed:
-    - dir_mode: 0750
-    - group: {{ username }}
-    - makedirs: True
-    - mode: 0640
-    - name: /home/{{ username }}/.config/systemd/user/ssh-agent.service
-    - source: salt://users/.ssh/files/ssh-agent.service
-    - user: {{ username }}
-
-{{ username }}-config-systemd-user-dir:
-  cmd.run:
-    - name: find /home/{{ username }}/.config/systemd -type d | xargs chmod 0750
-
-{{ username }}-ssh_auth_socket.conf:
-  file.managed:
-    - dir_mode: 0750
-    - group: {{ username }}
-    - makedirs: True
-    - mode: 0640
-    - name: /home/{{ username }}/.config/environment.d/ssh_auth_socket.conf
-    - source: salt://users/.ssh/files/ssh_auth_socket.conf
-    - user: {{ username }}
-
-{{ username }}-config-environment.d-dir:
-  cmd.run:
-    - name: find /home/{{ username }}/.config/environment.d -type d | xargs chmod 0750
-
 {%- endif %}
 {% if 'createhome' in user and user['createhome'] and 'vimuser' in user and user['vimuser'] -%}
 {{ username }}-vimrc:
