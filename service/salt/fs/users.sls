@@ -90,6 +90,10 @@ user_{{ username }}:
     - makedirs: True
     - mode: 0640
     - name: /home/{{ username }}/.config/systemd/user/ssh-agent.service
+    - recurse:
+      - user
+      - group
+      - mode
     - source: salt://users/.ssh/files/ssh-agent.service
     - user: {{ username }}
 
@@ -100,6 +104,10 @@ user_{{ username }}:
     - makedirs: True
     - mode: 0640
     - name: /home/{{ username }}/.config/environment.d/ssh_auth_socket.conf
+    - recurse:
+      - user
+      - group
+      - mode
     - source: salt://users/.ssh/files/ssh_auth_socket.conf
     - user: {{ username }}
 
