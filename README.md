@@ -24,15 +24,103 @@ node is a good place to use an enterprise-class server, since the occasional
 use envisioned of the worker class means that power consumption will
 remain reasonable.
 
-
 ## Repositories
+
+TODO
+
 ## Software stack
 
+TODO
 
 ## Developer notes for pushing working olympus repository to Github
 
-*Note*: The first series of operations are one-time only, but they may be
-repeated as needed should a system require restoration.
+### Set up ssh key pair
+
+A user account on olympus is allowed ssh access via an ssh key pair. The public
+key is stored in salt pillar and pushed to minions by Saltstack.
+
+The key pair should be created using the Ed25519 algorithm. Here's an example of
+such a procedure on a Mac, following the defaults:
+
+```
+ssh-keygen -t ed25519 -C "alexandre.dias.dacosta@gmail.com"
+Generating public/private ed25519 key pair.
+Enter file in which to save the key (/Users/alex/.ssh/id_ed25519):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /Users/alex/.ssh/id_ed25519.
+Your public key has been saved in /Users/alex/.ssh/id_ed25519.pub.
+The key fingerprint is:
+SHA256:SqZg///RklSF2X5cLixQo/b7b/udlpAiMGaheZAbUPQ alexandre.dias.dacosta@gmail.com
+The key's randomart image is:
++--[ED25519 256]--+
+|   .+o.    .o+.  |
+|     +..  ..oo. .|
+|      *E. o..o o.|
+|     + * . o. + +|
+|  o   * S . ...o |
+| . o + . o + +   |
+|    o .   = + . .|
+|     .     o . o+|
+|      .....   o=*|
++----[SHA256]-----+
+```
+
+It's important to protect the private key with a strong passphrase.
+
+In this example, id_ed25519.pub needs to be added to the user's configuration in
+salt pillar. An administrator then needs to run the proper state file on all
+salt minions to grant the user system-wide ssh access.
+
+```
+sudo -i salt '*' state.sls users -v
+```
+
+At this point, each account for this user on every salt minion will have an
+*/.ssh* directory off */home* that looks similar to the following:
+
+```
+alex@zeus:~$ ls -l ~/.ssh
+total 12
+-rw-r----- 1 alex alex  114 Apr 26 18:50 authorized_keys
+-rw-r----- 1 alex alex   93 Apr 26 18:54 config
+```
+
+The *authorized_keys* file will contain the newly-installed public key. The
+other file, *config*, is also maintained by salt, meaning that it will be
+overwritten on each subsequent run of the users.sls state. The contents of
+*config* are as follows:
+
+```
+Host 192.168.1.*
+ ForwardAgent yes
+Host github.com
+ ForwardAgent yes
+Host *
+ ForwardAgent no
+```
+
+* This configuration enables a feature known as *agent forwarding*, which means
+that the same ssh key used to log in to olympus will be automatically
+used when continuing a chain of ssh sessions.
+* The first two lines ensure that the user's ssh key continues to be used as the
+user moves from one olympus server to another.
+* Lines three and four ensure that the user's ssh key will be used when 
+attempting to push code to a Github repository.
+* The last two lines are a safety feature needed due to a vulnerability in
+ssh-agent known as *agent hijacking*. In general, it's good practice not to
+automatically allow agent forwarding unless you are *VERY SURE* that the
+remote server can be trusted.
+
+Notice that, for this procedure to work, the user's **origin** server must
+be running *ssh-agent*. It's common for a modern operating system to
+automatically start ssh-agent when a user opens a shell window from a GUI
+interface. On the first ssh attempt, ssh-agent will ask for and save the
+passphrase associated with the ssh key pair. This passphrase entry typically
+lasts at least so long as the user is logged into the origin server.
+
+This initial set-up needs to be done only once. But, in order to push code
+to Github, there are a few more set-up steps.
 
 ### Create bare repository on Github
 
@@ -52,26 +140,9 @@ sure to create them in the local working repository.
 * Navigate to [the repository's general settings page](https://github.com/AlexandreDdaCosta/olympus/settings).
 * Edit the **Default branch** to *master* in the edit pop-up and submit.
 
-### Create ssh keypair under account on local development machine
+### Add any desired public keys to Github account settings
 
-The command for this is "ssh-keygen" and proceeds as follows:
-
-```
-ssh-keygen -t rsa -b 4096 -C "alexandre.dias.dacosta@gmail.com"
-...
-Generating public/private rsa key pair.
-...
-Enter file in which to save the key (/home/alex/.ssh/id_rsa): /home/alex/.ssh/id_github
-Enter passphrase (empty for no passphrase):
-Enter same passphrase again:
-```
-
-The passphrase will be regularly needed to add the newly-generated private SSH
-key to ssh-agent.
-
-### Add the newly-created public key to Github account settings
-
-* Copy the contents of */home/alex/.ssh/id_github.pub* to the clipboard.
+* Copy the contents of a public key to the clipboard.
 * While logged-in to the Github account, use the account menu drop-down on the
 top right to navigate to the [SSH and GPG keys page](https://github.com/settings/keys)
 under *Settings*.
@@ -82,13 +153,13 @@ Fill in the options as follows:
 
 **Key type**. *Authentication key*
 
-**Key**. Paste in *id_github.pub* from the clipboard.
+**Key**. Paste in the public key contents from the clipboard.
 
 * Submit the form with the **Add ssh key** button.
 
 ### Add a local repository entry for the remote Github repository
 
-On the development machine, change directory to the local working olympus
+On an olympus development machine, change directory to the local working olympus
 repository and set up a new remote to handle push/pull commands to/from the
 Github repository.
 
@@ -96,65 +167,19 @@ Github repository.
 git remote add github https://github.com/AlexandreDdaCosta/olympus.git
 ```
 
-### Add the following lines to *~/ssh/config* 
-
-```
-Host github.com
-    IdentityFile ~/.ssh/id_github
-```
-
-This ensures that the new SSH keypair is loaded whenever ssh-agent is started.
-
-Alternatively, if ssh-agent is already started (next step), use *ssh-add* to add
-the identity file to the agent.
-
-```
-ssh-add ~/.ssh/id_github
-...
-Enter passphrase for key '/home/alex/.ssh/id_github':
-...
-Identity added: /home/alex/.ssh/id_github (alexandre.dias.dacosta@gmail.com)
-```
-
-Note that adding a private key to the agent requires that the user enter the
-passphrase used to protect the key. Naturally, this assumes that the user has
-correctly created the key with password protection.
-
-*Note*: The remaining operations are followed for every push to Github.
-
-### Start ssh-agent.
-
-If working in a terminal, this can happen once per session.
-
-```
-eval "$(ssh-agent -s)"
-```
-
-**IMPORTANT!** If starting ssh-agent in this manner, be sure that you start
-agent **in the same terminal from which you will subsequently issue the git push command!**
-Other, existing shell sessions will not be able to access the newly-started
-agent.
-
-After starting ssh-agent, use this command to test whether the SSH push is
+At this point, you can use this command to test whether the ssh push is
 correctly configured:
 
 ```
 ssh -T git@github.com
 ...
-Enter passphrase for key '/home/alex/.ssh/id_github':
-...
 Hi AlexandreDdaCosta! You've successfully authenticated, but GitHub does not
 provide shell access.
 ```
 
-Note that the request for a passphrase will only appear at this stage if the
-passphrase hasn't already been entered during the session via *ssh-add*.
-
-Alternatively, ssh-agent can be configured to start automatically on log-in.
-For some discussion on this topic,
-[read this thread on stackoverflow](https://stackoverflow.com/questions/18880024/start-ssh-agent-on-login).
-
 ### Push repository updates to Github
+
+From inside the remote repository:
 
 ```
 git push github
