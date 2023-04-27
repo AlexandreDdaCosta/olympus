@@ -72,7 +72,7 @@ The key's randomart image is:
 
 It's important to protect the private key with a strong passphrase.
 
-In this example, the contents of **id_ed25519.pub** needs to be added to the
+In this example, the contents of **id_ed25519.pub** need to be added to the
 user's configuration in salt pillar under the stanza *ssh_public_key*. An
 administrator then needs to run the *users* state file on all salt minions to
 grant the user system-wide ssh access.
@@ -113,9 +113,9 @@ user moves from one olympus server to another.
 * Lines three and four ensure that the user's ssh key will be used when 
 attempting to push code to a Github repository.
 * The last two lines are a safety feature needed due to a vulnerability in
-ssh-agent known as *agent hijacking*. In general, it's good practice not to
-automatically allow agent forwarding unless you are **VERY SURE** that the
-remote server can be trusted.
+ssh-agent known as [agent hijacking](https://attack.mitre.org/techniques/T1563/001/).
+In general, it's good practice not to automatically allow agent forwarding
+unless you are **VERY SURE** that the remote server can be trusted.
 
 Notice that, for this procedure to work, the user's **originating** server (not
 olympus) **MUST** be running *ssh-agent*. It's common for a modern operating
