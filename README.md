@@ -68,15 +68,16 @@ The key's randomart image is:
 
 It's important to protect the private key with a strong passphrase.
 
-In this example, **id_ed25519.pub** needs to be added to the user's configuration in
-salt pillar. An administrator then needs to run the proper state file on all
-salt minions to grant the user system-wide ssh access.
+In this example, **id_ed25519.pub** needs to be added to the user's configuration
+in salt pillar under the stanza *ssh_public_key*. An administrator then needs to
+run the *users* state file on all salt minions to grant the user system-wide ssh
+access.
 
 ```
 sudo -i salt '*' state.sls users -v
 ```
 
-At this point, each account for this user on every salt minion will have an
+At this point, the account for this user on every salt minion will have an
 */.ssh* directory off */home* that looks similar to the following:
 
 ```
@@ -112,17 +113,17 @@ ssh-agent known as *agent hijacking*. In general, it's good practice not to
 automatically allow agent forwarding unless you are **VERY SURE** that the
 remote server can be trusted.
 
-Notice that, for this procedure to work, the user's **origin** server **MUST**
-be running *ssh-agent*. It's common for a modern operating system to
-automatically start ssh-agent when a user opens a shell window from a GUI
-interface. On the first ssh attempt, ssh-agent will ask for and save the
+Notice that, for this procedure to work, the user's **originating** server (not
+olympus) **MUST** be running *ssh-agent*. It's common for a modern operating
+system to automatically start ssh-agent when a user opens a shell window from a
+GUI interface. On the first ssh attempt, ssh-agent will ask for and save the
 passphrase associated with the ssh key pair. This passphrase entry typically
 lasts at least as long as the user is logged into the origin server.
 
-This initial set-up needs to be done only once. But, in order to push code
-to Github, there are a few more set-up steps.
+This set-up needs to be done only once. But, in order to push code to Github,
+there are a few more steps.
 
-### Create bare repository on Github
+### Create a bare repository on Github
 
 * A one-time operation when adding an olympus repository to Github.
 * Navigate to the [Create a new repository page](https://github.com/new) after
