@@ -68,7 +68,7 @@ The key's randomart image is:
 
 It's important to protect the private key with a strong passphrase.
 
-In this example, id_ed25519.pub needs to be added to the user's configuration in
+In this example, **id_ed25519.pub** needs to be added to the user's configuration in
 salt pillar. An administrator then needs to run the proper state file on all
 salt minions to grant the user system-wide ssh access.
 
@@ -88,7 +88,7 @@ total 12
 
 The *authorized_keys* file will contain the newly-installed public key. The
 other file, *config*, is also maintained by salt, meaning that it will be
-overwritten on each subsequent run of the users.sls state. The contents of
+overwritten on each subsequent run of the *users.sls* state. The contents of
 *config* are as follows:
 
 ```
@@ -109,21 +109,22 @@ user moves from one olympus server to another.
 attempting to push code to a Github repository.
 * The last two lines are a safety feature needed due to a vulnerability in
 ssh-agent known as *agent hijacking*. In general, it's good practice not to
-automatically allow agent forwarding unless you are *VERY SURE* that the
+automatically allow agent forwarding unless you are **VERY SURE** that the
 remote server can be trusted.
 
-Notice that, for this procedure to work, the user's **origin** server must
+Notice that, for this procedure to work, the user's **origin** server **MUST**
 be running *ssh-agent*. It's common for a modern operating system to
 automatically start ssh-agent when a user opens a shell window from a GUI
 interface. On the first ssh attempt, ssh-agent will ask for and save the
 passphrase associated with the ssh key pair. This passphrase entry typically
-lasts at least so long as the user is logged into the origin server.
+lasts at least as long as the user is logged into the origin server.
 
 This initial set-up needs to be done only once. But, in order to push code
 to Github, there are a few more set-up steps.
 
 ### Create bare repository on Github
 
+* A one-time operation when adding an olympus repository to Github.
 * Navigate to the [Create a new repository page](https://github.com/new) after
 account log-in.
 * Under **Repository name**, enter "olympus".
@@ -137,6 +138,7 @@ sure to create them in the local working repository.
 
 ### Change default branch on Github to "master"
 
+* Also a one-time operation.
 * Navigate to [the repository's general settings page](https://github.com/AlexandreDdaCosta/olympus/settings).
 * Edit the **Default branch** to *master* in the edit pop-up and submit.
 
@@ -156,10 +158,12 @@ Fill in the options as follows:
 **Key**. Paste in the public key contents from the clipboard.
 
 * Submit the form with the **Add ssh key** button.
+* The steps under this header can be repeated when updating an old key or adding 
+more keys to the Github account.
 
 ### Add a local repository entry for the remote Github repository
 
-On an olympus development machine, change directory to the local working olympus
+Back on the olympus development machine, change directory to the local working olympus
 repository and set up a new remote to handle push/pull commands to/from the
 Github repository.
 
