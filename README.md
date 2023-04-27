@@ -39,15 +39,19 @@ TODO
 A user account on olympus is allowed ssh access via an ssh key pair. The public
 key is stored in salt pillar and pushed to minions by Saltstack.
 
-The key pair should be created using the Ed25519 algorithm. Here's an example of
-such a procedure on a Mac, following the defaults:
+The key pair should be created using the Ed25519 algorithm on the user's home
+(or *originating*) server. Here's an example of such a procedure on a Mac,
+following the defaults:
 
 ```
 ssh-keygen -t ed25519 -C "alexandre.dias.dacosta@gmail.com"
+...
 Generating public/private ed25519 key pair.
 Enter file in which to save the key (/Users/alex/.ssh/id_ed25519):
 Enter passphrase (empty for no passphrase):
+...
 Enter same passphrase again:
+...
 Your identification has been saved in /Users/alex/.ssh/id_ed25519.
 Your public key has been saved in /Users/alex/.ssh/id_ed25519.pub.
 The key fingerprint is:
@@ -68,10 +72,10 @@ The key's randomart image is:
 
 It's important to protect the private key with a strong passphrase.
 
-In this example, **id_ed25519.pub** needs to be added to the user's configuration
-in salt pillar under the stanza *ssh_public_key*. An administrator then needs to
-run the *users* state file on all salt minions to grant the user system-wide ssh
-access.
+In this example, the contents of **id_ed25519.pub** needs to be added to the
+user's configuration in salt pillar under the stanza *ssh_public_key*. An
+administrator then needs to run the *users* state file on all salt minions to
+grant the user system-wide ssh access.
 
 ```
 sudo -i salt '*' state.sls users -v
@@ -115,10 +119,10 @@ remote server can be trusted.
 
 Notice that, for this procedure to work, the user's **originating** server (not
 olympus) **MUST** be running *ssh-agent*. It's common for a modern operating
-system to automatically start ssh-agent when a user opens a shell window from a
-GUI interface. On the first ssh attempt, ssh-agent will ask for and save the
+system to automatically start *ssh-agent* when a user opens a shell window from
+a GUI interface. On the first ssh attempt, *ssh-agent* will ask for and save the
 passphrase associated with the ssh key pair. This passphrase entry typically
-lasts at least as long as the user is logged into the origin server.
+lasts at least as long as the user is logged into the originating server.
 
 This set-up needs to be done only once. But, in order to push code to Github,
 there are a few more steps.
@@ -164,9 +168,9 @@ more keys to the Github account.
 
 ### Add a local repository entry for the remote Github repository
 
-Back on the olympus development machine, change directory to the local working olympus
-repository and set up a new remote to handle push/pull commands to/from the
-Github repository.
+Back on the olympus development machine, change directory to the local working
+olympus repository and set up a new remote to handle push/pull commands to/from
+the Github repository.
 
 ```
 git remote add github https://github.com/AlexandreDdaCosta/olympus.git
@@ -182,9 +186,13 @@ Hi AlexandreDdaCosta! You've successfully authenticated, but GitHub does not
 provide shell access.
 ```
 
+All previous steps are one-time only **UNLESS** you want to make modifications to
+repositories or ssh key pairs.
+
 ### Push repository updates to Github
 
-From inside the remote repository:
+Once all the set-up is done, you can push reliably code to Github from inside
+the remote repository:
 
 ```
 git push github
