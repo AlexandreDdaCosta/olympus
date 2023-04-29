@@ -20,13 +20,57 @@ configuration, olympus has three core servers:
 
 Olympus allows a fourth type of server, the "worker" class, which can be 
 spun up or down as needed for processing-intensive tasks. This last type of
-node is a good place to use an enterprise-class server, since the occasional
+node is a good place to use an enterprise-class server, since the intermittent
 use envisioned of the worker class means that power consumption will
 remain reasonable.
 
 ## Repositories
 
-TODO
+Five repositories combine to hold the code used to build olympus. Why five? 
+Although the code base could easily fit in one repository, considerations of 
+security, privacy, and distribution went into the design of the current set-up.
+For details on how the these repositories are merged during running of Salt
+states, see [core.conf](https://github.com/AlexandreDdaCosta/olympus/blob/master/service/salt/fs/saltstack/files/master.d/core.conf),
+one of the Salt master configuration files.
+
+### olympus
+
+The core repository, mirrored on Github. At the root there are four major
+divisions:
+
+* apps. Olympus-only applications.
+* core. Python3 libraries installed in */usr/local/lib* on every server.
+* install. The complete installation code, used for an initial USB build of
+the core servers.
+* service. The core Saltstack modules, Django files, and Node.js build. These
+are grouped as they are used by Saltstack to build and maintain the
+installation. In particular, Saltstack state files only live in git, not on
+the file system.
+
+### acropolis
+
+This repository holds information and code not suitable to distribution on
+Github. There are two types of data here:
+
+* Any pillar *.sls* files not found on the olympus repository due to their
+sensitive nature.
+* Python algorithms that are considered proprietary.
+
+The acropolis repository lives only on the main olympus supervisor server
+itself and its backup.
+
+### olympus-static
+
+Image files. While not of a sensitive nature, these files were separated from
+the olympus repository because they are not code and therefore not considered
+particularly interesting for distribution.
+
+### olympus-blog
+### olympus-viewer
+
+These are olympus features developed as stand-alone Django applications. As
+such, they are intended to be used as add-ons for third-party Django
+installations.
 
 ## Software stack
 
@@ -73,7 +117,7 @@ The key's randomart image is:
 It's important to protect the private key with a strong passphrase.
 
 In this example, the contents of **id_ed25519.pub** need to be added to the
-user's configuration in salt pillar under the stanza *ssh_public_key*. An
+user's configuration in salt pillar under the header *ssh_public_key*. An
 administrator then needs to run the *users* state file on all salt minions to
 grant the user system-wide ssh access.
 
