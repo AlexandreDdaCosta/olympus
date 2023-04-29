@@ -14,14 +14,14 @@ A single, robustly-built data center class server can host olympus, but
 power consumption can be the equivalent of 8-10 tiny servers. In its expanded 
 configuration, olympus has three core servers:
 
-* Interface (web-facing)
-* Supervisor (controller)
-* Database/file server
+* **Interface** (web-facing)
+* **Supervisor** (controller)
+* **Database/file**
 
 Olympus allows a fourth type of server, the **Worker** class, which can be 
 spun up or down as needed for processing-intensive tasks. This last type of
 node is a good place to use an enterprise-class server, since the intermittent
-use envisioned of the worker class means that power consumption will
+use envisioned of the worker class means that overall power consumption will
 remain reasonable.
 
 ## Repositories
@@ -29,7 +29,7 @@ remain reasonable.
 Five repositories combine to hold the code used to build olympus. Why five? 
 Although the code base could easily fit in one repository, considerations of 
 security, privacy, and distribution went into the design of the current set-up.
-For details on how the these repositories are merged during running of Salt
+For details on how the these repositories are merged during the running of Salt
 states, see [core.conf](https://github.com/AlexandreDdaCosta/olympus/blob/master/service/salt/fs/saltstack/files/master.d/core.conf),
 one of the Salt master configuration files.
 
@@ -38,19 +38,20 @@ one of the Salt master configuration files.
 The core repository, mirrored on Github. At the root there are four major
 divisions:
 
-* apps. Olympus-only applications.
-* core. Python3 libraries installed in */usr/local/lib* on every server.
-* install. The complete installation code, used for an initial USB build of
+* **apps**. Olympus-only applications.
+* **core**. Python3 libraries installed in */usr/local/lib/python3.9/dist-packages/olympus*
+on every server.
+* **install**. The complete installation code, used for an initial USB build of
 the core servers.
-* service. The core SaltStack modules, Django files, and Node.js build. These
-are grouped as they are used by SaltStack to build and maintain the
-installation. In particular, SaltStack state files only live in git, not on
-the file system.
+* **service**. The core SaltStack modules, Django files, and Node.js build.
+These are grouped together as they are used by SaltStack to build and maintain
+the installation. In particular, *SaltStack state files only live in git*, not
+on the file system.
 
 ### acropolis
 
-This repository holds information and code not suitable to distribution on
-Github. There are two types of data here:
+This repository holds information and code not suitable to distribution or 
+storgae on Github. There are two types of data here:
 
 * Any pillar *.sls* files not found on the olympus repository due to their
 sensitive nature.
@@ -62,8 +63,8 @@ itself and its backup.
 ### olympus-static
 
 Image files. While not of a sensitive nature, these files were separated from
-the olympus repository because they are not code and therefore not considered
-particularly interesting for distribution.
+the olympus repository because they are not code and are therefore not
+considered particularly interesting for distribution.
 
 ### [olympus-blog](https://github.com/AlexandreDdaCosta/olympus-blog)
 ### [olympus-viewer](https://github.com/AlexandreDdaCosta/olympus-viewer)
@@ -87,7 +88,7 @@ Major components include:
 The granddaddy of open source Linux distros, Debian is the operating system
 used across the entirety of olympus.
 
-* [SaltStack](https://saltproject.io/) *(all server types; master runs on the supervisor)*
+* [SaltStack](https://saltproject.io/) *(all server types; Salt master runs on the supervisor)*
 
 This configuration-management utility is the glue that holds together olympus.
 Apart from the initial Debian installations, SaltStack is used to distribute
@@ -114,13 +115,11 @@ also the one server type that implements a RAID 1 configuration.
 
 * [MongoDB](https://www.mongodb.com/) *(all server types)*
 
-MongoDB exists on all servers mostly as a "scratch pad" database, a place to
+MongoDB exists on all servers mostly as a "scratch pad", a place to
 temporarily store detailed data that is processed algorithmically or that
 otherwise gets regularly refreshed. An exception to this is the MongoDB database
-on the supervisor, which currently holds detailed equity pricing data accessible
-to all servers that can reach the back end API. Of course, this data is expected
-to be regularly updated, and pricing data is considered not critical for
-long-term storage since such data can be easily restored via external API calls.
+on the supervisor, which currently holds external API credentials. These
+credentials include keys that regularly expire and require regeneration.
 
 * [Node.js](https://nodejs.org/en) *(supervisor)*
 
@@ -139,7 +138,7 @@ user permissions.
 
 Java is used in the back end to deliver an internal-only interface used to
 access features only visible to administrative users. The interface is
-developed via [intellij](https://www.jetbrains.com/idea/) and
+developed via [Intellij IDEA](https://www.jetbrains.com/idea/) and
 [Spring Boot](https://spring.io/projects/spring-boot).
 
 Minor components include:
@@ -149,7 +148,7 @@ Minor components include:
 * [Bash](https://www.gnu.org/software/bash/). Mostly used for command-line
 installation utilities.
 
-* [Jinja](https://palletsprojects.com/p/jinja/) (*supervisor*). The templating
+* [Jinja2](https://palletsprojects.com/p/jinja/) (*supervisor*). The templating
 language used to build Salt state files.
 
 ## Developer notes for pushing working olympus repository to Github
