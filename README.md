@@ -18,7 +18,7 @@ configuration, olympus has three core servers:
 * Supervisor (controller)
 * Database/file server
 
-Olympus allows a fourth type of server, the "worker" class, which can be 
+Olympus allows a fourth type of server, the **Worker** class, which can be 
 spun up or down as needed for processing-intensive tasks. This last type of
 node is a good place to use an enterprise-class server, since the intermittent
 use envisioned of the worker class means that power consumption will
@@ -33,7 +33,7 @@ For details on how the these repositories are merged during running of Salt
 states, see [core.conf](https://github.com/AlexandreDdaCosta/olympus/blob/master/service/salt/fs/saltstack/files/master.d/core.conf),
 one of the Salt master configuration files.
 
-### olympus
+### [olympus](https://github.com/AlexandreDdaCosta/olympus)
 
 The core repository, mirrored on Github. At the root there are four major
 divisions:
@@ -42,9 +42,9 @@ divisions:
 * core. Python3 libraries installed in */usr/local/lib* on every server.
 * install. The complete installation code, used for an initial USB build of
 the core servers.
-* service. The core Saltstack modules, Django files, and Node.js build. These
-are grouped as they are used by Saltstack to build and maintain the
-installation. In particular, Saltstack state files only live in git, not on
+* service. The core SaltStack modules, Django files, and Node.js build. These
+are grouped as they are used by SaltStack to build and maintain the
+installation. In particular, SaltStack state files only live in git, not on
 the file system.
 
 ### acropolis
@@ -65,23 +65,99 @@ Image files. While not of a sensitive nature, these files were separated from
 the olympus repository because they are not code and therefore not considered
 particularly interesting for distribution.
 
-### olympus-blog
-### olympus-viewer
+### [olympus-blog](https://github.com/AlexandreDdaCosta/olympus-blog)
+### [olympus-viewer](https://github.com/AlexandreDdaCosta/olympus-viewer)
 
 These are olympus features developed as stand-alone Django applications. As
 such, they are intended to be used as add-ons for third-party Django
 installations.
 
+* olympus-blog. Personal blog application.
+
+* olympus-viewer. Image library viewer.
+
 ## Software stack
 
-TODO
+Each component is listed along with the server type on which it appears.
+
+Major components include:
+
+* [Debian](https://www.debian.org/) *(all server types)*
+
+The granddaddy of open source Linux distros, Debian is the operating system
+used across the entirety of olympus.
+
+* [SaltStack](https://saltproject.io/) *(all server types; master runs on the supervisor)*
+
+This configuration-management utility is the glue that holds together olympus.
+Apart from the initial Debian installations, SaltStack is used to distribute
+and maintain all olympus software through the use of Salt state files.
+
+* [Python3](https://www.python.org/) *(all server types)*
+
+The primary software component. Software packages like Django and SaltStack are
+written in Python. Python is also used for all algorithmic code.
+
+* [Django](https://www.djangoproject.com/) *(interface)*
+
+Delivers the web-facing interface. The Django component also includes a
+collection of HTML templates that utilize the [Django templating language](https://docs.djangoproject.com/en/4.2/topics/templates/).
+Additonally, there are a number of [SCSS](https://sass-lang.com/) templates and
+Javascript files used to deliver the user interface.
+
+* [PostgreSQL](https://www.postgresql.org/) *(database)*
+
+Django's data store, as well as the store for hard-to-generate algorithmic
+data. As this is critical data targeted for long-term storage,
+the database server is the one machine subject to regular data back-up and is
+also the one server type that implements a RAID 1 configuration.
+
+* [MongoDB](https://www.mongodb.com/) *(all server types)*
+
+MongoDB exists on all servers mostly as a "scratch pad" database, a place to
+temporarily store detailed data that is processed algorithmically or that
+otherwise gets regularly refreshed. An exception to this is the MongoDB database
+on the supervisor, which currently holds detailed equity pricing data accessible
+to all servers that can reach the back end API. Of course, this data is expected
+to be regularly updated, and pricing data is considered not critical for
+long-term storage since such data can be easily restored via external API calls.
+
+* [Node.js](https://nodejs.org/en) *(supervisor)*
+
+The supervisor hosts a back-end REST API delivered via Node.js and only used
+internally, principally to access data stored on the supervisor's MongoDB
+database.
+
+* [Redis](https://redis.io/) *(all server types)*
+
+This in-memory key/value pair data store implements access control lists,
+thereby allowing for isolated, transient storage of key data needed by the
+various applications, which are isolated from one another via simple UNIX
+user permissions.
+
+* [Java](https://www.java.com/en/) *(supervisor)*
+
+Java is used in the back end to deliver an internal-only interface used to
+access features only visible to administrative users. The interface is
+developed via [intellij](https://www.jetbrains.com/idea/) and
+[Spring Boot](https://spring.io/projects/spring-boot).
+
+Minor components include:
+
+* [Perl](https://www.perl.org/) *(supervisor)*. Occasional utility scripts.
+
+* [Bash](https://www.gnu.org/software/bash/). Mostly used for command-line
+installation utilities.
+
+* [Jinja](https://palletsprojects.com/p/jinja/) (*supervisor*). The templating
+language used to build Salt state files.
 
 ## Developer notes for pushing working olympus repository to Github
 
 ### Set up ssh key pair
 
 A user account on olympus is allowed ssh access via an ssh key pair. The public
-key is stored in salt pillar and pushed to minions by Saltstack.
+key is stored in salt pillar and pushed to minions by SaltStack.
 
 The key pair should be created using the Ed25519 algorithm on the user's home
 (or *originating*) server. Here's an example of such a procedure on a Mac,
