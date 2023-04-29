@@ -1,4 +1,11 @@
-import collections, datetime, json, os, re, shutil, socket, subprocess, time
+import collections
+import json
+import os
+import re
+import shutil
+import socket
+import subprocess
+import time
 
 from datetime import date, datetime as dt, timedelta
 from dateutil import tz
@@ -15,19 +22,28 @@ from olympus import DATE_STRING_FORMAT, Dates, FileFinder, Return, Series, USER
 from olympus.securities import Quote
 from olympus.securities.equities import SCHEMA_FILE_DIRECTORY
 from olympus.securities.equities.data import REQUEST_TIMEOUT, TIMEZONE
-from olympus.securities.equities.data.datetime import DateVerifier
-from olympus.securities.equities.data.schema import ADJUSTMENTS_SCHEMA, DIVIDENDS_SCHEMA, PRICE_SCHEMA, SPLITS_SCHEMA, SchemaParser
+from olympus.securities.equities.data.equity_datetime import DateVerifier
+from olympus.securities.equities.data.schema import ADJUSTMENTS_SCHEMA
+from olympus.securities.equities.data.schema import DIVIDENDS_SCHEMA
+from olympus.securities.equities.data.schema import PRICE_SCHEMA
+from olympus.securities.equities.data.schema import SPLITS_SCHEMA
+from olympus.securities.equities.data.schema import SchemaParser
 
-socket.setdefaulttimeout(REQUEST_TIMEOUT) # For urlretrieve
+socket.setdefaulttimeout(REQUEST_TIMEOUT)  # For urlretrieve
 
-PRICE_FORMAT = [ "Open", "High", "Low", "Close", "Volume", "Adjusted Open", "Adjusted High", "Adjusted Low", "Adjusted Close", "Adjusted Volume" ]
-VALID_DAILY_WEEKLY_PERIODS = {'1M':30,'3M':91,'6M':183,'1Y':365,'2Y':730,'5Y':1825,'10Y':3652,'20Y':7305,'All':None}
-VALID_MONTHLY_PERIODS = ['1Y','2Y','5Y','10Y','20Y','All']
+PRICE_FORMAT = ["Open", "High", "Low", "Close", "Volume", "Adjusted Open",
+                "Adjusted High", "Adjusted Low", "Adjusted Close",
+                "Adjusted Volume"]
+VALID_DAILY_WEEKLY_PERIODS = {'1M': 30, '3M': 91, '6M': 183, '1Y': 365,
+                              '2Y': 730, '5Y': 1825, '10Y': 3652,
+                              '20Y': 7305, 'All': None}
+VALID_MONTHLY_PERIODS = ['1Y', '2Y', '5Y', '10Y', '20Y', 'All']
 
 '''
-When stored in the database, price data is split into separate collection by symbol
-with the naming convention "price.<symbol>". The order of the documents stored within each collection
-will vary, but the documents themselves can include the following:
+When stored in the database, price data is split into separate collection by
+symbol with the naming convention "price.<symbol>". The order of the documents
+stored within each collection will vary, but the documents themselves can
+include the following:
 
 Splits:
 
@@ -35,8 +51,10 @@ Splits:
     "_id" : ObjectId("################"),
     "Time" : "<Last update time>",
     "Adjustment": "Splits",
-    "Start Time": "<Time stamp for start of split records. One minute resolution.>",
-    "End Time": "<Time stamp for end of split records. One minute resolution.>",
+    "Start Time": "<Time stamp for start of split records. One minute
+        resolution.>",
+    "End Time": "<Time stamp for end of split records. One minute
+        resolution.>",
     "Splits" : {
         "<Time stamp, one minute resolution>" : {
             "Numerator" : <integer>,
@@ -54,8 +72,10 @@ Dividends:
     "_id" : ObjectId("################"),
     "Time" : "<Last update time>",
     "Adjustment": "Dividends",
-    "Start Time": "<Time stamp for start of dividend records. One minute resolution.>",
-    "End Time": "<Time stamp for end of dividend records. One minute resolution.>",
+    "Start Time": "<Time stamp for start of dividend records. One minute
+        resolution.>",
+    "End Time": "<Time stamp for end of dividend records. One minute
+        resolution.>",
     "Dividends" : {
         "<Time stamp, one minute resolution>" : {
             "Dividend" : <float>[,
@@ -70,14 +90,17 @@ Date-merged splits and dividends:
 {
     "_id" : ObjectId("################"),
     "Time" : "<Last update time>",
-	"Adjustment" : "Merged",
-	"Time Dividends" : "<Dividend update time for this record>",
-	"Time Splits" : "<SPlit update time for this record>",
-	"Adjustments" : {
+    "Adjustment" : "Merged",
+    "Time Dividends" : "<Dividend update time for this record>",
+    "Time Splits" : "<SPlit update time for this record>",
+    "Adjustments" : {
         "<Time stamp, one minute resolution>" : {
-			["Price Adjustment" : <integer>,
-			"Volume Adjustment" : <float>][,]
-			["Dividend" : <float>]
+            [
+                "Price Adjustment" : <integer>,
+                "Volume Adjustment" : <float>
+            ]
+            [,]
+            ["Dividend" : <float>]
         },
         <more adjustments>
     }
@@ -89,8 +112,10 @@ Price quotes:
     "_id" : ObjectId("################"),
     "Time" : "<Last update time>",
     "Interval": "<Interval of series. Available: 1m/60m (minutes), 1d (day)>",
-    "Start Time": "<Time stamp for first interval stored. One minute resolution.>",
-    "End Time": "<Time stamp for last interval stored. One minute resolution.>",
+    "Start Time": "<Time stamp for first interval stored. One minute
+        resolution.>",
+    "End Time": "<Time stamp for last interval stored. One minute
+        resolution.>",
     "Quotes" : {
         "<Time stamp, one minute resolution>" : {
             "Open" : "<quote>",
@@ -113,28 +138,31 @@ Price quotes:
 Notes:
 
 1. Unless so labeled, price and volume data are "as traded".
-2. Adjustments are stored to facilitate the most common use case. Data sources are adjusted for
-   splits, so adjustments are principally set up to UNDO data sources adjustments to retrieve as-traded
-   prices, dividends, and volumes.
-3. Split adjustments are cumulative, starting from the most recent date and extended into the past
-   to the first recorded split. This allows for simple calculations when doing related price, volume,
-   and dividend adjustments. Note that price and dividend adjustments are identical. Also note
-   that adjustments begin on the date they are recorded.
+2. Adjustments are stored to facilitate the most common use case. Data sources
+are adjusted for splits, so adjustments are principally set up to UNDO data
+sources adjustments to retrieve as-traded prices, dividends, and volumes.
+3. Split adjustments are cumulative, starting from the most recent date and
+extended into the past to the first recorded split. This allows for simple
+calculations when doing related price, volume, and dividend adjustments. Note
+that price and dividend adjustments are identical. Also note that adjustments
+begin on the date they are recorded.
 4. Adjusted dividend numbers are included only when adjusted for splits.
-5. Adjusted price figures within brackets are included only when they differ from as-traded numbers.
-6. Merged adjustment data in brackets for a specific date will only appear when such data exists for
-   that specific date.
-7. Split ("Splits"), dividend ("Dividends"), and merged ("Adjustments") data will be null (None) when
-   no data exists.
+5. Adjusted price figures within brackets are included only when they differ
+from as-traded numbers.
+6. Merged adjustment data in brackets for a specific date will only appear when
+such data exists for that specific date.
+7. Split ("Splits"), dividend ("Dividends"), and merged ("Adjustments") data
+will be null (None) when no data exists.
 
 '''
 
 # Classes for returned data with adjustments
 
+
 class _AdjustedData(Series):
 
-    def __init__(self,adjustment_type,data,query_date=None):
-        super(_AdjustedData,self).__init__()
+    def __init__(self, adjustment_type, data, query_date=None):
+        super(_AdjustedData, self).__init__()
         if query_date is not None:
             self.query_date = query_date
         if data is None:
@@ -147,7 +175,9 @@ class _AdjustedData(Series):
         elif adjustment_type == 'split':
             json_schema = SPLITS_SCHEMA
         else:
-            raise Exception('Unrecognized adjustment type ' + str(adjustment_type) + 'given to _AdjustedData object')
+            raise Exception('Unrecognized adjustment type '
+                            + str(adjustment_type)
+                            + 'given to _AdjustedData object')
         database_format = schema_parser.database_format_columns(json_schema)
         if adjustment_type == 'dividend' or adjustment_type == 'split':
             for entry in data:
@@ -158,33 +188,38 @@ class _AdjustedData(Series):
                         adjustment_data[key] = entry[format_index]
                     except IndexError:
                         break
-                    except:
-                        raise
                     if key == 'Datetime':
-                        adjustment_data[key] = adjustment_data[key].replace(tzinfo=tz.gettz(TIMEZONE))
+                        adjustment_data[key] = adjustment_data[key].replace(
+                                tzinfo=tz.gettz(TIMEZONE))
                     format_index = format_index + 1
-                data_object = Return(adjustment_data,json_schema)
+                data_object = Return(adjustment_data, json_schema)
                 self.add(data_object)
         else:
             for entry in data:
                 if 'Date' in entry:
-                    entry['Date'] = entry['Date'].replace(tzinfo=tz.gettz(TIMEZONE))
-                data_object = Return(entry,json_schema)
+                    entry['Date'] = entry['Date'].replace(
+                            tzinfo=tz.gettz(TIMEZONE))
+                data_object = Return(entry, json_schema)
                 self.add(data_object)
-        # This data is sorted from newest to oldest to simplify calculation and application of adjustments
-        self.sort('date',reverse=True)
+        # This data is sorted from newest to oldest to simplify calculation and
+        # application of adjustments
+        self.sort('date', reverse=True)
+
 
 class _PriceData(Series):
-    # A list of lists. Unlike the "Series", formats data only as requested by accessors.
 
-    def __init__(self,data,query_date=None,preformat=False):
-        super(_PriceData,self).__init__()
+    # A list of lists. Unlike the "Series", formats data only as requested
+    # by accessors.
+
+    def __init__(self, data, query_date=None, preformat=False):
+        super(_PriceData, self).__init__()
         if query_date is not None:
             self.query_date = query_date
         if data is None:
             return
         schema_parser = SchemaParser()
-        self.database_format = schema_parser.database_format_columns(PRICE_SCHEMA)
+        self.database_format = schema_parser.database_format_columns(
+                PRICE_SCHEMA)
         self.database_format_length = len(self.database_format)
         self.preformatted = preformat
         if preformat is True:
@@ -193,39 +228,46 @@ class _PriceData(Series):
                 self.series.append(self._format_quote(quote))
         else:
             self.series = data
-        # This data gets sorted from oldest to newest to follow a natural time progression
+        # This data gets sorted from oldest to newest to follow a natural
+        # time progression
         self.sort()
 
-    def first(self,**kwargs):
-        quote = super(_PriceData,self).first()
-        if self.preformatted is True:
-            return quote
-        return self._format_quote(quote,**kwargs)
-
-    def last(self,**kwargs):
-        quote = super(_PriceData,self).last()
-        if self.preformatted is True:
-            return quote
-        return self._format_quote(quote,**kwargs)
-
-    def lookback(self, positions, **kwargs):
-        # Implemented differently due to occasional very large data sets with pricing
-        quote = super(_PriceData,self).lookback(positions)
+    def first(self, **kwargs):
+        quote = super(_PriceData, self).first()
         if self.preformatted is True:
             return quote
         return self._format_quote(quote, **kwargs)
 
-    def next(self,**kwargs):
-        # Implemented differently due to occasional very large data sets with pricing
-        quote = super(_PriceData,self).next(**kwargs)
+    def last(self, **kwargs):
+        quote = super(_PriceData, self).last()
         if self.preformatted is True:
             return quote
-        return self._format_quote(quote,**kwargs)
+        return self._format_quote(quote, **kwargs)
 
-    def _format_quote(self,quote,**kwargs):
+    def lookback(self, positions, **kwargs):
+
+        # Implemented differently due to occasional very large data sets
+        # with pricing
+
+        quote = super(_PriceData, self).lookback(positions)
+        if self.preformatted is True:
+            return quote
+        return self._format_quote(quote, **kwargs)
+
+    def next(self, **kwargs):
+
+        # Implemented differently due to occasional very large data sets
+        # with pricing
+
+        quote = super(_PriceData, self).next(**kwargs)
+        if self.preformatted is True:
+            return quote
+        return self._format_quote(quote, **kwargs)
+
+    def _format_quote(self, quote, **kwargs):
         if quote is None:
             return None
-        return_raw_data = kwargs.pop('return_raw_data',False)
+        return_raw_data = kwargs.pop('return_raw_data', False)
         return_data = {}
         format_index = 0
         if len(quote) < self.database_format_length:
@@ -235,40 +277,48 @@ class _PriceData(Series):
             if key == 'Datetime':
                 # Note that we rename this one as in the schema
                 if return_raw_data is True:
-                    return_data['Date'] = quote[format_index].replace(tzinfo=tz.gettz(TIMEZONE))
+                    return_data['Date'] = quote[format_index].replace(
+                            tzinfo=tz.gettz(TIMEZONE))
                 else:
-                    return_data[key] = quote[format_index].replace(tzinfo=tz.gettz(TIMEZONE))
+                    return_data[key] = quote[format_index].replace(
+                            tzinfo=tz.gettz(TIMEZONE))
             else:
                 return_data[key] = quote[format_index]
             format_index = format_index + 1
         if return_raw_data is True:
             return return_data
-        return Return(return_data,PRICE_SCHEMA,no_data_validation=True)
+        return Return(return_data, PRICE_SCHEMA, no_data_validation=True)
 
-    def sort(self,**kwargs):
+    def sort(self, **kwargs):
+
         # Sorts price quotes by date.
-        # When sorting arrays, python uses first element, which in this case is the date
+        # When sorting arrays, python uses first element, which in this case
+        # is the date.
+
         if self.preformatted is False:
             if self.series is not None:
-                reverse = kwargs.get('reverse',False)
+                reverse = kwargs.get('reverse', False)
                 # Re-use last sort if possible:
-                if self.reverse_sort is not None and self.reverse_sort == reverse:
+                if (self.reverse_sort is not None and
+                        self.reverse_sort == reverse):
                     return
                 self.series = sorted(self.series, reverse=reverse)
                 self.reverse_sort = reverse
         else:
-            super(_PriceData,self).sort('date',**kwargs)
+            super(_PriceData, self).sort('date', **kwargs)
+
 
 class Adjustments(data.Connection):
     '''
-Yahoo! Finance historical quotes are the data source for split and dividend history due to the data
-being free and having a deep history.
+Yahoo! Finance historical quotes are the data source for split and dividend
+history due to the data being free and having a deep history.
 
 DIVIDENDS
 ---------
 
-Yahoo! Finance records split-adjusted dividends. It's therefore necessary to get split information
-before dividend data in order to calculate the original value of recorded dividends. 
+Yahoo! Finance records split-adjusted dividends. It's therefore necessary to
+get split information before dividend data in order to calculate the original
+value of recorded dividends.
 
 SPLITS
 ------
@@ -279,30 +329,36 @@ A "four-for-one" split is received as:
 
 4:1
 
-The left hand digit is the "numerator", and the right hand is the "denominator".
+The left hand digit is the "numerator", and the right hand is the
+"denominator".
 
-These entries are then used to calculate numbers used to adjust past as-traded price and volume data as
-well as past issued dividends. Calculations begin with the most recent split, such that:
+These entries are then used to calculate numbers used to adjust past as-traded
+price and volume data as well as past issued dividends. Calculations begin with
+the most recent split, such that:
 
-denominator / numerator is the calculation used to adjust price quotes and dividends for all dates prior
-to the split date, up to the next oldest split date.
-numerator / denominator is the calculation used to adjust volume numbers for all dates prior
-to the split date, up to the next oldest split date.
+- denominator / numerator is the calculation used to adjust price quotes and
+dividends for all dates prior to the split date, up to the next oldest split
+date.
+- numerator / denominator is the calculation used to adjust volume numbers for
+all dates prior to the split date, up to the next oldest split date.
 
-For splits before the most recent one, the calculation must be multiplied by the matching figures for the 
-next most recent split date to arrive at a CUMULATIVE adjustment.
+For splits before the most recent one, the calculation must be multiplied by
+the matching figures for the next most recent split date to arrive at a
+CUMULATIVE adjustment.
 
-For regular splits, this procedure results in past price and dividend data being adjusted DOWNWARD,
-whereas past volume data will be adjusted UPWARD. The opposite is true in the case of a reverse split.
+For regular splits, this procedure results in past price and dividend data
+being adjusted DOWNWARD, whereas past volume data will be adjusted UPWARD. The
+opposite is true in the case of a reverse split.
 
-The dates stored imply the following logic: Use the calculated adjustments to adjust all historical
-data UP TO the date of the split but not past the date of the next oldest recorded split. Data from a 
-date more recent than or matching the date of the most recent split is therefore NEVER adjusted.
+The dates stored imply the following logic: Use the calculated adjustments to
+adjust all historical data UP TO the date of the split but not past the date of
+the next oldest recorded split. Data from a date more recent than or matching
+the date of the most recent split is therefore NEVER adjusted.
 '''
 
-    def __init__(self,username=USER,**kwargs):
-        super(Adjustments,self).__init__(username,**kwargs)
-        self.symbol_reader = symbols.Read(username,**kwargs)
+    def __init__(self, username=USER, **kwargs):
+        super(Adjustments, self).__init__(username, **kwargs)
+        self.symbol_reader = symbols.Read(username, **kwargs)
         self.adjustment_dividend_date = None
         self.adjustment_split_date = None
         self.adjusted_symbol = None
@@ -312,26 +368,35 @@ date more recent than or matching the date of the most recent split is therefore
         self.split_adjusted_symbol = None
         self.split_data_date = None
 
-    def adjustments(self,symbol,**kwargs):
-        # Returns all split and dividend adjustments for an equity's as-traded prices.
-        # Adjustments are returned as a date-ordered array, with the most recent date first.
+    def adjustments(self, symbol, **kwargs):
+
+        # Returns all split and dividend adjustments for an equity's
+        # as-traded prices.
+        # Adjustments are returned as a date-ordered array, with the most
+        # recent date first.
+
         symbol = str(symbol).upper()
-        symbol_verify = kwargs.get('symbol_verify',True)
+        symbol_verify = kwargs.get('symbol_verify', True)
         if symbol_verify is True:
             self.symbol_reader.get_symbol(symbol)
-        regen = kwargs.get('regen',False)
+        regen = kwargs.get('regen', False)
         adjustments_collection = 'price.' + symbol
         collection = self.db[adjustments_collection]
-        adjustments_data = collection.find_one({ 'Adjustment': 'Merged' },{ '_id': 0 })
+        adjustments_data = collection.find_one({'Adjustment': 'Merged'},
+                                               {'_id': 0})
         if adjustments_data is None:
             regen = True
         else:
-            dividends_query_time = self.date_utils.utc_date_to_timezone_date(adjustments_data['Time Dividends'],TIMEZONE)
-            splits_query_time = self.date_utils.utc_date_to_timezone_date(adjustments_data['Time Splits'],TIMEZONE)
-        if regen is True or self._is_stale_data(dividends_query_time) or self._is_stale_data(splits_query_time):
-            splits = self.splits(symbol,**kwargs)
+            dividends_query_time = self.date_utils.utc_date_to_tz_date(
+                    adjustments_data['Time Dividends'], TIMEZONE)
+            splits_query_time = self.date_utils.utc_date_to_tz_date(
+                    adjustments_data['Time Splits'], TIMEZONE)
+        if (regen is True or
+                self._is_stale_data(dividends_query_time) or
+                self._is_stale_data(splits_query_time)):
+            splits = self.splits(symbol, **kwargs)
             splits_date = splits.query_date
-            dividends = self.dividends(symbol,**kwargs) 
+            dividends = self.dividends(symbol, **kwargs)
             dividends_date = dividends.query_date
             adjustments = []
             dividend = None
@@ -347,67 +412,96 @@ date more recent than or matching the date of the most recent split is therefore
                     split = splits.next(reset=True)
                     while split is not None:
                         if dividend.date > split.date:
-                            adjustments.append({ 'Date': dividend.date, 'Dividend': dividend_adjustment })
+                            adjustments.append({'Date':
+                                                dividend.date,
+                                                'Dividend':
+                                                dividend_adjustment})
                             dividend_written = True
                             break
                         elif dividend.date == split.date:
-                            adjustments.append({ 'Date': dividend.date, 'Dividend': dividend_adjustment, 'Price Adjustment': split.price_dividend_adjustment, 'Volume Adjustment': split.volume_adjustment })
+                            adjustments.append(
+                                    {'Date':
+                                     dividend.date,
+                                     'Dividend':
+                                     dividend_adjustment,
+                                     'Price Adjustment':
+                                     split.price_dividend_adjustment,
+                                     'Volume Adjustment':
+                                     split.volume_adjustment})
                             dividend_written = True
                             break
-                        else: # dividend_date < split_date
-                            adjustments.append({ 'Date': split.date, 'Price Adjustment': split.price_dividend_adjustment, 'Volume Adjustment': split.volume_adjustment })
+                        else:  # dividend_date < split_date
+                            adjustments.append(
+                                    {'Date':
+                                     split.date,
+                                     'Price Adjustment':
+                                     split.price_dividend_adjustment,
+                                     'Volume Adjustment':
+                                     split.volume_adjustment})
                         split = splits.next()
                     if dividend_written is False:
-                        adjustments.append({ 'Date': dividend.date, 'Dividend': dividend_adjustment })
+                        adjustments.append({'Date': dividend.date,
+                                            'Dividend': dividend_adjustment})
                     dividend = dividends.next()
             if splits is not None:
                 if split is None:
                     split = splits.next(reset=True)
                 while split is not None:
-                    adjustments.append({ 'Date': split.date, 'Price Adjustment': split.price_dividend_adjustment, 'Volume Adjustment': split.volume_adjustment })
+                    adjustments.append({
+                        'Date': split.date,
+                        'Price Adjustment': split.price_dividend_adjustment,
+                        'Volume Adjustment': split.volume_adjustment})
                     split = splits.next()
             if len(adjustments) == 0:
                 adjustments = None
             else:
-                adjustments = sorted(adjustments, key=lambda k: k['Date'], reverse=True)
+                adjustments = sorted(adjustments,
+                                     key=lambda k: k['Date'],
+                                     reverse=True)
             write_dict = {}
             write_dict['Time'] = dt.now().astimezone()
             write_dict['Adjustment'] = 'Merged'
             write_dict['Time Dividends'] = dividends_date
             write_dict['Time Splits'] = splits_date
             write_dict['Adjustments'] = adjustments
-            collection.delete_many({ 'Adjustment': 'Merged' })
+            collection.delete_many({'Adjustment': 'Merged'})
             collection.insert_one(write_dict)
             returndata = adjustments
             query_date = write_dict['Time']
         else:
             returndata = adjustments_data['Adjustments']
             query_date = adjustments_data['Time']
-        return_object = _AdjustedData('merged',returndata,query_date)
+        return_object = _AdjustedData('merged', returndata, query_date)
         return return_object
 
-    def dividends(self,symbol,**kwargs):
+    def dividends(self, symbol, **kwargs):
         symbol = str(symbol).upper()
-        symbol_verify = kwargs.get('symbol_verify',True)
+        symbol_verify = kwargs.get('symbol_verify', True)
         if symbol_verify is True:
             self.symbol_reader.get_symbol(symbol)
-        regen = kwargs.get('regen',False)
+        regen = kwargs.get('regen', False)
         dividend_collection = 'price.' + symbol
         target_file = self.download_directory()+symbol+'-dividends.csv'
         collection = self.db[dividend_collection]
-        dividend_data = collection.find_one({ 'Adjustment': 'Dividends' },{ '_id': 0 })
+        dividend_data = collection.find_one({'Adjustment': 'Dividends'},
+                                            {'_id': 0})
         query_date = None
         stale = False
         start_dividend_date = None
         end_dividend_date = None
         if dividend_data is not None:
-            query_date = self.date_utils.utc_date_to_timezone_date(dividend_data['Time'])
+            query_date = self.date_utils.utc_date_to_tz_date(
+                    dividend_data['Time'])
             if dividend_data['Start Date'] is not None:
-                start_dividend_date = self.date_utils.utc_date_to_timezone_date(dividend_data['Start Date'],TIMEZONE)
+                start_dividend_date = self.date_utils.utc_date_to_tz_date(
+                        dividend_data['Start Date'],
+                        TIMEZONE)
             else:
                 start_dividend_date = None
             if dividend_data['End Date'] is not None:
-                end_dividend_date = self.date_utils.utc_date_to_timezone_date(dividend_data['End Date'],TIMEZONE)
+                end_dividend_date = self.date_utils.utc_date_to_tz_date(
+                        dividend_data['End Date'],
+                        TIMEZONE)
             else:
                 end_dividend_date = None
         if regen is False and dividend_data is not None:
@@ -485,13 +579,13 @@ date more recent than or matching the date of the most recent split is therefore
         start_split_date = None
         end_split_date = None
         if split_data is not None:
-            query_date = self.date_utils.utc_date_to_timezone_date(split_data['Time'])
+            query_date = self.date_utils.utc_date_to_tz_date(split_data['Time'])
             if split_data['Start Date'] is not None:
-                start_split_date = self.date_utils.utc_date_to_timezone_date(split_data['Start Date'],TIMEZONE)
+                start_split_date = self.date_utils.utc_date_to_tz_date(split_data['Start Date'],TIMEZONE)
             else:
                 start_split_date = None
             if split_data['End Date'] is not None:
-                end_split_date = self.date_utils.utc_date_to_timezone_date(split_data['End Date'],TIMEZONE)
+                end_split_date = self.date_utils.utc_date_to_tz_date(split_data['End Date'],TIMEZONE)
             else:
                 end_split_date = None
         if regen is False and split_data is not None:
@@ -759,8 +853,8 @@ my current judgment is that these differences will not grossly affect the desire
         if self.today < nine_pm_object:
             self.cutoff_today = True
         if interval_data is not None:
-            self.start_date_daily = self.date_utils.utc_date_to_timezone_date(interval_data['Start Date'],TIMEZONE)
-            self.end_date_daily = self.date_utils.utc_date_to_timezone_date(interval_data['End Date'],TIMEZONE)
+            self.start_date_daily = self.date_utils.utc_date_to_tz_date(interval_data['Start Date'],TIMEZONE)
+            self.end_date_daily = self.date_utils.utc_date_to_tz_date(interval_data['End Date'],TIMEZONE)
         if regen is False and interval_data is not None:
             stale = self._is_stale_data(interval_data['Time'].replace(tzinfo=tz.gettz(TIMEZONE)))
         elif interval_data is None:
@@ -778,7 +872,7 @@ my current judgment is that these differences will not grossly affect the desire
                     quote = None
                     quote_date = None
                     for quote in interval_data['Quotes']:
-                        quote_date = self.date_utils.utc_date_to_timezone_date(quote[0],TIMEZONE)
+                        quote_date = self.date_utils.utc_date_to_tz_date(quote[0],TIMEZONE)
                         if quote_date != self.end_date_daily:
                             continue
                         break
@@ -833,13 +927,13 @@ my current judgment is that these differences will not grossly affect the desire
             returndata = interval_data['Quotes']
             # Trim data outside of requested date range
             if start_date is not None:
-                returndata = [item for item in returndata if self.date_utils.utc_date_to_timezone_date(item[0],TIMEZONE) >= start_date]
+                returndata = [item for item in returndata if self.date_utils.utc_date_to_tz_date(item[0],TIMEZONE) >= start_date]
             if end_date is not None:
-                returndata = [item for item in returndata if self.date_utils.utc_date_to_timezone_date(item[0],TIMEZONE) <= end_date]
+                returndata = [item for item in returndata if self.date_utils.utc_date_to_tz_date(item[0],TIMEZONE) <= end_date]
             # Database dates need to be made time zone aware
             index = 0
             for entry in returndata:
-                returndata[index][0] = self.date_utils.utc_date_to_timezone_date(returndata[index][0],TIMEZONE)
+                returndata[index][0] = self.date_utils.utc_date_to_tz_date(returndata[index][0],TIMEZONE)
                 index = index + 1
         else:
             if start_date is not None:

@@ -49,7 +49,7 @@ PASSWORD_ENABLED_SERVICES = [MONGODB_SERVICE, REDIS_SERVICE, RESTAPI_SERVICE]
 
 class Dates():
 
-    def utc_date_to_timezone_date(self, utc_date, date_timezone=None):
+    def utc_date_to_tz_date(self, utc_date, date_timezone=None):
         # MongoDB assumes all stored dates are UTC, and pymongo also returns
         # dates as UTC. This explains the need for this function
         tz_date = utc_date.replace(tzinfo=timezone.utc)

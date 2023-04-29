@@ -13,7 +13,7 @@ import olympus.testing as testing
 from olympus import Dates, String, USER
 from olympus.securities.equities import *
 from olympus.securities.equities.data import Connection, TIMEZONE
-from olympus.securities.equities.data.datetime import OLDEST_QUOTE_DATE, DateVerifier, TradingDates
+from olympus.securities.equities.data.equity_datetime import OLDEST_QUOTE_DATE, DateVerifier, TradingDates
 from olympus.securities.equities.data.price import *
 from olympus.securities.equities.data.symbols import SymbolNotFoundError
 
