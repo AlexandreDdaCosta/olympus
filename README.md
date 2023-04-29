@@ -73,9 +73,9 @@ These are olympus features developed as stand-alone Django applications. As
 such, they are intended to be used as add-ons for third-party Django
 installations.
 
-* olympus-blog. Personal blog application.
+* **olympus-blog**. Personal blog application.
 
-* olympus-viewer. Image library viewer.
+* **olympus-viewer**. Image library viewer.
 
 ## Software stack
 
