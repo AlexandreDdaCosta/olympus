@@ -28,7 +28,15 @@ describe('Connect to mongo database and execute a variety of document operations
     connection = await MongoClient.connect(uri, {});
     db = await connection.db(config.get('mongodb.database_default'));
     var collection = db.collection(test_collection);
-    await collection.drop(function (err, result) { if (err); });
+    try {
+      await collection.drop();
+    } catch (e) {
+      if (e.code === 26) {
+        // Do nothing; collection not yet created
+      } else {
+        throw e;
+      }
+    }
   });
 
   afterAll(async () => {

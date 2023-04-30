@@ -13,20 +13,28 @@ const option = {
 function MongoPool(){};
 var pool_connection;
 
-function initPool(callback) {
-  MongoClient.connect(uri, option, function(err, connection) {
-    if (err) throw err;
-    // await connection.db("admin").command({ ping: 1 });
-    pool_connection = connection;
-    if (callback && typeof(callback) == 'function')
-        callback(pool_connection);
-  });
+async function initPool(callback) {
+  let connection;
+  try {
+     connection = await MongoClient.connect(uri, option);
+  } catch (err) {
+    throw new Error(err);
+    process.exit(1);
+  }
+  if (! connection) {
+    throw new Error('MongoDB connection failure.');
+    process.exit(1);
+  }
+  //await connection.db("admin").command({ ping: 1 });
+  pool_connection = connection;
+  if (callback && typeof(callback) == 'function')
+    callback(pool_connection);
   return MongoPool;
 }
 
-function getInstance(callback) {
+async function getInstance(callback) {
   if (! pool_connection) {
-    initPool(callback)
+    await initPool(callback)
   }
   else {
     if (callback && typeof(callback) == 'function')
