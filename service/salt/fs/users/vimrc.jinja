@@ -1,11 +1,25 @@
-" size of a hard tabstop
-set tabstop=4
+filetype on                    " File type detection
+set backspace=indent,eol,start " Proper backspace functionality
+set ic                         " Ignore case when searching
+set nofixendofline             " Eliminate the invisible newline added on save
+set noswapfile                 " Disable use of swap files
+set shiftwidth=4               " Size of an indent
+set smartindent                " Auto indent new lines
+set tabstop=4                  " Setting tab to 4 columns
+set expandtab                  " Expanding tab to spaces
+set undodir=~/.cache/nvim/undo " Persistent undo ability
+syntax on                      " Syntax highlighting
 
-" size of an "indent"
-set shiftwidth=4
+" F4 to clear search
+nnoremap <F4> :nohl<CR><C-l>:echo "Search Cleared"<CR>
 
-" a combination of spaces and tabs are used to simulate tab stops at a width other than the (hard)tabstop
-set softtabstop=4
+" F3 to execute python script
+autocmd FileType python nnoremap <buffer> <F5> :w<cr>:exec '!clear'<cr>:exec '!python3' shellescape(expand('%:p'), 1)<cr>
 
-" Eliminate that pesky invisible newline that vim adds on save
-set nofixendofline
+" Inactive settings, left for documentation
+" These settings can be enabled during a specific editing session
+
+" set colorcolumn=80 " Draw red line at column 80 (pep8)
+                     " Useful when using pycodestyle, but irritating otherwise
+" set number on      " Line numbering
+                     " Similar use case as colorcolumn
