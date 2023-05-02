@@ -89,7 +89,7 @@ class TestPrice(testing.Test):
         last_adjustment_date = None
         adjustment = adjustments_data.next()
         while adjustment is not None:
-            timezone_date = date_utils.utc_date_to_timezone_date(adjustment.date,TIMEZONE)
+            timezone_date = date_utils.utc_date_to_tz_date(adjustment.date,TIMEZONE)
             if last_adjustment_date is not None:
                 self.assertLess(timezone_date,last_adjustment_date)
             last_adjustment_date = timezone_date
@@ -192,10 +192,10 @@ class TestPrice(testing.Test):
         previous_date = None
         for quote_date in sorted(interval_data['Quotes'], key=lambda k: k[0], reverse=True):
             if last_date is None:
-                last_date = date_utils.utc_date_to_timezone_date(quote_date[0],TIMEZONE)
+                last_date = date_utils.utc_date_to_tz_date(quote_date[0],TIMEZONE)
                 continue
             if previous_date is None:
-                previous_date = date_utils.utc_date_to_timezone_date(quote_date[0],TIMEZONE)
+                previous_date = date_utils.utc_date_to_tz_date(quote_date[0],TIMEZONE)
                 break
         if previous_date is not None:
             self.print('Test for regeneration of missing dates by simulating the result from one trading day previous after doing full regeneration.')
