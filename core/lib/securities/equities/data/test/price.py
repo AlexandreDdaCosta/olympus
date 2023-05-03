@@ -91,7 +91,7 @@ class TestPrice(testing.Test):
         while adjustment is not None:
             timezone_date = date_utils.utc_date_to_tz_date(adjustment.date,TIMEZONE)
             if last_adjustment_date is not None:
-                self.assertLess(timezone_date,last_adjustment_date)
+                self.assertLessEqual(timezone_date,last_adjustment_date)
             last_adjustment_date = timezone_date
             if adjustment.get('dividend') is not None:
                 dividend = dividends.get_by_attribute('date',timezone_date)

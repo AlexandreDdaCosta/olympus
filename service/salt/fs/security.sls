@@ -588,6 +588,19 @@ redis_acl_reload:
     - require:
       - redis_acl_list
 
+/usr/local/bin/delete_redis_restapi_auth.sh
+  file.managed:
+    - group: root
+    - mode: 0700
+    - source: salt://security/files/delete_redis_restapi_auth.sh
+    - user: root
+
+redis_restapi_token_delete:
+  cmd.run:
+    - name: env REDIS_DEFAULT_PASSWORD={{ old_redis_default_password }} /usr/local/bin/delete_redis_restapi_auth.sh
+    - require:
+      - redis_acl_list
+
 #random_root_password:
 #  cmd.run:
 #    - name: umask 0077; openssl rand -base64 21 > /root/passwd; cat /root/passwd | passwd root --stdin; rm -f /root/passwd

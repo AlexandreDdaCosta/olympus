@@ -1001,36 +1001,57 @@ differences will not grossly affect the desired results.
                         (json_quote, interval_date) = \
                             self._parse_daily(line, adjuster)
                         if json_quote is not None:
-                            collection.update_one( { 'Interval': '1d', 'Quotes': { '$elemMatch': { '0': { '$eq': interval_date  } } } }, { '$unset': { "Quotes.$": 1 } } )
-                            collection.update_one( { 'Interval': '1d' }, { '$pull': { 'Quotes': None } } )
-                            collection.update_one( { 'Interval': '1d'}, { '$addToSet': { 'Quotes': json_quote } } )
-                    collection.update_one({'Interval': '1d'},{ "$set":  {'End Date': self.end_date_daily, 'Start Date': self.start_date_daily, 'Time': self.today }})
+                            collection.update_one(
+                                {'Interval': '1d',
+                                 'Quotes': {'$elemMatch':
+                                            {'0':
+                                             {'$eq': interval_date}}}},
+                                {'$unset': {"Quotes.$": 1}})
+                            collection.update_one(
+                                {'Interval': '1d'},
+                                {'$pull': {'Quotes': None}})
+                            collection.update_one(
+                                {'Interval': '1d'}, {'$addToSet':
+                                                     {'Quotes': json_quote}})
+                    collection.update_one(
+                        {'Interval': '1d'},
+                        {"$set":  {'End Date': self.end_date_daily,
+                                   'Start Date': self.start_date_daily,
+                                   'Time': self.today}})
             os.remove(target_file)
         if regen is True:
-            adjuster = _PriceAdjuster(symbol,self.username,regen=regen_adjustments,symbol_verify=False)
+            adjuster = _PriceAdjuster(symbol,
+                                      self.username,
+                                      regen=regen_adjustments,
+                                      symbol_verify=False)
             url = self._daily_quote_url(symbol)
-            response = urlretrieve(url,target_file)
-            # The initial response contains split-only adjusted prices, ordered from oldest to newest.
-            with open(target_file,'r') as f:
+            response = urlretrieve(url, target_file)
+            # The initial response contains split-only adjusted prices,
+            # ordered from oldest to newest.
+            with open(target_file, 'r') as f:
                 self._verify_csv_daily_format(f.readline())
-            # Remove the first line of the target file prior to reading price data in reverse.
-            subprocess.check_output("/usr/bin/sed -i '1d' " + target_file, shell=True)
-            # Read file line-by-line in reverse (newest to oldest), since adjustments occur from the most recent data (always as-traded).
+            # Remove the first line of the target file prior to reading
+            #  price data in reverse.
+            subprocess.check_output("/usr/bin/sed -i '1d' " + target_file,
+                                    shell=True)
+            # Read file line-by-line in reverse (newest to oldest), since
+            # adjustments occur from the most recent data (always as-traded).
             with FileReadBackwards(target_file, encoding="utf-8") as f:
                 json_quotes = []
                 for line in f:
-                    (json_quote,discard) = self._parse_daily(line,adjuster)
+                    (json_quote, discard) = self._parse_daily(line, adjuster)
                     if json_quote is not None:
                         json_quotes.append(json_quote)
             write_dict = {}
             write_dict['Time'] = self.today
             write_dict['Interval'] = '1d'
-            database_format = self.schema_parser.database_format_columns(PRICE_SCHEMA)
+            database_format = \
+                self.schema_parser.database_format_columns(PRICE_SCHEMA)
             write_dict['Format'] = database_format
             write_dict['Start Date'] = self.start_date_daily
             write_dict['End Date'] = self.end_date_daily
             write_dict['Quotes'] = json_quotes
-            collection.delete_many({ 'Interval': '1d' })
+            collection.delete_many({'Interval': '1d'})
             collection.insert_one(write_dict)
             interval_data = write_dict
             returndata = write_dict['Quotes']
@@ -1039,28 +1060,47 @@ differences will not grossly affect the desired results.
             returndata = interval_data['Quotes']
             # Trim data outside of requested date range
             if start_date is not None:
-                returndata = [item for item in returndata if self.date_utils.utc_date_to_tz_date(item[0],TIMEZONE) >= start_date]
+                returndata = \
+                    ([item for item in returndata
+                     if self.date_utils.utc_date_to_tz_date(item[0], TIMEZONE)
+                     >= start_date])
             if end_date is not None:
-                returndata = [item for item in returndata if self.date_utils.utc_date_to_tz_date(item[0],TIMEZONE) <= end_date]
+                returndata = \
+                    ([item for item in returndata
+                     if self.date_utils.utc_date_to_tz_date(item[0], TIMEZONE)
+                     <= end_date])
             # Database dates need to be made time zone aware
             index = 0
             for entry in returndata:
-                returndata[index][0] = self.date_utils.utc_date_to_tz_date(returndata[index][0],TIMEZONE)
+                returndata[index][0] = \
+                    (self.date_utils.utc_date_to_tz_date(
+                     returndata[index][0], TIMEZONE))
                 index = index + 1
         else:
             if start_date is not None:
-                returndata = [item for item in returndata if item[0] >= start_date]
+                returndata = \
+                    [item for item in returndata if item[0] >= start_date]
             if end_date is not None:
-                returndata = [item for item in returndata if item[0] <= end_date]
-        return_object = _PriceData(returndata,None,preformat)
+                returndata = \
+                    [item for item in returndata if item[0] <= end_date]
+        return_object = _PriceData(returndata, None, preformat)
         return return_object
 
-    def _daily_quote_url(self,symbol,period1=0):
-        period2 = '9999999999' # To the present day, and beyooond
-        return 'https://query1.finance.yahoo.com/v7/finance/download/' + symbol + '?period1=' + str(period1) + '&period2=' + period2 + '&interval=1d&events=history'
+    def _daily_quote_url(self, symbol, period1=0):
+        period2 = '9999999999'  # To the present day, and beyooond
+        return ('https://query1.finance.yahoo.com/v7/finance/download/' +
+                symbol +
+                '?period1=' +
+                str(period1) +
+                '&period2=' +
+                period2 +
+                '&interval=1d&events=history')
 
-    def _init_adjustments(self,symbol,regen):
-        adjustments = self.adjustments(symbol,regen=regen,symbol_verify=False)
+    def _init_adjustments(self, symbol, regen):
+        adjustments = self.adjustments(
+            symbol,
+            regen=regen,
+            symbol_verify=False)
         if adjustments is not None:
             self.adjustments_length = len(adjustments)
             self.adjustments_index = 0
@@ -1070,66 +1110,104 @@ differences will not grossly affect the desired results.
             self.volume_adjustment = 1.0
         return adjustments
 
-    def _parse_daily(self,line,adjuster):
-        # Received data is split-adjusted only, excluding adjusted close. Therefore:
+    def _parse_daily(self, line, adjuster):
+        # Received data is split-adjusted only, excluding adjusted close.
+        # Therefore:
         # 1. Ignore the reported "Adjusted Close" in all lines (pieces[5])
-        # 2. Remove split adjustments for price and volume to get as-traded prices and volumes
-        # 3. Apply dividend adjustments to price to get split- and dividend-adjusted prices.
+        # 2. Remove split adjustments for price and volume to get as-traded
+        # prices and volumes
+        # 3. Apply dividend adjustments to price to get split- and
+        # dividend-adjusted prices.
         # 4. Use reported volume as adjusted volume.
         line = line.rstrip()
         pieces = line.rstrip().split(',')
         interval_date_string = str(pieces[0])
-        interval_date = dt.strptime(interval_date_string,DATE_STRING_FORMAT)
-        interval_date_object = dt(interval_date.year, interval_date.month, interval_date.day, 0, 0, 0).replace(tzinfo=tz.gettz(TIMEZONE))
-        if self.cutoff_today is True and interval_date_object == self.midnight_today:
+        interval_date = dt.strptime(interval_date_string, DATE_STRING_FORMAT)
+        interval_date_object = dt(interval_date.year,
+                                  interval_date.month,
+                                  interval_date.day,
+                                  0,
+                                  0,
+                                  0).replace(tzinfo=tz.gettz(TIMEZONE))
+        if (self.cutoff_today is True and
+                interval_date_object == self.midnight_today):
             return None, None
-        if (self.start_date_daily is None or self.start_date_daily >= interval_date_object):
+        if (self.start_date_daily is None or
+                self.start_date_daily >= interval_date_object):
             self.start_date_daily = interval_date_object
-        if (self.end_date_daily is None or self.end_date_daily <= interval_date_object):
+        if (self.end_date_daily is None or
+                self.end_date_daily <= interval_date_object):
             self.end_date_daily = interval_date_object
         quote = []
         quote.append(interval_date_object)
         if adjuster.have_adjustments() is True:
-            adjuster.date_iterator(interval_date_object,float(pieces[4]))
-            quote.append(round(float(pieces[1]) * float(adjuster.price_adjustment),2)) # Open
-            quote.append(round(float(pieces[2]) * float(adjuster.price_adjustment),2)) # High
-            quote.append(round(float(pieces[3]) * float(adjuster.price_adjustment),2)) # Low
-            quote.append(round(float(pieces[4]) * float(adjuster.price_adjustment),2)) # Close
-            quote.append(int(int(pieces[6]) * float(adjuster.volume_adjustment))) # Volume
+            adjuster.date_iterator(interval_date_object, float(pieces[4]))
+            quote.append(round(float(pieces[1]) *
+                               float(adjuster.price_adjustment), 2))  # Open
+            quote.append(round(float(pieces[2]) *
+                               float(adjuster.price_adjustment), 2))  # High
+            quote.append(round(float(pieces[3]) *
+                               float(adjuster.price_adjustment), 2))  # Low
+            quote.append(round(float(pieces[4]) *
+                               float(adjuster.price_adjustment), 2))  # Close
+            quote.append(int(int(pieces[6]) *
+                             float(adjuster.volume_adjustment)))  # Volume
             if adjuster.dividend_adjustment != 1.0:
-                # Adjusted prices rounded to 6 places for better accuracy when plotting small adjusted numbers
-                quote.append(round(float(pieces[1]) * adjuster.dividend_adjustment,6)) # Adjusted open
-                quote.append(round(float(pieces[2]) * adjuster.dividend_adjustment,6)) # Adjusted high
-                quote.append(round(float(pieces[3]) * adjuster.dividend_adjustment,6)) # Adjusted low
-                quote.append(round(float(pieces[5]),6)) # Adjusted close
-                quote.append(int(pieces[6])) # Adjusted volume
+                # Adjusted prices rounded to 6 places for better accuracy when
+                # plotting small adjusted numbers
+                quote.append(round(
+                             float(pieces[1]) *
+                             adjuster.dividend_adjustment, 6))  # Adjusted open
+                quote.append(round(
+                             float(pieces[2]) *
+                             adjuster.dividend_adjustment, 6))  # Adjusted high
+                quote.append(round(
+                             float(pieces[3]) *
+                             adjuster.dividend_adjustment, 6))  # Adjusted low
+                quote.append(round(float(pieces[5]), 6))  # Adjusted close
+                quote.append(int(pieces[6]))  # Adjusted volume
         else:
-            quote.append(round(float(pieces[1]),2)) # Open
-            quote.append(round(float(pieces[2]),2)) # High
-            quote.append(round(float(pieces[3]),2)) # Low
-            quote.append(round(float(pieces[4]),2)) # Close
-            quote.append(int(pieces[6])) # Volume
+            quote.append(round(float(pieces[1]), 2))  # Open
+            quote.append(round(float(pieces[2]), 2))  # High
+            quote.append(round(float(pieces[3]), 2))  # Low
+            quote.append(round(float(pieces[4]), 2))  # Close
+            quote.append(int(pieces[6]))  # Volume
         return (quote, interval_date_object)
 
-    def _verify_csv_daily_format(self,first_line):
-        if not re.match(r'^Date,Open,High,Low,Close,Adj Close,Volume',first_line):
-            raise Exception('First line of symbol daily data .csv file does not match expected format.')
+    def _verify_csv_daily_format(self, first_line):
+        if not re.match(r'^Date,Open,High,Low,Close,Adj Close,Volume',
+                        first_line):
+            raise Exception('First line of symbol daily data .csv file ' +
+                            'does not match expected format.')
 
-    def _verify_period(self,period):
+    def _verify_period(self, period):
         if period not in VALID_DAILY_WEEKLY_PERIODS.keys():
-            raise Exception('Invalid period specified; must be one of the following: ' + ', ' . join(VALID_DAILY_WEEKLY_PERIODS))
+            raise Exception('Invalid period specified; ' +
+                            'must be one of the following: ' +
+                            ', ' . join(VALID_DAILY_WEEKLY_PERIODS))
         if VALID_DAILY_WEEKLY_PERIODS[period] is not None:
             now = dt.now().astimezone()
-            start_date = (dt(now.year, now.month, now.day, 0, 0, 0) - timedelta(days=VALID_DAILY_WEEKLY_PERIODS[period])).replace(tzinfo=tz.gettz(TIMEZONE))
+            start_date = (
+                dt(now.year,
+                   now.month,
+                   now.day,
+                   0,
+                   0,
+                   0)
+                - timedelta(
+                  days=VALID_DAILY_WEEKLY_PERIODS[period])
+                  ).replace(tzinfo=tz.gettz(TIMEZONE))
         else:
             start_date = None
         return start_date
+
 
 class _QuoteMerger():
 
     def __init__(self):
         schema_parser = SchemaParser()
-        self.database_format = schema_parser.database_format_columns(PRICE_SCHEMA)
+        self.database_format = \
+            schema_parser.database_format_columns(PRICE_SCHEMA)
         self.item_map = {}
         index = 0
         for item in self.database_format:
@@ -1144,69 +1222,85 @@ class _QuoteMerger():
             return None
         return quote
 
-    def merge_quote(self,quote):
+    def merge_quote(self, quote):
         if self.quote[self.item_map['Datetime']] is None:
             self.quote[self.item_map['Datetime']] = quote['Date']
-        for item in ['Open','Adjusted Open']:
+        for item in ['Open', 'Adjusted Open']:
             if self.quote[self.item_map[item]] is None and item in quote:
                 self.quote[self.item_map[item]] = quote[item]
         self.quote[self.item_map['Close']] = quote['Close']
         if quote['Adjusted Close'] is not None:
-            self.quote[self.item_map['Adjusted Close']] = quote['Adjusted Close']
+            self.quote[self.item_map['Adjusted Close']] = \
+                quote['Adjusted Close']
         else:
             if self.quote[self.item_map['Adjusted Close']] is None:
                 pass
             else:
                 self.quote[self.item_map['Adjusted Close']] = quote['Close']
-        self._low_high_merge(quote,'High')
-        self._low_high_merge(quote,'Low')
+        self._low_high_merge(quote, 'High')
+        self._low_high_merge(quote, 'Low')
         if self.quote[self.item_map['Volume']] is None:
             self.quote[self.item_map['Volume']] = 0
-        self.quote[self.item_map['Volume']] = self.quote[self.item_map['Volume']] + quote['Volume']
+        self.quote[self.item_map['Volume']] = \
+            self.quote[self.item_map['Volume']] + quote['Volume']
         if quote['Adjusted Volume'] is not None:
             if self.quote[self.item_map['Adjusted Volume']] is None:
                 self.quote[self.item_map['Adjusted Volume']] = 0
-            self.quote[self.item_map['Adjusted Volume']] = self.quote[self.item_map['Adjusted Volume']] + quote['Adjusted Volume']
+            self.quote[self.item_map['Adjusted Volume']] = \
+                (self.quote[self.item_map['Adjusted Volume']] +
+                 quote['Adjusted Volume'])
         else:
             if self.quote[self.item_map['Adjusted Volume']] is None:
                 pass
             else:
-                self.quote[self.item_map['Adjusted Volume']] = self.quote[self.item_map['Adjusted Volume']] + quote['Volume']
+                self.quote[self.item_map['Adjusted Volume']] = \
+                    (self.quote[self.item_map['Adjusted Volume']] +
+                     quote['Volume'])
 
     def _init_quote(self):
         self.quote = []
         for detail in self.database_format:
             self.quote.append(None)
 
-    def _low_high_merge(self,quote,key):
+    def _low_high_merge(self, quote, key):
         adjusted_key = 'Adjusted ' + key
         if (
-            self.quote[self.item_map[key]] is None 
-            or (key == 'High' and quote[key] > self.quote[self.item_map[key]]) 
+            self.quote[self.item_map[key]] is None
+            or (key == 'High' and quote[key] > self.quote[self.item_map[key]])
             or (key == 'Low' and quote[key] < self.quote[self.item_map[key]])
         ):
             self.quote[self.item_map[key]] = quote[key]
         if quote[adjusted_key] is not None:
-            if (self.quote[self.item_map[adjusted_key]] is None) or (key == 'High' and quote[adjusted_key] > self.quote[self.item_map[adjusted_key]]) or (key == 'Low' and quote[adjusted_key] < self.quote[self.item_map[adjusted_key]]):
+            if ((self.quote[self.item_map[adjusted_key]] is None)
+                or (key == 'High' and
+                (quote[adjusted_key] >
+                 self.quote[self.item_map[adjusted_key]]))
+                or (key == 'Low' and
+                (quote[adjusted_key] <
+                 self.quote[self.item_map[adjusted_key]]))):
                 self.quote[self.item_map[adjusted_key]] = quote[adjusted_key]
         else:
             if self.quote[self.item_map[adjusted_key]] is None:
                 pass
             elif (
-                (key == 'High' and quote[key] > self.quote[self.item_map[adjusted_key]]) 
-                or (key == 'Low' and quote[key] < self.quote[self.item_map[adjusted_key]])
+                (key == 'High' and quote[key] >
+                 self.quote[self.item_map[adjusted_key]])
+                or
+                (key == 'Low' and quote[key] <
+                 self.quote[self.item_map[adjusted_key]])
             ):
                 self.quote[self.item_map[adjusted_key]] = quote[key]
 
+
 class Weekly(Daily):
 
-    def __init__(self,username=USER,**kwargs):
-        super(Weekly,self).__init__(username,**kwargs)
+    def __init__(self, username=USER, **kwargs):
+        super(Weekly, self).__init__(username, **kwargs)
 
-    def quote(self,symbol,**kwargs):
-        period = kwargs.pop('period','1Y')
-        preformat = kwargs.pop('preformat',False)
-        daily_quotes = super().quote(symbol,period=period,**kwargs)
+    def quote(self, symbol, **kwargs):
+        period = kwargs.pop('period', '1Y')
+        preformat = kwargs.pop('preformat', False)
+        daily_quotes = super().quote(symbol, period=period, **kwargs)
         quote = daily_quotes.next(return_raw_data=True)
         merge = _QuoteMerger()
         last_day_of_week = None
@@ -1218,12 +1312,14 @@ class Weekly(Daily):
                 if day_of_week < last_day_of_week:
                     # New week
                     weekly_quotes.append(merge.finalize_quote())
-                    quote_datetime = quote['Date'] - timedelta(days=(day_of_week-1))
+                    quote_datetime = \
+                        quote['Date'] - timedelta(days=(day_of_week-1))
                 else:
                     quote['Date'] = quote_datetime
             else:
                 if day_of_week > 1:
-                    quote_datetime = quote['Date'] - timedelta(days=(day_of_week-1))
+                    quote_datetime = \
+                        quote['Date'] - timedelta(days=(day_of_week-1))
                     quote['Date'] = quote_datetime
             merge.merge_quote(quote)
             last_day_of_week = day_of_week
@@ -1231,10 +1327,10 @@ class Weekly(Daily):
         final_week = merge.finalize_quote()
         if final_week is not None:
             weekly_quotes.append(final_week)
-        return_object = _PriceData(weekly_quotes,None,preformat)
+        return_object = _PriceData(weekly_quotes, None, preformat)
         return return_object
 
-    def _verify_period(self,period):
+    def _verify_period(self, period):
         start_date = super()._verify_period(period)
         if start_date is not None:
             day_of_week = start_date.isoweekday()
@@ -1242,20 +1338,22 @@ class Weekly(Daily):
                 start_date = start_date - timedelta(days=(day_of_week-1))
         return start_date
 
+
 class Monthly(Daily):
 
-    def __init__(self,username=USER,**kwargs):
-        super(Monthly,self).__init__(username,**kwargs)
+    def __init__(self, username=USER, **kwargs):
+        super(Monthly, self).__init__(username, **kwargs)
 
-    def quote(self,symbol,period='5Y',**kwargs):
-        kwargs.pop('start_date',None)
-        kwargs.pop('end_date',None)
-        preformat = kwargs.pop('preformat',False)
+    def quote(self, symbol, period='5Y', **kwargs):
+        kwargs.pop('start_date', None)
+        kwargs.pop('end_date', None)
+        preformat = kwargs.pop('preformat', False)
         start_date = self._verify_period(period)
         if start_date is not None:
-            daily_quotes = super().quote(symbol,start_date=start_date,**kwargs)
+            daily_quotes = \
+                super().quote(symbol, start_date=start_date, **kwargs)
         else:
-            daily_quotes = super().quote(symbol,**kwargs)
+            daily_quotes = super().quote(symbol, **kwargs)
         quote = daily_quotes.next(return_raw_data=True)
         merge = _QuoteMerger()
         previous_month = None
@@ -1268,10 +1366,22 @@ class Monthly(Daily):
                 if month != previous_month:
                     # New month
                     monthly_quotes.append(merge.finalize_quote())
-                    quote_datetime = dt(year,month,1,0,0,0).replace(tzinfo=tz.gettz(TIMEZONE))
+                    quote_datetime = \
+                        dt(year,
+                           month,
+                           1,
+                           0,
+                           0,
+                           0).replace(tzinfo=tz.gettz(TIMEZONE))
                 quote['Date'] = quote_datetime
             else:
-                quote_datetime = dt(year,month,1,0,0,0).replace(tzinfo=tz.gettz(TIMEZONE))
+                quote_datetime = \
+                    dt(year,
+                       month,
+                       1,
+                       0,
+                       0,
+                       0).replace(tzinfo=tz.gettz(TIMEZONE))
                 quote['Date'] = quote_datetime
             merge.merge_quote(quote)
             previous_month = month
@@ -1279,36 +1389,48 @@ class Monthly(Daily):
         final_month = merge.finalize_quote()
         if final_month is not None:
             monthly_quotes.append(final_month)
-        return_object = _PriceData(monthly_quotes,None,preformat)
+        return_object = _PriceData(monthly_quotes, None, preformat)
         return return_object
 
-    def _verify_period(self,period):
+    def _verify_period(self, period):
         if period not in VALID_MONTHLY_PERIODS:
-            raise Exception('Invalid period specified; must be one of the following: ' + ', ' . join(VALID_MONTHLY_PERIODS))
+            raise Exception('Invalid period specified; ' +
+                            'must be one of the following: ' +
+                            ', ' . join(VALID_MONTHLY_PERIODS))
         start_date = None
         if period != 'All':
-            period = re.sub(r"[Y]", "", period) # All periods are in the form "#Y", with "Y" signifying years
+            # All periods are in the form "#Y", with "Y" signifying years
+            period = re.sub(r"[Y]", "", period)
             now = dt.now().astimezone()
-            start_date = dt(now.year - int(period),now.month,1,0,0,0).replace(tzinfo=tz.gettz())
+            start_date = dt(now.year - int(period),
+                            now.month,
+                            1,
+                            0,
+                            0,
+                            0).replace(tzinfo=tz.gettz())
         return start_date
+
 
 class Intraday(ameritrade.Connection):
     '''
-This class focuses on the minute-by-minute price quotes available via the TD Ameritrade API.
+This class focuses on the minute-by-minute price quotes available via the
+TD Ameritrade API.
     '''
 
     DEFAULT_INTRADAY_FREQUENCY = 30
     DEFAULT_INTRADAY_PERIOD = 10
     # Keys: Frequency of quote (in minutes)
-    # Values: Number of days into the past from today for which data is available for given frequency, inclusive of today's date
-    VALID_INTRADAY_FREQUENCIES = {1:50, 5:260, 10:260, 15:260, 30:260}
+    # Values: Number of days into the past from today for which data is
+    # available for given frequency, inclusive of today's date
+    VALID_INTRADAY_FREQUENCIES = {1: 50, 5: 260, 10: 260, 15: 260, 30: 260}
     VALID_INTRADAY_PERIODS = [1, 2, 3, 4, 5, 10]
 
-    def __init__(self,username=USER,**kwargs):
-        super(Intraday,self).__init__(username,**kwargs)
-        self.symbol_reader = symbols.Read(username,**kwargs)
+    def __init__(self, username=USER, **kwargs):
+        super(Intraday, self).__init__(username, **kwargs)
+        self.symbol_reader = symbols.Read(username, **kwargs)
         schema_parser = SchemaParser()
-        self.database_format = schema_parser.database_format_columns(PRICE_SCHEMA)
+        self.database_format = \
+            schema_parser.database_format_columns(PRICE_SCHEMA)
         self.database_format_length = len(self.database_format)
         self.item_map = {}
         index = 0
@@ -1316,147 +1438,202 @@ This class focuses on the minute-by-minute price quotes available via the TD Ame
             self.item_map[item] = index
             index = index + 1
 
-    def quote(self,symbol,frequency=DEFAULT_INTRADAY_FREQUENCY,**kwargs):
+    def quote(self, symbol, frequency=DEFAULT_INTRADAY_FREQUENCY, **kwargs):
         symbol = str(symbol).upper()
         self.symbol_reader.get_symbol(symbol)
         self.valid_frequency(frequency)
-        need_extended_hours_data = kwargs.get('need_extended_hours_data',True)
-        preformat = kwargs.pop('preformat',False)
-        period = kwargs.get('period',None)
-        end_date = kwargs.get('end_date',None)
-        start_date = kwargs.get('start_date',None)
-        params = { 'frequency': frequency, 'frequencyType': 'minute', 'needExtendedHoursData': need_extended_hours_data, 'periodType': 'day' }
-        period = self.valid_period(period,start_date,end_date)
+        need_extended_hours_data = kwargs.get('need_extended_hours_data', True)
+        preformat = kwargs.pop('preformat', False)
+        period = kwargs.get('period', None)
+        end_date = kwargs.get('end_date', None)
+        start_date = kwargs.get('start_date', None)
+        params = {'frequency': frequency,
+                  'frequencyType': 'minute',
+                  'needExtendedHoursData': need_extended_hours_data,
+                  'periodType': 'day'}
+        period = self.valid_period(period, start_date, end_date)
         if period is not None:
             params['period'] = period
-        (start_date, end_date) = self._verify_dates(start_date,end_date,frequency,period)
+        (start_date, end_date) = self._verify_dates(start_date,
+                                                    end_date,
+                                                    frequency,
+                                                    period)
         if start_date is not None:
             params['startDate'] = start_date
         if end_date is not None:
             params['endDate'] = end_date
-        response = self.request('marketdata/' + symbol + '/pricehistory',params)
+        response = self.request('marketdata/' + symbol + '/pricehistory',
+                                params)
         if response['symbol'] != symbol:
-            raise Exception('Incorrect symbol ' + str(response['symbol']) + ' returned by API call.')
-        adjuster = _PriceAdjuster(symbol,self.username,regen=False,symbol_verify=False)
+            raise Exception('Incorrect symbol ' +
+                            str(response['symbol']) +
+                            ' returned by API call.')
+        adjuster = _PriceAdjuster(symbol,
+                                  self.username,
+                                  regen=False,
+                                  symbol_verify=False)
         last_quote_date = None
         daily_close = None
         candle_count = len(response['candles'])
         candle_index = candle_count - 1
         intraday_data = []
-        # "response['candles']" is a list in ascending date order, so read the list backwards to correctly apply adjustments
-        for quote in reversed(response['candles']): # Most recent date/time first
+        # "response['candles']" is a list in ascending date order,
+        # so read the list backwards to correctly apply adjustments
+        # Most recent date/time first
+        for quote in reversed(response['candles']):
             quote_date = dt.fromtimestamp(quote['datetime']/1000)
-            quote['datetime'] = quote_date.replace(tzinfo=tz.gettz(TIMEZONE))
-            quote_date_midnight = dt(quote_date.year,quote_date.month,quote_date.day)
-            quote_date_midnight = quote_date_midnight.replace(tzinfo=tz.gettz(TIMEZONE))
+            quote['datetime'] = quote_date.replace(
+                tzinfo=tz.gettz(TIMEZONE))
+            quote_date_midnight = dt(quote_date.year,
+                                     quote_date.month,
+                                     quote_date.day)
+            quote_date_midnight = quote_date_midnight.replace(
+                tzinfo=tz.gettz(TIMEZONE))
             data = [None] * self.database_format_length
             if adjuster.have_adjustments() is True:
                 data[self.item_map['datetime'.title()]] = quote['datetime']
-                adjuster.date_iterator(quote_date_midnight,daily_close)
+                adjuster.date_iterator(quote_date_midnight, daily_close)
                 for key in quote:
-                    write_key=key.title()
+                    write_key = key.title()
                     if key == 'datetime':
                         continue
                     adjusted_key = 'Adjusted ' + write_key
                     if key == 'volume':
                         # Volume is split-adjusted already.
                         # For true volume, apply the adjuster (un)adjustment
-                        data[self.item_map[write_key]] = int(quote[key] * adjuster.volume_adjustment)
+                        data[self.item_map[write_key]] = \
+                            int(quote[key] * adjuster.volume_adjustment)
                         if adjuster.volume_adjustment != 1:
                             data[self.item_map[adjusted_key]] = quote[key]
                     else:
                         # Price is split-adjusted already.
                         # For true price, apply the price (un)adjustment
                         # For adjusted price, apply the dividend adjustment
-                        data[self.item_map[write_key]] = round(quote[key] * adjuster.price_adjustment,2)
+                        data[self.item_map[write_key]] = \
+                            round(quote[key] * adjuster.price_adjustment, 2)
                         if adjuster.volume_adjustment != 1:
-                            data[self.item_map[adjusted_key]] = round(quote[key] * adjuster.dividend_adjustment,6)
+                            data[self.item_map[adjusted_key]] = \
+                                round(quote[key] *
+                                      adjuster.dividend_adjustment, 6)
             else:
                 for key in quote:
                     data[self.item_map[key.title()]] = quote[key]
             intraday_data.append(data)
-        return_object = _PriceData(intraday_data,None,preformat)
+        return_object = _PriceData(intraday_data, None, preformat)
         return return_object
 
-    def oldest_available_date(self,frequency):
+    def oldest_available_date(self, frequency):
         now = dt.now().astimezone()
-        return (dt(now.year, now.month, now.day, 0, 0, 0) - timedelta(self.VALID_INTRADAY_FREQUENCIES[frequency] - 1)).replace(tzinfo=tz.gettz()) # Inclusive of today, so minus 1
+        # Inclusive of today, so minus 1
+        return (dt(now.year,
+                   now.month,
+                   now.day,
+                   0,
+                   0,
+                   0)
+                - timedelta(self.VALID_INTRADAY_FREQUENCIES[frequency] - 1)
+                ).replace(tzinfo=tz.gettz())
 
-    def valid_frequency(self,frequency):
+    def valid_frequency(self, frequency):
         if frequency not in self.VALID_INTRADAY_FREQUENCIES.keys():
-            raise Exception('Invalid frequency specified; must be one of the following: ' + ', ' . join(self.VALID_INTRADAY_FREQUENCIES))
+            raise Exception('Invalid frequency specified; ' +
+                            'must be one of the following: ' +
+                            ', ' . join(self.VALID_INTRADAY_FREQUENCIES))
 
-    def valid_period(self,period=None,start_date=None,end_date=None):
+    def valid_period(self, period=None, start_date=None, end_date=None):
         if period is not None and period not in self.VALID_INTRADAY_PERIODS:
-            raise Exception('Invalid period specified; must be one of the following: ' + ', ' . join(self.VALID_INTRADAY_PERIODS))
+            raise Exception('Invalid period specified; ' +
+                            'must be one of the following: ' +
+                            ', ' . join(self.VALID_INTRADAY_PERIODS))
         if period is not None and start_date is not None:
-            raise Exception('The keyword argument "period" cannot be declared with the "start_date" keyword argument')
+            raise Exception('The keyword argument "period" cannot be ' +
+                            'declared with the "start_date" keyword argument')
         if period is None and start_date is None and end_date is None:
             period = self.DEFAULT_INTRADAY_PERIOD
         return period
 
-    def _verify_dates(self,start_date,end_date,frequency,period):
+    def _verify_dates(self, start_date, end_date, frequency, period):
         date_verifier = DateVerifier()
-        (start_date,end_date) = date_verifier.verify_date_range(start_date,end_date,null_start_date=True,keep_null_end_date=True,allow_future_end_date=False)
+        (start_date, end_date) = \
+            date_verifier.verify_date_range(
+                start_date,
+                end_date,
+                null_start_date=True,
+                keep_null_end_date=True,
+                allow_future_end_date=False)
         oldest_available_date = self.oldest_available_date(frequency)
         if start_date is not None:
             if start_date < oldest_available_date:
-                raise Exception('For a minute frequency of ' + str(frequency) + ', the oldest available date is ' + str(oldest_available_date) + '.')
+                raise Exception('For a minute frequency of ' +
+                                str(frequency) +
+                                ', the oldest available date is ' +
+                                str(oldest_available_date) + '.')
             start_date = start_date.strftime('%s')
-            start_date = int(start_date) * 1000 # Milliseconds per API
+            start_date = int(start_date) * 1000  # Milliseconds per API
         if end_date is not None:
             if end_date < oldest_available_date:
-                raise Exception('For a minute frequency of ' + str(frequency) + ', the oldest available date is ' + str(oldest_available_date) + '.')
+                raise Exception('For a minute frequency of ' +
+                                str(frequency) +
+                                ', the oldest available date is ' +
+                                str(oldest_available_date) + '.')
             if period is not None and start_date is None:
                 if end_date - timedelta(days=period-1) < oldest_available_date:
-                    raise Exception('Cannot retrieve data for requested end date ' + end_date + ' and period ' + str(period) + ' with frequency ' + str(frequency) + ' since oldest available date is ' + str(oldest_available_date) + '.')
+                    raise Exception('Cannot retrieve data for ' +
+                                    'requested end date ' + end_date +
+                                    ' and period ' + str(period) +
+                                    ' with frequency ' + str(frequency) +
+                                    ' since oldest available date is ' +
+                                    str(oldest_available_date) + '.')
             end_date = end_date.strftime('%s')
-            end_date = int(end_date) * 1000 # Milliseconds per API
+            end_date = int(end_date) * 1000  # Milliseconds per API
         return start_date, end_date
+
 
 class _LatestQuotes(Series):
 
-    def __init__(self,schema):
-        super(_LatestQuotes,self).__init__()
+    def __init__(self, schema):
+        super(_LatestQuotes, self).__init__()
         self.json_schema = schema
         self.unknown_symbols = None
         self.unquoted_symbols = None
 
-    def add_symbol(self,symbol,data):
-        latest_price_object = Return(data,self.json_schema)
+    def add_symbol(self, symbol, data):
+        latest_price_object = Return(data, self.json_schema)
         self.add(latest_price_object)
 
-    def add_unknown_symbol(self,symbol):
+    def add_unknown_symbol(self, symbol):
         symbol = symbol.upper()
         if self.unknown_symbols is None:
             self.unknown_symbols = []
         if symbol not in self.unknown_symbols:
             self.unknown_symbols.append(symbol)
 
-    def add_unquoted_symbol(self,symbol):
+    def add_unquoted_symbol(self, symbol):
         symbol = symbol.upper()
         if self.unquoted_symbols is None:
             self.unquoted_symbols = []
         if symbol not in self.unquoted_symbols:
             self.unquoted_symbols.append(symbol)
 
-    def get_symbol(self,symbol):
-        return self.get_by_attribute('symbol',symbol)
+    def get_symbol(self, symbol):
+        return self.get_by_attribute('symbol', symbol)
 
     def get_quotes(self):
         return self.items()
 
+
 class Latest(ameritrade.Connection):
 
-    def __init__(self,username=USER,**kwargs):
-        super(Latest,self).__init__(username,**kwargs)
-        self.symbol_reader = symbols.Read(username,**kwargs)
+    def __init__(self, username=USER, **kwargs):
+        super(Latest, self).__init__(username, **kwargs)
+        self.symbol_reader = symbols.Read(username, **kwargs)
         file_finder = FileFinder()
-        schema_file_name = file_finder.schema_file(SCHEMA_FILE_DIRECTORY,'LatestPriceQuote')
+        schema_file_name = \
+            file_finder.schema_file(SCHEMA_FILE_DIRECTORY, 'LatestPriceQuote')
         with open(schema_file_name) as schema_file:
             self.json_schema = json.load(schema_file)
 
-    def quote(self,symbol,**kwargs):
+    def quote(self, symbol, **kwargs):
         return_object = _LatestQuotes(self.json_schema)
         params = {}
         # Symbol can be a string or array (list of symbols)
@@ -1467,8 +1644,6 @@ class Latest(ameritrade.Connection):
             except symbols.SymbolNotFoundError:
                 return_object.add_unknown_symbol(symbol)
                 return return_object
-            except:
-                raise
             params['symbol'] = symbol
         elif isinstance(symbol, list):
             symbols = [str(x).upper() for x in symbol]
@@ -1480,8 +1655,12 @@ class Latest(ameritrade.Connection):
                     return return_object
             params['symbol'] = ','.join(result.get_symbols())
         else:
-            raise Exception('Parameter "symbol" must be a string or a list of strings.')
-        response = self.request('marketdata/quotes',params,'GET',with_apikey=True)
+            raise Exception('Parameter "symbol" must be a string or ' +
+                            'a list of strings.')
+        response = self.request('marketdata/quotes',
+                                params,
+                                'GET',
+                                with_apikey=True)
         have_quoted_symbols = False
         if isinstance(symbol, str):
             if symbol not in response:
@@ -1490,7 +1669,9 @@ class Latest(ameritrade.Connection):
             have_quoted_symbols = True
         elif isinstance(symbol, list):
             for uc_symbol in symbols:
-                if uc_symbol not in response and return_object.unknown_symbols is not None and uc_symbol not in return_object.unknown_symbols:
+                if (uc_symbol not in response and
+                        return_object.unknown_symbols is not None and
+                        uc_symbol not in return_object.unknown_symbols):
                     return_object.add_unquoted_symbol(uc_symbol)
                 else:
                     have_quoted_symbols = True
@@ -1498,6 +1679,9 @@ class Latest(ameritrade.Connection):
             for quote_symbol in response:
                 quote = response[quote_symbol]
                 # Add an ISO date for simplicity
-                quote['date'] = dt.fromtimestamp(quote['tradeTimeInLong']/1000).replace(tzinfo=tz.gettz(TIMEZONE))
-                return_object.add_symbol(quote_symbol,quote)
+                quote['date'] = \
+                    (dt.fromtimestamp(
+                     quote['tradeTimeInLong']/1000).
+                     replace(tzinfo=tz.gettz(TIMEZONE)))
+                return_object.add_symbol(quote_symbol, quote)
         return return_object
