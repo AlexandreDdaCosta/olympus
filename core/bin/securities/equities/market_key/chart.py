@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-import sys, time
+import sys
+import time
 
 from argparse import ArgumentParser
 
@@ -12,18 +13,31 @@ from olympus.securities.equities import SYMBOL
 
 debugger_arguments = DebuggerArgs()
 parser = debugger_arguments.add_arguments()
-parser.add_argument("-i","--interval",default=DEFAULT_INTERVAL,help="Quotes intervals for which to produce the chart: " + str(VALID_INTERVALS) + "; default is '" + DEFAULT_INTERVAL + "'")
-parser.add_argument("-l","--latest",action='store_true',default=False,help="Include latest data in evaluation")
-parser.add_argument("-s","--symbol",default=SYMBOL,help="US equity symbol; default is '" + SYMBOL + "'")
+parser.add_argument("-i",
+                    "--interval",
+                    default=DEFAULT_INTERVAL,
+                    help="Quotes intervals for which to produce the chart: " +
+                    str(VALID_INTERVALS) +
+                    "; default is '" +
+                    DEFAULT_INTERVAL +
+                    "'")
+parser.add_argument("-l",
+                    "--latest",
+                    action='store_true',
+                    default=False,
+                    help="Include latest data in evaluation")
+parser.add_argument("-s",
+                    "--symbol",
+                    default=SYMBOL,
+                    help="US equity symbol; default is '" + SYMBOL + "'")
 args, unknown = parser.parse_known_args()
 
 start = time.time()
 calculator = Calculate()
-chart = calculator.chartpoints(args.symbol,args.interval,latest=args.latest)
+chart = calculator.chartpoints(args.symbol, args.interval, latest=args.latest)
 
 if chart.last_entry():
     print('CHART DATES')
-    #'''
     for chartpoint in chart.dates:
         print(chartpoint)
     print('UPWARD PIVOTS')
@@ -52,7 +66,6 @@ if chart.last_entry():
             print(signal)
     print('LAST ENTRY')
     print(chart.last_entry())
-    #'''
 else:
     raise Exception('Empty chart')
 end = time.time()
