@@ -588,7 +588,7 @@ redis_acl_reload:
     - require:
       - redis_acl_list
 
-/usr/local/bin/delete_redis_restapi_auth.sh
+/usr/local/bin/delete_redis_restapi_auth.sh:
   file.managed:
     - group: root
     - mode: 0700
