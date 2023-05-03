@@ -14,18 +14,18 @@ ADJUSTMENTS_SCHEMA = {
     },
     "Price Adjustment": {
       "convert_name": "PriceAdjustment",
-      "description": "Factor by which raw dividend amounts are multiplied to get their adjusted values",
+      "description": "Raw dividend multiplication factor for adjusted values",
       "type": "number"
     },
     "Volume Adjustment": {
       "convert_name": "VolumeAdjustment",
-      "description": "Factor by which raw volume is multiplied to get its adjusted value",
+      "description": "Raw volume multiplication factor for adjusted values",
       "type": "number"
     }
   },
   "oneOf": [
-    {"required": [ "Dividend" ]},
-    {"required": [ "Price Adjustment", "Volume Adjustment" ]}
+    {"required": ["Dividend"]},
+    {"required": ["Price Adjustment", "Volume Adjustment"]}
   ],
   "required": [
     "Date"
@@ -66,31 +66,31 @@ PRICE_SCHEMA = {
     "Adjusted Close": {
       "db_order": 10,
       "convert_name": "AdjustedClose",
-      "description": "Last traded price of security, modified for splits and dividends",
+      "description": "Last traded price with split/dividend modifications",
       "type": "number"
     },
     "Adjusted High": {
       "convert_name": "AdjustedHigh",
       "db_order": 8,
-      "description": "Maximum trading price of security, modified for splits and dividends",
+      "description": "Maximum trading price with split/dividend modifications",
       "type": "number"
     },
     "Adjusted Low": {
       "convert_name": "AdjustedLow",
       "db_order": 9,
-      "description": "Minimum trading price of security, modified for splits and dividends",
+      "description": "Minimum trading price with split/dividend modifications",
       "type": "number"
     },
     "Adjusted Open": {
       "convert_name": "AdjustedOpen",
       "db_order": 7,
-      "description": "Starting trading price of security, modified for splits and dividends",
+      "description": "Initial trading price with split/dividend modifications",
       "type": "number"
     },
     "Adjusted Volume": {
       "db_order": 11,
       "convert_name": "AdjustedVolume",
-      "description": "Number of shares traded for time period, modified for splits",
+      "description": "Shares traded for time period, modified for splits",
       "type": "integer"
     },
     "Close": {
@@ -151,19 +151,19 @@ SPLITS_SCHEMA = {
     },
     "Numerator": {
       "db_order": 2,
-      "description": "The ending proportion of shares outstanding after the split",
+      "description": "Ending proportion of shares outstanding after the split",
       "type": "integer"
     },
     "Price Dividend Adjustment": {
       "convert_name": "PriceDividendAdjustment",
       "db_order": 4,
-      "description": "Factor by which raw prices and dividend amounts are multiplied to get their adjusted values before the split",
+      "description": "Price/dividend multiplication factor, pre-split values",
       "type": "number"
     },
     "Volume Adjustment": {
       "convert_name": "VolumeAdjustment",
       "db_order": 5,
-      "description": "Factor by which raw volume is multiplied to get its adjusted value before the split",
+      "description": "Volume multiplication factor for pre-split values",
       "type": "number"
     }
   },
@@ -176,9 +176,10 @@ SPLITS_SCHEMA = {
   ]
 }
 
+
 class SchemaParser():
 
-    def database_format_columns(self,schema):
+    def database_format_columns(self, schema):
         db_columns = {}
         for key in schema['properties']:
             if 'db_order' not in schema['properties'][key]:
