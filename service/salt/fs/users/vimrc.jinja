@@ -30,6 +30,15 @@ augroup END
 " Close NERDTree automatically if it is the only window open
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
+" python-mode
+
+" Set 80-column width line to light blue
+highlight ColorColumn ctermbg=4*
+" Set line number gutter width to five spaces
+set numberwidth=5
+" Change line numbers to red
+highlight LineNr term=bold cterm=NONE ctermfg=Red ctermbg=NONE gui=NONE guifg=Red guibg=NONE
+
 " F4 to clear search
 
 nnoremap <F4> :nohl<CR><C-l>:echo "Search Cleared"<CR>

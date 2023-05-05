@@ -2,6 +2,7 @@ import datetime
 import edgar as form4_index_downloader
 import json
 import os
+import pymongo
 import re
 import shutil
 import time
@@ -18,23 +19,25 @@ import olympus.securities.equities.data as data
 from olympus import USER
 
 FORM4_INDEX_COLLECTION_NAME = 'edgar'
+INDEX_SUFFIX = 'idx'
 QUARTERLY_FIRST_YEAR = 2004
 QUARTERLY_ORIGINAL_YEAR = 1993
 QUARTERLY_YEAR_LIST = range(QUARTERLY_FIRST_YEAR,datetime.datetime.now().year+1)
 
+
 class InitForm4Indices(data.Initializer):
 
     def __init__(self, username=USER, **kwargs):
-        super(InitForm4Indices,self).__init__(FORM4_INDEX_COLLECTION_NAME,username,**kwargs)
+        super(InitForm4Indices, self).__init__(FORM4_INDEX_COLLECTION_NAME,username,**kwargs)
 
     def populate_collections(self):
         self.prepare()
         if self.verbose:
             print('Initializing Form4 collection procedure.')
-       
-        # The edgar module retrieves based on a starting year. 
+
+        # The edgar module retrieves based on a starting year.
         # Read existing collection, looking for last worked year, in order oldest to newest
-        
+
         collection = self.db[FORM4_INDEX_COLLECTION_NAME]
         existing_collections = self.db.collection_names()
         create_indices = False
@@ -174,7 +177,7 @@ class Form4(data.Connection):
         self.collection_reporting_owner.create_index([('rptOwnerCik', pymongo.ASCENDING)], name=self.REPORTING_OWNER_COLLECTION_NAME+'_rptOwnerCik_'+INDEX_SUFFIX, unique=True)
         self.collection_submissions = self.db[self.FORM4_SUBMISSIONS_COLLECTION_NAME]
         self.collection_submissions.create_index([('rptOwnerCik', pymongo.ASCENDING)], name=self.FORM4_SUBMISSIONS_COLLECTION_NAME+'_rptOwnerCik_'+INDEX_SUFFIX, unique=True)
-  
+
         self.done = False
         self.force_unlocked = False
 
@@ -314,11 +317,11 @@ class Form4(data.Connection):
                         elif re.match(r'\<XML\>',line):
                             xml_found = True
                 f.close()
-                
+
                 # Fix CRLF problems due to run-on lines
                 xml_content = xml_content.replace("\n", "")
-               
-                xml_validate = True 
+
+                xml_validate = True
                 repair_attempts = 0
                 while xml_validate is True:
                     try:
@@ -355,7 +358,7 @@ class Form4(data.Connection):
                 new_dict['periodOfReport'] = submission_date
                 new_dict['issuerName'] = data['ownershipDocument']['issuer']['issuerName'].upper()
                 new_dict['issuerTradingSymbol'] = data['ownershipDocument']['issuer']['issuerTradingSymbol'].upper()
-                if len(issuer_record['issuer']) == 0: 
+                if len(issuer_record['issuer']) == 0:
                     self.collection_issuer.update({'_id': issuer_record['_id']}, {'$set': {'issuer': new_dict}})
                 elif issuer_record['issuer']['periodOfReport'] < submission_date:
                     if issuer_record['issuer']['issuerName'] != new_dict['issuerName'] or issuer_record['issuer']['issuerTradingSymbol'] != new_dict['issuerTradingSymbol']:
@@ -445,23 +448,23 @@ class Form4(data.Connection):
             new_dict['rptOwnerName'] = reporting_owner['reportingOwnerId']['rptOwnerName'].upper()
         else:
             new_dict['rptOwnerName'] = data['ownershipDocument']['reportingOwner']['reportingOwnerId']['rptOwnerName'].upper()
-        new_dict['reportingOwnerAddress'] = '' 
+        new_dict['reportingOwnerAddress'] = ''
         address_keys = ('rptOwnerStreet1', 'rptOwnerStreet2', 'rptOwnerCity', 'rptOwnerState', 'rptOwnerZipCode')
         for address_key in address_keys:
             if reporting_owner is not None and 'reportingOwnerAddress' in reporting_owner:
                 if (
-                       address_key in reporting_owner['reportingOwnerAddress'] 
+                       address_key in reporting_owner['reportingOwnerAddress']
                        and reporting_owner['reportingOwnerAddress'][address_key] is not None
                    ):
                     new_dict['reportingOwnerAddress'] += reporting_owner['reportingOwnerAddress'][address_key].strip() + ' '
             elif 'reportingOwnerAddress' in data['ownershipDocument']['reportingOwner']:
                 if (
-                       address_key in data['ownershipDocument']['reportingOwner']['reportingOwnerAddress'] 
+                       address_key in data['ownershipDocument']['reportingOwner']['reportingOwnerAddress']
                        and data['ownershipDocument']['reportingOwner']['reportingOwnerAddress'][address_key] is not None
                    ):
                     new_dict['reportingOwnerAddress'] += data['ownershipDocument']['reportingOwner']['reportingOwnerAddress'][address_key].strip() + ' '
         new_dict['reportingOwnerAddress'] = new_dict['reportingOwnerAddress'].rstrip()
-        if len(reporting_owner_record['reportingOwner']) == 0: 
+        if len(reporting_owner_record['reportingOwner']) == 0:
             self.collection_reporting_owner.update({'_id': reporting_owner_record['_id']}, {'$set': {'reportingOwner': new_dict}})
         elif reporting_owner_record['reportingOwner']['periodOfReport'] < submission_date:
             if (
@@ -504,8 +507,8 @@ class Form4(data.Connection):
             self.force_unlocked = True
 
         # Go through records where 'rptOwnerCik'/'processing' keys are missing
-        # Lock PROCESSING_BLOCK_SIZE entries in main index. 
-        
+        # Lock PROCESSING_BLOCK_SIZE entries in main index.
+
         records = []
         block_size = self.PROCESSING_BLOCK_SIZE
         if self.max_records > 0:
