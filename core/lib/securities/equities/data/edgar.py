@@ -1,4 +1,5 @@
 import datetime
+import edgar as form4_index_downloader
 import json
 import os
 import re
@@ -7,7 +8,6 @@ import time
 import wget
 import xmlschema
 import xmltodict
-import edgar as form4_index_downloader
 import xml.etree.ElementTree as ET
 
 from bson.json_util import dumps, loads
@@ -24,7 +24,7 @@ QUARTERLY_YEAR_LIST = range(QUARTERLY_FIRST_YEAR,datetime.datetime.now().year+1)
 
 class InitForm4Indices(data.Initializer):
 
-    def __init__(self,username=USER,**kwargs):
+    def __init__(self, username=USER, **kwargs):
         super(InitForm4Indices,self).__init__(FORM4_INDEX_COLLECTION_NAME,username,**kwargs)
 
     def populate_collections(self):
