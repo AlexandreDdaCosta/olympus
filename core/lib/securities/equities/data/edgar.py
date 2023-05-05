@@ -1,4 +1,12 @@
-import datetime, json, os, re, shutil, time, wget, xmlschema, xmltodict
+import datetime
+import json
+import os
+import re
+import shutil
+import time
+import wget
+import xmlschema
+import xmltodict
 import edgar as form4_index_downloader
 import xml.etree.ElementTree as ET
 
