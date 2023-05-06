@@ -106,6 +106,19 @@ collection of HTML templates that utilize the [Django templating language](https
 Additonally, there are a number of [SCSS](https://sass-lang.com/) templates and
 Javascript files used to deliver the user interface.
 
+* [uWSGI](https://uwsgi-docs.readthedocs.io/en/latest/) *(interface)*
+
+This project is the primary web application deployment layer. All calls
+to the front-end pass through uWSGI, including the Django test server used
+in development.
+
+* [nginx](https://nginx.org/en/) *(interface, supervisor)*
+
+Employed as an HTTP proxy server for both the front-end interface and
+the back-end, internal API. In particular, nginx is configured to directly
+serve all static files referenced by Django and so offers a significant
+performance boost.
+
 * [PostgreSQL](https://www.postgresql.org/) *(database)*
 
 Django's data store, as well as the store for hard-to-generate algorithmic
