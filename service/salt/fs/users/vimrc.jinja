@@ -1,12 +1,13 @@
 " Core settings
 
 set backspace=indent,eol,start " Proper backspace functionality
+set encoding=utf-8             " Universal encoding
+set expandtab                  " Expanding tab to spaces
 set nofixendofline             " Eliminate the invisible newline added on save
 set noswapfile                 " Disable use of swap files
 set shiftwidth=4               " Size of an indent
 set smartindent                " Auto indent new lines
 set tabstop=4                  " Setting tab to 4 columns
-set expandtab                  " Expanding tab to spaces
 
 " vim-pathogen
 
@@ -29,6 +30,8 @@ augroup DIRCHANGE
 augroup END
 " Close NERDTree automatically if it is the only window open
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+let NERDTreeMinimalUI = 1
+let NERDTreeDirArrows = 1
 
 " python-mode
 
