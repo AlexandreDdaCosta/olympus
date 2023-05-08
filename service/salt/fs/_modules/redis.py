@@ -8,6 +8,7 @@ from olympus.redis import Connection
 
 from olympus import USER
 
+
 def delete_securities_equities_symbols(user=USER):
     redis_connection = Connection(user)
     redis_client = redis_connection.client()

@@ -1,9 +1,6 @@
-from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.core.management.base import BaseCommand
-from optparse import make_option
 
-import os
 
 class Command(BaseCommand):
     help = 'Verifies user exists.  Sets admin/superuser status as requested.'
@@ -89,7 +86,9 @@ class Command(BaseCommand):
         elif password and username:
             user, created = User.objects.get_or_create(username=username)
             if user and (created or options.get('resave')):
-                if created or (options.get('resave') and options.get('resave_password')):
+                if (created or
+                    (options.get('resave') and
+                     options.get('resave_password'))):
                     user.set_password(password)
                 if options.get('email'):
                     user.email = options.get('email')
@@ -100,7 +99,7 @@ class Command(BaseCommand):
                 if options.get('groups'):
                     groups = options.get('groups').split(',')
                     for group in groups:
-                        g = Group.objects.get(name=group) 
+                        g = Group.objects.get(name=group)
                         g.user_set.add(user)
         else:
             raise Exception("Missing parameter.")

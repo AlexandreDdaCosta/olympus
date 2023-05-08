@@ -1,5 +1,8 @@
 import os
 
+# Local configurations
+from interface.settings_local import * #  noqa: F403
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE_ID = 1
 
@@ -33,16 +36,24 @@ STATIC_URL = '/static/'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME':
+        'django.contrib.auth.password_validation.' +
+        'UserAttributeSimilarityValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME':
+        'django.contrib.auth.password_validation.' +
+        'MinimumLengthValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME':
+        'django.contrib.auth.password_validation.' +
+        'CommonPasswordValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME':
+        'django.contrib.auth.password_validation.' +
+        'NumericPasswordValidator',
     },
 ]
 ROOT_URLCONF = 'interface.urls'
@@ -75,11 +86,12 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-# Added to handle warnings about lack of explicitly defined primary key type, starting in Django 3.2
+# Added to handle warnings about lack of explicitly defined
+# primary key type, starting in Django 3.2
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Hack that ensures all incoming requests are seen as HTTPS
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO',None)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', None)
 
 # Enable access to session cookies to Javascript
 SESSION_COOKIE_HTTPONLY = False
@@ -103,6 +115,3 @@ LOGGING = {
         },
     },
 }
-
-# Local configurations
-from interface.settings_local import *
