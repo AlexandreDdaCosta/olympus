@@ -103,11 +103,11 @@ user_{{ username }}:
 {{ username }}-vim-nerdtree:
 {% if salt['file.directory_exists']('/home/{{ username }}/.vim/bundle/nerdtree') %}
   cmd.run:
-    - cwd: /home/{{ username }}/.vim/bundle
+    - cwd: /home/{{ username }}/.vim/bundle/nerdtree
     - name: sudo su -s /bin/bash -c 'git pull https://github.com/preservim/nerdtree.git' {{ username }}
 {% else %}
   cmd.run:
-    - cwd: /home/{{ username }}/.vim/bundle/nerdtree
+    - cwd: /home/{{ username }}/.vim/bundle
     - name: sudo su -s /bin/bash -c 'git clone https://github.com/preservim/nerdtree.git' {{ username }}
 {% endif %}
 
