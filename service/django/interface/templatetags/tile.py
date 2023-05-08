@@ -2,6 +2,16 @@ from datetime import timedelta
 from django import template
 from django.utils import timezone
 
+'''
+
+****
+NOTE
+****
+
+# The admin interface is under development.
+# This code is temporarily commented out
+# to allow the general server to start.
+
 from control.models import Event, Job, JobStatus, JobStatusType
 from migrations.core.jobloop import JOB_CHECKIN_GRACE_SECONDS
 from migrations.core.jobloop import JOB_CHECKIN_INTERVAL_SECONDS
@@ -85,3 +95,4 @@ def ticker_tile():
     except IndexError:
         events = Event.objects.all().order_by('-create_date')
     return {'events': events}
+'''
