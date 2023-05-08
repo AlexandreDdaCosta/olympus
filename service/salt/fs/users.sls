@@ -105,11 +105,11 @@ user_{{ username }}:
 {% if salt['file.directory_exists']('{{ NERDTREE_FOLDER }}') %}
   cmd.run:
     - cwd: /home/{{ username }}/.vim/bundle/nerdtree
-    - name: sudo su -s /bin/bash -c 'git pull https://github.com/preservim/nerdtree.git' {{ username }}
+    - name: echo '{{ NERDTREE_FOLDER }} 1'
 {% else %}
   cmd.run:
     - cwd: /home/{{ username }}/.vim/bundle
-    - name: sudo su -s /bin/bash -c 'git clone https://github.com/preservim/nerdtree.git' {{ username }}
+    - name: echo '{{ NERDTREE_FOLDER }} 2'
 {% endif %}
 
 {{ username }}-vim-python-mode:
