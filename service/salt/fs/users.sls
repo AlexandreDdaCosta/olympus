@@ -101,7 +101,7 @@ user_{{ username }}:
     - user: {{ username }}
 
 {{ username }}-vim-nerdtree:
-{% if salt['file.directory_exists']('/home/' + {{ username }} + '/.vim/bundle/nerdtree') %}
+{% if salt['file.directory_exists']('/home/{{ username }}/.vim/bundle/nerdtree') %}
   cmd.run:
     - cwd: /home/{{ username }}/.vim/bundle
     - name: sudo su -s /bin/bash -c 'git pull https://github.com/preservim/nerdtree.git' {{ username }}
