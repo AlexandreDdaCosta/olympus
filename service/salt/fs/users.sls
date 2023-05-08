@@ -85,6 +85,43 @@ user_{{ username }}:
 
 {%- endif %}
 {% if 'createhome' in user and user['createhome'] and 'vimuser' in user and user['vimuser'] -%}
+
+{{ username }}-vim:
+  file.directory:
+    - group: {{ username }}
+    - mode: 0750
+    - name: /home/{{ username }}/.vim
+    - user: {{ username }}
+
+{{ username }}-vim-bundle:
+  file.directory:
+    - group: {{ username }}
+    - mode: 0750
+    - name: /home/{{ username }}/.vim/bundle
+    - user: {{ username }}
+
+{{ username }}-vim-nerdtree:
+{% if not salt['directory.exists']['/home/{{ username }}/.vim/bundle/nerdtree'] %}
+  cmd.run:
+    - cwd: /home/{{ username }}/.vim/bundle
+    - name: sudo su -s /bin/bash -c 'git clone https://github.com/preservim/nerdtree.git' {{ username }}
+{% else %}
+  cmd.run:
+    - cwd: /home/{{ username }}/.vim/bundle/nerdtree
+    - name: sudo su -s /bin/bash -c 'git pull https://github.com/preservim/nerdtree.git' {{ username }}
+{% endif %}
+
+{{ username }}-vim-python-mode:
+{% if not salt['directory.exists']['/home/{{ username }}/.vim/bundle/python-mode'] %}
+  cmd.run:
+    - cwd: /home/{{ username }}/.vim/bundle
+    - name: sudo su -s /bin/bash -c 'git clone --recurse-submodules https://github.com/python-mode/python-mode.git' {{ username }}
+{% else %}
+  cmd.run:
+    - cwd: /home/{{ username }}/.vim/bundle/python-mode
+    - name: sudo su -s /bin/bash -c 'git pull --recurse-submodules https://github.com/python-mode/python-mode.git' {{ username }}
+{% endif %}
+
 {{ username }}-vimrc:
   file.managed:
     - group: {{ username }}
@@ -93,6 +130,7 @@ user_{{ username }}:
     - user: {{ username }}
     - source: salt://users/vimrc.jinja
     - template: jinja
+
 {%- endif %}
 
 {% endif %}
