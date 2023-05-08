@@ -104,11 +104,11 @@ user_{{ username }}:
 {% if salt['file.directory_exists']('/home/' + username + '/.vim/bundle/nerdtree') %}
   cmd.run:
     - cwd: /home/{{ username }}/.vim/bundle/nerdtree
-    - name: echo '{{ nerdtree_folder }} 1'
+    - name: echo '1'
 {% else %}
   cmd.run:
     - cwd: /home/{{ username }}/.vim/bundle
-    - name: echo '{{ nerdtree_folder }} 2'
+    - name: echo '2'
 {% endif %}
 
 {{ username }}-vim-python-mode:
