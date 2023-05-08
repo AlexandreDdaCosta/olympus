@@ -104,22 +104,22 @@ user_{{ username }}:
 {% if salt['file.directory_exists']('/home/' + username + '/.vim/bundle/nerdtree') %}
   cmd.run:
     - cwd: /home/{{ username }}/.vim/bundle/nerdtree
-    - name: echo '1'
+    - name: sudo su -s /bin/bash -c 'git pull https://github.com/preservim/nerdtree.git' {{ username }}
 {% else %}
   cmd.run:
     - cwd: /home/{{ username }}/.vim/bundle
-    - name: echo '2'
+    - name: sudo su -s /bin/bash -c 'git clone https://github.com/preservim/nerdtree.git' {{ username }}
 {% endif %}
 
 {{ username }}-vim-python-mode:
-{% if not salt['file.directory_exists']('/home/{{ username }}/.vim/bundle/python-mode') %}
-  cmd.run:
-    - cwd: /home/{{ username }}/.vim/bundle
-    - name: sudo su -s /bin/bash -c 'git clone --recurse-submodules https://github.com/python-mode/python-mode.git' {{ username }}
-{% else %}
+{% if salt['file.directory_exists']('/home/' + username + '/.vim/bundle/python-mode') %}
   cmd.run:
     - cwd: /home/{{ username }}/.vim/bundle/python-mode
     - name: sudo su -s /bin/bash -c 'git pull --recurse-submodules https://github.com/python-mode/python-mode.git' {{ username }}
+{% else %}
+  cmd.run:
+    - cwd: /home/{{ username }}/.vim/bundle
+    - name: sudo su -s /bin/bash -c 'git clone --recurse-submodules https://github.com/python-mode/python-mode.git' {{ username }}
 {% endif %}
 
 {{ username }}-vimrc:
