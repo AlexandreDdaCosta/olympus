@@ -75,10 +75,10 @@ def shared_database():
                        "\"SELECT rolname FROM pg_roles WHERE rolname='" +
                        frontend_user +
                        "'\"")
-                subprocess.Popen(cmd,
-                                 shell=True,
-                                 stdout=subprocess.PIPE,
-                                 text=True)
+                p = subprocess.Popen(cmd,
+                                     shell=True,
+                                     stdout=subprocess.PIPE,
+                                     text=True)
                 output = p.communicate()
                 rolname = output[0].split("\n")[-2]
                 if rolname == frontend_user:
@@ -105,10 +105,10 @@ def shared_database():
                 subprocess.check_call(cmd, shell=True)
                 # If dev frontend web service is running, restart
                 cmd = "ps -A | grep runserver | wc -l"
-                subprocess.Popen(cmd,
-                                 shell=True,
-                                 stdout=subprocess.PIPE,
-                                 text=True)
+                p = subprocess.Popen(cmd,
+                                     shell=True,
+                                     stdout=subprocess.PIPE,
+                                     text=True)
                 frontend_dev_processes = p.communicate()[0].strip("\n")
                 if int(frontend_dev_processes) > 0:
                     cmd = "/usr/local/bin/killserver.sh"

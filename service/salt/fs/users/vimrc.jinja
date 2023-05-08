@@ -43,3 +43,9 @@ nnoremap <F4> :nohl<CR><C-l>:echo "Search Cleared"<CR>
 " F3 to execute python script
 
 autocmd FileType python nnoremap <buffer> <F5> :w<cr>:exec '!clear'<cr>:exec '!python3' shellescape(expand('%:p'), 1)<cr>
+
+" Core settings for other major file types
+
+autocmd FileType css setlocal shiftwidth=2 tabstop=2 autoindent expandtab
+autocmd FileType html setlocal shiftwidth=2 tabstop=2 autoindent expandtab
+autocmd FileType javascript setlocal shiftwidth=2 tabstop=2 autoindent expandtab
