@@ -100,7 +100,7 @@ user_{{ username }}:
     - name: /home/{{ username }}/.vim/bundle
     - user: {{ username }}
 
-{% set nerdtree_folder = '/home/' + user['username'] + '/.vim/bundle/nerdtree' %}
+{% set nerdtree_folder = '/home/' + user['name'] + '/.vim/bundle/nerdtree' %}
 {{ username }}-vim-nerdtree:
 {% if salt['file.directory_exists']('{{ nerdtree_folder }}') %}
   cmd.run:
