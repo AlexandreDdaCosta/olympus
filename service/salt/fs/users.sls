@@ -101,7 +101,7 @@ user_{{ username }}:
     - user: {{ username }}
 
 {{ username }}-vim-nerdtree:
-{% if not salt['directory.exists']['/home/{{ username }}/.vim/bundle/nerdtree'] %}
+{% if not salt['file.directory_exists']['/home/{{ username }}/.vim/bundle/nerdtree'] %}
   cmd.run:
     - cwd: /home/{{ username }}/.vim/bundle
     - name: sudo su -s /bin/bash -c 'git clone https://github.com/preservim/nerdtree.git' {{ username }}
@@ -112,7 +112,7 @@ user_{{ username }}:
 {% endif %}
 
 {{ username }}-vim-python-mode:
-{% if not salt['directory.exists']['/home/{{ username }}/.vim/bundle/python-mode'] %}
+{% if not salt['file.directory_exists']['/home/{{ username }}/.vim/bundle/python-mode'] %}
   cmd.run:
     - cwd: /home/{{ username }}/.vim/bundle
     - name: sudo su -s /bin/bash -c 'git clone --recurse-submodules https://github.com/python-mode/python-mode.git' {{ username }}
