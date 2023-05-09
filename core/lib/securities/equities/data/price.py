@@ -1,25 +1,19 @@
-import collections
 import json
 import os
 import re
-import shutil
 import socket
 import subprocess
-import time
 
-from datetime import date, datetime as dt, timedelta
+from datetime import datetime as dt, timedelta
 from dateutil import tz
 from file_read_backwards import FileReadBackwards
-from jsonschema import validate
 from urllib.request import urlretrieve
 
 import olympus.securities.equities.data as data
-import olympus.securities.equities.data.alphavantage as alphavantage
 import olympus.securities.equities.data.tdameritrade as ameritrade
 import olympus.securities.equities.data.symbols as symbols
 
 from olympus import DATE_STRING_FORMAT, Dates, FileFinder, Return, Series, USER
-from olympus.securities import Quote
 from olympus.securities.equities import SCHEMA_FILE_DIRECTORY
 from olympus.securities.equities.data import REQUEST_TIMEOUT, TIMEZONE
 from olympus.securities.equities.data.equity_datetime import DateVerifier
@@ -28,6 +22,7 @@ from olympus.securities.equities.data.schema import DIVIDENDS_SCHEMA
 from olympus.securities.equities.data.schema import PRICE_SCHEMA
 from olympus.securities.equities.data.schema import SPLITS_SCHEMA
 from olympus.securities.equities.data.schema import SchemaParser
+from olympus.securities.equities.data.symbols import SymbolNotFoundError
 
 socket.setdefaulttimeout(REQUEST_TIMEOUT)  # For urlretrieve
 
@@ -161,7 +156,7 @@ will be null (None) when no data exists.
 
 class _AdjustedData(Series):
 
-    def __init__(self, adjustment_type, data, query_date=None):
+    def __init__(self, adjustment_type, data, query_date=None):  # noqa: F403
         super(_AdjustedData, self).__init__()
         if query_date is not None:
             self.query_date = query_date
@@ -368,7 +363,7 @@ the date of the most recent split is therefore NEVER adjusted.
         self.split_adjusted_symbol = None
         self.split_data_date = None
 
-    def adjustments(self, symbol, **kwargs):
+    def adjustments(self, symbol, **kwargs):  # noqa: F403
 
         # Returns all split and dividend adjustments for an equity's
         # as-traded prices.
@@ -474,7 +469,7 @@ the date of the most recent split is therefore NEVER adjusted.
         return_object = _AdjustedData('merged', returndata, query_date)
         return return_object
 
-    def dividends(self, symbol, **kwargs):
+    def dividends(self, symbol, **kwargs):  # noqa: F403
         symbol = str(symbol).upper()
         symbol_verify = kwargs.get('symbol_verify', True)
         if symbol_verify is True:
@@ -513,7 +508,7 @@ the date of the most recent split is therefore NEVER adjusted.
             url = 'https://query1.finance.yahoo.com/v7/finance/download/' + \
                 symbol + \
                 '?period1=0&period2=9999999999&events=div'
-            response = urlretrieve(url, target_file)
+            urlretrieve(url, target_file)
             json_dividends = None
             with open(target_file, 'r') as f:
                 if not re.match(r'^Date,Dividends', f.readline()):
@@ -585,7 +580,7 @@ the date of the most recent split is therefore NEVER adjusted.
         return_object = _AdjustedData('dividend', returndata, query_date)
         return return_object
 
-    def splits(self, symbol, **kwargs):
+    def splits(self, symbol, **kwargs):  # noqa: F403
         symbol = str(symbol).upper()
         symbol_verify = kwargs.get('symbol_verify', True)
         if symbol_verify is True:
@@ -622,7 +617,7 @@ the date of the most recent split is therefore NEVER adjusted.
             url = 'https://query1.finance.yahoo.com/v7/finance/download/' + \
                     symbol + \
                     '?period1=0&period2=9999999999&events=split'
-            response = urlretrieve(url, target_file)
+            urlretrieve(url, target_file)
             splits = {}
             with open(target_file, 'r') as f:
                 if not re.match(r'^Date,Stock Splits', f.readline()):
@@ -891,9 +886,9 @@ differences will not grossly affect the desired results.
         super(Daily, self).__init__(username, **kwargs)
         self.date_utils = Dates()
 
-    def quote(self, symbol, **kwargs):
+    def quote(self, symbol, **kwargs):  # noqa: F403
         symbol = str(symbol).upper()
-        symbol_data = self.symbol_reader.get_symbol(symbol)
+        self.symbol_reader.get_symbol(symbol)
         date_verifier = DateVerifier()
         preformat = kwargs.get('preformat', False)
         regen = kwargs.get('regen', False)
@@ -967,7 +962,7 @@ differences will not grossly affect the desired results.
                                  0,
                                  0).timestamp())
             url = self._daily_quote_url(symbol, period1)
-            response = urlretrieve(url, target_file)
+            urlretrieve(url, target_file)
             with open(target_file, 'r') as f:
                 self._verify_csv_daily_format(f.readline())
                 if self.end_date_daily is not None:
@@ -1025,7 +1020,7 @@ differences will not grossly affect the desired results.
                                       regen=regen_adjustments,
                                       symbol_verify=False)
             url = self._daily_quote_url(symbol)
-            response = urlretrieve(url, target_file)
+            urlretrieve(url, target_file)
             # The initial response contains split-only adjusted prices,
             # ordered from oldest to newest.
             with open(target_file, 'r') as f:
@@ -1438,7 +1433,10 @@ TD Ameritrade API.
             self.item_map[item] = index
             index = index + 1
 
-    def quote(self, symbol, frequency=DEFAULT_INTRADAY_FREQUENCY, **kwargs):
+    def quote(self,  # noqa: F403
+              symbol,
+              frequency=DEFAULT_INTRADAY_FREQUENCY,
+              **kwargs):
         symbol = str(symbol).upper()
         self.symbol_reader.get_symbol(symbol)
         self.valid_frequency(frequency)
@@ -1472,10 +1470,7 @@ TD Ameritrade API.
                                   self.username,
                                   regen=False,
                                   symbol_verify=False)
-        last_quote_date = None
         daily_close = None
-        candle_count = len(response['candles'])
-        candle_index = candle_count - 1
         intraday_data = []
         # "response['candles']" is a list in ascending date order,
         # so read the list backwards to correctly apply adjustments
@@ -1633,7 +1628,7 @@ class Latest(ameritrade.Connection):
         with open(schema_file_name) as schema_file:
             self.json_schema = json.load(schema_file)
 
-    def quote(self, symbol, **kwargs):
+    def quote(self, symbol, **kwargs):  # noqa: F403
         return_object = _LatestQuotes(self.json_schema)
         params = {}
         # Symbol can be a string or array (list of symbols)
@@ -1641,7 +1636,7 @@ class Latest(ameritrade.Connection):
             symbol = str(symbol).upper()
             try:
                 result = self.symbol_reader.get_symbol(symbol)
-            except symbols.SymbolNotFoundError:
+            except SymbolNotFoundError:
                 return_object.add_unknown_symbol(symbol)
                 return return_object
             params['symbol'] = symbol

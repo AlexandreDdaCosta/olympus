@@ -76,7 +76,7 @@ class FileFinder():
 class Return():
     # Stores returned data in object form
 
-    def __init__(self, data, schema, **kwargs):
+    def __init__(self, data, schema, **kwargs):  # noqa: F403
         if not isinstance(schema, dict):
             raise Exception('Parameter "schema" must be of type dict.')
         if not isinstance(data, dict):
@@ -91,7 +91,7 @@ class Return():
             except ValidationError as e:
                 error_string = 'Return data validation error occurred: '
                 validation_error = error_string + e.args[0]
-            except e:
+            except Exception:
                 raise
             if validation_error is not None:
                 raise Exception(validation_error)
@@ -159,7 +159,7 @@ class Return():
         elif new_type == 'string':
             return str(data)
         else:
-            raise Exception('Unrecognized new data type ' + str(enew_type))
+            raise Exception('Unrecognized new data type ' + str(new_type))
 
 
 class Series():
@@ -322,7 +322,6 @@ class User():
         password_file = self.password_file_name(service)
         password_file_old = self.password_file_old_name(service)
         existing_password = None
-        old_password = None
         password_file_existed = False
         if isfile(password_file):
             password_file_existed = True
@@ -334,9 +333,6 @@ class User():
         if isfile(password_file_old):
             shutil.chown(password_file_old, self.username, self.username)
             os.chmod(password_file_old, stat.S_IREAD | stat.S_IWRITE)
-            with open(password_file_old, 'r') as f:
-                old_password = f.readline().rstrip()
-            f.close()
         if existing_password is not None:
             with open(password_file_old, 'w') as f:
                 f.write(existing_password)

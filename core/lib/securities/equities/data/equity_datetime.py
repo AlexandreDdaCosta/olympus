@@ -151,7 +151,7 @@ class TradingDates(DateVerifier):
             return check_date + timedelta(days=1)
         return check_date
 
-    def _calculate_name_date(self, name_list, holiday, year):
+    def _calculate_name_date(self, name_list, holiday, year):  # noqa: F403
         '''
         Does the grunt work of calculating the date of a trading holiday or
         shortened hours trading day for a given year

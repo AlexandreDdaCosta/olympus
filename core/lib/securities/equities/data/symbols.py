@@ -1,7 +1,6 @@
 import codecs
 import csv
 import json
-import jsonschema
 import os
 import re
 import subprocess
@@ -9,7 +8,6 @@ import time
 
 from datetime import datetime as dt, timedelta
 from dateutil import tz
-from dateutil.parser import parse
 from jsonschema import validate
 
 import olympus.restapi as restapi
@@ -55,7 +53,7 @@ class InitSymbols(data.Initializer):
                                           username,
                                           **kwargs)
 
-    def populate_collections(self):
+    def populate_collections(self):  # noqa: F403
         self.prepare()
         if self.verbose:
             print('Downloading exchange listed symbol data.')
@@ -305,7 +303,7 @@ class InitSymbols(data.Initializer):
             raise
         self.clean_up()
 
-    def post_populate_collections(self):
+    def post_populate_collections(self): # noqa: F403
         if self.verbose:
             print('Modifying stored symbol collections via ' +
                   'configuration files.')
@@ -330,7 +328,7 @@ class InitSymbols(data.Initializer):
                     if existing_symbol is None:
                         unknown_symbols.append(symbol)
                         continue
-                    recid = collection.update_one({
+                    collection.update_one({
                         "Symbol":
                         symbol,
                         "Security Class":
@@ -411,7 +409,7 @@ class InitSymbols(data.Initializer):
                             target_file],
                            shell=True)
             subprocess.run(['touch '+target_file], shell=True)
-        except Exception as e:
+        except Exception:
             self.clean_up()
             raise
 
@@ -457,7 +455,7 @@ class Read(restapi.Connection):
         self.redis_symbol_lockfile = (self.lockfile_directory() +
                                       'redis_symbol.pid')
 
-    def get_symbol(self, symbol, **kwargs):
+    def get_symbol(self, symbol, **kwargs):  # noqa: F403
         symbol = str(symbol).upper()
         reset = kwargs.pop('reset', False)
         redis_client = self.client()
@@ -502,7 +500,6 @@ class Read(restapi.Connection):
 
                     # Compose array string suitable for later json processing
 
-                    orig_watchlists = content['Watchlists']
                     watchlists = re.sub(r'\'', '"', str(content['Watchlists']))
                     redis_client.hset('securities:equities:symbol:' + symbol,
                                       key,
