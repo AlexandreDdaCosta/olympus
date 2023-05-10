@@ -1,4 +1,4 @@
-/var/log/uwsgi.log {
+/var/log/uwsgi/uwsgi.log {
     compress
     create 0644 uwsgi uwsgi
     dateext
@@ -10,7 +10,7 @@
     size 1024k
     endscript
 }
-/var/log/django.log {
+/var/log/django/django.log {
     compress
     create 0644 uwsgi uwsgi
     dateext

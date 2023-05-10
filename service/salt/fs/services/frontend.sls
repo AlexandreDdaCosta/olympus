@@ -107,14 +107,28 @@ include:
     - source: salt://services/frontend/files/init.uwsgi
     - user: root
 
-/var/log/uwsgi.log:
+/var/log/uwsgi:
+  file.directory:
+    - group: {{ pillar['frontend-user'] }}
+    - makedirs: False
+    - mode: 0755
+    - user: {{ pillar['frontend-user'] }}
+
+/var/log/uwsgi/uwsgi.log:
   file.managed:
     - group: {{ pillar['frontend-user'] }}
     - mode: 0644
     - replace: False
     - user: {{ pillar['frontend-user'] }}
 
-/var/log/django.log:
+/var/log/django:
+  file.directory:
+    - group: {{ pillar['frontend-user'] }}
+    - makedirs: False
+    - mode: 0755
+    - user: {{ pillar['frontend-user'] }}
+
+/var/log/django/django.log:
   file.managed:
     - group: {{ pillar['frontend-user'] }}
     - mode: 0644
