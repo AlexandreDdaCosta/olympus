@@ -57,10 +57,10 @@ openssh-server-service:
 
 /var/log/fail2ban:
   file.directory:
-    - group: root
+    - group: adm
     - makedirs: False
     - mode: 0750
-    - user: adm
+    - user: root
 
 fail2ban-service:
   file.managed:
