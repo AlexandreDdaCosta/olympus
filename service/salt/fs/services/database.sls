@@ -68,7 +68,7 @@ frontend_db_user:
 
 frontend_db_user_pwd_reset:
   cmd.run:
-    - name: salt '{{ grains.get('localhost') }}' credentials.backend
+    - name: salt '{{ grains.get('localhost') }}' credentials.interface_backend
     - require: 
       - frontend_db_user
 

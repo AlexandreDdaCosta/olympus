@@ -10,7 +10,7 @@ import subprocess
 from olympus import RESTAPI_SERVICE, User
 
 
-def backend():
+def interface_backend():
     frontend_user = __salt__['pillar.get']('frontend-user')  # noqa: F403
     passphrase = __salt__['data.get']('frontend_db_key')  # noqa: F403
     server = __grains__['server']  # noqa: F403
@@ -18,7 +18,7 @@ def backend():
     if (passphrase is not None and server is not None):
         key = 'servers:' + server + ':services'
         services = __salt__['pillar.get'](key)  # noqa: F403
-        if 'backend' in services:
+        if 'database' in services:
             cmd = ("sudo -u postgres psql -c \"ALTER USER " +
                    frontend_user +
                    " ENCRYPTED PASSWORD '" +
@@ -61,15 +61,15 @@ def shared_database():
         key = 'servers:' + server + ':services'
         services = __salt__['pillar.get'](key)  # noqa: F403
         delete_minion_data = False
-        if 'backend' in services:
+        if 'database' in services:
             # Is database running?
             cmd = "ps -A | grep postgres | wc -l"
             p = subprocess.Popen(cmd,
                                  shell=True,
                                  stdout=subprocess.PIPE,
                                  text=True)
-            backend_processes = p.communicate()[0].strip("\n")
-            if int(backend_processes) > 0:
+            database_processes = p.communicate()[0].strip("\n")
+            if int(database_processes) > 0:
                 # Does frontend user exist?
                 cmd = ("sudo -u postgres psql -tAc " +
                        "\"SELECT rolname FROM pg_roles WHERE rolname='" +

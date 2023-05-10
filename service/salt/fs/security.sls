@@ -370,12 +370,12 @@ cert_mongo_restart:
 # 1. Update database credential in minion data
 update_minion_credential_data:
   cmd.run:
-    - name: salt -C 'G@services:frontend or G@services:backend' data.update frontend_db_key {{ pillar['random_key']['frontend_db_key'] }}
+    - name: salt -C 'G@services:frontend or G@services:database' data.update frontend_db_key {{ pillar['random_key']['frontend_db_key'] }}
 
-# 2. Call credentials update script for all frontend/backend minions
+# 2. Call credentials update script for all frontend/database minions
 update_db_credential:
   cmd.run:
-    - name: salt -C 'G@services:frontend or G@services:backend' credentials.shared_database
+    - name: salt -C 'G@services:frontend or G@services:database' credentials.shared_database
     - require: 
       - update_minion_credential_data
 
