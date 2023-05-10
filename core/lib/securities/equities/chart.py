@@ -1,5 +1,3 @@
-import json
-
 # Chart intervals
 
 INTERVALS = ('5min', 'daily', 'weekly', 'monthly')

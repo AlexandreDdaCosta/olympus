@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import json
 import sys
 import unittest
 
@@ -8,7 +7,6 @@ import olympus.securities.equities.data.price as equity_price
 import olympus.securities.indicators as indicators
 import olympus.testing as testing
 
-from olympus import USER
 from olympus.securities.equities import *
 from olympus.securities.indicators import *
 
@@ -108,6 +106,11 @@ class TestIndicators(testing.Test):
                 test_periods = []
                 test_periods.append(self.args.period.capitalize())
             for test_period in test_periods:
+                if test_period == 'Daily':
+                    price = equity_price.Daily(self.username)
+                else:  # Intraday
+                    price = equity_price.Intraday(self.username)
+                quotes = price.quote(test_symbol)
                 with self.assertRaises(Exception):
                     indicators.MovingAverage(
                             quotes,

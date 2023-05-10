@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import json
 import sys
 import unittest
 
@@ -8,7 +7,6 @@ import olympus.securities.equities.data.price as equity_price
 import olympus.securities.indicators.demark.algo.sequential as sequential
 import olympus.testing as testing
 
-from olympus import USER
 from olympus.securities.equities import *
 
 # Standard run parameters:
@@ -81,6 +79,7 @@ class TestDemark(testing.Test):
                         quotes,
                         array_periods=DEFAULT_ARRAY_PERIODS,
                         formation_periods=DEFAULT_FORMATION_PERIODS)
+                print(obj)
 
 
 if __name__ == '__main__':

@@ -5,7 +5,6 @@ import time
 
 from argparse import ArgumentParser
 
-from olympus.securities.equities.algo.market_key import *
 from olympus.securities.equities.algo.market_key.simulate import Backtest
 from olympus.securities.equities import SYMBOL
 

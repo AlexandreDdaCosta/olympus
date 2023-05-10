@@ -3,7 +3,7 @@ import os
 
 import olympus.mongodb as mongodb
 
-from olympus import USER, User
+from olympus import USER
 
 DATABASE = 'equities'
 INDEX_SUFFIX = '_idx'

@@ -1,11 +1,6 @@
 # Core procedures for MongoDB
 
-import os
 import pymongo
-import shutil
-import stat
-
-from os.path import isfile
 
 from olympus import MONGODB_SERVICE, User
 

@@ -1,4 +1,4 @@
-from olympus import Return, Series, String
+from olympus import Series, String
 
 # The attributes that all price quotes must have
 PRICE_STANDARD_ATTRIBUTES = [
@@ -89,7 +89,7 @@ class QuoteAdjustments():
     # as-traded prices and volumes can be adjusted for dividends and splits.
 
     def __init__(self, adjustments):
-        validator = _ValidateAttributes(
+        _ValidateAttributes(
                 adjustments,
                 PRICE_ADJUSTED_ATTRIBUTES,
                 'adjusted details')
@@ -117,7 +117,7 @@ class Quote():
         self.adjustments = None
         self.misc = None
         self.standard_attributes = []
-        validator = _ValidateAttributes(
+        _ValidateAttributes(
                 quote,
                 PRICE_STANDARD_ATTRIBUTES,
                 'standard details')

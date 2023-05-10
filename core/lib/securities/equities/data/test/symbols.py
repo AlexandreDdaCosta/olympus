@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import json
 import sys
 import unittest
 
@@ -10,7 +9,6 @@ import olympus.testing as testing
 
 from datetime import datetime as dt
 
-from olympus import USER
 from olympus.redis import Connection
 from olympus.securities.equities import *
 from olympus.securities.equities.data.symbols import SymbolNotFoundError

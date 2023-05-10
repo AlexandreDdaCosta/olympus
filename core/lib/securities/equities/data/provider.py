@@ -17,7 +17,7 @@ class Connection(restapi.Connection):
                                   provider_name +
                                   '.pid')
 
-    def access_key(self):
+    def access_key(self):  # noqa: F403
 
         # 1. Current object instance has valid api key?
 

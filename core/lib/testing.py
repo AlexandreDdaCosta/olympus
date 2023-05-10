@@ -116,7 +116,6 @@ class Test(unittest.TestCase):
 
     def assertNotGrepFile(self, filename, text, description=NO_GREP_TEXT):
         file = open(filename, "r")
-        where = file.tell()
         while True:
             line = file.readline()
             if not line:
@@ -140,9 +139,9 @@ class Test(unittest.TestCase):
         try:
             parser.add_argument(*args, **kwargs)
             self.args = parser.parse_args()
-        except ArgumentError as e:
+        except ArgumentError:
             pass
-        except e:
+        except Exception:
             raise
 
     def file(self):

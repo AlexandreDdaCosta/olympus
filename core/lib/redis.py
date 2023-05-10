@@ -2,6 +2,7 @@
 
 import fcntl
 import redis
+import time
 
 from olympus import REDIS_SERVICE, USER, User
 
@@ -29,7 +30,7 @@ class Connection(User):
                 lockfilehandle = open(filename, 'w')
                 fcntl.flock(lockfilehandle, fcntl.LOCK_EX | fcntl.LOCK_NB)
                 break
-            except OSError as e:
+            except OSError:
                 if (i == 4):
                     # Last iteration
                     raise

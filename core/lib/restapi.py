@@ -4,7 +4,7 @@ import json
 import requests
 import time
 
-from olympus import CLIENT_CERT, REDIS_SERVICE, RESTAPI_SERVICE, USER, User
+from olympus import CLIENT_CERT, RESTAPI_SERVICE, USER
 
 import olympus.redis as redis
 
@@ -58,7 +58,7 @@ class Connection(redis.Connection):
                 raise RestAPIError(response)
         return response
 
-    def _token(self, test_access=False):
+    def _token(self, test_access=False):  # noqa: F403
 
         # 1. Current object instance has valid access token?
 

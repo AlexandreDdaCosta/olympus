@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 
-import sys
 import time
-
-from argparse import ArgumentParser
 
 from olympus.debug import DebuggerArgs
 from olympus.securities.equities import BUY, SELL
@@ -36,7 +33,7 @@ start = time.time()
 calculator = Calculate()
 chart = calculator.chartpoints(args.symbol, args.interval, latest=args.latest)
 
-if chart.last_entry():
+if chart.last_entry():  # noqa: F403
     print('CHART DATES')
     for chartpoint in chart.dates:
         print(chartpoint)
