@@ -29,22 +29,22 @@ include:
 
 {% for packagename, package in pillar.get('backend-npm-packages', {}).items() %}
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
-npm-backend-{{ packagename }}:
+"{{ packagename }}-nodejs-pkgs":
   npm.installed:
     - force_reinstall: True
 {% elif package != None and 'version' in package %}
 {% if pillar.pkg_noversion is not defined or not pillar.pkg_noversion %}
-{{ packagename }}@{{ package['version'] }}:
+"{{ packagename }}@{{ package['version'] }}":
   npm.installed:
 {% else %}
-{{ packagename }}:
+"{{ packagename }}":
   npm.installed:
 {% endif %}
 {% else %}
-{{ packagename }}:
+"{{ packagename }}":
   npm.installed:
 {% endif %}
-    - name: {{ packagename }}
+    - name: "{{ packagename }}"
     - require:
       - sls: package
 {% endfor %}
