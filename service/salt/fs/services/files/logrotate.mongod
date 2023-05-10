@@ -1,4 +1,4 @@
-/var/log/mongodb/*log {
+/var/log/mongodb/*.log {
     compress
     dateext
     missingok
