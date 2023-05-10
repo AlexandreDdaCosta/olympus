@@ -45,8 +45,6 @@ postgresql:
       - file: /etc/postgresql/14/main/postgresql.conf
       - pkg: pgadmin3
       - pkg: postgresql-14
-    - require:
-      - sls: services/web
 
 olympus.db:
   postgres_database.present:
