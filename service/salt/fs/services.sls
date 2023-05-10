@@ -56,6 +56,14 @@ mongo --username `whoami` --password `cat /home/\`whoami\`/etc/mongodb_password`
 Note that mongod only listens on localhost (127.0.0.1)
 #}
 
+/etc/logrotate.d/mongod:
+    file.managed:
+    - group: root
+    - makedirs: False
+    - mode: 0644
+    - source: salt://services/files/logrotate.mongod
+    - user: root
+
 systmctl_enable_mongod:
   cmd.run:
     - name: systemctl enable mongod
