@@ -122,6 +122,17 @@ user_{{ username }}:
     - name: sudo su -s /bin/bash -c 'git clone --recurse-submodules https://github.com/python-mode/python-mode.git' {{ username }}
 {% endif %}
 
+{{ username }}-vim-polyglot:
+{% if salt['file.directory_exists']('/home/' + username + '/.vim/bundle/vim-polyglot') %}
+  cmd.run:
+    - cwd: /home/{{ username }}/.vim/bundle/vim-polyglot
+    - name: sudo su -s /bin/bash -c 'git pull https://github.com/sheerun/vim-polyglot' {{ username }}
+{% else %}
+  cmd.run:
+    - cwd: /home/{{ username }}/.vim/bundle
+    - name: sudo su -s /bin/bash -c 'git clone https://github.com/sheerun/vim-polyglot' {{ username }}
+{% endif %}
+
 {{ username }}-vimrc:
   file.managed:
     - group: {{ username }}
