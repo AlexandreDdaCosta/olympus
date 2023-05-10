@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 #
 # /etc/init.d/uwsgi
 #
@@ -19,42 +19,50 @@ vassaldir=/etc/uwsgi/vassals
 
 . /lib/lsb/init-functions
 
+do_pid_check()
+{
+    [[ -f $lockfile ]] || return 0
+    local PID=$(cat $lockfile)
+    for p in $(pgrep $prog); do
+        [[ $p == $PID ]] && return 1
+    done
+    return 0
+}
+
+wait_and_clean_pidfile()
+{
+    until do_pid_check $lockfile; do
+        echo -n "";
+    done
+    rm -f $lockfile
+}
+
 do_start()
 {
-    status="0"
-    wait=1
-    while [ $status -eq "0" ]
-    do
-        ps -p`cat $lockfile` 2>&1 > /dev/null
-        status=$?
-        if [ "$status" != "0" ]; then
-            break
-        fi
-        wait=$((wait+1))
-        if [ $wait -eq 3 ]; then
-            break
-        fi
-        sleep 1
-    done
-    FILES=`ls $vassaldir`
-    for initfile in $FILES
-    do
-        INITFILE=`echo $initfile | sed 's/\.ini$//'`
-        touch /var/run/uwsgi.$INITFILE.pid
-        chmod 0664 /var/run/uwsgi.$INITFILE.pid
-        chown uwsgi:uwsgi /var/run/uwsgi.$INITFILE.pid
-    done
-    [ -x $daemon ] || exit 5
-    [ -f $inifile ] || exit 6
-    touch $lockfile
-    chmod 0664 $lockfile
-    chown root:root $lockfile
-    start-stop-daemon --start --quiet --pidfile $lockfile --exec $daemon -- $inifile
+    if do_pid_check; then
+        FILES=`ls $vassaldir`
+        for initfile in $FILES
+        do
+            INITFILE=`echo $initfile | sed 's/\.ini$//'`
+            touch /var/run/uwsgi.$INITFILE.pid
+            chmod 0664 /var/run/uwsgi.$INITFILE.pid
+            chown uwsgi:uwsgi /var/run/uwsgi.$INITFILE.pid
+        done
+        [ -x $daemon ] || exit 5
+        [ -f $inifile ] || exit 6
+        touch $lockfile
+        chmod 0664 $lockfile
+        chown root:root $lockfile
+        start-stop-daemon --start --quiet --pidfile $lockfile --exec $daemon -- $inifile
+    else
+        echo "Already running!"
+    fi
 }
 
 do_stop()
 {
     start-stop-daemon --signal QUIT -p $lockfile --stop $daemon
+    wait_and_clean_pidfile
 }
 
 case "$1" in
