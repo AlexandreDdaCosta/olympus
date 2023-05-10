@@ -55,13 +55,14 @@ openssh-server-service:
         - file: /etc/ssh/sshd_config
         - pkg: openssh-server
 
-fail2ban-service:
+/var/log/fail2ban:
   file.directory:
     - group: root
     - makedirs: False
     - mode: 0750
-    - name: /var/log/fail2ban
     - user: adm
+
+fail2ban-service:
   file.managed:
     - group: root
     - mode: 0644
@@ -73,10 +74,11 @@ fail2ban-service:
     - name: fail2ban
     - restart: True
     - watch:
+        - file: /etc/fail2ban/fail2ban.conf
         - pkg: fail2ban
 
 /etc/logrotate.d/fail2ban:
-    file.managed:
+  file.managed:
     - group: root
     - makedirs: False
     - mode: 0644
