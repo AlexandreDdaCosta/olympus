@@ -114,7 +114,7 @@ user_{{ username }}:
 {% if salt['file.directory_exists']('/home/' + username + '/.vim/bundle/' + vimpackagename) %}
   cmd.run:
     - cwd: /home/{{ username }}/.vim/bundle/{{ vimpackagename }}
-{% if 'git-flags' in vimpackage -%}
+{% if 'git-flags' in vimpackage %}
     - name: ls -l /home/alex
 {% else %}
     - name: ls -l /home/git
@@ -122,7 +122,7 @@ user_{{ username }}:
 {% else %}
   cmd.run:
     - cwd: /home/{{ username }}/.vim/bundle
-{% if 'git-flags' in vimpackage -%}
+{% if 'git-flags' in vimpackage %}
     - name: ls -l /home/node
 {% else %}
     - name: ls -l /home/olympus
