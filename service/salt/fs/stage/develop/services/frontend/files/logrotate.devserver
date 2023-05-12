@@ -1,0 +1,12 @@
+/var/log/devserver/devserver.log {
+    compress
+    create 0644 
+    dateext
+    missingok
+    notifempty
+    postrotate
+	/usr/local/bin/killserver.sh; /usr/local/bin/startserver.py
+    rotate 10
+    size 1024k
+    endscript
+}

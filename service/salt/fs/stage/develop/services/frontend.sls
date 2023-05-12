@@ -10,6 +10,20 @@ Currently the dev server does not restart automatically on server shutdown, unli
 full uWSGI server.
 #}
 
+/etc/logrotate.d/devserver:
+    file.managed:
+    - group: root
+    - makedirs: False
+    - mode: 0644
+    - source: salt://stage/develop/services/frontend/files/logrotate.devserver
+    - user: root
+
+/var/log/devserver:
+  file.directory:
+    - group: root
+    - mode: 0755
+    - user: root
+
 /usr/local/bin/startserver.py:
   file.managed:
     - group: root

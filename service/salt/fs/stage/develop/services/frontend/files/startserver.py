@@ -3,7 +3,8 @@
 from subprocess import Popen
 
 cmd_str = ('/usr/bin/python3 /srv/www/django/manage.py runserver 1' +
-           '>>/var/log/devserver.log 2>>/var/log/devserver.log &')
+           '>>/var/log/devserver/devserver.log 2>>' +
+           '/var/log/devserver/devserver.log &')
 proc = Popen([cmd_str],
              shell=True,
              stdin=None,
