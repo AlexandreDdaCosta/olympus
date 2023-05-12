@@ -17,6 +17,9 @@ base:
     - apps
     {% endif %}
     {% if grains.get('stage') %}
+    {% for state in pillar[grains.get('stage')]['states'] %}
+    - stage/{{ grains.get('stage') }}/{{ state }}
+    {% endfor %}
     {% for service in pillar[grains.get('stage')]['services'] %}
     - stage/{{ grains.get('stage') }}/services/{{ service }}
     {% endfor %}
