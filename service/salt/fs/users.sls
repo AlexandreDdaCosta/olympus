@@ -125,7 +125,7 @@ user_{{ username }}:
 {% if 'git-flags' in vimpackage %}
     - name: ls -l /home/node
 {% else %}
-    - name: ls -l /home/olympus
+    - name: sudo su -s /bin/bash -c 'git clone {{ vimpackage['repo'] }}' {{ username }}
 {% endif %}
 
 {%- endif %}
