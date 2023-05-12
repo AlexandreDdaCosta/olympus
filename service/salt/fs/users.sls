@@ -113,9 +113,11 @@ user_{{ username }}:
 {{ username }}-vim-{{ vimpackagename }}:
 {% if salt['file.directory_exists']('/home/' + username + '/.vim/bundle/' + vimpackagename) %}
   cmd.run:
-    - name: ls -l /tmp
+    - cwd: /home/{{ username }}/.vim/bundle/{{ vimpackagename }}
+    - name: ls -l
 {% else %}
   cmd.run:
+    - cwd: /home/{{ username }}/.vim/bundle
     - name: ls -l /home
 
 {%- endif %}
