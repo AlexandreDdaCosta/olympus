@@ -109,23 +109,24 @@ user_{{ username }}:
     - source: salt://users/vimrc.jinja
     - template: jinja
 
-{% for vim-package-name, vim-package in pillar.get('vim-packages', {}).items() %}
-{{ username }}-vim-{{ vim-package-name}}:
-{% if salt['file.directory_exists']('/home/' + username + '/.vim/bundle/' + vim-package-name) %}
+{% for username, user in pillar.get('users', {}).items() %}
+{% for vimpackagename, vimpackage in pillar.get('vim-packages', {}).items() %}
+{{ username }}-vim-{{ vimpackagename}}:
+{% if salt['file.directory_exists']('/home/' + username + '/.vim/bundle/' + vimpackagename) %}
   cmd.run:
-    - cwd: /home/{{ username }}/.vim/bundle/{{ vim-package-name }}
-{% if 'git-flags' in vim-package -%}
-    - name: sudo su -s /bin/bash -c 'git pull {{ vim-package['git-flags] }} {{ vim-package['repo'] }}' {{ username }}
+    - cwd: /home/{{ username }}/.vim/bundle/{{ vimpackagename }}
+{% if 'git-flags' in vimpackage -%}
+    - name: sudo su -s /bin/bash -c 'git pull {{ vimpackage['git-flags] }} {{ vimpackage['repo'] }}' {{ username }}
 {% else %}
-    - name: sudo su -s /bin/bash -c 'git pull {{ vim-package['repo'] }}' {{ username }}
+    - name: sudo su -s /bin/bash -c 'git pull {{ vimpackage['repo'] }}' {{ username }}
 {% endif %}
 {% else %}
   cmd.run:
     - cwd: /home/{{ username }}/.vim/bundle
-{% if 'git-flags' in vim-package -%}
-    - name: sudo su -s /bin/bash -c 'git clone {{ vim-package['git-flags] }} {{ vim-package['repo'] }}' {{ username }}
+{% if 'git-flags' in vimpackage -%}
+    - name: sudo su -s /bin/bash -c 'git clone {{ vimpackage['git-flags] }} {{ vimpackage['repo'] }}' {{ username }}
 {% else %}
-    - name: sudo su -s /bin/bash -c 'git clone {{ vim-package['repo'] }}' {{ username }}
+    - name: sudo su -s /bin/bash -c 'git clone {{ vimpackage['repo'] }}' {{ username }}
 {% endif %}
 {% endif %}
 {% endfor %}
