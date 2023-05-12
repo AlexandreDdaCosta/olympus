@@ -109,6 +109,12 @@ user_{{ username }}:
     - source: salt://users/vimrc.jinja
     - template: jinja
 
+{% for vimpackagename, vimpackage in pillar.get('vim-packages', {}).items() %}
+{{ username }}-vim-{{ vimpackagename }}:
+  cmd.run:
+    - name: ls -l /tmp
+{% endfor %}
+
 {%- endif %}
 
 {% endif %}
