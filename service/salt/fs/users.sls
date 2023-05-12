@@ -127,8 +127,7 @@ user_{{ username }}:
 {% else %}
     - name: sudo su -s /bin/bash -c 'git clone {{ vimpackage['repo'] }}' {{ username }}
 {% endif %}
-
-{%- endif %}
+{% endif %}
 {% endfor %}
 
 {%- endif %}
