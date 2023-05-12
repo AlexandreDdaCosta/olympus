@@ -109,7 +109,6 @@ user_{{ username }}:
     - source: salt://users/vimrc.jinja
     - template: jinja
 
-{% for username, user in pillar.get('users', {}).items() %}
 {% for vimpackagename, vimpackage in pillar.get('vim-packages', {}).items() %}
 {{ username }}-vim-{{ vimpackagename}}:
 {% if salt['file.directory_exists']('/home/' + username + '/.vim/bundle/' + vimpackagename) %}
