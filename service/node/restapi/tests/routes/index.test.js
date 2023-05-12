@@ -1,7 +1,7 @@
 // sudo su -s /bin/bash -c 'source /srv/www/node/restapi/tests/test_source.sh; cd /srv/www/node/restapi; npm test ./tests/routes/index.test.js' node
 
 const config = require('config');
-const request = require('request');
+const { request } = require('urllib');
 const url = 'http://' + config.get('server.host') + ':' + config.get('server.port') + '/';
 const message = 'Olympus back-end API listening for requests via express/node.js.'
 
@@ -12,7 +12,7 @@ Command line: curl zeus:8889
 
 describe('Connection to HTTP index page of API, node port', () => {
   test('Should return HTTP code 200 with JSON reply including a "message" key.', () => {
-    request.get(url, (error, response) => {
+    request(url, { method: 'GET' }, function (err, data, response) {
       expect(response.statusCode).toBe(200);
       jsonobject = JSON.parse(response.body);
       expect(jsonobject['message']).toBe(message);
