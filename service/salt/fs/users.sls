@@ -111,8 +111,14 @@ user_{{ username }}:
 
 {% for vimpackagename, vimpackage in pillar.get('vim-packages', {}).items() %}
 {{ username }}-vim-{{ vimpackagename }}:
+{% if salt['file.directory_exists']('/home/' + username + '/.vim/bundle/' + vimpackagename) %}
   cmd.run:
     - name: ls -l /tmp
+{% else %}
+  cmd.run:
+    - name: ls -l /home
+
+{%- endif %}
 {% endfor %}
 
 {%- endif %}
