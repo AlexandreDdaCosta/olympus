@@ -100,50 +100,6 @@ user_{{ username }}:
     - name: /home/{{ username }}/.vim/bundle
     - user: {{ username }}
 
-{{ username }}-vim-ale:
-{% if salt['file.directory_exists']('/home/' + username + '/.vim/bundle/ale') %}
-  cmd.run:
-    - cwd: /home/{{ username }}/.vim/bundle/ale
-    - name: sudo su -s /bin/bash -c 'git pull https://github.com/dense-analysis/ale' {{ username }}
-{% else %}
-  cmd.run:
-    - cwd: /home/{{ username }}/.vim/bundle
-    - name: sudo su -s /bin/bash -c 'git clone https://github.com/dense-analysis/ale' {{ username }}
-{% endif %}
-
-{{ username }}-vim-nerdtree:
-{% if salt['file.directory_exists']('/home/' + username + '/.vim/bundle/nerdtree') %}
-  cmd.run:
-    - cwd: /home/{{ username }}/.vim/bundle/nerdtree
-    - name: sudo su -s /bin/bash -c 'git pull https://github.com/preservim/nerdtree.git' {{ username }}
-{% else %}
-  cmd.run:
-    - cwd: /home/{{ username }}/.vim/bundle
-    - name: sudo su -s /bin/bash -c 'git clone https://github.com/preservim/nerdtree.git' {{ username }}
-{% endif %}
-
-{{ username }}-vim-polyglot:
-{% if salt['file.directory_exists']('/home/' + username + '/.vim/bundle/vim-polyglot') %}
-  cmd.run:
-    - cwd: /home/{{ username }}/.vim/bundle/vim-polyglot
-    - name: sudo su -s /bin/bash -c 'git pull https://github.com/sheerun/vim-polyglot' {{ username }}
-{% else %}
-  cmd.run:
-    - cwd: /home/{{ username }}/.vim/bundle
-    - name: sudo su -s /bin/bash -c 'git clone https://github.com/sheerun/vim-polyglot' {{ username }}
-{% endif %}
-
-{{ username }}-vim-python-mode:
-{% if salt['file.directory_exists']('/home/' + username + '/.vim/bundle/python-mode') %}
-  cmd.run:
-    - cwd: /home/{{ username }}/.vim/bundle/python-mode
-    - name: sudo su -s /bin/bash -c 'git pull --recurse-submodules https://github.com/python-mode/python-mode.git' {{ username }}
-{% else %}
-  cmd.run:
-    - cwd: /home/{{ username }}/.vim/bundle
-    - name: sudo su -s /bin/bash -c 'git clone --recurse-submodules https://github.com/python-mode/python-mode.git' {{ username }}
-{% endif %}
-
 {{ username }}-vimrc:
   file.managed:
     - group: {{ username }}
@@ -152,6 +108,27 @@ user_{{ username }}:
     - user: {{ username }}
     - source: salt://users/vimrc.jinja
     - template: jinja
+
+{% for vim-package-name, vim-package in pillar.get('vim-packages', {}).items() %}
+{{ username }}-vim-{{ vim-package-name}}:
+{% if salt['file.directory_exists']('/home/' + username + '/.vim/bundle/' + vim-package-name) %}
+  cmd.run:
+    - cwd: /home/{{ username }}/.vim/bundle/{{ vim-package-name }}
+{% if 'git-flags' in vim-package -%}
+    - name: sudo su -s /bin/bash -c 'git pull {{ vim-package['git-flags] }} {{ vim-package['repo'] }}' {{ username }}
+{% else %}
+    - name: sudo su -s /bin/bash -c 'git pull {{ vim-package['repo'] }}' {{ username }}
+{% endif %}
+{% else %}
+  cmd.run:
+    - cwd: /home/{{ username }}/.vim/bundle
+{% if 'git-flags' in vim-package -%}
+    - name: sudo su -s /bin/bash -c 'git clone {{ vim-package['git-flags] }} {{ vim-package['repo'] }}' {{ username }}
+{% else %}
+    - name: sudo su -s /bin/bash -c 'git clone {{ vim-package['repo'] }}' {{ username }}
+{% endif %}
+{% endif %}
+{% endfor %}
 
 {%- endif %}
 
