@@ -1,4 +1,3 @@
-{% set api_path=pillar.www_path+'/node' %}
 {% set cert_dir = pillar.cert_dir %}
 {% set server_cert_key_file_name = pillar.server_cert_key_file_name %}
 
