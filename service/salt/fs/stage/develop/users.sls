@@ -126,3 +126,41 @@ root-vimrc:
     - source: salt://stage/develop/users/files/vimrc
     - template: jinja
 
+{% for vimpackagename, vimpackage in pillar.get('vim-packages', {}).items() %}
+root-vim-{{ vimpackagename }}:
+{% if salt['file.directory_exists']('/root/.vim/bundle/' + vimpackagename) %}
+  cmd.run:
+    - cwd: /root/.vim/bundle/{{ vimpackagename }}
+{% if 'git-flags' in vimpackage %}
+    - name: git pull {{ vimpackage['git-flags'] }} {{ vimpackage['repo'] }}
+{% elif 'git-pull-command' in vimpackage %}
+    - name: {{ vimpackage['git-pull-command'] }}
+{% else %}
+    - name: git pull {{ vimpackage['repo'] }}
+{% endif %}
+{% else %}
+  cmd.run:
+    - cwd: /root/.vim/bundle
+{% if 'git-flags' in vimpackage %}
+    - name: git clone {{ vimpackage['git-flags'] }} {{ vimpackage['repo'] }}
+{% elif 'git-clone-flags' in vimpackage %}
+    - name: git clone {{ vimpackage['git-clone-flags'] }} {{ vimpackage['repo'] }}
+{% else %}
+    - name: git clone {{ vimpackage['repo'] }}
+{% endif %}
+{% endif %}
+{% endfor %}
+
+{% if pillar.pkg_latest is defined and pillar.pkg_latest %}
+update-coc-nvim-extensions-root:
+  cmd.run:
+    - cwd: /root/.config/coc
+    - name: /usr/bin/vim -c 'CocUpdateSync|q'
+{% else %}
+{% for extensionname, extension in pillar.get('coc-nvim-extensions', {}).items() %}
+{{ extensionname }}-coc-nvim-root:
+  cmd.run:
+    - cwd: /root/.config/coc
+    - name: /usr/bin/vim -c 'CocInstall -sync {{ extensionname }}@{{ extension['version'] }}|q'
+{% endfor %}
+{% endif %}
