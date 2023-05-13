@@ -38,6 +38,20 @@ set numberwidth=5
 " Change line numbers to red
 highlight LineNr term=bold cterm=NONE ctermfg=Red ctermbg=NONE gui=NONE guifg=Red guibg=NONE
 
+" ale
+
+" Only use ale for javascript
+let b:ale_linters = ['eslint']
+" Disable highlighting
+let g:ale_set_highlights = 0
+" Customize errors and warnings
+let g:ale_echo_msg_error_str = 'ERROR'
+let g:ale_echo_msg_warning_str = 'WARNING'
+let g:ale_echo_msg_format = '%severity% [%code%] %s [%linter%]'
+" Last (l) and next (n) errors:
+nmap <silent> <C-l> <Plug>(ale_previous_wrap)
+nmap <silent> <C-n> <Plug>(ale_next_wrap)
+
 " F4 to clear search
 
 nnoremap <F4> :nohl<CR><C-l>:echo "Search Cleared"<CR>

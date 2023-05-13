@@ -106,7 +106,7 @@ user_{{ username }}:
     - mode: 0640
     - name: /home/{{ username }}/.vimrc
     - user: {{ username }}
-    - source: salt://users/vimrc.jinja
+    - source: salt://users/files/vimrc
     - template: jinja
 
 {% for vimpackagename, vimpackage in pillar.get('vim-packages', {}).items() %}
