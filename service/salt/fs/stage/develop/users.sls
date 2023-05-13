@@ -20,6 +20,20 @@ include:
     - name: /home/{{ username }}/.vim/bundle
     - user: {{ username }}
 
+{{ username }}-config:
+  file.directory:
+    - group: {{ username }}
+    - mode: 0700
+    - name: /home/{{ username }}/.config
+    - user: {{ username }}
+
+{{ username }}-coc-config:
+  file.directory:
+    - group: {{ username }}
+    - mode: 0700
+    - name: /home/{{ username }}/.config/coc
+    - user: {{ username }}
+
 {{ username }}-vimrc:
   file.managed:
     - group: {{ username }}
@@ -54,7 +68,21 @@ include:
 {% endif %}
 {% endfor %}
 
-{%- endif %}
+{% if pillar.pkg_latest is defined and pillar.pkg_latest %}
+update-coc-nvim-extensions:
+  cmd.run:
+    - cwd: /home/{{ username }}/.config/coc
+    - name: sudo su -s /bin/bash -c "/usr/bin/vim -c 'CocUpdateSync|q'" {{ username }}
+{% else %}
+{% for extensionname, extension in pillar.get('coc-nvim-extensions', {}).items() %}
+{{ extensionname }}-coc-nvim:
+  cmd.run:
+    - cwd: /home/{{ username }}/.config/coc
+    - name: sudo su -s /bin/bash -c "/usr/bin/vim -c 'CocInstall -sync {{ extensionname }}@{{ extension['version'] }}|q'" {{ username }}
+{% endfor %}
+{% endif %}
+
+{% endif %}
 
 {% endif %}
 {% endfor %}
@@ -73,6 +101,20 @@ root-vim-bundle:
     - group: root
     - mode: 0750
     - name: /root/.vim/bundle
+    - user: root
+
+root-config:
+  file.directory:
+    - group: root
+    - mode: 0700
+    - name: /root/.config
+    - user: root
+
+root-coc-config:
+  file.directory:
+    - group: root
+    - mode: 0700
+    - name: /root/.config/coc
     - user: root
 
 root-vimrc:
@@ -108,3 +150,17 @@ root-vim-{{ vimpackagename }}:
 {% endif %}
 {% endif %}
 {% endfor %}
+
+{% if pillar.pkg_latest is defined and pillar.pkg_latest %}
+update-coc-nvim-extensions-root:
+  cmd.run:
+    - cwd: /root/.config/coc
+    - name: /usr/bin/vim -c 'CocUpdateSync|q'
+{% else %}
+{% for extensionname, extension in pillar.get('coc-nvim-extensions', {}).items() %}
+{{ extensionname }}-coc-nvim-root:
+  cmd.run:
+    - cwd: /root/.config/coc
+    - name: /usr/bin/vim -c 'CocInstall -sync {{ extensionname }}@{{ extension['version'] }}|q'
+{% endfor %}
+{% endif %}
