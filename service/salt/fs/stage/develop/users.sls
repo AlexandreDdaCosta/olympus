@@ -155,12 +155,12 @@ root-vim-{{ vimpackagename }}:
 update-coc-nvim-extensions-root:
   cmd.run:
     - cwd: /root/.config/coc
-    - name: /usr/bin/vim -c 'CocUpdateSync|q'
+    - name: sudo su -s /bin/bash -c "/usr/bin/vim -c 'CocUpdateSync|q'" root
 {% else %}
 {% for extensionname, extension in pillar.get('coc-nvim-extensions', {}).items() %}
 {{ extensionname }}-coc-nvim-root:
   cmd.run:
     - cwd: /root/.config/coc
-    - name: /usr/bin/vim -c 'CocInstall -sync {{ extensionname }}@{{ extension['version'] }}|q'
+    - name: sudo su -s /bin/bash -c "/usr/bin/vim -c 'CocInstall -sync {{ extensionname }}@{{ extension['version'] }}|q'" root
 {% endfor %}
 {% endif %}
