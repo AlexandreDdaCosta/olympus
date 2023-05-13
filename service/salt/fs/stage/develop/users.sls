@@ -68,6 +68,7 @@ include:
 {% endif %}
 {% endfor %}
 
+{#
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
 update-coc-nvim-extensions:
   cmd.run:
@@ -81,6 +82,7 @@ update-coc-nvim-extensions:
     - name: sudo su -s /bin/bash -c "/usr/bin/vim -c 'CocInstall -sync {{ extensionname }}@{{ extension['version'] }}|q'" {{ username }}
 {% endfor %}
 {% endif %}
+#}
 
 {% endif %}
 
@@ -151,6 +153,7 @@ root-vim-{{ vimpackagename }}:
 {% endif %}
 {% endfor %}
 
+{#
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
 update-coc-nvim-extensions-root:
   cmd.run:
@@ -164,3 +167,4 @@ update-coc-nvim-extensions-root:
     - name: sudo su -s /bin/bash -c "/usr/bin/vim -c 'CocInstall -sync {{ extensionname }}@{{ extension['version'] }}|q'" root
 {% endfor %}
 {% endif %}
+#}
