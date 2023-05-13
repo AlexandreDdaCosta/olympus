@@ -91,6 +91,8 @@ root-vim-{{ vimpackagename }}:
     - cwd: /root/.vim/bundle/{{ vimpackagename }}
 {% if 'git-flags' in vimpackage %}
     - name: git pull {{ vimpackage['git-flags'] }} {{ vimpackage['repo'] }}
+{% elif 'git-pull-command' in vimpackage %}
+    - name: {{ vimpackage['git-pull-command'] }}
 {% else %}
     - name: git pull {{ vimpackage['repo'] }}
 {% endif %}
@@ -99,6 +101,8 @@ root-vim-{{ vimpackagename }}:
     - cwd: /root/.vim/bundle
 {% if 'git-flags' in vimpackage %}
     - name: git clone {{ vimpackage['git-flags'] }} {{ vimpackage['repo'] }}
+{% elif 'git-clone-flags' in vimpackage %}
+    - name: git clone {{ vimpackage['git-clone-flags'] }} {{ vimpackage['repo'] }}
 {% else %}
     - name: git clone {{ vimpackage['repo'] }}
 {% endif %}
