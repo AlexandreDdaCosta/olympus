@@ -36,6 +36,8 @@ include:
     - cwd: /home/{{ username }}/.vim/bundle/{{ vimpackagename }}
 {% if 'git-flags' in vimpackage %}
     - name: sudo su -s /bin/bash -c 'git pull {{ vimpackage['git-flags'] }} {{ vimpackage['repo'] }}' {{ username }}
+{% elif 'git-pull-command' in vimpackage %}
+    - name: sudo su -s /bin/bash -c '{{ vimpackage['git-pull-command'] }}' {{ username }}
 {% else %}
     - name: sudo su -s /bin/bash -c 'git pull {{ vimpackage['repo'] }}' {{ username }}
 {% endif %}
@@ -44,6 +46,8 @@ include:
     - cwd: /home/{{ username }}/.vim/bundle
 {% if 'git-flags' in vimpackage %}
     - name: sudo su -s /bin/bash -c 'git clone {{ vimpackage['git-flags'] }} {{ vimpackage['repo'] }}' {{ username }}
+{% elif 'git-clone-flags' in vimpackage %}
+    - name: sudo su -s /bin/bash -c 'git clone {{ vimpackage['git-clone-flags'] }} {{ vimpackage['repo'] }}' {{ username }}
 {% else %}
     - name: sudo su -s /bin/bash -c 'git clone {{ vimpackage['repo'] }}' {{ username }}
 {% endif %}
