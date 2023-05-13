@@ -1,3 +1,60 @@
+include:
+  - base: users
+
+{% for username, user in pillar.get('users', {}).items() %}
+{% if 'server' not in user or grains.get('server') in user['server'] -%}
+
+{% if 'createhome' in user and user['createhome'] and 'vimuser' in user and user['vimuser'] -%}
+
+{{ username }}-vim:
+  file.directory:
+    - group: {{ username }}
+    - mode: 0750
+    - name: /home/{{ username }}/.vim
+    - user: {{ username }}
+
+{{ username }}-vim-bundle:
+  file.directory:
+    - group: {{ username }}
+    - mode: 0750
+    - name: /home/{{ username }}/.vim/bundle
+    - user: {{ username }}
+
+{{ username }}-vimrc:
+  file.managed:
+    - group: {{ username }}
+    - mode: 0640
+    - name: /home/{{ username }}/.vimrc
+    - user: {{ username }}
+    - source: salt://users/files/vimrc
+    - template: jinja
+
+{% for vimpackagename, vimpackage in pillar.get('vim-packages', {}).items() %}
+{{ username }}-vim-{{ vimpackagename }}:
+{% if salt['file.directory_exists']('/home/' + username + '/.vim/bundle/' + vimpackagename) %}
+  cmd.run:
+    - cwd: /home/{{ username }}/.vim/bundle/{{ vimpackagename }}
+{% if 'git-flags' in vimpackage %}
+    - name: sudo su -s /bin/bash -c 'git pull {{ vimpackage['git-flags'] }} {{ vimpackage['repo'] }}' {{ username }}
+{% else %}
+    - name: sudo su -s /bin/bash -c 'git pull {{ vimpackage['repo'] }}' {{ username }}
+{% endif %}
+{% else %}
+  cmd.run:
+    - cwd: /home/{{ username }}/.vim/bundle
+{% if 'git-flags' in vimpackage %}
+    - name: sudo su -s /bin/bash -c 'git clone {{ vimpackage['git-flags'] }} {{ vimpackage['repo'] }}' {{ username }}
+{% else %}
+    - name: sudo su -s /bin/bash -c 'git clone {{ vimpackage['repo'] }}' {{ username }}
+{% endif %}
+{% endif %}
+{% endfor %}
+
+{%- endif %}
+
+{% endif %}
+{% endfor %}
+
 # For those times in development when editing under sudo just makes things easier.
 
 root-vim:

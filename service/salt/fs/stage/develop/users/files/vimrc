@@ -4,7 +4,11 @@ set autoindent      " Continue indentation
 set encoding=utf-8  " Universal encoding
 set expandtab       " Expand tabstop to spaces
 set fileformat=unix " Working on UNIX
+set termguicolors   " Enable 24-bit RGB color
 syntax on           " Syntax highlighting
+
+" NOTE: Check available colors within vim
+" :so $VIMRUNTIME/syntax/colortest.vim
 
 " vim-pathogen
 
@@ -31,8 +35,8 @@ let NERDTreeDirArrows = 1
 
 " python-mode
 
-" Set 80-column width line to light blue
-highlight ColorColumn ctermbg=4*
+" Set 80-column width line to dark blue
+highlight ColorColumn guibg=darkblue
 " Set line number gutter width to five spaces
 set numberwidth=5
 " Change line numbers to red
@@ -42,6 +46,9 @@ highlight LineNr term=bold cterm=NONE ctermfg=Red ctermbg=NONE gui=NONE guifg=Re
 
 " Only use ale for javascript
 let b:ale_linters = ['eslint']
+" Configure prettier code formatter; F6 to prettify
+let g:ale_fixers = {'javascript': ['eslint']}
+nmap <F6> <Plug>(ale_fix)
 " Disable highlighting
 let g:ale_set_highlights = 0
 " Customize errors and warnings
@@ -51,6 +58,13 @@ let g:ale_echo_msg_format = '%severity% [%code%] %s [%linter%]'
 " Last (l) and next (n) errors:
 nmap <silent> <C-l> <Plug>(ale_previous_wrap)
 nmap <silent> <C-n> <Plug>(ale_next_wrap)
+
+" coc.nvim
+
+" Autocomplete menu colors
+highlight Pmenu term=bold cterm=None ctermfg=lightblue ctermbg=NONE gui=NONE guifg=red guibg=NONE
+" Enter key selects autocomplete choice
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
 
 " F4 to clear search
 
