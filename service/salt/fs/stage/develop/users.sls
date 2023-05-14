@@ -13,35 +13,35 @@ include:
 
 {% if 'createhome' in user and user['createhome'] and 'vimuser' in user and user['vimuser'] -%}
 
-{{ username }}-vim:
+"{{ username }}-vim":
   file.directory:
     - group: {{ username }}
     - mode: 0750
     - name: /home/{{ username }}/.vim
     - user: {{ username }}
 
-{{ username }}-vim-bundle:
+"{{ username }}-vim-bundle":
   file.directory:
     - group: {{ username }}
     - mode: 0750
     - name: /home/{{ username }}/.vim/bundle
     - user: {{ username }}
 
-{{ username }}-config:
+"{{ username }}-config":
   file.directory:
     - group: {{ username }}
     - mode: 0700
     - name: /home/{{ username }}/.config
     - user: {{ username }}
 
-{{ username }}-coc-config:
+"{{ username }}-coc-config":
   file.directory:
     - group: {{ username }}
     - mode: 0700
     - name: /home/{{ username }}/.config/coc
     - user: {{ username }}
 
-{{ username }}-vimrc:
+"{{ username }}-vimrc":
   file.managed:
     - group: {{ username }}
     - mode: 0640
@@ -51,7 +51,7 @@ include:
     - template: jinja
 
 {% for vimpackagename, vimpackage in pillar.get('vim-packages', {}).items() %}
-{{ username }}-vim-{{ vimpackagename }}:
+"{{ username }}-vim-{{ vimpackagename }}":
 {% if salt['file.directory_exists']('/home/' + username + '/.vim/bundle/' + vimpackagename) %}
   cmd.run:
     - cwd: /home/{{ username }}/.vim/bundle/{{ vimpackagename }}
@@ -75,7 +75,7 @@ include:
 {% endif %}
 {% endfor %}
 
-/home/{{ username }}/.config/coc/coc_extensions.json:
+"/home/{{ username }}/.config/coc/coc_extensions.json":
   file.managed:
     - group: {{ username }}
     - mode: 0440
@@ -83,21 +83,17 @@ include:
     - template: jinja
     - user: {{ username }}
 
-{#
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
 update-coc-nvim-extensions:
   cmd.run:
     - cwd: /home/{{ username }}/.config/coc
     - name: sudo su -s /bin/bash -c "/usr/bin/vim -c 'CocUpdateSync|q'" {{ username }}
 {% else %}
-{% for extensionname, extension in pillar.get('coc-nvim-extensions', {}).items() %}
-{{ extensionname }}-coc-nvim:
+"coc-nvim-extensions-{{ username }}":
   cmd.run:
     - cwd: /home/{{ username }}/.config/coc
-    - name: sudo su -s /bin/bash -c "/usr/bin/vim -c 'CocInstall -sync {{ extensionname }}@{{ extension['version'] }}|q'" {{ username }}
-{% endfor %}
+    - name: sudo su -s /bin/bash -c "/usr/local/bin/coc_extensions.py" {{ username }}
 {% endif %}
-#}
 
 {% endif %}
 
@@ -176,18 +172,14 @@ root-vim-{{ vimpackagename }}:
     - template: jinja
     - user: root
 
-{#
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
 update-coc-nvim-extensions-root:
   cmd.run:
     - cwd: /root/.config/coc
     - name: sudo su -s /bin/bash -c "/usr/bin/vim -c 'CocUpdateSync|q'" root
 {% else %}
-{% for extensionname, extension in pillar.get('coc-nvim-extensions', {}).items() %}
-{{ extensionname }}-coc-nvim-root:
+coc-nvim-extensions-root:
   cmd.run:
     - cwd: /root/.config/coc
-    - name: sudo su -s /bin/bash -c "/usr/bin/vim -c 'CocInstall -sync {{ extensionname }}@{{ extension['version'] }}|q'" root
-{% endfor %}
+    - name: /usr/local/bin/coc_extensions.py
 {% endif %}
-#}
