@@ -1,6 +1,13 @@
 include:
   - base: users
 
+/usr/local/bin/olympus/coc_extensions.py:
+  file.managed:
+    - group: root
+    - mode: 0755
+    - source: salt://stage/develop/users/files/coc_extensions.py
+    - user: root
+
 {% for username, user in pillar.get('users', {}).items() %}
 {% if 'server' not in user or grains.get('server') in user['server'] -%}
 
@@ -68,7 +75,7 @@ include:
 {% endif %}
 {% endfor %}
 
-/home/{{ username }}/coc_extensions.json:
+/home/{{ username }}/.config/coc/coc_extensions.json:
   file.managed:
     - group: {{ username }}
     - mode: 0440
@@ -161,7 +168,7 @@ root-vim-{{ vimpackagename }}:
 {% endif %}
 {% endfor %}
 
-/root/coc_extensions.json:
+/root/.config/coc/coc_extensions.json:
   file.managed:
     - group: root
     - mode: 0440
