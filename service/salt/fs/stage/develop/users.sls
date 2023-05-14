@@ -92,7 +92,7 @@ update-coc-nvim-extensions:
 "coc-nvim-extensions-{{ username }}":
   cmd.run:
     - cwd: /home/{{ username }}/.config/coc
-    - name: sudo su -s /bin/bash -c "/usr/local/bin/coc_extensions.py" {{ username }}
+    - name: sudo su -s /bin/bash -c "/usr/local/bin/olympus/coc_extensions.py" {{ username }}
 {% endif %}
 
 {% endif %}
@@ -181,5 +181,5 @@ update-coc-nvim-extensions-root:
 coc-nvim-extensions-root:
   cmd.run:
     - cwd: /root/.config/coc
-    - name: /usr/local/bin/coc_extensions.py
+    - name: /usr/local/bin/olympus/coc_extensions.py
 {% endif %}
