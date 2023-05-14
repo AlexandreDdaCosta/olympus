@@ -5,7 +5,7 @@
     missingok
     notifempty
     postrotate
-	/usr/local/bin/killserver.sh; /usr/local/bin/startserver.py
+	/usr/local/bin/olympus/killserver.sh; /usr/local/bin/olympus/startserver.py
     rotate 10
     size 1024k
     endscript

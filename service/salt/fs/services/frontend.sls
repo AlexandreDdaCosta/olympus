@@ -224,7 +224,7 @@ frontend_wsgi_app_file:
     - template: jinja
     - user: root
 
-/usr/local/bin/killserver.sh:
+/usr/local/bin/olympus/killserver.sh:
   file.managed:
     - group: root
     - mode: 0755
@@ -233,7 +233,7 @@ frontend_wsgi_app_file:
 
 frontend-devserver-stop:
   cmd.run:
-    - name: /usr/local/bin/killserver.sh
+    - name: /usr/local/bin/olympus/killserver.sh
 
 django-makemigrations:
   cmd.run:

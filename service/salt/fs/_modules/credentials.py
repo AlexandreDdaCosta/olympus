@@ -111,9 +111,9 @@ def shared_database():
                                      text=True)
                 frontend_dev_processes = p.communicate()[0].strip("\n")
                 if int(frontend_dev_processes) > 0:
-                    cmd = "/usr/local/bin/killserver.sh"
+                    cmd = "/usr/local/bin/olympus/killserver.sh"
                     subprocess.check_call(cmd, shell=True)
-                    cmd = "/usr/local/bin/startserver.py"
+                    cmd = "/usr/local/bin/olympus/startserver.py"
                     subprocess.check_call(cmd, shell=True)
                 else:
                     # If frontend web service is running, restart

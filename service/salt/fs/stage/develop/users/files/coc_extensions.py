@@ -17,10 +17,10 @@ if (script_username == 'root'):
 else:
     coc_extensions_filename = ('/home/' +
                                script_username +
-                               '.config/coc/coc_extension.json')
+                               '/.config/coc/coc_extensions.json')
     coc_packages_filename = ('/home/' +
                              script_username +
-                             '.config/coc/extensions/package.json')
+                             '/.config/coc/extensions/package.json')
 if (not os.path.isfile(coc_extensions_filename)):
     raise Exception('User coc.nvim extensions file not found: ' +
                     coc_extensions_filename)

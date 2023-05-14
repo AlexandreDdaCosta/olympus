@@ -24,7 +24,7 @@ full uWSGI server.
     - mode: 0755
     - user: root
 
-/usr/local/bin/startserver.py:
+/usr/local/bin/olympus/startserver.py:
   file.managed:
     - group: root
     - mode: 0755
@@ -35,7 +35,7 @@ full uWSGI server.
 
 devserver-stop:
   cmd.run:
-    - name: /usr/local/bin/killserver.sh
+    - name: /usr/local/bin/olympus/killserver.sh
 
 frontend-uwsgi-stop:
   service.dead:
@@ -52,7 +52,7 @@ develop-django.conf:
 
 devserver-start:
   cmd.run:
-    - name: /usr/local/bin/startserver.py
+    - name: /usr/local/bin/olympus/startserver.py
 
 nginx-develop:
   service.running:
