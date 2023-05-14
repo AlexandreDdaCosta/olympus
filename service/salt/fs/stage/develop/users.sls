@@ -1,14 +1,6 @@
 include:
   - base: users
 
-/tmp/coc_extensions.json:
-  file.managed:
-    - group: root
-    - mode: 0444
-    - source: salt://stage/develop/users/coc_extensions.json.jinja
-    - template: jinja
-    - user: root
-
 {% for username, user in pillar.get('users', {}).items() %}
 {% if 'server' not in user or grains.get('server') in user['server'] -%}
 
@@ -75,6 +67,14 @@ include:
 {% endif %}
 {% endif %}
 {% endfor %}
+
+/home/{{ username }}/coc_extensions.json:
+  file.managed:
+    - group: {{ username }}
+    - mode: 0440
+    - source: salt://stage/develop/users/coc_extensions.json.jinja
+    - template: jinja
+    - user: {{ username }}
 
 {#
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
@@ -160,6 +160,14 @@ root-vim-{{ vimpackagename }}:
 {% endif %}
 {% endif %}
 {% endfor %}
+
+/root/coc_extensions.json:
+  file.managed:
+    - group: root
+    - mode: 0440
+    - source: salt://stage/develop/users/coc_extensions.json.jinja
+    - template: jinja
+    - user: root
 
 {#
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
