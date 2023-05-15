@@ -8,7 +8,7 @@ const loginValidate = [
     .isString()
     .withMessage('Parameter "password" is required and must be a string.')
     .isLength({ min: 100, max: 100 })
-    .withMessage('Password should be 100 characters.'),
+    .withMessage("Password should be 100 characters."),
 ];
 
 const refreshValidate = [

@@ -1,47 +1,46 @@
-const DbDriver = require('redis');
-const config = require('config');
-const fs = require('fs');
+const DbDriver = require("redis");
+const config = require("config");
+const fs = require("fs");
 const genericPool = require("generic-pool");
-const password = fs.readFileSync(config.get('redis.password_file'), 'utf8');
 
-function RedisPool(){};
-var poolConnection;
+const password = fs.readFileSync(config.get("redis.password_file"), "utf8");
+
+function RedisPool() {}
+let poolConnection;
 
 function initPool(callback) {
   const factory = {
-    create: function() {
-      let client = DbDriver.createClient({
-        url: 'redis://' + config.get('redis.user') + ':' + password + '@' + config.get('redis.host') + ':' + config.get('redis.port')
+    create() {
+      const client = DbDriver.createClient({
+        url: `redis://${config.get("redis.user")}:${password}@${config.get(
+          "redis.host"
+        )}:${config.get("redis.port")}`,
       });
       client.connect();
       return client;
     },
-    destroy: function(client) {
+    destroy(client) {
       client.disconnect();
-    }
+    },
   };
   const opts = {
     max: 10, // maximum size of the pool
-    min: 2 // minimum size of the pool
+    min: 2, // minimum size of the pool
   };
   poolConnection = genericPool.createPool(factory, opts);
 
-  if (callback && typeof(callback) == 'function')
-    callback(poolConnection);
-  else
-    return poolConnection;
+  if (callback && typeof callback === "function") callback(poolConnection);
+  else return poolConnection;
+  return false;
 }
 
 function getInstance(callback) {
-  if (! poolConnection) {
-    initPool(callback)
-  }
-  else {
-    if (callback && typeof(callback) == 'function')
-      callback(poolConnection);
-    else
-      return poolConnection;
-  }
+  if (!poolConnection) {
+    initPool(callback);
+  } else if (callback && typeof callback === "function")
+    callback(poolConnection);
+  else return poolConnection;
+  return false;
 }
 
 RedisPool.initPool = initPool;
