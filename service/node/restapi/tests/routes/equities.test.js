@@ -1,259 +1,293 @@
 // sudo su -s /bin/bash -c 'source /srv/www/node/restapi/tests/test_source.sh; cd /srv/www/node/restapi; npm test ./tests/routes/equities.test.js' node
 
-const config = require('config');
-const fs = require('fs');
-const https = require('https');
-const os = require('os');
-const redis = require('redis');
+const config = require("config");
+const fs = require("fs");
+const https = require("https");
+const os = require("os");
 
-describe('Equities data.', () => {
-
-  let access_token;
-  let expiration;
-  let options;
+describe("Equities data.", () => {
+  let accessToken;
   let password;
-  let protocol;
-  let refresh_token;
-  let test_symbol = 'AAPL';
-  let test_symbol_bad = 'aapl';
-  let test_symbol_2 = 'BA';
-  let test_symbol_3 = 'JNJ';
-  let token;
-  let url;
-  let verifyOptions;
+  let refreshToken;
+  const testSymbol = "AAPL";
+  const testSymbolBad = "aapl";
+  const testSymbolTwo = "BA";
 
-  options = { 
-    ca: fs.readFileSync(config.get('ssl_server.ca_file')),
-    cert: fs.readFileSync(config.get('ssl_server.client_cert_file')),
-    hostname: config.get('ssl_server.host'),
-    key: fs.readFileSync(config.get('ssl_server.client_key_file')),
-    port: config.get('ssl_server.port')
-  }; 
+  const options = {
+    ca: fs.readFileSync(config.get("ssl_server.ca_file")),
+    cert: fs.readFileSync(config.get("ssl_server.client_cert_file")),
+    hostname: config.get("ssl_server.host"),
+    key: fs.readFileSync(config.get("ssl_server.client_key_file")),
+    port: config.get("ssl_server.port"),
+  };
 
   beforeAll(async () => {
-    if (os.userInfo().username != config.get('restapi.user')) {
-      throw new Error('Test must be run under run user '+config.get('restapi.user'));
-      process.exit(1);
+    if (os.userInfo().username !== config.get("restapi.user")) {
+      throw new Error(
+        `Test must be run under run user ${config.get("restapi.user")}`
+      );
     }
     try {
-      password = fs.readFileSync(config.get('restapi.password_file'), 'utf8');
+      password = fs.readFileSync(config.get("restapi.password_file"), "utf8");
     } catch (err) {
-        expect(data.statusCode).toBe(200);
       throw new Error(err);
-      process.exit(1);
     }
   });
 
-  it('Login, get access and refresh tokens.', async () => {
-    let loginPromise = ((data) => {
+  it("Login, get access and refresh tokens.", async () => {
+    const loginPromise = () => {
       return new Promise((resolve, reject) => {
-        let login_data = JSON.stringify({
-          username: config.get('restapi.user'),
-          password: password
+        const loginData = JSON.stringify({
+          username: config.get("restapi.user"),
+          password,
         });
-        options['headers'] = {
-          'Content-Type': 'application/json',
-          'Content-Length': login_data.length
+        options.headers = {
+          "Content-Type": "application/json",
+          "Content-Length": loginData.length,
         };
-        options['method'] = 'POST';
-        options['path'] = '/auth/login';
+        options.method = "POST";
+        options.path = "/auth/login";
         const req = https.request(options, (res) => {
-          let body = '';
-          res.on('data', (chunk) => (body += chunk.toString()));
-          res.on('error', reject);
-          res.on('end', () => { resolve({ statusCode: res.statusCode, headers: res.headers, body: body }); });
+          let body = "";
+          res.on("data", function readDataChunks(chunk) {
+            body += chunk.toString();
+          });
+          res.on("error", reject);
+          res.on("end", () => {
+            resolve({
+              statusCode: res.statusCode,
+              headers: res.headers,
+              body,
+            });
+          });
         });
-        req.on('error', reject);
-        req.write(login_data);
+        req.on("error", reject);
+        req.write(loginData);
         req.end();
       });
-    });
+    };
 
-    let data = await loginPromise();
+    const data = await loginPromise();
     expect(data.statusCode).toBe(200);
-    expect(JSON.parse(data.body).message).toEqual('Login successful.');
-    access_token = JSON.parse(data.body).access_token;
-    refresh_token = JSON.parse(data.body).refresh_token;
+    expect(JSON.parse(data.body).message).toEqual("Login successful.");
+    accessToken = JSON.parse(data.body).access_token;
+    refreshToken = JSON.parse(data.body).refresh_token;
   });
 
-  it('Omit symbol.', async () => {
-    let symbolPromise = ((data) => {
+  it("Omit symbol.", async () => {
+    const symbolPromise = () => {
       return new Promise((resolve, reject) => {
-        options['headers'] = {
-          'Authorization': 'Bearer ' + access_token,
-          'Content-Type': 'application/json'
+        options.headers = {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
         };
-        options['method'] = 'GET';
-        options['path'] = '/equities/symbol';
+        options.method = "GET";
+        options.path = "/equities/symbol";
         const req = https.request(options, (res) => {
-          let body = '';
-          res.on('data', (chunk) => (body += chunk.toString()));
-          res.on('error', reject);
-          res.on('end', () => { resolve({ statusCode: res.statusCode, body: body }); });
+          let body = "";
+          res.on("data", function readDataChunks(chunk) {
+            body += chunk.toString();
+          });
+          res.on("error", reject);
+          res.on("end", () => {
+            resolve({ statusCode: res.statusCode, body });
+          });
         });
-        req.on('error', reject);
+        req.on("error", reject);
         req.end();
       });
-    });
+    };
 
-    let data = await symbolPromise();
+    const data = await symbolPromise();
     expect(data.statusCode).toBe(404);
   });
 
-  it('Bad symbol.', async () => {
-    let symbolPromise = ((data) => {
+  it("Bad symbol.", async () => {
+    const symbolPromise = () => {
       return new Promise((resolve, reject) => {
-        options['headers'] = {
-          'Authorization': 'Bearer ' + access_token,
-          'Content-Type': 'application/json'
+        options.headers = {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
         };
-        options['method'] = 'GET';
-        options['path'] = '/equities/symbol/BADSYMBOL';
+        options.method = "GET";
+        options.path = "/equities/symbol/BADSYMBOL";
         const req = https.request(options, (res) => {
-          let body = '';
-          res.on('data', (chunk) => (body += chunk.toString()));
-          res.on('error', reject);
-          res.on('end', () => { resolve({ statusCode: res.statusCode, body: body }); });
+          let body = "";
+          res.on("data", function readDataChunks(chunk) {
+            body += chunk.toString();
+          });
+          res.on("error", reject);
+          res.on("end", () => {
+            resolve({ statusCode: res.statusCode, body });
+          });
         });
-        req.on('error', reject);
+        req.on("error", reject);
         req.end();
       });
-    });
+    };
 
-    let data = await symbolPromise();
+    const data = await symbolPromise();
     expect(data.statusCode).toBe(404);
-    expect(JSON.parse(data.body).message).toEqual('Symbol not found.');
+    expect(JSON.parse(data.body).message).toEqual("Symbol not found.");
   });
 
-  it('Badly formatted symbol.', async () => {
-    let symbolPromise = ((data) => {
+  it("Badly formatted symbol.", async () => {
+    const symbolPromise = () => {
       return new Promise((resolve, reject) => {
-        options['headers'] = {
-          'Authorization': 'Bearer ' + access_token,
-          'Content-Type': 'application/json'
+        options.headers = {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
         };
-        options['method'] = 'GET';
-        options['path'] = '/equities/symbol/' + test_symbol_bad;
+        options.method = "GET";
+        options.path = `/equities/symbol/${testSymbolBad}`;
         const req = https.request(options, (res) => {
-          let body = '';
-          res.on('data', (chunk) => (body += chunk.toString()));
-          res.on('error', reject);
-          res.on('end', () => { resolve({ statusCode: res.statusCode, body: body }); });
+          let body = "";
+          res.on("data", function readDataChunks(chunk) {
+            body += chunk.toString();
+          });
+          res.on("error", reject);
+          res.on("end", () => {
+            resolve({ statusCode: res.statusCode, body });
+          });
         });
-        req.on('error', reject);
+        req.on("error", reject);
         req.end();
       });
-    });
+    };
 
-    let data = await symbolPromise();
+    const data = await symbolPromise();
     expect(data.statusCode).toBe(400);
-    expect(JSON.parse(data.body).message).toEqual('Request failed.');
+    expect(JSON.parse(data.body).message).toEqual("Request failed.");
   });
 
-  it('Get symbol data.', async () => {
-    let symbolPromise = ((data) => {
+  it("Get symbol data.", async () => {
+    const symbolPromise = () => {
       return new Promise((resolve, reject) => {
-        options['headers'] = {
-          'Authorization': 'Bearer ' + access_token,
-          'Content-Type': 'application/json'
+        options.headers = {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
         };
-        options['method'] = 'GET';
-        options['path'] = '/equities/symbol/' + test_symbol;
+        options.method = "GET";
+        options.path = `/equities/symbol/${testSymbol}`;
         const req = https.request(options, (res) => {
-          let body = '';
-          res.on('data', (chunk) => (body += chunk.toString()));
-          res.on('error', reject);
-          res.on('end', () => { resolve({ statusCode: res.statusCode, body: body }); });
+          let body = "";
+          res.on("data", function readDataChunks(chunk) {
+            body += chunk.toString();
+          });
+          res.on("error", reject);
+          res.on("end", () => {
+            resolve({ statusCode: res.statusCode, body });
+          });
         });
-        req.on('error', reject);
+        req.on("error", reject);
         req.end();
       });
-    });
+    };
 
-    let data = await symbolPromise();
+    const data = await symbolPromise();
     expect(data.statusCode).toBe(200);
-    expect(JSON.parse(data.body).message).toEqual('Request successful.');
-    expect(JSON.parse(data.body).symbol.Symbol).toEqual(test_symbol);
+    expect(JSON.parse(data.body).message).toEqual("Request successful.");
+    expect(JSON.parse(data.body).symbol.Symbol).toEqual(testSymbol);
   });
 
-  it('Get multiple symbol data.', async () => {
-    let symbolPromise = ((data) => {
+  it("Get multiple symbol data.", async () => {
+    const symbolPromise = () => {
       return new Promise((resolve, reject) => {
-        options['headers'] = {
-          'Authorization': 'Bearer ' + access_token,
-          'Content-Type': 'application/json'
+        options.headers = {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
         };
-        options['method'] = 'GET';
-        options['path'] = '/equities/symbols/' + test_symbol + ',' + test_symbol_2;
+        options.method = "GET";
+        options.path = `/equities/symbols/${testSymbol},${testSymbolTwo}`;
         const req = https.request(options, (res) => {
-          let body = '';
-          res.on('data', (chunk) => (body += chunk.toString()));
-          res.on('error', reject);
-          res.on('end', () => { resolve({ statusCode: res.statusCode, body: body }); });
+          let body = "";
+          res.on("data", function readDataChunks(chunk) {
+            body += chunk.toString();
+          });
+          res.on("error", reject);
+          res.on("end", () => {
+            resolve({ statusCode: res.statusCode, body });
+          });
         });
-        req.on('error', reject);
+        req.on("error", reject);
         req.end();
       });
-    });
+    };
 
-    let data = await symbolPromise();
+    const data = await symbolPromise();
     expect(data.statusCode).toBe(200);
-    expect(JSON.parse(data.body).message).toEqual('Request successful.');
-    expect(JSON.parse(data.body).symbols[test_symbol]['Symbol']).toEqual(test_symbol);
-    expect(JSON.parse(data.body).symbols[test_symbol_2]['Symbol']).toEqual(test_symbol_2);
+    expect(JSON.parse(data.body).message).toEqual("Request successful.");
+    expect(JSON.parse(data.body).symbols[testSymbol].Symbol).toEqual(
+      testSymbol
+    );
+    expect(JSON.parse(data.body).symbols[testSymbolTwo].Symbol).toEqual(
+      testSymbolTwo
+    );
   });
 
-  it('Get multiple symbol data with a bad symbol.', async () => {
-    let symbolPromise = ((data) => {
+  it("Get multiple symbol data with a bad symbol.", async () => {
+    const symbolPromise = () => {
       return new Promise((resolve, reject) => {
-        options['headers'] = {
-          'Authorization': 'Bearer ' + access_token,
-          'Content-Type': 'application/json'
+        options.headers = {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
         };
-        options['method'] = 'GET';
-        options['path'] = '/equities/symbols/' + test_symbol + ',BADSYMBOL';
+        options.method = "GET";
+        options.path = `/equities/symbols/${testSymbol},BADSYMBOL`;
         const req = https.request(options, (res) => {
-          let body = '';
-          res.on('data', (chunk) => (body += chunk.toString()));
-          res.on('error', reject);
-          res.on('end', () => { resolve({ statusCode: res.statusCode, body: body }); });
+          let body = "";
+          res.on("data", function readDataChunks(chunk) {
+            body += chunk.toString();
+          });
+          res.on("error", reject);
+          res.on("end", () => {
+            resolve({ statusCode: res.statusCode, body });
+          });
         });
-        req.on('error', reject);
+        req.on("error", reject);
         req.end();
       });
-    });
+    };
 
-    let data = await symbolPromise();
+    const data = await symbolPromise();
     expect(data.statusCode).toBe(200);
-    expect(JSON.parse(data.body).message).toEqual('Request successful.');
-    expect(JSON.parse(data.body).symbols[test_symbol]['Symbol']).toEqual(test_symbol);
-    expect(JSON.parse(data.body).unknownSymbols[0]).toEqual('BADSYMBOL');
+    expect(JSON.parse(data.body).message).toEqual("Request successful.");
+    expect(JSON.parse(data.body).symbols[testSymbol].Symbol).toEqual(
+      testSymbol
+    );
+    expect(JSON.parse(data.body).unknownSymbols[0]).toEqual("BADSYMBOL");
   });
 
-  it('Logout.', async () => {
-    let logoutPromise = ((data) => {
+  it("Logout.", async () => {
+    const logoutPromise = () => {
       return new Promise((resolve, reject) => {
-        options['headers'] = {
-          'Authorization': 'Bearer ' + refresh_token,
-          'Content-Type': 'application/json'
+        options.headers = {
+          Authorization: `Bearer ${refreshToken}`,
+          "Content-Type": "application/json",
         };
-        options['method'] = 'DELETE';
-        options['path'] = '/auth/logout';
+        options.method = "DELETE";
+        options.path = "/auth/logout";
         const req = https.request(options, (res) => {
-          let body = '';
-          res.on('data', (chunk) => (body += chunk.toString()));
-          res.on('error', reject);
-          res.on('end', () => { resolve({ statusCode: res.statusCode, headers: res.headers, body: body }); });
+          let body = "";
+          res.on("data", function readDataChunks(chunk) {
+            body += chunk.toString();
+          });
+          res.on("error", reject);
+          res.on("end", () => {
+            resolve({
+              statusCode: res.statusCode,
+              headers: res.headers,
+              body,
+            });
+          });
         });
-        req.on('error', reject);
+        req.on("error", reject);
         req.end();
       });
-    });
-    
-    let data = await logoutPromise();
-    expect(data.statusCode).toBe(200);
-    expect(JSON.parse(data.body).message).toEqual('Logout successful.');
-  });
+    };
 
+    const data = await logoutPromise();
+    expect(data.statusCode).toBe(200);
+    expect(JSON.parse(data.body).message).toEqual("Logout successful.");
+  });
 });
-

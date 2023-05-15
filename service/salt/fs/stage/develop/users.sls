@@ -50,7 +50,7 @@ include:
     - source: salt://stage/develop/users/files/vimrc
     - template: jinja
 
-{% for vimpackagename, vimpackage in pillar.get('vim-packages', {}).items() %}
+{% for vimpackagename, vimpackage in pillar.get('develop-vim-packages', {}).items() %}
 "{{ username }}-vim-{{ vimpackagename }}":
 {% if salt['file.directory_exists']('/home/' + username + '/.vim/bundle/' + vimpackagename) %}
   cmd.run:
@@ -139,7 +139,7 @@ root-vimrc:
     - source: salt://stage/develop/users/files/vimrc
     - template: jinja
 
-{% for vimpackagename, vimpackage in pillar.get('vim-packages', {}).items() %}
+{% for vimpackagename, vimpackage in pillar.get('develop-vim-packages', {}).items() %}
 root-vim-{{ vimpackagename }}:
 {% if salt['file.directory_exists']('/root/.vim/bundle/' + vimpackagename) %}
   cmd.run:

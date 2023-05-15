@@ -1,5 +1,5 @@
 {
-{%- for extensionname, extension in pillar.get('coc-nvim-extensions', {}).items() -%}
+{%- for extensionname, extension in pillar.get('develop-coc-nvim-extensions', {}).items() -%}
     {%- if 'last_entry' in extension and extension['last_entry'] %}
     "{{ extensionname }}": "{{ extension['version'] }}"
     {%- else %}
