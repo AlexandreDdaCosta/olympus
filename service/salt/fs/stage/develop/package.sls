@@ -43,5 +43,6 @@ include:
 
 {% for packagename in pillar['develop-cpan-packages'] %}
 {{ packagename }}:
-  cpan.installed
+  cmd.run:
+   - name: cpan -i {{ packagename }}
 {% endfor %}
