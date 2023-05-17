@@ -41,12 +41,6 @@ include:
       - sls: repository
 {% endfor %}
 
-{#
-TODO: CPAN package management
-
-Example:
-
-develop-cpan-packages:
-  Perl::LanguageServer:
-    version: 2.5.0
-#}
+{% for packagename in pillar['develop-pip3-packages'] %}
+{{ packagename }}:
+  - cpan.install
