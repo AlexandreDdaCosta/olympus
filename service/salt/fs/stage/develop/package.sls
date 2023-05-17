@@ -44,3 +44,4 @@ include:
 {% for packagename in pillar['develop-pip3-packages'] %}
 {{ packagename }}:
   - cpan.install
+{% endfor %}
