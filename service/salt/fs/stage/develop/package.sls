@@ -41,7 +41,7 @@ include:
       - sls: repository
 {% endfor %}
 
-{% for packagename in pillar['develop-pip3-packages'] %}
+{% for packagename in pillar['develop-cpan-packages'] %}
 {{ packagename }}:
   - cpan.install
 {% endfor %}
