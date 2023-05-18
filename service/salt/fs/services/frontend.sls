@@ -167,6 +167,15 @@ include:
     - source: salt://service/django
     - user: root
 
+{{ pillar['olympus-app-package-path'] }}/django-blog-olympus:
+  file.recurse:
+    - clean: True
+    - dir_mode: 0755
+    - file_mode: 0644
+    - group: root
+    - source: salt://blog
+    - user: root
+
 {{ frontend_path }}/media:
     file.directory:
     - group: root
