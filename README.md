@@ -305,7 +305,7 @@ olympus repository and set up a new remote to handle push/pull commands to/from
 the Github repository.
 
 ```
-git remote add github https://github.com/AlexandreDdaCosta/olympus.git
+git remote add github ssh://git@github.com:/AlexandreDdaCosta/olympus.git
 ```
 
 At this point, you can use this command to test whether the ssh push is
