@@ -1,3 +1,3 @@
 # from django.conf import settings
 
-MEDIA_DIR = '/blog'
+MEDIA_DIR = '/security_analyzer'

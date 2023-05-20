@@ -15,7 +15,7 @@
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="navbar-nav">
       <li class="nav-item nav-item-middle">
-        <a class="nav-link" href="{% url 'blog_thezodiacallight' %}">
+        <a class="nav-link" href="{% url 'blog_home' %}">
         <span class="lg-hide">
         <span class="fas fa-pencil-alt fa-lg fa-nav-icon" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Blog' %}"></span>
         </span>
@@ -23,19 +23,19 @@
         </a>
       </li>
       <li class="nav-item nav-item-middle">
-        <a class="nav-link" href="/coding">
+        <a class="nav-link" href="{% url 'album_home' %}">
         <span class="lg-hide">
-        <span class="fas fa-code fa-lg fa-nav-icon" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Coding' %}"></span>
+        <span class="fas fa-camera fa-lg fa-nav-icon" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Album' %}"></span>
         </span>
-        <span class="nav-text">{% trans 'Coding' %}</span>
+        <span class="nav-text">{% trans 'Album' %}</span>
         </a>
       </li>
       <li class="nav-item nav-item-rightend">
-        <a class="nav-link" href="{% url 'photography_spaceshipearth' %}">
+        <a class="nav-link" href="/projects">
         <span class="lg-hide">
-        <span class="fas fa-camera fa-lg fa-nav-icon" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Photography' %}"></span>
+        <span class="fas fa-code fa-lg fa-nav-icon" data-toggle="tooltip" data-placement="bottom" title="{% trans 'Projects' %}"></span>
         </span>
-        <span class="nav-text">{% trans 'Photography' %}</span>
+        <span class="nav-text">{% trans 'Projects' %}</span>
         </a>
       </li>
       {% if user.is_staff %}

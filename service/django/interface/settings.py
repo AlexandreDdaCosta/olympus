@@ -14,7 +14,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'interface',
-    'interface.apps.blog',
+    'django_album_olympus',
+    'django_blog_olympus',
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -63,9 +64,9 @@ TEMPLATES = [
         'DIRS': [
             BASE_DIR + r'/interface/templates/',
             BASE_DIR + r'/interface/apps/welcome/templates',
-            BASE_DIR + r'/interface/apps/blog/templates',
-            BASE_DIR + r'/interface/apps/photography/templates',
-            BASE_DIR + r'/interface/apps/coding/templates',
+            BASE_DIR + r'/interface/apps/projects/templates',
+            BASE_DIR + r'/interface/apps/cookbook/templates',
+            BASE_DIR + r'/interface/apps/security_analyzer/templates',
         ],
         'APP_DIRS': True,
         'OPTIONS': {
