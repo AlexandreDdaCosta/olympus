@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator
 from django.db import models
 
 
@@ -28,16 +29,18 @@ class Course(models.Model):
     name = models.CharField(max_length=255,
                             null=False,
                             unique=True)
-    book_order = models.PositiveIntegerField(null=False,
-                                             unique=True)
+    book_order = models.IntegerField(MinValueValidator(1),
+                                     null=False,
+                                     unique=True)
 
 
 class Recipe(models.Model):
     course = models.ForeignKey(Course,
                                null=False,
                                on_delete=models.CASCADE)
-    course_order = models.PositiveIntegerField(null=False,
-                                               unique=True)
+    course_order = models.IntegerField(MinValueValidator(1),
+                                       null=False,
+                                       unique=True)
     title = models.CharField(max_length=255,
                              null=False)
     introduction = models.TextField(null=False)
@@ -57,8 +60,9 @@ class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(Recipe,
                                null=False,
                                on_delete=models.CASCADE)
-    ingredient_order = models.PositiveIntegerField(null=False,
-                                                   unique=True)
+    ingredient_order = models.IntegerField(MinValueValidator(1),
+                                           null=False,
+                                           unique=True)
     ingredient = models.CharField(db_index=True,
                                   max_length=255,
                                   null=False)
@@ -68,8 +72,9 @@ class RecipeIngredient(models.Model):
 class RecipeInstruction(models.Model):
     recipe = models.ForeignKey(Recipe,
                                on_delete=models.CASCADE)
-    instruction_order = models.PositiveIntegerField(null=False,
-                                                    unique=True)
+    instruction_order = models.IntegerField(MinValueValidator(1),
+                                            null=False,
+                                            unique=True)
     header = models.CharField(max_length=255,
                               null=True)
     instruction = models.TextField(null=False)
