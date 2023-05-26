@@ -44,7 +44,7 @@ postgresql:
     - watch:
       - file: /etc/postgresql/14/main/pg_hba.conf
       - file: /etc/postgresql/14/main/postgresql.conf
-      - pkg: pgadmin3
+      - pkg: pgadmin4-web
       - pkg: postgresql-14
 
 olympus.db:
