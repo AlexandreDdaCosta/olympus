@@ -14,6 +14,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'interface',
+    'interface.apps.cookbook',
     'django_album_olympus',
     'django_blog_olympus',
 ]
