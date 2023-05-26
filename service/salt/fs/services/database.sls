@@ -23,6 +23,10 @@ include:
       - sls: package
 {% endfor %}
 
+systmctl_disable_apache2:
+  cmd.run:
+    - name: service apache2 stop; systemctl disable apache2
+
 /etc/postgresql/14/main/pg_hba.conf:
   file.managed:
     - group: postgres
