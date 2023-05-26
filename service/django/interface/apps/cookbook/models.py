@@ -10,7 +10,7 @@ class Media(models.Model):
                                unique=True)
 
     def __unicode__(self):
-        return '%s' % (self.url_path)
+        return u'%s' % (self.url_path)
 
 
 class Author(models.Model):
@@ -22,7 +22,7 @@ class Author(models.Model):
                               on_delete=models.CASCADE)
 
     def __unicode__(self):
-        return '%s' % (self.name)
+        return u'%s' % (self.name)
 
 
 class Course(models.Model):

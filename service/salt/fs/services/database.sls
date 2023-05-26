@@ -1,6 +1,7 @@
 include:
   - base: package
   - base: services
+  - base: web
 
 {% for packagename, package in pillar.get('database-packages', {}).items() %}
 {{ packagename }}-database-pkgs:

@@ -32,4 +32,4 @@ nginx:
       - file: /etc/nginx/conf.d/default.conf
   file.managed:
     - name: /etc/nginx/conf.d/default.conf
-    - source: salt://services/web/files/default.conf
+    - source: salt://web/files/default.conf

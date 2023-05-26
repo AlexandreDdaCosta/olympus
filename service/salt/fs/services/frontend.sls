@@ -4,7 +4,7 @@
 
 include:
   - base: package
-  - base: services/web
+  - base: web
 
 {% for packagename, package in pillar.get('frontend-packages', {}).items() %}
 {{ packagename }}-frontend:
@@ -418,4 +418,4 @@ frontend-uwsgi:
       - file: /etc/uwsgi/vassals/django.ini
       - file: {{ frontend_path }}/settings_local.py
     - require:
-      - sls: services/web
+      - sls: web

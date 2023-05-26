@@ -39,6 +39,10 @@ delete_old_backports_file:
     - run
     - name: 'apt-get update --allow-releaseinfo-change'
 
+{# WARNING: apt-key is deprecated, so the following MUST be updated before upgrading beyond Debian bullseye #}
+{# See https://docs.saltproject.io/en/latest/ref/states/all/salt.states.pkgrepo.html #}
+{# See also https://www.digitalocean.com/community/tutorials/how-to-handle-apt-key-and-add-apt-repository-deprecation-using-gpg-to-add-external-repositories-on-ubuntu-22-04 #}
+
 delete_mongodb_repo_previous:
   file.absent:
     - name: /etc/apt/sources.list.d/mongodb-org-{{ pillar['mongo-repo-previous'] }}.list
@@ -116,6 +120,20 @@ postgresql_repo:
     - run
     - name: 'wget -qO - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -'
     - unless: 'apt-key list | grep -i postgresql'
+
+delete_pgadmin4_repo:
+  file.absent:
+    - name: /etc/apt/sources.list.d/pgadmin4.list
+
+pgadmin_repo:
+  pkgrepo.managed:
+    - file: /etc/apt/sources.list.d/pgadmin4.list
+    - humanname: pgAdmin repository
+    - name: deb https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/{{ pillar['release'] }} pgadmin4 main
+  cmd:
+    - run
+    - name: 'wget -qO - https://www.pgadmin.org/static/packages_pgadmin_org.pub | apt-key add -'
+    - unless: 'apt-key list | grep -i pgadmin'
 
 {# SaltStack repository keys are added during server initialization and are therefore not managed here. #}
 

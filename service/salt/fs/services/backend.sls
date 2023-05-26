@@ -4,7 +4,7 @@
 include:
   - base: package
   - base: services
-  - base: services/web
+  - base: web
 
 {% for packagename, package in pillar.get('backend-packages', {}).items() %}
 {{ packagename }}-nodejs-web:
@@ -138,7 +138,7 @@ node-backend:
       - file: /etc/init.d/node
       - file: /etc/nginx/conf.d/node.conf
     - require:
-      - sls: services/web
+      - sls: web
 
 # START equities application backend section
 
