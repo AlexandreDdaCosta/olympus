@@ -386,8 +386,13 @@ jquery:
 {% else %}
 {% set django_admin_email=pillar.core_email %}
 {% endif %}
+{% if 'original_interface_password' in user %}
+{% set django_password=user['original_interface_password'] %}
+{% else %}
+{% set django_password=salt['cmd.shell'](random_password_generator) %}
+{% endif %}
   cmd.run:
-    - name: sudo /usr/bin/python3 {{ pillar.www_path }}/django/manage.py verifyuser --username {{ username }} --email {{ django_admin_email }} --password {{ salt['cmd.shell'](random_password_generator) }} --admin --superuser
+    - name: sudo /usr/bin/python3 {{ pillar.www_path }}/django/manage.py verifyuser --username {{ username }} --email {{ django_admin_email }} --password {{ django_password }} --admin --superuser --resave
 {% endif %}
 {% endfor %}
 
