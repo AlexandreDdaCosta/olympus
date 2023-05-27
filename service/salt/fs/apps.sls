@@ -1,6 +1,9 @@
 include:
   - base: services.bigdata
 
+{# Sanity check for inattentive administrators #}
+{% if 'apps' in pillar['servers'][grains.get('server')] %}
+
 {% for packagename, package in pillar.get('apps-pip3-packages', {}).items() %}
 {{ packagename }}:
   pip.installed:
@@ -94,3 +97,5 @@ app_user_{{ app }}:
     - mode: 0750
     - user: {{ app }}
 {% endfor %}
+
+{% endif %}

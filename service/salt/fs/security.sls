@@ -485,7 +485,7 @@ mongodb_purge_invalid_users:
 
 {% if grains.get('server') == 'unified' or grains.get('server') == 'supervisor' %}
 {% for username, user in pillar.get('users', {}).items() %}
-{% if 'restapi' in user %}
+{% if 'restapi' in user and 'password' in user['restapi'] %}
 
 # Write restapi password to local password file
 {{ username }}_restapi_password_file:
@@ -579,7 +579,7 @@ redis_acl_list:
 # Write redis password to local password file
 {% for username, user in pillar.get('users', {}).items() -%}
 {% if 'server' not in user or grains.get('server') in user['server'] -%}
-{% if 'redis' in user -%}
+{% if 'redis' in user and 'password' in user['redis'] and 'createhome' in user and user['createhome'] -%}
 
 {{ username }}_redis_password_file:
   file.managed:

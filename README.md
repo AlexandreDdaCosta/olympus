@@ -275,6 +275,9 @@ sure to create them in the local working repository.
 
 ### Change default branch on Github to "master"
 
+* Only for the olympus repository itself. Other repositories use the GitHub
+convention of naming the primary branch **main**, so this step is not
+applicable.
 * Also a one-time operation.
 * Navigate to [the repository's general settings page](https://github.com/AlexandreDdaCosta/olympus/settings).
 * Edit the **Default branch** to *master* in the edit pop-up and submit.

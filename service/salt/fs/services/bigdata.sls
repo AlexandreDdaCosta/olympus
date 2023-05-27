@@ -1,6 +1,9 @@
 include:
   - base: package
 
+{# Sanity check for inattentive administrators #}
+{% if 'apps' in pillar['servers'][grains.get('server')] %}
+
 {% for packagename, package in pillar.get('bigdata-packages', {}).items() %}
 {{ packagename }}-frontend:
 {% if pillar.pkg_latest is defined and pillar.pkg_latest or package != None and 'version' not in package or package == None %}
@@ -38,3 +41,5 @@ include:
     - require:
       - sls: package
 {% endfor %}
+
+{% endif %}

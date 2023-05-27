@@ -1,7 +1,7 @@
 {% set trim_blocks=True -%}
 {% for username, user in pillar.get('users', {}).items() -%}
 {% if 'server' not in user or grains.get('server') in user['server'] -%}
-{% if 'redis' in user -%}
+{% if 'redis' in user and 'password' in user['redis'] -%}
 {% if username == 'redis' -%}
 user default on +@all allkeys >{{ user['redis']['password'] }}
 {% elif 'is_staff' in user and user['is_staff'] -%}

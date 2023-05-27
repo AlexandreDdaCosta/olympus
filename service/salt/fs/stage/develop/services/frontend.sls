@@ -1,6 +1,10 @@
 include:
   - base: services/frontend
 
+{# Sanity checks for inattentive administrators #}
+{% if grains.get('stage') and grains.get('stage') == 'develop' %}
+{% if grains.get('server') == 'interface' or grains.get('server') == 'unified' %}
+
 {# Enable permanent dev server on highstate run by setting "stage" grain. Useful commands:
 
 sudo -i salt '*' grains.setval stage develop
@@ -60,3 +64,6 @@ nginx-develop:
     - name: nginx
     - watch:
       - file: /etc/nginx/conf.d/django.conf
+
+{% endif %}
+{% endif %}

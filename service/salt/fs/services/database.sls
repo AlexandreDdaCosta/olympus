@@ -3,6 +3,9 @@ include:
   - base: services
   - base: web
 
+{# Sanity check for inattentive administrators #}
+{%- if grains.get('server') == 'database' or grains.get('server') == 'unified' %}
+
 {% for packagename, package in pillar.get('database-packages', {}).items() %}
 {{ packagename }}-database-pkgs:
 {% if pillar.pkg_latest is defined and pillar.pkg_latest or package != None and 'version' not in package %}
@@ -90,3 +93,5 @@ frontend-user_data_privs:
     - object_type: database
     - privileges:
       - ALL
+
+{% endif %}

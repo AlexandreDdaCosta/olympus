@@ -6,6 +6,9 @@ include:
   - base: package
   - base: web
 
+{# Sanity check for inattentive administrators #}
+{%- if grains.get('server') == 'interface' or grains.get('server') == 'unified' %}
+
 {% for packagename, package in pillar.get('frontend-packages', {}).items() %}
 {{ packagename }}-frontend:
 {% if pillar.pkg_latest is defined and pillar.pkg_latest or package != None and 'version' not in package or package == None %}
@@ -424,3 +427,5 @@ frontend-uwsgi:
       - file: {{ frontend_path }}/settings_local.py
     - require:
       - sls: web
+
+{% endif %}

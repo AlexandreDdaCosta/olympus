@@ -6,6 +6,9 @@ include:
   - base: services
   - base: web
 
+{# Sanity check for inattentive administrators #}
+{% if grains.get('server') == 'supervisor' or grains.get('server') == 'unified' %}
+
 {% for packagename, package in pillar.get('backend-packages', {}).items() %}
 {{ packagename }}-nodejs-web:
 {% if pillar.pkg_latest is defined and pillar.pkg_latest or package != None and 'version' not in package %}
@@ -189,3 +192,5 @@ regen_equities_symbols_redis:
     - name: salt '*' redis.delete_securities_equities_symbols
     - require: 
       - initialize_olympus_equities
+
+{% endif %}

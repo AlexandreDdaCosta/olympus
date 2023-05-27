@@ -2,6 +2,9 @@ include:
   - repository
   - package
 
+{# Sanity check for inattentive administrators #}
+{% if grains.get('stage') and grains.get('stage') == 'develop' %}
+
 {% for packagename, package in pillar.get('develop-packages', {}).items() %}
 {{ packagename }}:
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
@@ -46,3 +49,5 @@ include:
   cmd.run:
    - name: cpan -i {{ packagename }}
 {% endfor %}
+
+{% endif %}

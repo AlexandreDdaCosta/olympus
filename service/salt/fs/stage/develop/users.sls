@@ -1,6 +1,9 @@
 include:
   - base: users
 
+{# Sanity check for inattentive administrators #}
+{% if grains.get('stage') and grains.get('stage') == 'develop' %}
+
 /usr/local/bin/olympus/coc_extensions.py:
   file.managed:
     - group: root
@@ -182,4 +185,6 @@ coc-nvim-extensions-root:
   cmd.run:
     - cwd: /root/.config/coc
     - name: /usr/local/bin/olympus/coc_extensions.py
+{% endif %}
+
 {% endif %}
