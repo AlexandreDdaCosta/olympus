@@ -319,6 +319,8 @@ class User():
         return self.password_file_name(service) + '.old'
 
     def rotate_service_password_file(self, service, password):
+        if not os.path.isdir(self.etc_directory()):
+            return
         password_file = self.password_file_name(service)
         password_file_old = self.password_file_old_name(service)
         existing_password = None

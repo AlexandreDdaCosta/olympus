@@ -44,9 +44,11 @@ def rotate_restapi_password_file(username, tmp_file_name):
         return True
     elif server not in user_servers:
         return True
+    user = User(username)
+    if not os.path.isdir(user.etc_directory()):
+        return True
     with open(tmp_file_name, 'r') as f:
         new_password = f.readline().rstrip()
-    user = User(username)
     user.rotate_service_password_file(RESTAPI_SERVICE, new_password)
     os.remove(tmp_file_name)
     return True
