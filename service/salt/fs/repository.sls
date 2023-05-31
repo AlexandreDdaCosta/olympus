@@ -147,7 +147,7 @@ sysdig_repo:
   cmd:
     - run
     - name: 'wget -qO - https://s3.amazonaws.com/download.draios.com/DRAIOS-GPG-KEY.public | apt-key add -'
-    - unless: 'apt-key list | grep -i DRAIOS'
+    - unless: 'apt-key list | grep -i Draios'
 
 {# SaltStack repository keys are added during server initialization and are therefore not managed here. #}
 
