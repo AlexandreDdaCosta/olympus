@@ -135,6 +135,20 @@ pgadmin_repo:
     - name: 'wget -qO - https://www.pgadmin.org/static/packages_pgadmin_org.pub | apt-key add -'
     - unless: 'apt-key list | grep -i pgadmin'
 
+delete_sysdig_repo:
+  file.absent:
+    - name: /etc/apt/sources.list.d/sysdig.list
+
+sysdig_repo:
+  pkgrepo.managed:
+    - file: /etc/apt/sources.list.d/sysdig.list
+    - humanname: sysdig repository
+    - name: deb https://download.sysdig.com/stable/deb stable-$(ARCH)/
+  cmd:
+    - run
+    - name: 'wget -qO - https://s3.amazonaws.com/download.draios.com/DRAIOS-GPG-KEY.public | apt-key add -'
+    - unless: 'apt-key list | grep -i DRAIOS'
+
 {# SaltStack repository keys are added during server initialization and are therefore not managed here. #}
 
 /usr/local/bin/update_repo_keys.sh:
