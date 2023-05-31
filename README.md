@@ -149,10 +149,11 @@ user permissions.
 
 * [Java](https://www.java.com/en/) *(supervisor)*
 
-Java is used in the back end to deliver an internal-only interface used to
-access features only visible to administrative users. The interface is
-developed via [Intellij IDEA](https://www.jetbrains.com/idea/) and
-[Spring Boot](https://spring.io/projects/spring-boot).
+Java is used in the back end to deliver an internal-only monitoring interface
+visible to administrative users. The interface is developed via
+[Intellij IDEA](https://www.jetbrains.com/idea/) and
+[Spring Boot](https://spring.io/projects/spring-boot). **Note**: This 
+feature is currently in the planning stage.
 
 Minor components include:
 
