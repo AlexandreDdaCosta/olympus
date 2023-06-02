@@ -95,11 +95,11 @@ apt install linux-headers-$(uname -r)
 -- Install the new kernel headers
 -- Also, edit "service/salt/pillar/distribution.sls" in the acropolis
    repository, as follows:
-   Update the "linux-kernel" specification using the result of $(uname -r)
-   Locate the "linux-headers-{{ linux-kernel }}" package specification and
-   update the version to match that of the newly installed linux headers
-   package [hint: apt list linux-headers-$(uname -r)].
-   Commit these changes and push to git.
+   1. Update the "linux_kernel" specification using the result of $(uname -r)
+   2. Locate the "linux-headers-{{ linux_kernel }}" package specification and
+      update the version to match that of the newly installed linux headers
+      package [hint: apt list linux-headers-$(uname -r)].
+   3. Commit these changes and push to git.
 
 apt-get autoremove
 -- Get rid of unused packages
@@ -129,10 +129,9 @@ salt '<server>' state.highstate -v
 
 -- Check for available updates to major dependencies (Django)
 
-Useful salt commands for debugging:
-
-sudo -i salt-run fileserver.update
-sudo -i salt '*' saltutil.refresh_pillar -v
-sudo -i salt '*' saltutil.sync_all -v
+-- Useful salt commands for debugging:
+   sudo -i salt-run fileserver.update
+   sudo -i salt '*' saltutil.refresh_pillar -v
+   sudo -i salt '*' saltutil.sync_all -v
 
 #}

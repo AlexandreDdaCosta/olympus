@@ -60,8 +60,9 @@ someuser:
 
 The various definitions have the following functions:
 
-* **class**. Identifies the type of user -- *human* in this case. Exists for
-documentation purposes.
+* **class**. Identifies the type of user -- *human* in this case. Exists mostly
+documentation purposes. However, if no shell is assigned to a human user, then
+*/bin/bash* will be assigned by default.
 * **comment**. Optional informative details.
 * **createhome**. When set to "True", this will create a home directory for the
 user on every olympus server.
@@ -205,3 +206,9 @@ although some would serve little or no purpose, such as *email_address* and
 *vimuser*. Settings like *ssh_public_key* and *is_staff* would pose a
 systemic risk as they would allow capabilities that should not be available to
 system users.
+
+* **class**. A system user would have a class designation of *system*. If no
+shell is assigned to a system user, the default will be */usr/sbin/nologin*.
+According to the Debian convention, when a system user is provisioned, that
+user will be assigned a UID in the range of FIRST_SYSTEM_UID and
+LAST_SYSTEM_UID,

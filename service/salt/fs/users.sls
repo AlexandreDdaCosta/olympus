@@ -43,6 +43,13 @@ user_{{ username }}:
     - present
     {% if 'shell' in user -%}
     - shell: {{ user['shell'] }}
+    {% elif 'class' in user and user['class'] == "human" -%}
+    - shell: /bin/bash
+    {% else -%}
+    - shell: /usr/sbin/nologin
+    {%- endif %}
+    {% if 'class' in user and user['class'] == "system" -%}
+    - system: True
     {%- endif %}
 
 {% if 'createhome' in user and user['createhome'] -%}
