@@ -245,17 +245,6 @@ frontend_wsgi_app_file:
     - template: jinja
     - user: root
 
-/usr/local/bin/olympus/killserver.sh:
-  file.managed:
-    - group: root
-    - mode: 0755
-    - source: salt://services/frontend/files/killserver.sh
-    - user: root
-
-frontend-devserver-stop:
-  cmd.run:
-    - name: /usr/local/bin/olympus/killserver.sh
-
 django-makemigrations:
   cmd.run:
     - name: yes | /usr/bin/python3 {{ pillar.www_path }}/django/manage.py makemigrations

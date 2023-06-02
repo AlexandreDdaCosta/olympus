@@ -37,10 +37,18 @@ full uWSGI server.
     - require:
       - sls: services/frontend
 
+/usr/local/bin/olympus/killserver.sh:
+  file.managed:
+    - group: root
+    - mode: 0755
+    - source: salt://services/frontend/files/killserver.sh
+    - user: root
+
 devserver-stop:
   cmd.run:
     - name: /usr/local/bin/olympus/killserver.sh
 
+{# Placed here 
 frontend-uwsgi-stop:
   service.dead:
     - name: uwsgi
