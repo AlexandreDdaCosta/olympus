@@ -418,7 +418,9 @@ frontend-uwsgi:
       - file: {{ pillar.www_path }}/django
       - file: /etc/init.d/uwsgi
       - file: /etc/nginx/conf.d/django.conf
+{%- if grains.get('stage') and grains.get('stage') != 'develop' %}
       - file: /etc/uwsgi/vassals/django.ini
+{%- endif %}
       - file: {{ frontend_path }}/settings_local.py
     - require:
       - sls: web
