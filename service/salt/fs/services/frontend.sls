@@ -154,6 +154,11 @@ include:
     - source: salt://services/frontend/files/django.conf
     - user: root
 
+{# 
+   Added stage check here to avoid conflicts in development stage.
+   uWSGI runs everywhere.
+#}
+{% if grains.get('stage') and grains.get('stage') != 'develop' %}
 /etc/uwsgi/vassals/django.ini:
   file.managed:
     - group: root
@@ -161,6 +166,7 @@ include:
     - mode: 0644
     - source: salt://services/frontend/files/django.ini
     - user: root
+{% endif %}
 
 {{ pillar.www_path }}/django:
   file.recurse:

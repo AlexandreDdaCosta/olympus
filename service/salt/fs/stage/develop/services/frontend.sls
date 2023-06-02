@@ -44,14 +44,6 @@ full uWSGI server.
     - source: salt://services/frontend/files/killserver.sh
     - user: root
 
-devserver-stop:
-  cmd.run:
-    - name: /usr/local/bin/olympus/killserver.sh
-
-frontend-uwsgi-stop:
-  service.dead:
-    - name: uwsgi
-
 develop-django.conf:
   file.managed:
     - group: root
@@ -61,16 +53,13 @@ develop-django.conf:
     - source: salt://stage/develop/services/frontend/files/django.conf
     - user: root
 
+devserver-stop:
+  cmd.run:
+    - name: /usr/local/bin/olympus/killserver.sh
+
 devserver-start:
   cmd.run:
     - name: /usr/local/bin/olympus/startserver.py
-
-nginx-develop:
-  service.running:
-    - enable: True
-    - name: nginx
-    - watch:
-      - file: /etc/nginx/conf.d/django.conf
 
 {% endif %}
 {% endif %}
