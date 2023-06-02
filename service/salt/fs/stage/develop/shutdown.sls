@@ -1,5 +1,5 @@
 include:
-  - base: services/frontend
+  - base: stage/develop/services/frontend
 
 {% if grains.get('server') == 'supervisor' or grains.get('server') == 'unified' %}
 {% if pillar.nobackup is not defined or not pillar.nobackup %}

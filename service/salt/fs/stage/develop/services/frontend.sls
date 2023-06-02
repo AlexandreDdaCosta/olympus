@@ -48,7 +48,6 @@ devserver-stop:
   cmd.run:
     - name: /usr/local/bin/olympus/killserver.sh
 
-{# Placed here 
 frontend-uwsgi-stop:
   service.dead:
     - name: uwsgi
