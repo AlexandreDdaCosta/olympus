@@ -1,6 +1,9 @@
 include:
   - base: stage/develop/services/frontend
 
+{# Sanity check for inattentive administrators #}
+{% if grains.get('stage') and grains.get('stage') == 'develop' %}
+
 {% if grains.get('server') == 'supervisor' or grains.get('server') == 'unified' %}
 {% if pillar.nobackup is not defined or not pillar.nobackup %}
 shutdown_backup:
@@ -22,3 +25,5 @@ shutdown:
       - sls: services/frontend
     {% endif %}
     {% endif %}
+
+{% endif %}
