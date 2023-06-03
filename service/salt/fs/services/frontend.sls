@@ -59,71 +59,6 @@ include:
       - sls: package
 {% endfor %}
 
-/etc/uwsgi/vassals:
-  file.directory:
-    - group: root
-    - makedirs: True
-    - mode: 0755
-    - user: root
-
-/etc/uwsgi.ini:
-  file.managed:
-    - group: root
-    - makedirs: False
-    - mode: 0755
-    - source: salt://services/frontend/files/uwsgi.ini
-    - user: root
-
-/etc/rc0.d/K01uwsgi:
-  file.symlink:
-    - target: /etc/init.d/uwsgi
-
-/etc/rc1.d/K01uwsgi:
-  file.symlink:
-    - target: /etc/init.d/uwsgi
-
-/etc/rc2.d/S01uwsgi:
-  file.symlink:
-    - target: /etc/init.d/uwsgi
-
-/etc/rc3.d/S01uwsgi:
-  file.symlink:
-    - target: /etc/init.d/uwsgi
-
-/etc/rc4.d/S01uwsgi:
-  file.symlink:
-    - target: /etc/init.d/uwsgi
-
-/etc/rc5.d/S01uwsgi:
-  file.symlink:
-    - target: /etc/init.d/uwsgi
-
-/etc/rc6.d/K01uwsgi:
-  file.symlink:
-    - target: /etc/init.d/uwsgi
-
-/etc/init.d/uwsgi:
-    file.managed:
-    - group: root
-    - makedirs: False
-    - mode: 0755
-    - source: salt://services/frontend/files/init.uwsgi
-    - user: root
-
-/var/log/uwsgi:
-  file.directory:
-    - group: {{ pillar['frontend-user'] }}
-    - makedirs: False
-    - mode: 0755
-    - user: {{ pillar['frontend-user'] }}
-
-/var/log/uwsgi/uwsgi.log:
-  file.managed:
-    - group: {{ pillar['frontend-user'] }}
-    - mode: 0644
-    - replace: False
-    - user: {{ pillar['frontend-user'] }}
-
 /var/log/django:
   file.directory:
     - group: {{ pillar['frontend-user'] }}
@@ -137,14 +72,6 @@ include:
     - mode: 0644
     - replace: False
     - user: {{ pillar['frontend-user'] }}
-
-/etc/logrotate.d/uwsgi:
-    file.managed:
-    - group: root
-    - makedirs: False
-    - mode: 0644
-    - source: salt://services/frontend/files/logrotate.uwsgi
-    - user: root
 
 /etc/nginx/conf.d/django.conf:
   file.managed:
@@ -412,11 +339,9 @@ nginx-frontend:
 
 frontend-uwsgi:
   service.running:
-    - enable: True
     - name: uwsgi
     - watch:
       - file: {{ pillar.www_path }}/django
-      - file: /etc/init.d/uwsgi
       - file: /etc/nginx/conf.d/django.conf
 {%- if grains.get('stage') and grains.get('stage') != 'develop' %}
       - file: /etc/uwsgi/vassals/django.ini
