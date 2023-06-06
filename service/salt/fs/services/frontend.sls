@@ -329,7 +329,20 @@ frontend-cert:
 
 frontend_cert_renewal:
   cmd.run:
-    - name: /usr/bin/certbot renew --pre-hook "service nginx stop" --post-hook "service nginx start" --http-01-port 80
+    - name: /usr/bin/certbot renew --post-hook "service nginx restart"
+{# 
+The old command was invariably giving this issue at renew time:
+
+Domain: laikasden.com
+Type:   connection
+Detail: 192.64.119.62: Fetching https://www.laikasden.com:
+Connection refused
+
+Best GUESS at culprit is the pre-hook command. I've that since renewal works correctly first time without.
+Also removed the "--http-01-port" specification since it appears to serve no purpose; i.e., 80 is the default.
+
+- name: /usr/bin/certbot renew --pre-hook "service nginx stop" --post-hook "service nginx start" --http-01-port 80
+#}
 
 nginx-frontend:
   service.running:
