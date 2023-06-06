@@ -45,29 +45,29 @@ delete_old_backports_file:
 
 delete_mongodb_repo_previous:
   file.absent:
-    - name: /etc/apt/sources.list.d/mongodb-org-{{ pillar['mongo-repo-previous'] }}.list
+    - name: /etc/apt/sources.list.d/mongodb-org-{{ pillar['mongo_repo_previous'] }}.list
 
 delete_mongodb_repo:
   file.absent:
-    - name: /etc/apt/sources.list.d/mongodb-org-{{ pillar['mongo-repo'] }}.list
+    - name: /etc/apt/sources.list.d/mongodb-org-{{ pillar['mongo_repo'] }}.list
 
-{% set mongo_repo_key_name = "/usr/share/keyrings/mongodb-" + pillar.cert_dir_client + ".gpg" %}
+{% set mongo_repo_key_name = "/usr/share/keyrings/mongodb-" + pillar.mongo_repo + ".gpg" %}
 {% if not salt['file.file_exists' ](mongo_repo_key_name) %}
 mongodb_repo_key:
   cmd.run:
-    - name: curl -fsSL https://www.mongodb.org/static/pgp/server-{{ pillar['mongo-repo'] }}.asc | gpg --dearmor -o /usr/share/keyrings/mongodb-{{ pillar['mongo-repo'] }}.gpg
+    - name: curl -fsSL https://www.mongodb.org/static/pgp/server-{{ pillar['mongo_repo'] }}.asc | gpg --dearmor -o /usr/share/keyrings/mongodb-{{ pillar['mongo_repo'] }}.gpg
 {% endif %}
 
 mongodb_repo:
   pkgrepo.managed:
-    - dist: {{ pillar['previous-release'] }}/mongodb-org/{{ pillar['mongo-repo'] }}
-    - file: /etc/apt/sources.list.d/mongodb-org-{{ pillar['mongo-repo'] }}.list
+    - dist: {{ pillar['previous-release'] }}/mongodb-org/{{ pillar['mongo_repo'] }}
+    - file: /etc/apt/sources.list.d/mongodb-org-{{ pillar['mongo_repo'] }}.list
     - humanname: MongoDB package repository for {{ pillar['distribution'] }} {{ pillar['release'] }}
-    - name: deb http://repo.mongodb.org/apt/debian {{ pillar['previous-release'] }}/mongodb-org/{{ pillar['mongo-repo'] }} main
+    - name: deb http://repo.mongodb.org/apt/debian {{ pillar['previous-release'] }}/mongodb-org/{{ pillar['mongo_repo'] }} main
   cmd:
     - run
-    - name: 'wget -O - https://www.mongodb.org/static/pgp/server-{{ pillar['mongo-repo'] }}.asc | apt-key add -'
-    - unless: 'apt-key list | grep -i MongoDB | grep {{ pillar['mongo-repo'] }}' 
+    - name: 'wget -O - https://www.mongodb.org/static/pgp/server-{{ pillar['mongo_repo'] }}.asc | apt-key add -'
+    - unless: 'apt-key list | grep -i MongoDB | grep {{ pillar['mongo_repo'] }}' 
 
 delete_nginx_repo:
   file.absent:
