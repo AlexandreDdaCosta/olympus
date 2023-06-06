@@ -55,7 +55,7 @@ delete_mongodb_repo:
 {% if not salt['file.file_exists' ](mongo_repo_key_name) %}
 mongodb_repo_key:
   cmd.run:
-    - name: curl -fsSL https://www.mongodb.org/static/pgp/server-{{ pillar['mongo_repo'] }}.asc | gpg --dearmor -o /usr/share/keyrings/mongodb-{{ pillar['mongo_repo'] }}.gpg
+    - name: curl -fsSL https://www.mongodb.org/static/pgp/server-{{ pillar['mongo_repo'] }}.asc | gpg --dearmor -o {{ mongo_repo_key_mname }}
 {% endif %}
 
 mongodb_repo:
@@ -72,6 +72,13 @@ mongodb_repo:
 delete_nginx_repo:
   file.absent:
     - name: /etc/apt/sources.list.d/nginx.list
+
+{% set nginx_repo_key_name = "/usr/share/keyrings/nginx.gpg" %}
+{% if not salt['file.file_exists' ](nginx_repo_key_name) %}
+nginx_repo_key:
+  cmd.run:
+    - name: curl -fsSL http://nginx.org/keys/nginx_signing.key | gpg --dearmor -o {{ nginx_repo_key_name }}
+{% endif %}
 
 nginx_repo:
   pkgrepo.managed:
@@ -95,6 +102,13 @@ delete_nodesource_repo:
   file.absent:
     - name: /etc/apt/sources.list.d/nodesource.list
 
+{% set nodesource_repo_key_name = "/usr/share/keyrings/nodesource.gpg" %}
+{% if not salt['file.file_exists' ](nodesource_repo_key_name) %}
+node_repo_key:
+  cmd.run:
+    - name: curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor -o {{ nodesource_repo_key_name }}
+{% endif %}
+
 nodesource_repo:
   pkgrepo.managed:
     - dist: {{ pillar['release'] }}
@@ -117,6 +131,13 @@ delete_postgresql_repo:
   file.absent:
     - name: /etc/apt/sources.list.d/pgdg.list
 
+{% set postgresql_repo_key_name = "/usr/share/keyrings/postgresql.gpg" %}
+{% if not salt['file.file_exists' ](postgresql_repo_key_name) %}
+postgresql_repo_key:
+  cmd.run:
+    - name: curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o {{ postgresql_repo_key_name }}
+{% endif %}
+
 postgresql_repo:
   pkgrepo.managed:
     - dist: {{ pillar['release'] }}-pgdg
@@ -131,6 +152,13 @@ postgresql_repo:
 delete_sysdig_repo:
   file.absent:
     - name: /etc/apt/sources.list.d/sysdig.list
+
+{% set sysdig_repo_key_name = "/usr/share/keyrings/sysdig.gpg" %}
+{% if not salt['file.file_exists' ](sysdig_repo_key_name) %}
+postgresql_repo_key:
+  cmd.run:
+    - name: curl -fsSL https://s3.amazonaws.com/download.draios.com/DRAIOS-GPG-KEY.public | gpg --dearmor -o {{ sysdig_repo_key_name }}
+{% endif %}
 
 sysdig_repo:
   pkgrepo.managed:
