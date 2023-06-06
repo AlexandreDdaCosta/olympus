@@ -155,7 +155,7 @@ delete_sysdig_repo:
 
 {% set sysdig_repo_key_name = "/usr/share/keyrings/sysdig.gpg" %}
 {% if not salt['file.file_exists' ](sysdig_repo_key_name) %}
-postgresql_repo_key:
+sysdig_repo_key:
   cmd.run:
     - name: curl -fsSL https://s3.amazonaws.com/download.draios.com/DRAIOS-GPG-KEY.public | gpg --dearmor -o {{ sysdig_repo_key_name }}
 {% endif %}
