@@ -51,10 +51,7 @@ delete_mongodb_repo:
   file.absent:
     - name: /etc/apt/sources.list.d/mongodb-org-{{ pillar['mongo-repo'] }}.list
 
-{#
-{% set mongo_repo_key_name = pillar.mongo-repo %}
-#}
-{% set mongo_repo_key_name = "/usr/share/keyrings/mongodb-" + {{ pillar['mongo-repo'] }} + ".gpg" %}
+{% set mongo_repo_key_name = "/usr/share/keyrings/mongodb-" + pillar.cert_dir_client + ".gpg" %}
 {% if not salt['file.file_exists' ](mongo_repo_key_name) %}
 mongodb_repo_key:
   cmd.run:
