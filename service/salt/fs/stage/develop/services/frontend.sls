@@ -34,8 +34,6 @@ full uWSGI server.
     - mode: 0755
     - source: salt://stage/develop/services/frontend/files/startserver.py
     - user: root
-    - require:
-      - sls: services/frontend
 
 /usr/local/bin/olympus/killserver.sh:
   file.managed:

@@ -51,6 +51,13 @@ delete_mongodb_repo:
   file.absent:
     - name: /etc/apt/sources.list.d/mongodb-org-{{ pillar['mongo-repo'] }}.list
 
+{% set mongo_repo_key_name = "/usr/share/keyrings/mongodb-" + pillar.mongo-repo + ".gpg" %}
+{% if not salt['file.file_exists' ](mongo_repo_key_name) %}
+mongodb_repo_key:
+  cmd.run:
+    - name: curl -fsSL https://www.mongodb.org/static/pgp/server-{{ pillar['mongo-repo'] }}.asc | gpg --dearmor -o /usr/share/keyrings/mongodb-{{ pillar['mongo-repo'] }}.gpg
+{% endif %}
+
 mongodb_repo:
   pkgrepo.managed:
     - dist: {{ pillar['previous-release'] }}/mongodb-org/{{ pillar['mongo-repo'] }}
@@ -120,20 +127,6 @@ postgresql_repo:
     - run
     - name: 'wget -qO - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -'
     - unless: 'apt-key list | grep -i postgresql'
-
-delete_pgadmin4_repo:
-  file.absent:
-    - name: /etc/apt/sources.list.d/pgadmin4.list
-
-pgadmin_repo:
-  pkgrepo.managed:
-    - file: /etc/apt/sources.list.d/pgadmin4.list
-    - humanname: pgAdmin repository
-    - name: deb https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/{{ pillar['release'] }} pgadmin4 main
-  cmd:
-    - run
-    - name: 'wget -qO - https://www.pgadmin.org/static/packages_pgadmin_org.pub | apt-key add -'
-    - unless: 'apt-key list | grep -i pgadmin'
 
 delete_sysdig_repo:
   file.absent:
