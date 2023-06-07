@@ -74,7 +74,6 @@ mongodb_repo:
       - components:
         - main
 
-{#
 {% set nginx_repo_key_name = "/usr/share/keyrings/nginx.gpg" %}
 {% set nginx_repo_key_url = "http://nginx.org/keys/nginx_signing.key" %}
 {% if not salt['file.file_exists'](nginx_repo_key_name) %}
@@ -88,7 +87,6 @@ nginx_repo_key:
       - url: {{ nginx_repo_key_url }}
       - is_gpg: False
 {% endif %}
-#}
 
 {#
 nginx_repo:
