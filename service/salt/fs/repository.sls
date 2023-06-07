@@ -199,7 +199,7 @@ docker_repo_key:
 docker_repo:
   module.run:
     - repository.update_repository:
-      - name: docker.list
+      - name: docker.sources
       - types:
         - deb
       - architectures: 
