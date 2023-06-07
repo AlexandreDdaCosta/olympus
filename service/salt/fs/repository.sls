@@ -207,7 +207,7 @@ docker_repo:
       - signed_by: {{ docker_repo_key_name }}
       - uris: https://download.docker.com/linux/debian
       - suites: 
-        - {{ pillar['release_name'] }}
+        - {{ pillar['release'] }}
       - components:
         - stable
 
