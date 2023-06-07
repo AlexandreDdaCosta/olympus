@@ -52,10 +52,16 @@ delete_mongodb_repo:
     - name: /etc/apt/sources.list.d/mongodb-org-{{ pillar['mongo_repo'] }}.list
 
 {% set mongo_repo_key_name = "/usr/share/keyrings/mongodb-" ~ pillar.mongo_repo ~ ".gpg" %}
-{% if not salt['file.file_exists' ](mongo_repo_key_name) %}
 mongodb_repo_key:
+{% if not salt['file.file_exists' ](mongo_repo_key_name) %}
   cmd.run:
     - name: curl -fsSL https://www.mongodb.org/static/pgp/server-{{ pillar['mongo_repo'] }}.asc | gpg --dearmor -o {{ mongo_repo_key_mname }}
+{% else %}
+  module.run:
+    - repository.update_repository_key:
+      - key: {{ mongo_repo_key_name }}
+      - url: https://www.mongodb.org/static/pgp/server-{{ pillar['mongo_repo'] }}.asc
+      - is_gpg: False
 {% endif %}
 
 mongodb_repo:
@@ -64,10 +70,6 @@ mongodb_repo:
     - file: /etc/apt/sources.list.d/mongodb-org-{{ pillar['mongo_repo'] }}.list
     - humanname: MongoDB package repository for {{ pillar['distribution'] }} {{ pillar['release'] }}
     - name: deb http://repo.mongodb.org/apt/debian {{ pillar['previous-release'] }}/mongodb-org/{{ pillar['mongo_repo'] }} main
-  cmd:
-    - run
-    - name: 'wget -O - https://www.mongodb.org/static/pgp/server-{{ pillar['mongo_repo'] }}.asc | apt-key add -'
-    - unless: 'apt-key list | grep -i MongoDB | grep {{ pillar['mongo_repo'] }}' 
 
 delete_nginx_repo:
   file.absent:
@@ -86,10 +88,6 @@ nginx_repo:
     - file: /etc/apt/sources.list.d/nginx.list
     - humanname: Nginx package repository for {{ pillar['distribution'] }} {{ pillar['release'] }}
     - name: deb http://nginx.org/packages/debian/ {{ pillar['release'] }} nginx
-  cmd:
-    - run
-    - name: 'wget -O - http://nginx.org/keys/nginx_signing.key | apt-key add -'
-    - unless: 'apt-key list | grep -i nginx' 
 
 nginx_src_repo:
   pkgrepo.managed:
@@ -115,10 +113,6 @@ nodesource_repo:
     - file: /etc/apt/sources.list.d/nodesource.list
     - humanname: Nodesource node.js package repository for {{ pillar['distribution'] }} {{ pillar['release'] }}
     - name: deb https://deb.nodesource.com/{{ pillar['nodejs-repo'] }} {{ pillar['release'] }} main
-  cmd:
-    - run
-    - name: 'wget -qO - https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -'
-    - unless: 'apt-key list | grep -i nodesource' 
 
 nodesource_src_repo:
   pkgrepo.managed:
@@ -144,10 +138,6 @@ postgresql_repo:
     - file: /etc/apt/sources.list.d/pgdg.list
     - humanname: PostgreSQL repository
     - name: deb http://apt.postgresql.org/pub/repos/apt/ {{ pillar['release'] }}-pgdg main
-  cmd:
-    - run
-    - name: 'wget -qO - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -'
-    - unless: 'apt-key list | grep -i postgresql'
 
 delete_sysdig_repo:
   file.absent:
@@ -165,20 +155,3 @@ sysdig_repo:
     - file: /etc/apt/sources.list.d/sysdig.list
     - humanname: sysdig repository
     - name: deb https://download.sysdig.com/stable/deb stable-$(ARCH)/
-  cmd:
-    - run
-    - name: 'wget -qO - https://s3.amazonaws.com/download.draios.com/DRAIOS-GPG-KEY.public | apt-key add -'
-    - unless: 'apt-key list | grep -i Draios'
-
-{# SaltStack repository keys are added during server initialization and are therefore not managed here. #}
-
-/usr/local/bin/update_repo_keys.sh:
-  file.managed:
-    - group: root
-    - mode: 0755
-    - source: salt://repository/files/update_repo_keys.sh
-    - user: root
-
-verify_gnupg_keys:
-  cmd.run:
-    - name: /usr/local/bin/update_repo_keys.sh
