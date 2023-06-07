@@ -59,7 +59,6 @@ mongodb_repo_key:
       - is_gpg: False
 {% endif %}
 
-{#
 mongodb_repo:
   module.run:
     - repository.update_repository:
@@ -74,7 +73,6 @@ mongodb_repo:
         - {{ pillar['previous-release'] }}/mongodb-org/{{ pillar['mongo_repo'] }}
       - components:
         - main
-#}
 
 {#
 {% set nginx_repo_key_name = "/usr/share/keyrings/nginx.gpg" %}
