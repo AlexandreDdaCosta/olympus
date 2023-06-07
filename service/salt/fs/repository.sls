@@ -45,7 +45,6 @@ delete_mongodb_repo_previous:
   file.absent:
     - name: /etc/apt/sources.list.d/mongodb-org-{{ pillar['mongo_repo_previous'] }}.list
 
-{#
 {% set mongo_repo_key_name = "/usr/share/keyrings/mongodb-" ~ pillar.mongo_repo ~ ".gpg" %}
 {% set mongo_repo_key_url = "https://www.mongodb.org/static/pgp/server-" ~ pillar.mongo_repo ~ ".asc" %}
 mongodb_repo_key:
@@ -59,7 +58,6 @@ mongodb_repo_key:
       - url: {{ mongo_repo_key_url }}
       - is_gpg: False
 {% endif %}
-#}
 
 {#
 mongodb_repo:
