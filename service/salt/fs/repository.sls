@@ -59,6 +59,7 @@ mongodb_repo_key:
       - is_gpg: False
 {% endif %}
 
+{#
 mongodb_repo:
   module.run:
     - repository.update_repository:
@@ -73,6 +74,7 @@ mongodb_repo:
         - {{ pillar['previous-release'] }}/mongodb-org/{{ pillar['mongo_repo'] }}
       - components:
         - main
+#}
 
 {% set nginx_repo_key_name = "/usr/share/keyrings/nginx.gpg" %}
 {% set nginx_repo_key_url = "http://nginx.org/keys/nginx_signing.key" %}
@@ -88,6 +90,7 @@ nginx_repo_key:
       - is_gpg: False
 {% endif %}
 
+{#
 nginx_repo:
   module.run:
     - repository.update_repository:
@@ -103,6 +106,7 @@ nginx_repo:
         - {{ pillar['release'] }}
       - components:
         - nginx
+#}
 
 {% set nodesource_repo_key_name = "/usr/share/keyrings/nodesource.gpg" %}
 {% set nodesource_repo_key_url = "https://deb.nodesource.com/gpgkey/nodesource.gpg.key" %}
@@ -118,6 +122,7 @@ node_repo_key:
       - is_gpg: False
 {% endif %}
 
+{#
 nodesource_repo:
   module.run:
     - repository.update_repository:
@@ -133,6 +138,7 @@ nodesource_repo:
         - {{ pillar['release'] }}
       - components:
         - main
+#}
 
 {% set postgresql_repo_key_name = "/usr/share/keyrings/postgresql.gpg" %}
 {% set postgresql_repo_key_url = "https://www.postgresql.org/media/keys/ACCC4CF8.asc" %}
@@ -148,6 +154,7 @@ postgresql_repo_key:
       - is_gpg: False
 {% endif %}
 
+{#
 postgresql_repo:
   module.run:
     - repository.update_repository:
@@ -162,6 +169,7 @@ postgresql_repo:
         - {{ pillar['release'] }}-pgdg
       - components:
         - main
+#}
 
 {% set sysdig_repo_key_name = "/usr/share/keyrings/sysdig.gpg" %}
 {% set sysdig_repo_key_url = "https://s3.amazonaws.com/download.draios.com/DRAIOS-GPG-KEY.public" %}
@@ -177,6 +185,7 @@ sysdig_repo_key:
       - is_gpg: False
 {% endif %}
 
+{#
 sysdig_repo:
   module.run:
     - repository.update_repository:
@@ -191,6 +200,7 @@ sysdig_repo:
         - {{ pillar['release'] }}
       - components:
         - stable-$(ARCH)/
+#}
 
 {% set docker_repo_key_name = "/usr/share/keyrings/docker.gpg" %}
 {% set docker_repo_key_url = "https://download.docker.com/linux/debian/gpg" %}
@@ -206,6 +216,7 @@ docker_repo_key:
       - is_gpg: False
 {% endif %}
 
+{#
 docker_repo:
   module.run:
     - repository.update_repository:
@@ -220,6 +231,7 @@ docker_repo:
         - {{ pillar['release'] }}
       - components:
         - stable
+#}
 
 update_apt_repositories:
   cmd:
