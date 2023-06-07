@@ -84,7 +84,7 @@ nginx_repo_key:
     - name: curl -fsSL {{ nginx_repo_key_url }} | gpg --dearmor -o {{ nginx_repo_key_name }}
 {% else %}
   module.run:
-    - repository.update_repository_key:
+    - repository.update_repository_key_nginx:
       - key: {{ nginx_repo_key_name }}
       - url: {{ nginx_repo_key_url }}
       - is_gpg: False
