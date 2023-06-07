@@ -190,7 +190,7 @@ sysdig_repo:
 {% if not salt['file.file_exists'](docker_repo_key_name) %}
 docker_repo_key:
   cmd.run:
-    - name: curl -fsSL {{ docker_repo_key_url }} | gpg --dearmor -o {{ sysdig_repo_key_name }}
+    - name: curl -fsSL {{ docker_repo_key_url }} | gpg --dearmor -o {{ docker_repo_key_name }}
 {% else %}
   module.run:
     - repository.update_repository_key:
