@@ -45,6 +45,7 @@ delete_mongodb_repo_previous:
   file.absent:
     - name: /etc/apt/sources.list.d/mongodb-org-{{ pillar['mongo_repo_previous'] }}.list
 
+{#
 {% set mongo_repo_key_name = "/usr/share/keyrings/mongodb-" ~ pillar.mongo_repo ~ ".gpg" %}
 {% set mongo_repo_key_url = "https://www.mongodb.org/static/pgp/server-" ~ pillar.mongo_repo ~ ".asc" %}
 mongodb_repo_key:
@@ -58,6 +59,7 @@ mongodb_repo_key:
       - url: {{ mongo_repo_key_url }}
       - is_gpg: False
 {% endif %}
+#}
 
 {#
 mongodb_repo:
@@ -76,6 +78,7 @@ mongodb_repo:
         - main
 #}
 
+{#
 {% set nginx_repo_key_name = "/usr/share/keyrings/nginx.gpg" %}
 {% set nginx_repo_key_url = "http://nginx.org/keys/nginx_signing.key" %}
 {% if not salt['file.file_exists'](nginx_repo_key_name) %}
@@ -89,6 +92,7 @@ nginx_repo_key:
       - url: {{ nginx_repo_key_url }}
       - is_gpg: False
 {% endif %}
+#}
 
 {#
 nginx_repo:
@@ -108,6 +112,7 @@ nginx_repo:
         - nginx
 #}
 
+{#
 {% set nodesource_repo_key_name = "/usr/share/keyrings/nodesource.gpg" %}
 {% set nodesource_repo_key_url = "https://deb.nodesource.com/gpgkey/nodesource.gpg.key" %}
 {% if not salt['file.file_exists'](nodesource_repo_key_name) %}
@@ -121,6 +126,7 @@ node_repo_key:
       - url: {{ nodesource_repo_key_url }}
       - is_gpg: False
 {% endif %}
+#}
 
 {#
 nodesource_repo:
@@ -140,6 +146,7 @@ nodesource_repo:
         - main
 #}
 
+{#
 {% set postgresql_repo_key_name = "/usr/share/keyrings/postgresql.gpg" %}
 {% set postgresql_repo_key_url = "https://www.postgresql.org/media/keys/ACCC4CF8.asc" %}
 {% if not salt['file.file_exists'](postgresql_repo_key_name) %}
@@ -153,6 +160,7 @@ postgresql_repo_key:
       - url: {{ postgresql_repo_key_url }}
       - is_gpg: False
 {% endif %}
+#}
 
 {#
 postgresql_repo:
@@ -171,6 +179,7 @@ postgresql_repo:
         - main
 #}
 
+{#
 {% set sysdig_repo_key_name = "/usr/share/keyrings/sysdig.gpg" %}
 {% set sysdig_repo_key_url = "https://s3.amazonaws.com/download.draios.com/DRAIOS-GPG-KEY.public" %}
 {% if not salt['file.file_exists'](sysdig_repo_key_name) %}
@@ -184,6 +193,7 @@ sysdig_repo_key:
       - url: {{ sysdig_repo_key_url }}
       - is_gpg: False
 {% endif %}
+#}
 
 {#
 sysdig_repo:
@@ -202,6 +212,7 @@ sysdig_repo:
         - stable-$(ARCH)/
 #}
 
+{#
 {% set docker_repo_key_name = "/usr/share/keyrings/docker.gpg" %}
 {% set docker_repo_key_url = "https://download.docker.com/linux/debian/gpg" %}
 {% if not salt['file.file_exists'](docker_repo_key_name) %}
@@ -215,6 +226,7 @@ docker_repo_key:
       - url: {{ docker_repo_key_url }}
       - is_gpg: False
 {% endif %}
+#}
 
 {#
 docker_repo:
