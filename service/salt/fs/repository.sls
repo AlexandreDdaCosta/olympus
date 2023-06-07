@@ -16,7 +16,7 @@ For that upgrade, this section will need to be revised.
     - user: root
 
 {% for packagename, package in pillar.get('repo-packages', {}).items() %}
-{{ packagename }}-repo:
+{{ packagename }}-repo-package:
 {% if pillar.pkg_latest is defined and pillar.pkg_latest or 'version' not in package %}
   pkg.latest:
 {% else %}
@@ -47,7 +47,7 @@ delete_mongodb_repo_previous:
 
 {% set mongo_repo_key_name = "/usr/share/keyrings/mongodb-" ~ pillar.mongo_repo ~ ".gpg" %}
 {% set mongo_repo_key_url = "https://www.mongodb.org/static/pgp/server-" ~ pillar.mongo_repo ~ ".asc" %}
-mongodb_repo_key:
+mongodb_repository_key:
 {% if not salt['file.file_exists' ](mongo_repo_key_name) %}
   cmd.run:
     - name: curl -fsSL {{ mongo_repo_key_url }} | gpg --dearmor -o {{ mongo_repo_key_name }}
@@ -59,8 +59,7 @@ mongodb_repo_key:
       - is_gpg: False
 {% endif %}
 
-{#
-mongodb_repo:
+mongodb_repository_entry:
   module.run:
     - repository.update_repository:
       - name: mongodb-org-{{ pillar['mongo_repo'] }}.sources
@@ -74,8 +73,8 @@ mongodb_repo:
         - {{ pillar['previous-release'] }}/mongodb-org/{{ pillar['mongo_repo'] }}
       - components:
         - main
-#}
 
+{#
 {% set nginx_repo_key_name = "/usr/share/keyrings/nginx.gpg" %}
 {% set nginx_repo_key_url = "http://nginx.org/keys/nginx_signing.key" %}
 {% if not salt['file.file_exists'](nginx_repo_key_name) %}
@@ -84,11 +83,12 @@ nginx_repo_key:
     - name: curl -fsSL {{ nginx_repo_key_url }} | gpg --dearmor -o {{ nginx_repo_key_name }}
 {% else %}
   module.run:
-    - repository.update_repository_key_nginx:
+    - repository.update_repository_key:
       - key: {{ nginx_repo_key_name }}
       - url: {{ nginx_repo_key_url }}
       - is_gpg: False
 {% endif %}
+#}
 
 {#
 nginx_repo:

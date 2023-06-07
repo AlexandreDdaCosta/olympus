@@ -69,11 +69,3 @@ def update_repository_key(key, url, is_gpg=False):
                     return False
             else:
                 return True
-
-
-# The following are stupid functions that SaltStack requires since
-# otherwise it barfs when calling module.run twice in the same state file.
-
-
-def update_repository_key_nginx(key, url, is_gpg):
-    update_repository_key(key, url, is_gpg)
