@@ -22,8 +22,7 @@ def update_repository_key(key, url, is_gpg=False):
     for line in lines:
         matched = re.match(r'^.*\[expires: (.*?)\].*$', line)
         if matched:
-            # if (datetime.datetime.today() >=
-            if (datetime.datetime.today() <
+            if (datetime.datetime.today() >=
                     datetime.datetime.strptime(matched.group(1), '%Y-%m-%d')):
                 os.remove(key)
                 if is_gpg is True:

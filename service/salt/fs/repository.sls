@@ -52,15 +52,16 @@ delete_mongodb_repo:
     - name: /etc/apt/sources.list.d/mongodb-org-{{ pillar['mongo_repo'] }}.list
 
 {% set mongo_repo_key_name = "/usr/share/keyrings/mongodb-" ~ pillar.mongo_repo ~ ".gpg" %}
+{% set mongo_repo_key_url = "https://www.mongodb.org/static/pgp/server-" ~ pillar.mongo_repo ~ ".asc" %}
 mongodb_repo_key:
 {% if not salt['file.file_exists' ](mongo_repo_key_name) %}
   cmd.run:
-    - name: curl -fsSL https://www.mongodb.org/static/pgp/server-{{ pillar['mongo_repo'] }}.asc | gpg --dearmor -o {{ mongo_repo_key_mname }}
+    - name: curl -fsSL {{ mongo_repo_key_url }} | gpg --dearmor -o {{ mongo_repo_key_name }}
 {% else %}
   module.run:
     - repository.update_repository_key:
       - key: {{ mongo_repo_key_name }}
-      - url: https://www.mongodb.org/static/pgp/server-{{ pillar['mongo_repo'] }}.asc
+      - url: {{ mongo_repo_key_url }}
       - is_gpg: False
 {% endif %}
 
@@ -76,10 +77,17 @@ delete_nginx_repo:
     - name: /etc/apt/sources.list.d/nginx.list
 
 {% set nginx_repo_key_name = "/usr/share/keyrings/nginx.gpg" %}
-{% if not salt['file.file_exists' ](nginx_repo_key_name) %}
+{% set nginx_repo_key_url = "http://nginx.org/keys/nginx_signing.key" %}
+{% if not salt['file.file_exists'](nginx_repo_key_name) %}
 nginx_repo_key:
   cmd.run:
-    - name: curl -fsSL http://nginx.org/keys/nginx_signing.key | gpg --dearmor -o {{ nginx_repo_key_name }}
+    - name: curl -fsSL {{ nginx_repo_key_url }} | gpg --dearmor -o {{ nginx_repo_key_name }}
+{% else %}
+  module.run:
+    - repository.update_repository_key:
+      - key: {{ nginx_repo_key_name }}
+      - url: {{ nginx_repo_key_url }}
+      - is_gpg: False
 {% endif %}
 
 nginx_repo:
@@ -101,10 +109,17 @@ delete_nodesource_repo:
     - name: /etc/apt/sources.list.d/nodesource.list
 
 {% set nodesource_repo_key_name = "/usr/share/keyrings/nodesource.gpg" %}
-{% if not salt['file.file_exists' ](nodesource_repo_key_name) %}
+{% set nodesource_repo_key_url = "https://deb.nodesource.com/gpgkey/nodesource.gpg.key" %}
+{% if not salt['file.file_exists'](nodesource_repo_key_name) %}
 node_repo_key:
   cmd.run:
-    - name: curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor -o {{ nodesource_repo_key_name }}
+    - name: curl -fsSL {{ nodesource_repo_key_url }} | gpg --dearmor -o {{ nodesource_repo_key_name }}
+{% else %}
+  module.run:
+    - repository.update_repository_key:
+      - key: {{ nodesource_repo_key_name }}
+      - url: {{ nodesource_repo_key_url }}
+      - is_gpg: False
 {% endif %}
 
 nodesource_repo:
@@ -126,10 +141,17 @@ delete_postgresql_repo:
     - name: /etc/apt/sources.list.d/pgdg.list
 
 {% set postgresql_repo_key_name = "/usr/share/keyrings/postgresql.gpg" %}
-{% if not salt['file.file_exists' ](postgresql_repo_key_name) %}
+{% set postgresql_repo_key_url = "https://www.postgresql.org/media/keys/ACCC4CF8.asc" %}
+{% if not salt['file.file_exists'](postgresql_repo_key_name) %}
 postgresql_repo_key:
   cmd.run:
-    - name: curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o {{ postgresql_repo_key_name }}
+    - name: curl -fsSL {{ postgresql_repo_key_url }} | gpg --dearmor -o {{ postgresql_repo_key_name }}
+{% else %}
+  module.run:
+    - repository.update_repository_key:
+      - key: {{ postgresql_repo_key_name }}
+      - url: {{ postgresql_repo_key_url }}
+      - is_gpg: False
 {% endif %}
 
 postgresql_repo:
@@ -144,10 +166,17 @@ delete_sysdig_repo:
     - name: /etc/apt/sources.list.d/sysdig.list
 
 {% set sysdig_repo_key_name = "/usr/share/keyrings/sysdig.gpg" %}
-{% if not salt['file.file_exists' ](sysdig_repo_key_name) %}
+{% set sysdig_repo_key_url = "https://s3.amazonaws.com/download.draios.com/DRAIOS-GPG-KEY.public" %}
+{% if not salt['file.file_exists'](sysdig_repo_key_name) %}
 sysdig_repo_key:
   cmd.run:
-    - name: curl -fsSL https://s3.amazonaws.com/download.draios.com/DRAIOS-GPG-KEY.public | gpg --dearmor -o {{ sysdig_repo_key_name }}
+    - name: curl -fsSL {{ sysdig_repo_key_url }} | gpg --dearmor -o {{ sysdig_repo_key_name }}
+{% else %}
+  module.run:
+    - repository.update_repository_key:
+      - key: {{ sysdig_repo_key_name }}
+      - url: {{ sysdig_repo_key_url }}
+      - is_gpg: False
 {% endif %}
 
 sysdig_repo:
@@ -155,3 +184,18 @@ sysdig_repo:
     - file: /etc/apt/sources.list.d/sysdig.list
     - humanname: sysdig repository
     - name: deb https://download.sysdig.com/stable/deb stable-$(ARCH)/
+
+{% set docker_repo_key_name = "/usr/share/keyrings/docker.gpg" %}
+{% set docker_repo_key_url = "https://download.docker.com/linux/debian/gpg" %}
+{% if not salt['file.file_exists'](docker_repo_key_name) %}
+docker_repo_key:
+  cmd.run:
+    - name: curl -fsSL {{ docker_repo_key_url }} | gpg --dearmor -o {{ sysdig_repo_key_name }}
+{% else %}
+  module.run:
+    - repository.update_repository_key:
+      - key: {{ docker_repo_key_name }}
+      - url: {{ docker_repo_key_url }}
+      - is_gpg: False
+{% endif %}
+
