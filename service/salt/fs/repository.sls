@@ -35,9 +35,6 @@ delete_old_backports_file:
     - source: salt://repository/backports.list.jinja
     - template: jinja
     - user: root
-  cmd:
-    - run
-    - name: 'apt-get update --allow-releaseinfo-change'
 
 {# WARNING: apt-key is deprecated, so the following MUST be updated before upgrading beyond Debian bullseye #}
 {# See https://docs.saltproject.io/en/latest/ref/states/all/salt.states.pkgrepo.html #}
@@ -199,3 +196,22 @@ docker_repo_key:
       - is_gpg: False
 {% endif %}
 
+docker_repo:
+  module.run:
+    - repository.update_repository:
+      - name: docker.list
+      - types:
+        - deb
+      - architectures: 
+        - amd64
+      - signed_by: {{ docker_repo_key_name }}
+      - uris: https://download.docker.com/linux/debian
+      - suites: 
+        - {{ pillar['release_name'] }}
+      - components:
+        - stable
+
+update_apt_repositories:
+  cmd:
+    - run
+    - name: 'apt-get update --allow-releaseinfo-change'

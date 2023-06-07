@@ -10,6 +10,33 @@ import re
 import subprocess
 
 
+def update_repository(name,
+                      types,
+                      architectures,
+                      signed_by,
+                      uris,
+                      suites,
+                      components):
+    repo_file_name = '/etc/apt/sources.list.d/' + name
+    if os.path.isfile(repo_file_name):
+        os.remove(repo_file_name)
+    types = ' '.join(types)
+    architectures = ' '.join(architectures)
+    suites = ' '.join(suites)
+    components = ' '.join(components)
+    repository_entry = '''
+Types: {}
+Architectures: {}
+Signed-By: {}
+URIs: {}
+Suites: {}
+Components: {}
+'''[1:-1].format(types, architectures, signed_by, uris, suites, components)
+    with open(repo_file_name, "w") as f:
+        print(repository_entry, file=f)
+    return True
+
+
 def update_repository_key(key, url, is_gpg=False):
     if not os.path.isfile(key):
         return False
