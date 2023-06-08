@@ -74,7 +74,6 @@ mongodb_repo:
       - components:
         - main
 
-{#
 {% set nginx_repo_key_name = "/usr/share/keyrings/nginx.gpg" %}
 {% set nginx_repo_key_url = "http://nginx.org/keys/nginx_signing.key" %}
 nginx_repo_key:
@@ -88,9 +87,7 @@ nginx_repo_key:
       - url: {{ nginx_repo_key_url }}
       - is_gpg: False
 {% endif %}
-#}
 
-{#
 nginx_repo:
   module.run:
     - repository.update_repository:
@@ -106,7 +103,6 @@ nginx_repo:
         - {{ pillar['release'] }}
       - components:
         - nginx
-#}
 
 {#
 {% set nodesource_repo_key_name = "/usr/share/keyrings/nodesource.gpg" %}
