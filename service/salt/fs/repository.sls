@@ -104,7 +104,6 @@ nginx_repo:
       - components:
         - nginx
 
-{#
 {% set nodesource_repo_key_name = "/usr/share/keyrings/nodesource.gpg" %}
 {% set nodesource_repo_key_url = "https://deb.nodesource.com/gpgkey/nodesource.gpg.key" %}
 node_repo_key:
@@ -118,9 +117,7 @@ node_repo_key:
       - url: {{ nodesource_repo_key_url }}
       - is_gpg: False
 {% endif %}
-#}
 
-{#
 node_repo:
   module.run:
     - repository.update_repository:
@@ -136,9 +133,7 @@ node_repo:
         - {{ pillar['release'] }}
       - components:
         - main
-#}
 
-{#
 {% set postgresql_repo_key_name = "/usr/share/keyrings/postgresql.gpg" %}
 {% set postgresql_repo_key_url = "https://www.postgresql.org/media/keys/ACCC4CF8.asc" %}
 postgresql_repo_key:
@@ -152,9 +147,7 @@ postgresql_repo_key:
       - url: {{ postgresql_repo_key_url }}
       - is_gpg: False
 {% endif %}
-#}
 
-{#
 postgresql_repo:
   module.run:
     - repository.update_repository:
@@ -169,9 +162,7 @@ postgresql_repo:
         - {{ pillar['release'] }}-pgdg
       - components:
         - main
-#}
 
-{#
 {% set sysdig_repo_key_name = "/usr/share/keyrings/sysdig.gpg" %}
 {% set sysdig_repo_key_url = "https://s3.amazonaws.com/download.draios.com/DRAIOS-GPG-KEY.public" %}
 sysdig_repo_key:
@@ -185,9 +176,7 @@ sysdig_repo_key:
       - url: {{ sysdig_repo_key_url }}
       - is_gpg: False
 {% endif %}
-#}
 
-{#
 sysdig_repo:
   module.run:
     - repository.update_repository:
@@ -202,9 +191,7 @@ sysdig_repo:
         - {{ pillar['release'] }}
       - components:
         - stable-$(ARCH)/
-#}
 
-{#
 {% set docker_repo_key_name = "/usr/share/keyrings/docker.gpg" %}
 {% set docker_repo_key_url = "https://download.docker.com/linux/debian/gpg" %}
 docker_repo_key:
@@ -218,9 +205,7 @@ docker_repo_key:
       - url: {{ docker_repo_key_url }}
       - is_gpg: False
 {% endif %}
-#}
 
-{#
 docker_repo:
   module.run:
     - repository.update_repository:
@@ -235,7 +220,6 @@ docker_repo:
         - {{ pillar['release'] }}
       - components:
         - stable
-#}
 
 update_apt_repositories:
   cmd:
