@@ -25,6 +25,13 @@ locate-updatedb:
   cmd.run:
     - name: updatedb
 
+docker-service:
+  service.running:
+    - enable: True
+    - name: docker
+    - watch:
+        - pkg: docker-ce
+
 {%- if salt['cmd.shell'](check_mongo_auth_enabled) == 0 %}
 /etc/mongod.conf:
   file.managed:
