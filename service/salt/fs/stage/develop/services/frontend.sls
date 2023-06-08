@@ -24,9 +24,9 @@ full uWSGI server.
 
 /var/log/devserver:
   file.directory:
-    - group: root
+    - group: uwsgi
     - mode: 0755
-    - user: root
+    - user: uwsgi
 
 /usr/local/bin/olympus/startserver.py:
   file.managed:
@@ -39,7 +39,15 @@ full uWSGI server.
   file.managed:
     - group: root
     - mode: 0755
-    - source: salt://services/frontend/files/killserver.sh
+    - source: salt://stage/develop/services/frontend/files/killserver.sh
+    - user: root
+
+/etc/init.d/django-devserver:
+    file.managed:
+    - group: root
+    - makedirs: False
+    - mode: 0755
+    - source: salt://stage/develop/services/frontend/files/init.django-devserver
     - user: root
 
 develop-django.conf:
@@ -51,13 +59,12 @@ develop-django.conf:
     - source: salt://stage/develop/services/frontend/files/django.conf
     - user: root
 
-devserver-stop:
-  cmd.run:
-    - name: /usr/local/bin/olympus/killserver.sh
-
-devserver-start:
-  cmd.run:
-    - name: /usr/local/bin/olympus/startserver.py
+web-django-devserver:
+  service.running:
+    - enable: True
+    - name: django-devserver
+    - watch:
+      - file: /etc/init.d/django-devserver
 
 {% endif %}
 {% endif %}

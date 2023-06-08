@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+#
+# /etc/init.d/django-devserver
+#
+### BEGIN INIT INFO
+# Provides:          
+# Required-Start:    $local_fs $networking
+# Required-Stop:     $local_fs $networking
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: init script for Django development stage web server
+### END INIT INFO
+
+daemon=/usr/local/bin/olympus/startserver.py
+killdaemon=/usr/local/bin/olympus/killserver.sh
+lockfile=/var/run/devserver.pid
+processcheck='/srv/www/django/manage.py runserver'
+prog=python3
+runuser=uwsgi
+
+. /lib/lsb/init-functions
+
+do_pid_check()
+{
+    [[ -f $lockfile ]] || return 0
+    local PID=$(cat $lockfile)
+    for p in $(pgrep $prog); do
+        [[ $p == $PID ]] && return 1
+    done
+    return 0
+}
+
+wait_and_clean_pidfile()
+{
+    until do_pid_check $lockfile; do
+        echo -n "";
+    done
+    rm -f $lockfile
+}
+
+do_start()
+{
+    if do_pid_check; then
+        [ -x $daemon ] || exit 5
+        touch $lockfile
+        chmod 0664 $lockfile
+        chown $runuser:$runuser $lockfile
+        su -s /bin/bash -c "$daemon" $runuser
+        echo $(ps aux | grep "$processcheck" | grep -v 'grep' | awk '{print $2}' | head -1) > $lockfile
+    fi
+}
+
+do_stop()
+{
+    su -s /bin/bash -c "$killdaemon" uwsgi
+    wait_and_clean_pidfile
+}
+
+case "$1" in
+    restart)
+        do_stop
+        do_start
+        ;;
+    start)
+        do_start
+        ;;
+    status)
+        status_of_proc -p "$lockfile" "$daemon" "$prog" && exit 0 || exit $?
+        ;;
+    stop)
+        do_stop
+        ;;
+    *)
+        echo "Usage: /etc/init.d/django-devserver {restart|start|status|stop}"
+        exit 1
+    ;;
+esac
