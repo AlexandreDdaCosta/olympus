@@ -70,7 +70,7 @@ mongodb_repo:
       - signed_by: {{ mongo_repo_key_name }}
       - uris: http://repo.mongodb.org/apt/debian
       - suites: 
-        - {{ pillar['previous-release'] }}/mongodb-org/{{ pillar['mongo_repo'] }}
+        - {{ pillar['release'] }}/mongodb-org/{{ pillar['mongo_repo'] }}
       - components:
         - main
 
@@ -188,8 +188,6 @@ sysdig_repo:
       - signed_by: {{ sysdig_repo_key_name }}
       - uris: https://download.sysdig.com/stable/deb
       - suites: 
-        - {{ pillar['release'] }}
-      - components:
         - stable-$(ARCH)/
 
 {% set docker_repo_key_name = "/usr/share/keyrings/docker.gpg" %}

@@ -16,7 +16,7 @@ def update_repository(name,
                       signed_by,
                       uris,
                       suites,
-                      components):
+                      components=[]):
     repo_file_name = '/etc/apt/sources.list.d/' + name
     if os.path.isfile(repo_file_name):
         os.remove(repo_file_name)
