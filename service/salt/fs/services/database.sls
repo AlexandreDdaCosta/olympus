@@ -51,7 +51,6 @@ postgresql:
     - watch:
       - file: /etc/postgresql/14/main/pg_hba.conf
       - file: /etc/postgresql/14/main/postgresql.conf
-      - pkg: pgadmin4-web
       - pkg: postgresql-14
 
 olympus.db:
@@ -95,24 +94,6 @@ frontend-user_data_privs:
       - ALL
 
 /var/lib/pgadmin:
-  file.directory:
-    - group: pgadmin
-    - mode: 0700
-    - user: pgadmin
-
-/var/lib/pgadmin/azurecredentialcache:
-  file.directory:
-    - group: pgadmin
-    - mode: 0700
-    - user: pgadmin
-
-/var/lib/pgadmin/storage:
-  file.directory:
-    - group: pgadmin
-    - mode: 0700
-    - user: pgadmin
-
-/var/lib/pgadmin/sessions:
   file.directory:
     - group: pgadmin
     - mode: 0700
