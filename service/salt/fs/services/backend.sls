@@ -51,12 +51,12 @@ include:
       - sls: package
 {% endfor %}
 
-/etc/nginx/conf.d/node.conf:
+/etc/nginx/conf.d/backend_api.conf:
   file.managed:
     - group: root
     - makedirs: False
     - mode: 0644
-    - source: salt://services/backend/files/node.conf
+    - source: salt://services/backend/files/backend_api.conf
     - user: root
 
 /etc/rc0.d/K01node:

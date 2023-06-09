@@ -22,8 +22,20 @@ include:
 {% if package != None and 'repo' in package %}
     - fromrepo: {{ package['repo'] }}
 {% endif %}
-    - require:
-      - sls: package
+{% endfor %}
+
+{% for application, image in pillar.get('database-docker-images', {}).items() %}
+{{ image['image'] }}:
+  docker_image.present:
+    - client_timeout: 60
+{% if pillar.pkg_latest is defined and pillar.pkg_latest %}
+    - tag: latest
+    - force: True
+{% elif 'tag' in image %}
+    - tag: {{ image['tag'] }}
+{% else %}
+    - tag: latest
+{% endif %}
 {% endfor %}
 
 systmctl_disable_apache2:

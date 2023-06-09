@@ -73,12 +73,12 @@ include:
     - replace: False
     - user: {{ pillar['frontend-user'] }}
 
-/etc/nginx/conf.d/django.conf:
+/etc/nginx/conf.d/interface.conf:
   file.managed:
     - group: root
     - makedirs: False
     - mode: 0644
-    - source: salt://services/frontend/files/django.conf
+    - source: salt://services/frontend/files/interface.conf
     - user: root
 
 {# 
