@@ -7,6 +7,9 @@ set fileformat=unix " Working on UNIX
 set termguicolors   " Enable 24-bit RGB color
 syntax on           " Syntax highlighting
 
+" In case /tmp gets cleaned out, make a new tmp directory for vim:
+:command! Mktmpdir call mkdir(fnamemodify(tempname(),":p:h"),"",0700)
+
 " NOTE: Check available colors within vim
 " :so $VIMRUNTIME/syntax/colortest.vim
 

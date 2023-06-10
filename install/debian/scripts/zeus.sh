@@ -169,6 +169,23 @@ fi
 chown root:root *
 chmod 0644 *
 
+pattern='salt 3005.*'
+saltreply=`salt --version`
+if [[ "$saltreply" =~ $pattern ]]
+then
+    cd /usr/lib/python3/dist-packages/salt/modules/
+    echo 'Extracting /usr/lib/python3/dist-packages/salt/modules/dockermod.py'
+    echo 'NOTE: This is a temporary fix for salt version 3005 ONLY.'
+    git archive --remote=file://$GIT_PATH/$GIT_REPO HEAD:service/salt/fs/saltstack/files/ dockermod.py | tar -x
+    if [ $? != 0 ]
+    then
+        echo 'ERROR: Failure during extraction of temporary dockermod.py; exiting.' 1>&2
+        exit 1
+    fi
+    chown root:root dockermod.py
+    chmod 0644 dockermod.py
+fi
+
 service salt-minion restart
 service salt-master restart
 sleep 5
