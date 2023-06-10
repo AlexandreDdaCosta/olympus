@@ -65,7 +65,7 @@ web-django-devserver:
     - name: django-devserver
     - watch:
       - file: /etc/init.d/django-devserver
-      - file: /etc/nginx/conf.d/django.conf
+      - file: /etc/nginx/conf.d/interface.conf
 
 {% endif %}
 {% endif %}

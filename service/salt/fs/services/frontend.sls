@@ -348,14 +348,14 @@ nginx-frontend:
   service.running:
     - name: nginx
     - watch:
-      - file: /etc/nginx/conf.d/django.conf
+      - file: /etc/nginx/conf.d/interface.conf
 
 frontend-uwsgi:
   service.running:
     - name: uwsgi
     - watch:
       - file: {{ pillar.www_path }}/django
-      - file: /etc/nginx/conf.d/django.conf
+      - file: /etc/nginx/conf.d/interface.conf
 {%- if grains.get('stage') and grains.get('stage') != 'develop' %}
       - file: /etc/uwsgi/vassals/django.ini
 {%- endif %}

@@ -130,7 +130,7 @@ nginx-backend:
   service.running:
     - name: nginx
     - watch:
-      - file: /etc/nginx/conf.d/node.conf
+      - file: /etc/nginx/conf.d/backend_api.conf
 
 node-backend:
   service.running:
@@ -139,7 +139,7 @@ node-backend:
     - watch:
       - file: {{ pillar.www_path }}/node
       - file: /etc/init.d/node
-      - file: /etc/nginx/conf.d/node.conf
+      - file: /etc/nginx/conf.d/backend_api.conf
     - require:
       - sls: web
 
