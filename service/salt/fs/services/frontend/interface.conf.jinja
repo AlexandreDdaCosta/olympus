@@ -2,7 +2,7 @@
 {% if 'server' in hostinfo -%}
 {% if hostinfo['server'] == 'unified' or hostinfo['server'] == 'database' -%}
 {%- for ip in hostinfo['ipv4'] -%}
-{%- if ip is match('({{ pillar['ip_network'] }})') %}
+{%- if ip is match("({{ pillar['ip_network'] }})") %}
 {% set database_ip=ip -%}
 {% endif -%}
 {% endfor -%}
