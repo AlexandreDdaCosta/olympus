@@ -78,7 +78,8 @@ include:
     - group: root
     - makedirs: False
     - mode: 0644
-    - source: salt://services/frontend/files/interface.conf
+    - source: salt://services/frontend/interface.conf.jinja
+    - template: jinja
     - user: root
 
 {# 

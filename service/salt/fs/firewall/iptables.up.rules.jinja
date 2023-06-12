@@ -58,7 +58,7 @@
 # ({{ host }}) -- unified
 
 {%- for ip in hostinfo['ipv4'] -%}
-{%- if ip != '127.0.0.1' %}
+{%- if ip is match('({{ pillar['ip_network'] }})') %}
 # Backend API
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -s {{ ip }} -j ACCEPT
 {% endif -%}
@@ -69,6 +69,30 @@
 {% for ip in hostinfo['ipv4'] %}
 # Backend API
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -s {{ ip }} -j ACCEPT
+{%- endfor -%}
+{%- endif -%}
+{%- endif -%}
+{%- endfor -%}
+{%- endif %}
+
+{%- if grains.get('server') == 'database' or grains.get('server') == 'unified' %}
+{% for host, hostinfo in salt['mine.get']('*', 'grains.items').items() %}
+{%- if 'server' in hostinfo -%}
+{%- if hostinfo['server'] == 'interface'%}
+# ({{ host }}) -- interface
+
+{% for ip in hostinfo['ipv4'] %}
+# pgadmin4
+-A INPUT -p tcp -m state --state NEW -m tcp --dport 5050 -s {{ ip }} -j ACCEPT
+{% endfor -%}
+{%- elif hostinfo['server'] == 'unified' %}
+# ({{ host }}) -- unified
+
+{%- for ip in hostinfo['ipv4'] -%}
+{%- if ip is match('({{ pillar['ip_network'] }})') %}
+# pgadmin4
+-A INPUT -p tcp -m state --state NEW -m tcp --dport 5050 -s {{ ip }} -j ACCEPT
+{% endif -%}
 {%- endfor -%}
 {%- endif -%}
 {%- endif -%}

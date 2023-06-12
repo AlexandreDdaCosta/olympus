@@ -1,3 +1,15 @@
+{% for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
+{% if 'server' in hostinfo -%}
+{% if hostinfo['server'] == 'unified' or hostinfo['server'] == 'database' -%}
+{%- for ip in hostinfo['ipv4'] -%}
+{%- if ip is match('({{ pillar['ip_network'] }})') %}
+{% set database_ip=ip -%}
+{% endif -%}
+{% endfor -%}
+{% endif -%}
+{% endif -%}
+{% endfor -%}
+
 server {
     listen [::]:80;
     return 301 https://$host$request_uri;
@@ -14,6 +26,13 @@ server {
   location / {
     include uwsgi_params;
     uwsgi_pass 127.0.0.1:8888;
+  }
+  location /pgadmin4/ {
+    proxy_set_header X-Script-Name /pgadmin4;
+    proxy_set_header X-Scheme $scheme;
+    proxy_set_header Host $host;
+    proxy_pass http://{{ database_ip }}:5050/;
+    proxy_redirect off;
   }
   location /media {
     root /srv/www/django/interface;

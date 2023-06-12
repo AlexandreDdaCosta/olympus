@@ -64,13 +64,6 @@ include:
     - source: salt://package/files/sysfs.conf
     - user: root
 
-{#
-salt-3000.3+ds-1-bug-hack:
-  cmd:
-    - run
-    - name: perl -e '$file = qq{/usr/lib/python3/dist-packages/salt/modules/postgres.py}; $res = `apt list --installed 2>\&1 | grep salt-common`; if ($res =~ /3000\.3\+ds\-1/) { open my $in, $file or die "$!"; $/ = undef; my $all = <$in>; close $in; $all =~ s/perms\.sort\(\) \=\= _privileges\[name\]\.keys\(\)\.sort\(\)/sorted(perms) == sorted(_privileges[name].keys())/; open my $out, ">$file" or die "$!"; print $out $all; close $out; }'
-#}
-
 {# Another temporary bug fix, this time for mismatch of salt and py docker versions #}
 salt-3005-docker-bug:
   file.managed:
