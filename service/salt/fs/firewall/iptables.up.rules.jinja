@@ -86,7 +86,7 @@
 # ({{ host }}) -- interface
 
 {% for ip in hostinfo['ipv4'] -%}
-{%- if ip != '127.0.0.1'-%}
+{%- if ip != '127.0.0.1'%}
 # pgadmin4
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 5050 -s {{ ip }} -j ACCEPT
 {% endif -%}
@@ -95,10 +95,10 @@
 # ({{ host }}) -- unified
 
 {% for ip in hostinfo['ipv4'] -%}
-{%- if ip != '127.0.0.1'-%}
+{%- if ip != '127.0.0.1'%}
 # pgadmin4
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 5050 -s {{ ip }} -j ACCEPT
-{%- endif -%}
+{% endif -%}
 {%- endfor -%}
 {%- endif -%}
 {%- endif -%}
