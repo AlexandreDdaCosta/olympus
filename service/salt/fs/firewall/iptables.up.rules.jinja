@@ -54,7 +54,7 @@
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -s {{ ip }} -j ACCEPT
 # Postgresql
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 5432 -s {{ ip }} -j ACCEPT
-{% endif -%}
+{%- endif -%}
 {%- endfor -%}
 {%- elif hostinfo['server'] == 'unified' %}
 # ({{ host }}) -- unified
@@ -63,7 +63,7 @@
 {%- if pillar.ip_network in ip -%}
 # Backend API
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -s {{ ip }} -j ACCEPT
-{% endif -%}
+{%- endif -%}
 {%- endfor -%}
 {%- elif hostinfo['server'] == 'worker' %}
 # ({{ host }}) -- worker
@@ -72,7 +72,7 @@
 {%- if pillar.ip_network in ip -%}
 # Backend API
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -s {{ ip }} -j ACCEPT
-{% endif -%}
+{%- endif -%}
 {%- endfor -%}
 {%- endif -%}
 {%- endif -%}
@@ -89,7 +89,7 @@
 {%- if ip != '127.0.0.1' -%}
 # pgadmin4/docker
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 5050 -s {{ ip }} -j ACCEPT
-{% endif -%}
+{%- endif -%}
 {%- endfor -%}
 {%- elif hostinfo['server'] == 'unified' %}
 # ({{ host }}) -- unified
@@ -98,7 +98,7 @@
 {%- if ip != '127.0.0.1' -%}
 # pgadmin4/docker
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 5050 -s {{ ip }} -j ACCEPT
-{% endif -%}
+{%- endif -%}
 {%- endfor -%}
 {%- endif -%}
 {%- endif -%}
