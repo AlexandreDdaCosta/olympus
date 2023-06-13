@@ -1,5 +1,6 @@
-{% set hostname=grains['id'] -%}
 {% set trim_blocks=True -%}
+{% set hostname=grains['id'] -%}
+{% set docker_bridge_address='172.17.0.0/16' -%}
 {# Template for IP tables set-up for all services.  Managed by the local supervisor. -#}
 # IP tables generated for {{ hostname }} from local supervisor
 
@@ -80,6 +81,8 @@
 {%- endif %}
 
 {%- if grains.get('server') == 'database' or grains.get('server') == 'unified' %}
+# Docker bridge IP for pgadmin
+-A INPUT -p tcp -m state --state NEW -m tcp --dport 5050 -s {{ docker_bridge_address }} -j ACCEPT
 {% for host, hostinfo in salt['mine.get']('*', 'grains.items').items() %}
 {%- if 'server' in hostinfo -%}
 {%- if hostinfo['server'] == 'interface'%}
@@ -87,7 +90,7 @@
 
 {% for ip in hostinfo['ipv4'] -%}
 {%- if pillar.ip_network in ip -%}
-# pgadmin4/docker
+# pgadmin4 interface
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 5050 -s {{ ip }} -j ACCEPT
 {%- endif -%}
 {%- endfor -%}
@@ -96,7 +99,7 @@
 
 {% for ip in hostinfo['ipv4'] -%}
 {%- if pillar.ip_network in ip -%}
-# pgadmin4/docker
+# pgadmin4 interface
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 5050 -s {{ ip }} -j ACCEPT
 {%- endif -%}
 {%- endfor -%}
