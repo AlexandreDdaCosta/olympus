@@ -57,8 +57,8 @@
 {%- elif hostinfo['server'] == 'unified' %}
 # ({{ host }}) -- unified
 
-{%- for ip in hostinfo['ipv4'] -%}
-{% if {{ pillar['ip_network'] }} in ip %}
+{% for ip in hostinfo['ipv4'] %}
+{% if pillar.ip_network in ip %}
 # Backend API 
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -s {{ ip }} -j ACCEPT
 {% endif -%}
@@ -89,7 +89,7 @@
 # ({{ host }}) -- unified
 
 {%- for ip in hostinfo['ipv4'] -%}
-{% if {{ pillar['ip_network'] }} in ip %}
+{% if pillar.ip_network in ip %}
 # pgadmin4
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 5050 -s {{ ip }} -j ACCEPT
 {% endif -%}
