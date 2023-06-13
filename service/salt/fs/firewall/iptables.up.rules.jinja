@@ -83,7 +83,7 @@
 {%- if grains.get('server') == 'database' or grains.get('server') == 'unified' %}
 
 # Docker bridge IP for pgadmin
--A INPUT -p tcp -m state --state NEW -m tcp --dport 5050 -s {{ docker_bridge_address }} -j ACCEPT
+-A INPUT -p tcp -m state --state NEW -m tcp --dport 80 -s {{ docker_bridge_address }} -j ACCEPT
 {% for host, hostinfo in salt['mine.get']('*', 'grains.items').items() %}
 {%- if 'server' in hostinfo -%}
 {%- if hostinfo['server'] == 'interface'%}
