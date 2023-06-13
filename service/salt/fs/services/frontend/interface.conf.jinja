@@ -23,13 +23,13 @@ server {
 {% if 'server' in hostinfo -%}
 {% if hostinfo['server'] == 'unified' or hostinfo['server'] == 'database' -%}
 {% for ip in hostinfo['ipv4'] -%}
-{%- if pillar.ip_network in ip -%}
+{%- if pillar.ip_network in ip %}
     proxy_pass http://{{ ip }}:5050/;
 {%- endif -%}
 {%- endfor -%}
 {%- endif -%}
 {%- endif -%}
-{%- endfor -%}
+{%- endfor %}
     proxy_redirect off;
   }
   location /media {
