@@ -7,15 +7,16 @@
 
 # Global rules
 
-# Drop traffic not explicitly allowed
-# :INPUT DROP [0:0]
+# Start off by accepting all INPUT/OUTPUT/FORWARD
 :INPUT ACCEPT [0:0]
 :OUTPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
 
+# Only flush INPUT rules; this avoids conflicts with rules initiated by Docker
 -F INPUT
 
 # Allow forwarding requests
--A FORWARD -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+#-A FORWARD -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 
 # fail2ban SSH
 :fail2ban-SSH - [0:0]
@@ -25,10 +26,10 @@
 -A INPUT -i lo -j ACCEPT
 
 # Accept inbound traffic for already established connections
--A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+#-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 
 # Allow all outbound traffic
--A OUTPUT -m state --state NEW,RELATED,ESTABLISHED -j ACCEPT
+#-A OUTPUT -m state --state NEW,RELATED,ESTABLISHED -j ACCEPT
 
 # Allow ping
 -A INPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
@@ -109,10 +110,9 @@
 {%- endfor -%}
 {%- endif %}
 
-# Ban everything else
+# Rejections
 
 -A INPUT -j REJECT --reject-with icmp-host-prohibited 
-#-A FORWARD -j REJECT --reject-with icmp-host-prohibited 
 -A fail2ban-SSH -j RETURN
 
 COMMIT
