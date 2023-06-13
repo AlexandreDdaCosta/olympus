@@ -334,10 +334,12 @@ frontend_cert_renewal:
 {# 
 The old command was invariably giving this issue at renew time:
 
-Domain: laikasden.com
+Domain: <core-domain-CN>
 Type:   connection
-Detail: 192.64.119.62: Fetching https://www.laikasden.com:
+Detail: 192.64.119.62: Fetching https://www.<core-domain-CN>:
 Connection refused
+
+NOTE that <core-domain-CN> is a placeholder; see actual value in pillar.
 
 Best GUESS at culprit is the pre-hook command. I've that since renewal works correctly first time without.
 Also removed the "--http-01-port" specification since it appears to serve no purpose; i.e., 80 is the default.

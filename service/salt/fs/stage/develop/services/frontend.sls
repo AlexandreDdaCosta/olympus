@@ -56,7 +56,8 @@ develop-interface.conf:
     - name: /etc/nginx/conf.d/interface.conf
     - makedirs: False
     - mode: 0644
-    - source: salt://stage/develop/services/frontend/files/interface.conf
+    - source: salt://stage/develop/services/frontend/interface.conf.jinja
+    - template: jinja
     - user: root
 
 web-django-devserver:
