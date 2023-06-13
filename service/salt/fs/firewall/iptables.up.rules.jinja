@@ -58,9 +58,8 @@
 # ({{ host }}) -- unified
 
 {%- for ip in hostinfo['ipv4'] -%}
-{% set ip_match=ip | regex_match('^{{ pillar['ip_network'] }}') %}
-{% if ip_match is not None %}
-# Backend API -- {{ ip_match }}
+{% if {{ pillar['ip_network'] }} in ip %}
+# Backend API 
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -s {{ ip }} -j ACCEPT
 {% endif -%}
 {%- endfor -%}
@@ -90,8 +89,7 @@
 # ({{ host }}) -- unified
 
 {%- for ip in hostinfo['ipv4'] -%}
-{% set ip_match=ip | regex_match('^{{ pillar['ip_network'] }}') %}
-{% if ip_match is not None %}
+{% if {{ pillar['ip_network'] }} in ip %}
 # pgadmin4
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 5050 -s {{ ip }} -j ACCEPT
 {% endif -%}
