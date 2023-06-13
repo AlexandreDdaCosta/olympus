@@ -15,24 +15,24 @@
 # Only flush INPUT rules; this avoids conflicts with rules initiated by Docker
 -F INPUT
 
-# Allow forwarding requests
-#-A FORWARD -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+# Accept inbound traffic for already established connections
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 
-# fail2ban SSH
-:fail2ban-SSH - [0:0]
--A INPUT -p tcp -m tcp --dport 22 -j fail2ban-SSH 
+# Allow all outbound traffic
+-A OUTPUT -m state --state NEW,RELATED,ESTABLISHED -j ACCEPT
+
+# Allow all forwarding traffic
+-A FORWARD -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 
 # Allow loopback traffic
 -A INPUT -i lo -j ACCEPT
 
-# Accept inbound traffic for already established connections
-#-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
-
-# Allow all outbound traffic
-#-A OUTPUT -m state --state NEW,RELATED,ESTABLISHED -j ACCEPT
-
 # Allow ping
 -A INPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
+
+# SSH supervised by Fail2ban
+:fail2ban-SSH - [0:0]
+-A INPUT -p tcp -m tcp --dport 22 -j fail2ban-SSH 
 
 # Allow SSH
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
