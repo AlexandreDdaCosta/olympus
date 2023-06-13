@@ -9,7 +9,7 @@ firewall:
     - template: jinja
     - user: root
   cmd.run:
-    - name: iptables-restore < {{ path }}
+    - name: iptables-restore -n {{ path }}
 
 web-firewall-restart:
   cmd.run:

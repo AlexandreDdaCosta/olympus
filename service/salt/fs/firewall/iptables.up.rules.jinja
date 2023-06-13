@@ -1,6 +1,5 @@
 {% set trim_blocks=True -%}
 {% set hostname=grains['id'] -%}
-{% set docker_bridge_address='172.17.0.0/16' -%}
 {# Template for IP tables set-up for all services.  Managed by the local supervisor. -#}
 # IP tables generated for {{ hostname }} from local supervisor
 
@@ -9,8 +8,11 @@
 # Global rules
 
 # Drop traffic not explicitly allowed
-:INPUT DROP
-:OUTPUT ACCEPT
+# :INPUT DROP [0:0]
+:INPUT ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+
+-F INPUT
 
 # Allow forwarding requests
 -A FORWARD -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
@@ -82,8 +84,6 @@
 
 {%- if grains.get('server') == 'database' or grains.get('server') == 'unified' %}
 
-# Docker bridge IP for pgadmin
--A INPUT -p tcp -m state --state NEW -m tcp --dport 80 -s {{ docker_bridge_address }} -j ACCEPT
 {% for host, hostinfo in salt['mine.get']('*', 'grains.items').items() %}
 {%- if 'server' in hostinfo -%}
 {%- if hostinfo['server'] == 'interface'%}
@@ -112,7 +112,7 @@
 # Ban everything else
 
 -A INPUT -j REJECT --reject-with icmp-host-prohibited 
--A FORWARD -j REJECT --reject-with icmp-host-prohibited 
+#-A FORWARD -j REJECT --reject-with icmp-host-prohibited 
 -A fail2ban-SSH -j RETURN
 
 COMMIT
