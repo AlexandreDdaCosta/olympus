@@ -49,7 +49,7 @@
 # ({{ host }}) -- interface
 
 {% for ip in hostinfo['ipv4'] -%}
-{%- if pillar.ip_network in ip -%}
+{%- if pillar.ip_network in ip %}
 # Backend API
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -s {{ ip }} -j ACCEPT
 # Postgresql
@@ -60,16 +60,16 @@
 # ({{ host }}) -- unified
 
 {%- for ip in hostinfo['ipv4'] -%}
-{%- if pillar.ip_network in ip -%}
+{%- if pillar.ip_network in ip %}
 # Backend API
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -s {{ ip }} -j ACCEPT
-{% endif -%}
+{%- endif -%}
 {%- endfor -%}
 {%- elif hostinfo['server'] == 'worker' %}
 # ({{ host }}) -- worker
 
 {% for ip in hostinfo['ipv4'] -%}
-{%- if pillar.ip_network in ip -%}
+{%- if pillar.ip_network in ip %}
 # Backend API
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -s {{ ip }} -j ACCEPT
 {%- endif -%}
