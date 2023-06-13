@@ -1,3 +1,4 @@
+{% set trim_blocks=True -%}
 server {
     listen [::]:80;
     return 301 https://$host$request_uri;
@@ -19,10 +20,10 @@ server {
     proxy_set_header X-Script-Name /pgadmin4;
     proxy_set_header X-Scheme $scheme;
     proxy_set_header Host $host;
-{% for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
-{% if 'server' in hostinfo -%}
-{% if hostinfo['server'] == 'unified' or hostinfo['server'] == 'database' -%}
-{% for ip in hostinfo['ipv4'] -%}
+{%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
+{%- if 'server' in hostinfo -%}
+{%- if hostinfo['server'] == 'unified' or hostinfo['server'] == 'database' -%}
+{%- for ip in hostinfo['ipv4'] -%}
 {%- if pillar.ip_network in ip %}
     proxy_pass http://{{ ip }}:5050/;
 {%- endif -%}
