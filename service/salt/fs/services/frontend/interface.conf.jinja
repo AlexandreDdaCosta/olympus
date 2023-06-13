@@ -1,8 +1,8 @@
 {% for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
 {% if 'server' in hostinfo -%}
 {% if hostinfo['server'] == 'unified' or hostinfo['server'] == 'database' -%}
-{% for ip in hostinfo['ipv4'] %}
-{% if ip is match("{{ pillar['ip_network'] }}.*") %}
+{% for ip in hostinfo['ipv4'] -%}
+{%- if pillar.ip_network in ip -%}
 {% set database_ip=ip %}
 {% endif -%}
 {% endfor -%}
