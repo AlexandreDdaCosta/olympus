@@ -48,12 +48,14 @@
 {%- if hostinfo['server'] == 'interface'%}
 # ({{ host }}) -- interface
 
-{% for ip in hostinfo['ipv4'] %}
+{% for ip in hostinfo['ipv4'] -%}
+{%- if pillar.ip_network in ip -%}
 # Backend API
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -s {{ ip }} -j ACCEPT
 # Postgresql
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 5432 -s {{ ip }} -j ACCEPT
-{% endfor -%}
+{%- endif -%}
+{%- endfor -%}
 {%- elif hostinfo['server'] == 'unified' %}
 # ({{ host }}) -- unified
 
@@ -66,9 +68,11 @@
 {%- elif hostinfo['server'] == 'worker' %}
 # ({{ host }}) -- worker
 
-{% for ip in hostinfo['ipv4'] %}
+{% for ip in hostinfo['ipv4'] -%}
+{%- if pillar.ip_network in ip -%}
 # Backend API
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -s {{ ip }} -j ACCEPT
+{%- endif -%}
 {%- endfor -%}
 {%- endif -%}
 {%- endif -%}
@@ -81,10 +85,12 @@
 {%- if hostinfo['server'] == 'interface'%}
 # ({{ host }}) -- interface
 
-{% for ip in hostinfo['ipv4'] %}
+{% for ip in hostinfo['ipv4'] -%}
+{%- if pillar.ip_network in ip -%}
 # pgadmin4
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 5050 -s {{ ip }} -j ACCEPT
-{% endfor -%}
+{%- endif -%}
+{%- endfor -%}
 {%- elif hostinfo['server'] == 'unified' %}
 # ({{ host }}) -- unified
 
@@ -92,7 +98,7 @@
 {%- if pillar.ip_network in ip -%}
 # pgadmin4
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 5050 -s {{ ip }} -j ACCEPT
-{% endif -%}
+{%- endif -%}
 {%- endfor -%}
 {%- endif -%}
 {%- endif -%}
