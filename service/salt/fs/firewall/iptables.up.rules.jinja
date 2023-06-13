@@ -58,7 +58,7 @@
 # ({{ host }}) -- unified
 
 {%- for ip in hostinfo['ipv4'] -%}
-{%- if ip is match("{{ pillar['ip_network'] }}.*") %}
+{% if ip is regex("^({{ pillar['ip_network'] }}).*$") %}
 # Backend API
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 4443 -s {{ ip }} -j ACCEPT
 {% endif -%}
