@@ -27,12 +27,12 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
 {%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
-{%- if 'server' in hostinfo and hostinfo['server'] == 'supervisor' -%}
+{%- if 'server' in hostinfo and hostinfo['server'] == 'database' -%}
 {%- for ip in hostinfo['ipv4'] -%}
-{%- if ip != '127.0.0.1' %}
+{%- if pillar.ip_network in ip %}
         'HOST': '{{ ip }}',
 {%- endif -%}
-{%- endfor %}
+{%- endfor -%}
 {%- endif -%}
 {%- endfor %}
         'NAME': 'app_data',
@@ -44,12 +44,12 @@ DATABASES = {
     'users': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
 {%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
-{%- if 'server' in hostinfo and hostinfo['server'] == 'supervisor' -%}
+{%- if 'server' in hostinfo and hostinfo['server'] == 'database' -%}
 {%- for ip in hostinfo['ipv4'] -%}
-{%- if ip != '127.0.0.1' %}
+{%- if pillar.ip_network in ip %}
         'HOST': '{{ ip }}',
 {%- endif -%}
-{%- endfor %}
+{%- endfor -%}
 {%- endif -%}
 {%- endfor %}
         'NAME': 'user_data',
