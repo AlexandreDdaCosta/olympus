@@ -1,4 +1,4 @@
-{% set trim_blocks=True -%}
+{% set trim_blocks=True %}
 {% for groupname, group in pillar.get('groups', {}).items() %}
 {{ groupname }}-group:
   group:
@@ -10,12 +10,12 @@
 {% endfor %}
 
 {% for username, user in pillar.get('users', {}).items() %}
-{% if 'server' not in user or grains.get('server') in user['server'] -%}
-{% if 'edit_precommand' in user -%}
+{% if 'server' not in user or grains.get('server') in user['server'] %}
+{% if 'edit_precommand' in user %}
 edit_precommand_{{ username }}:
   cmd.run:
     - name: {{ user['edit_precommand'] }}
-{% endif -%}
+{% endif %}
 
 user_{{ username }}:
 
@@ -25,10 +25,10 @@ user_{{ username }}:
     - present
 {% endif %}
   user:
-    {% if 'createhome' in user and user['createhome'] -%}
+    {% if 'createhome' in user and user['createhome'] %}
     - createhome: True
     {%- endif %}
-    {% if 'fullname' in user -%}
+    {% if 'fullname' in user %}
     - fullname: {{ user['fullname'] }}
     {%- endif %}
 {% if 'gid' in user %}
@@ -41,32 +41,32 @@ user_{{ username }}:
 {% if 'gid' not in user %}
       - {{ username }}
 {% endif %}
-      {% if 'is_staff' in user and user['is_staff'] -%}
+      {% if 'is_staff' in user and user['is_staff'] %}
       - git
       - staff
-      {%- endif %}
-      {% if 'groups' in user -%}
-      {% for groupname in user['groups'] -%}
+      {% endif %}
+      {% if 'groups' in user %}
+      {% for groupname in user['groups'] %}
       - {{ groupname }}
       {% endfor %}
-      {%- endif %}
-    {% if 'createhome' in user and user['createhome'] -%}
+      {% endif %}
+    {% if 'createhome' in user and user['createhome'] %}
     - home: /home/{{ username }}
-    {%- endif %}
+    {% endif %}
     - name: {{ username }}
     - present
-    {% if 'shell' in user -%}
+    {% if 'shell' in user %}
     - shell: {{ user['shell'] }}
-    {% elif 'class' in user and user['class'] == "human" -%}
+    {% elif 'class' in user and user['class'] == "human" %}
     - shell: /bin/bash
     {% else -%}
     - shell: /usr/sbin/nologin
     {%- endif %}
-    {% if 'class' in user and user['class'] == "system" -%}
+    {% if 'class' in user and user['class'] == "system" %}
     - system: True
-    {%- endif %}
+    {% endif %}
 
-{% if 'createhome' in user and user['createhome'] -%}
+{% if 'createhome' in user and user['createhome'] %}
 /home/{{ username }}-perms:
   cmd.run:
     - name: 'chmod 0750 /home/{{ username }}'
@@ -78,7 +78,7 @@ user_{{ username }}:
     - name: /home/{{ username }}/etc
     - user: {{ username }}
 
-{%- endif %}
+{% endif %}
 {% if 'createhome' in user and user['createhome'] and 'ssh_public_key' in user %}
 {{ username }}-sshdir:
   file.directory:
@@ -104,6 +104,6 @@ user_{{ username }}:
     - name: /home/{{ username }}/.ssh/authorized_keys
     - user: {{ username }}
 
-{%- endif %}
+{% endif %}
 {% endif %}
 {% endfor %}
