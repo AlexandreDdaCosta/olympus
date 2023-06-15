@@ -123,35 +123,35 @@ include:
     - user: root
 
 {{ frontend_path }}/media:
-    file.directory:
+  file.directory:
     - group: root
     - makedirs: False
     - mode: 0755
     - user: root
 
 {{ frontend_path }}/media/blog:
-    file.directory:
+  file.directory:
     - group: root
     - makedirs: False
     - mode: 0755
     - user: root
 
 {{ frontend_path }}/media-admin:
-    file.directory:
+  file.directory:
     - group: {{ pillar['frontend-user'] }}
     - makedirs: False
     - mode: 0755
     - user: {{ pillar['frontend-user'] }}
 
 {{ frontend_path }}/static:
-    file.directory:
+  file.directory:
     - group: root
     - makedirs: False
     - mode: 0755
     - user: root
 
 {{ frontend_path }}/static/js:
-    file.directory:
+  file.directory:
     - group: root
     - makedirs: False
     - mode: 0755

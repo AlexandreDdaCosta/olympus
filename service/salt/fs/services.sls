@@ -25,6 +25,13 @@ locate-updatedb:
   cmd.run:
     - name: updatedb
 
+{{ pillar.docker_services_path }}:
+    file.directory:
+    - group: root
+    - makedirs: False
+    - mode: 0755
+    - user: root
+
 docker-service:
   service.running:
     - enable: True

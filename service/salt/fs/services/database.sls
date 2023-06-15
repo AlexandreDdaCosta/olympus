@@ -1,3 +1,7 @@
+{% set pgadmin_path=pillar.docker_services_path+'/pgadmin' %}
+{% set pgadmin_admin_password_file_name='pgadmin_admin_password' %}
+{% set random_pgadmin_password='echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(50)))" | /usr/bin/python3' %}
+
 include:
   - base: package
   - base: services
@@ -105,16 +109,43 @@ frontend-user_data_privs:
     - privileges:
       - ALL
 
-/var/lib/pgadmin:
-  file.directory:
-    - group: pgadmin
-    - mode: 0700
-    - user: pgadmin
-
 /var/log/pgadmin:
   file.directory:
     - group: pgadmin
     - mode: 0700
     - user: pgadmin
+
+{{ pgadmin_path }}:
+  file.directory:
+    - group: root
+    - makedirs: False
+    - mode: 0755
+    - user: root
+
+pgadmin_docker_compose_file:
+  file.managed:
+    - context:
+      pgadmin_default_password_file: {{ pgadmin_admin_password_file_name }}
+    - group: root
+    - makedirs: False
+    - mode: 0644
+    - name: {{ pgadmin_path }}/docker-compose.yml
+    - source: salt://services/database/pgadmin.docker-compose.yml.jinja
+    - template: jinja
+    - user: root
+
+{% set default_admin_password_file_name = pgadmin_path ~ "/" ~ pgadmin_admin_password_file_name %}
+{% if not salt['file.file_exists' ](docker_admin_password_file_name) %}
+{{ default_admin_password_file_name }}:
+  file.managed:
+    - context:
+      default_pgadmin_password: {{ salt['cmd.shell'](random_pgadmin_password) }}
+    - group: pgadmin
+    - makedirs: False
+    - mode: 0600
+    - source: salt://services/database/pgadmin_default_admin_password.jinja
+    - template: jinja
+    - user: pgadmin
+{% endif %}
 
 {% endif %}

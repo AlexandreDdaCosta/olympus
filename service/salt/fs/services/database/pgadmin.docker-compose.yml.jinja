@@ -1,0 +1,17 @@
+{% set trim_blocks=True -%}
+version: "{{ pillar['docker_compose_version'] }}"
+
+services:
+  pgadmin4:
+    image: {{ pillar['database-docker-images']['pgadmin4']['image'] }}:{{ pillar['database-docker-images']['pgadmin4']['tag'] }}
+    environment:
+      PGADMIN_DEFAULT_EMAIL: {{ pillar['users']['pgadmin']['email_address'] }}
+      PGADMIN_DEFAULT_PASSWORD_FILE: {{ pgadmin_default_password_file }}
+      PGADMIN_LISTEN_PORT: 80
+    ports:
+      - "5050:80"
+    volumes:
+      - data:/var/lib/pgadmin
+
+volumes:
+  data:

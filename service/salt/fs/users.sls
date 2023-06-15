@@ -1,7 +1,10 @@
-{% for groupname in pillar.get('groups') %}
+{% for groupname, group in pillar.get('groups', {}).items() %}
 {{ groupname }}-group:
   group:
     - name: {{ groupname }}
+{% if 'gid' in group -%}
+    - gid: {{ group['gid'] }}
+{% endif -%}
     - present
 {% endfor %}
 
@@ -15,9 +18,11 @@ edit_precommand_{{ username }}:
 
 user_{{ username }}:
 
+{% if 'gid' not in user -%}
   group:
     - name: {{ username }}
     - present
+{% endif -%}
   user:
     {% if 'createhome' in user and user['createhome'] -%}
     - createhome: True
@@ -25,8 +30,16 @@ user_{{ username }}:
     {% if 'fullname' in user -%}
     - fullname: {{ user['fullname'] }}
     {%- endif %}
+{% if 'gid' in user -%}
+    - gid: {{ user['gid'] }}
+{% endif -%}
+{% if 'uid' in user -%}
+    - uid: {{ user['uid'] }}
+{% endif -%}
     - groups:
+{% if 'gid' not in user -%}
       - {{ username }}
+{% endif -%}
       {% if 'is_staff' in user and user['is_staff'] -%}
       - git
       - staff
