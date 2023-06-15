@@ -1,8 +1,9 @@
+{% set trim_blocks=True -%}
 {% for groupname, group in pillar.get('groups', {}).items() %}
 {{ groupname }}-group:
   group:
     - name: {{ groupname }}
-{% if 'gid' in group -%}
+{% if 'gid' in group %}
     - gid: {{ group['gid'] }}
 {% endif %}
     - present
@@ -18,7 +19,7 @@ edit_precommand_{{ username }}:
 
 user_{{ username }}:
 
-{% if 'gid' not in user -%}
+{% if 'gid' not in user %}
   group:
     - name: {{ username }}
     - present
@@ -30,14 +31,14 @@ user_{{ username }}:
     {% if 'fullname' in user -%}
     - fullname: {{ user['fullname'] }}
     {%- endif %}
-{% if 'gid' in user -%}
+{% if 'gid' in user %}
     - gid: {{ user['gid'] }}
 {% endif %}
-{% if 'uid' in user -%}
+{% if 'uid' in user %}
     - uid: {{ user['uid'] }}
 {% endif %}
     - groups:
-{% if 'gid' not in user -%}
+{% if 'gid' not in user %}
       - {{ username }}
 {% endif %}
       {% if 'is_staff' in user and user['is_staff'] -%}
