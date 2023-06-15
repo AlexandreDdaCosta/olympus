@@ -2,7 +2,7 @@
 {{ groupname }}-group:
   group:
     - name: {{ groupname }}
-{% if 'gid' in group %}
+{% if 'gid' in group -%}
     - gid: {{ group['gid'] }}
 {% endif %}
     - present
@@ -22,7 +22,7 @@ user_{{ username }}:
   group:
     - name: {{ username }}
     - present
-{% endif -%}
+{% endif %}
   user:
     {% if 'createhome' in user and user['createhome'] -%}
     - createhome: True
@@ -32,14 +32,14 @@ user_{{ username }}:
     {%- endif %}
 {% if 'gid' in user -%}
     - gid: {{ user['gid'] }}
-{% endif -%}
+{% endif %}
 {% if 'uid' in user -%}
     - uid: {{ user['uid'] }}
-{% endif -%}
+{% endif %}
     - groups:
 {% if 'gid' not in user -%}
       - {{ username }}
-{% endif -%}
+{% endif %}
       {% if 'is_staff' in user and user['is_staff'] -%}
       - git
       - staff
