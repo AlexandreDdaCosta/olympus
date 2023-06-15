@@ -135,7 +135,7 @@ pgadmin_docker_compose_file:
     - user: root
 
 {% set default_admin_password_file_name = pgadmin_path ~ "/" ~ pgadmin_admin_password_file_name %}
-{% if not salt['file.file_exists' ](docker_admin_password_file_name) %}
+{% if not salt['file.file_exists' ](default_admin_password_file_name) %}
 {{ default_admin_password_file_name }}:
   file.managed:
     - context:
