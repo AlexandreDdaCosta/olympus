@@ -2,9 +2,9 @@
 {{ groupname }}-group:
   group:
     - name: {{ groupname }}
-{% if 'gid' in group -%}
+{% if 'gid' in group %}
     - gid: {{ group['gid'] }}
-{% endif -%}
+{% endif %}
     - present
 {% endfor %}
 
