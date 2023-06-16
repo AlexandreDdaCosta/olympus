@@ -44,7 +44,7 @@
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 80 -j ACCEPT
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 443 -j ACCEPT
 
-{%- endif %}
+{% endif %}
 {%- if grains.get('server') == 'supervisor' or grains.get('server') == 'unified' %}
 {%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() %}
 {%- if 'server' in hostinfo %}

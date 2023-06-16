@@ -50,7 +50,8 @@ systmctl_disable_apache2:
   file.managed:
     - group: postgres
     - mode: 0640
-    - source: salt://services/database/files/pg_hba.conf
+    - source: salt://services/database/files/pg_hba.conf.jinja
+    - template: jinja
     - user: postgres
 
 /etc/postgresql/14/main/postgresql.conf:

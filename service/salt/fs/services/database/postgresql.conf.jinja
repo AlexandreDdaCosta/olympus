@@ -57,14 +57,7 @@ external_pid_file = '/var/run/postgresql/14-main.pid'			# write an extra PID fil
 
 # - Connection Settings -
 
-listen_addresses = '127.0.0.1
-{%- for ip in grains.get('ipv4') -%}
-{%- if ip != '127.0.0.1' -%}
-,{{ ip }}
-{%- endif -%}
-{%- endfor -%}
-'
-
+listen_addresses = '*'
 #listen_addresses = 'localhost'		# what IP address(es) to listen on;
 					# comma-separated list of addresses;
 					# defaults to 'localhost'; use '*' for all
