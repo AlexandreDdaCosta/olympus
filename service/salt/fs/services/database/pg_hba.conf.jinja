@@ -98,7 +98,7 @@ host    all             all             127.0.0.1/32            scram-sha-256
 # IPv6 local connections:
 host    all             all             ::1/128                 scram-sha-256
 # local private network
-hostssl all             all             {{ pillar.network_class }}0/24          scram-sha-256
+hostssl all             all             {{ pillar.ip_network }}0/24          scram-sha-256
 # pgadmin running under docker on localhost
 {%- for ip in hostinfo['ipv4'] %}
 {%- if pillar.ip_network not in ip and ip != '127.0.0.1' %}
