@@ -104,15 +104,17 @@
 # pgadmin4 interface
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 5050 -s {{ ip }} -j ACCEPT
 {% elif ip != '127.0.0.1' %}
+{% set ip_network = ip %}
+{{ ip_network | regex_replace('\.\d{1,3}$', '') }}
 # pgadmin4 container to postgres
--A INPUT -p tcp -m state --state NEW -m tcp --dport 5432 -s {{ ip[:-1] }}.0/24 -j ACCEPT
+-A INPUT -p tcp -m state --state NEW -m tcp --dport 5432 -s {{ ip_network }}.0/24 -j ACCEPT
 {% endif %}
 {%- endfor %}
 {%- elif hostinfo['server'] == 'database' %}
 {%- for ip in hostinfo['ipv4'] %}
 {%- if pillar.ip_network not in ip and ip != '127.0.0.1' %}
 # pgadmin4 container to postgres
--A INPUT -p tcp -m state --state NEW -m tcp --dport 5432 -s {{ ip[:-1] }}.0/24 -j ACCEPT
+-A INPUT -p tcp -m state --state NEW -m tcp --dport 5432 -s {{ ip[:-1] }}0/24 -j ACCEPT
 {%- endif %}
 {%- endfor %}
 {%- endif %}
