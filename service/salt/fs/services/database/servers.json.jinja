@@ -7,7 +7,7 @@
 {%- for ip in grains.get('ipv4') %}
 {%- if pillar.ip_network in ip %}
             "Host": "{{ ip }}",
-{% endif %}
+{%- endif %}
 {%- endfor %}
             "Port": {{ pillar['postgresql_port'] }},
             "MaintenanceDB": "{{ pillar['frontend_app_database'] }}",
