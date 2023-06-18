@@ -1,5 +1,5 @@
 {% set pgadmin_path=pillar.docker_services_path+'/pgadmin' %}
-{% set pgadmin_lib_path=/var/lib/pgadmin' %}
+{% set pgadmin_lib_path='/var/lib/pgadmin' %}
 {% set random_pgadmin_password='echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(50)))" | /usr/bin/python3' %}
 {% set pgadmin_default_password=salt['cmd.shell'](random_pgadmin_password) %}
 
