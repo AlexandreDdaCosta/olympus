@@ -1,13 +1,14 @@
+{% set trim_blocks=True -%}
 {
     "Servers": {
         "1": {
             "Name": "Django Application Data",
             "Group": "Interface",
-{%- for ip in grains.get('ipv4') -%}
+{%- for ip in grains.get('ipv4') %}
 {%- if pillar.ip_network in ip %}
             "Host": "{{ ip }}",
-{%- endif -%}
-{%- endfor -%}
+{% endif %}
+{%- endfor %}
             "Port": {{ pillar['postgresql_port'] }},
             "MaintenanceDB": "{{ pillar['frontend_app_database'] }}",
             "Username": "{{ pillar['frontend-user'] }}",

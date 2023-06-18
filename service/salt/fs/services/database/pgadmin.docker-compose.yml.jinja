@@ -8,6 +8,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: {{ pillar['users']['pgadmin']['email_address'] }}
       PGADMIN_DEFAULT_PASSWORD: {{ pgadmin_default_password }}
       PGADMIN_LISTEN_PORT: 80
+      GUNICORN_ACCESS_LOGFILE: /var/log/pgadmin/access.log
     ports:
       - "{{ pillar['pgadmin_proxy_port'] }}:80"
     volumes:
