@@ -198,7 +198,7 @@ user passwords with pgadmin4.db. Just create it once for reference when the
 container first gets started.
 #}
 
-{% set pgadmin_password_file_name = "home/pgadmin/etc/pgadmin_password" %}
+{% set pgadmin_password_file_name = "/home/pgadmin/etc/pgadmin_password" %}
 {% if not salt['file.file_exists' ](pgadmin_password_file_name) %}
 {{ pgadmin_password_file_name }}:
   file.managed:
