@@ -135,6 +135,16 @@ pgadmin_docker_compose_file:
     - template: jinja
     - user: root
 
+pgadmin_docker_servers_file:
+  file.managed:
+    - group: root
+    - makedirs: False
+    - mode: 0644
+    - name: {{ pgadmin_path }}/servers.json
+    - source: salt://services/database/servers.json.jinja
+    - template: jinja
+    - user: root
+
 {% set default_admin_password_file_name = pgadmin_path ~ "/" ~ pgadmin_admin_password_file_name %}
 {% if not salt['file.file_exists' ](default_admin_password_file_name) %}
 {{ default_admin_password_file_name }}:
