@@ -1,6 +1,7 @@
 {% set pgadmin_path=pillar.docker_services_path+'/pgadmin' %}
-{% set pgadmin_admin_password_file_name='pgadmin_admin_password' %}
+{% set pgadmin_lib_path=/var/lib/pgadmin' %}
 {% set random_pgadmin_password='echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(50)))" | /usr/bin/python3' %}
+{% set pgadmin_default_password=salt['cmd.shell'](random_pgadmin_password) %}
 
 include:
   - base: package
@@ -76,11 +77,11 @@ olympus.db:
 
 frontend_app_data.db:
   postgres_database.present:
-    - name: app_data
+    - name: {{ pillar['frontend_app_database'] }}
 
-frontend-user_data.db:
+frontend_user_data.db:
   postgres_database.present:
-    - name: user_data
+    - name: {{ pillar['frontend_user_database'] }}
 
 frontend_db_user:
   postgres_user.present:
@@ -97,15 +98,15 @@ frontend_db_user_pwd_reset:
 frontend_app_data_privs:
   postgres_privileges.present:
     - name: {{ pillar['frontend-user'] }}
-    - object_name: app_data
+    - object_name: {{ pillar['frontend_app_database'] }}
     - object_type: database
     - privileges:
       - ALL
 
-frontend-user_data_privs:
+frontend_user_data_privs:
   postgres_privileges.present:
     - name: {{ pillar['frontend-user'] }}
-    - object_name: user_data
+    - object_name: {{ pillar['frontend_user_database'] }}
     - object_type: database
     - privileges:
       - ALL
@@ -116,6 +117,14 @@ frontend-user_data_privs:
     - mode: 0700
     - user: pgadmin
 
+/etc/logrotate.d/pgadmin:
+    file.managed:
+    - group: root
+    - makedirs: False
+    - mode: 0644
+    - source: salt://services/database/files/logrotate.pgadmin
+    - user: root
+
 {{ pgadmin_path }}:
   file.directory:
     - group: root
@@ -123,10 +132,48 @@ frontend-user_data_privs:
     - mode: 0755
     - user: root
 
+{{ pgadmin_lib_path }}:
+  file.directory:
+    - group: pgadmin
+    - makedirs: False
+    - mode: 0755
+    - user: pgadmin
+
+{{ pgadmin_lib_path }}/storage:
+  file.directory:
+    - group: pgadmin
+    - makedirs: False
+    - mode: 0755
+    - user: pgadmin
+
+{# TODO: 
+
+1. Add these types of /pgpass files:
+
+./storage/alexandre.dias.dacosta_gmail.com/pgpass
+./storage/pgadmin_laikasden.com/pgpass
+
+Format: 192.168.1.179:5432:app_data:uwsgi:uvyj0tCAeI5dDhI8C6XKF6mEoxxzv0
+
+Will need to be rotated out of security.sls. See "BEGIN Shared credentials"
+
+2. Start/restart docker container for pgadmin
+   Redirect log output to /var/log/pgadmin
+
+3. Upgrade system for pgadmin docker container
+
+4. Rotate all pgadmin user passwords (tricky!)
+
+5. verify restart on pgadmin log rotation.
+
+#}
+
 pgadmin_docker_compose_file:
   file.managed:
     - context:
-      pgadmin_default_password_file: {{ pgadmin_admin_password_file_name }}
+      pgadmin_default_password: {{ pgadmin_default_password }}
+      pgadmin_lib_path: {{ pgadmin_lib_path }}
+      pgadmin_path: {{ pgadmin_path }}
     - group: root
     - makedirs: False
     - mode: 0644
@@ -145,16 +192,22 @@ pgadmin_docker_servers_file:
     - template: jinja
     - user: root
 
-{% set default_admin_password_file_name = pgadmin_path ~ "/" ~ pgadmin_admin_password_file_name %}
-{% if not salt['file.file_exists' ](default_admin_password_file_name) %}
-{{ default_admin_password_file_name }}:
+{#
+Currently, we don't rotate the file below since we don't know how to update
+user passwords with pgadmin4.db. Just create it once for reference when the
+container first gets started.
+#}
+
+{% set pgadmin_password_file_name = "home/pgadmin/etc/pgadmin_password" %}
+{% if not salt['file.file_exists' ](pgadmin_password_file_name) %}
+{{ pgadmin_password_file_name }}:
   file.managed:
     - context:
-      default_pgadmin_password: {{ salt['cmd.shell'](random_pgadmin_password) }}
+      pgadmin_default_password: {{ pgadmin_default_password }}
     - group: pgadmin
     - makedirs: False
     - mode: 0600
-    - source: salt://services/database/pgadmin_default_admin_password.jinja
+    - source: salt://services/database/pgadmin_password_file.jinja
     - template: jinja
     - user: pgadmin
 {% endif %}

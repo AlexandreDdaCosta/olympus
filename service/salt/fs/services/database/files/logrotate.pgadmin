@@ -1,0 +1,11 @@
+/var/log/pgadmin/*log {
+    compress
+    dateext
+    missingok
+    notifempty
+    postrotate
+	    /usr/sbin/service docker restart 2>/dev/null
+    rotate 10
+    size 1024k
+    endscript
+}

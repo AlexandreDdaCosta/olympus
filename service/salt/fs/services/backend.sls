@@ -56,7 +56,8 @@ include:
     - group: root
     - makedirs: False
     - mode: 0644
-    - source: salt://services/backend/files/backend_api.conf
+    - source: salt://services/backend/backend_api.conf.jinja
+    - template: jinja
     - user: root
 
 /etc/rc0.d/K01node:

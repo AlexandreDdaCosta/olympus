@@ -21,7 +21,7 @@ server {
 {%- if hostinfo['server'] == 'unified' or hostinfo['server'] == 'database' -%}
 {%- for ip in hostinfo['ipv4'] -%}
 {%- if pillar.ip_network in ip %}
-    proxy_pass http://{{ ip }}:5050/;
+    proxy_pass http://{{ ip }}:{{ pillar['pgadmin_proxy_port'] }}/;
 {%- endif -%}
 {%- endfor -%}
 {%- endif -%}

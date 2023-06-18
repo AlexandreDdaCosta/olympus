@@ -100,8 +100,8 @@ host    all             all             ::1/128                 scram-sha-256
 # local private network
 hostssl all             all             {{ pillar.ip_network }}0/24          scram-sha-256
 # pgadmin running under Docker on localhost
-# Docke
 hostssl all             all             172.0.0.0/8             scram-sha-256
+hostssl all             all             173.0.0.0/8             scram-sha-256
 # Allow replication connections from localhost, by a user with the
 # replication privilege.
 # local   replication     all                                     peer

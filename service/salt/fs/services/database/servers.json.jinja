@@ -1,16 +1,20 @@
 {
     "Servers": {
         "1": {
-            "Name": "Django",
+            "Name": "Django Application Data",
             "Group": "Interface",
-            "Host": "192.168.1.179",
-            "Port": 5432,
-            "MaintenanceDB": "app_data",
-            "Username": "uwsgi",
+{%- for ip in grains.get('ipv4') -%}
+{%- if pillar.ip_network in ip %}
+            "Host": "{{ ip }}",
+{%- endif -%}
+{%- endfor -%}
+            "Port": {{ pillar['postgresql_port'] }},
+            "MaintenanceDB": "{{ pillar['frontend_app_database'] }}",
+            "Username": "{{ pillar['frontend-user'] }}",
             "SSLMode": "require",
             "Shared": true,
             "Comment": "Django interface server",
-            "DBRestriction": "app_data",
+            "DBRestriction": "{{ pillar['frontend_app_database'] }}",
             "PassFile": "/pgpass",
             "Timeout": 10
         }

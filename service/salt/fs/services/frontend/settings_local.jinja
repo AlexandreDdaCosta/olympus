@@ -35,10 +35,10 @@ DATABASES = {
 {%- endfor -%}
 {%- endif -%}
 {%- endfor %}
-        'NAME': 'app_data',
+        'NAME': '{{ pillar['frontend_app_database'] }}',
         'OPTIONS': { 'sslmode': 'require' },
         'PASSWORD': '{{ frontend_db_key }}',
-        'PORT': '5432',
+        'PORT': '{{ pillar['postgresql_port'] }}',
         'USER': '{{ pillar['frontend-user'] }}',
     },
     'users': {
@@ -52,10 +52,10 @@ DATABASES = {
 {%- endfor -%}
 {%- endif -%}
 {%- endfor %}
-        'NAME': 'user_data',
+        'NAME': '{{ pillar['frontend_user_database'] }}',
         'OPTIONS': { 'sslmode': 'require' },
         'PASSWORD': '{{ frontend_db_key }}',
-        'PORT': '5432',
+        'PORT': '{{ pillar['postgresql_port'] }}',
         'USER': '{{ pillar['frontend-user'] }}',
     }
 }
