@@ -8,9 +8,13 @@ services:
       PGADMIN_DEFAULT_EMAIL: {{ pillar['users']['pgadmin']['email_address'] }}
       PGADMIN_DEFAULT_PASSWORD: {{ pgadmin_default_password }}
       PGADMIN_LISTEN_PORT: 80
-      GUNICORN_ACCESS_LOGFILE: /var/log/pgadmin/access.log
     ports:
       - "{{ pillar['pgadmin_proxy_port'] }}:80"
     volumes:
       - {{ pgadmin_lib_path }}:/var/lib/pgadmin
       - {{ pgadmin_path }}/servers.json:/pgadmin4/servers.json
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1024k"
+        max-file: "10"

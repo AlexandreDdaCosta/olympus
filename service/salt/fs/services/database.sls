@@ -117,14 +117,6 @@ frontend_user_data_privs:
     - mode: 0700
     - user: pgadmin
 
-/etc/logrotate.d/pgadmin:
-    file.managed:
-    - group: root
-    - makedirs: False
-    - mode: 0644
-    - source: salt://services/database/files/logrotate.pgadmin
-    - user: root
-
 {{ pgadmin_path }}:
   file.directory:
     - group: root
@@ -154,18 +146,12 @@ frontend_user_data_privs:
 ./storage/pgadmin_laikasden.com/pgpass
 
 Format: 192.168.1.179:5432:app_data:uwsgi:uvyj0tCAeI5dDhI8C6XKF6mEoxxzv0
-
 Will need to be rotated out of security.sls. See "BEGIN Shared credentials"
 
 2. Start/restart docker container for pgadmin
-   Redirect log output to /var/log/pgadmin
-
-3. Upgrade system for pgadmin docker container
-
-4. Rotate all pgadmin user passwords (tricky!)
-
-5. verify restart on pgadmin log rotation.
-
+3. Start pgadmin docker on boot
+4. Upgrade system for pgadmin docker container
+5. Rotate all pgadmin user passwords (tricky!)
 #}
 
 pgadmin_docker_compose_file:
