@@ -11,7 +11,7 @@ services:
     ports:
       - "{{ pillar['pgadmin_proxy_port'] }}:80"
     volumes:
-      - {{ pgadmin_lib_path }}:/var/lib/pgadmin
+      - {{ pillar['pgadmin_lib_path'] }}:/var/lib/pgadmin
       - {{ pgadmin_path }}/servers.json:/pgadmin4/servers.json
     logging:
       driver: "json-file"

@@ -1,11 +1,17 @@
 # -*- coding: utf-8 -*-
 
 '''
-Tools for managing cross-server credentials
+Tools for managing cross-server and other credentials
 '''
 
+import hashlib
+import hmac
 import os
+import sqlite3
 import subprocess
+
+from base64 import b64encode
+from passlib.hash import pbkdf2_sha512
 
 from olympus import RESTAPI_SERVICE, User
 
@@ -27,6 +33,49 @@ def interface_backend():
             subprocess.check_call(cmd, shell=True)
         if 'frontend' not in services:
             __salt__['data.pop']('frontend_db_key')  # noqa: F403
+    return True
+
+
+def set_pgadmin_password(user_email, new_password):
+    pgadmin_db = (__salt__['pillar.get']('pgadmin_lib_path')  # noqa: F403
+                  + '/pgadmin4.db')
+    connection = sqlite3.connect(pgadmin_db)
+    cursor = connection.cursor()
+
+    # Get SECURITY_PASSWORD_SALT from the pgadmin configuration database
+
+    query = "select value from keys where name = 'SECURITY_PASSWORD_SALT'"
+    cursor.execute(query)
+    security_password_salt = cursor.fetchone()[0]
+
+    # Get old user password hash
+
+    query = "select password from user where email = '{}'".format(user_email)
+    cursor.execute(query)
+    old_user_hash = cursor.fetchone()[0]
+    (empty, algorithm, rounds, salt, old_password_hash) = \
+        old_user_hash.split("$")
+    del empty, salt, old_password_hash
+    if algorithm != 'pbkdf2-sha512':
+        raise Exception('Can\'t update password; algorithm has changed.')
+
+    # Create new password data
+
+    new_salt = os.urandom(16)
+    h = hmac.new(str.encode(security_password_salt),
+                 new_password.encode("utf-8"),
+                 hashlib.sha512)
+    new_user_hash = pbkdf2_sha512.hash(b64encode(h.digest()),
+                                       rounds=rounds,
+                                       salt=new_salt)
+
+    # Update user password hash
+
+    query = "update user set password = '{}' where email = '{}'".format(
+        new_user_hash,
+        user_email)
+    cursor.execute(query)
+    connection.commit()
     return True
 
 

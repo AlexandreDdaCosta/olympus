@@ -1,5 +1,4 @@
 {% set pgadmin_path=pillar.docker_services_path+'/pgadmin' %}
-{% set pgadmin_lib_path='/var/lib/pgadmin' %}
 {% set random_pgadmin_password='echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(50)))" | /usr/bin/python3' %}
 {% set pgadmin_default_password=salt['cmd.shell'](random_pgadmin_password) %}
 
@@ -124,14 +123,14 @@ frontend_user_data_privs:
     - mode: 0755
     - user: root
 
-{{ pgadmin_lib_path }}:
+{{ pillar.pgadmin_lib_path }}:
   file.directory:
     - group: pgadmin
     - makedirs: False
     - mode: 0755
     - user: pgadmin
 
-{{ pgadmin_lib_path }}/storage:
+{{ pillar.pgadmin_lib_path }}/storage:
   file.directory:
     - group: pgadmin
     - makedirs: False
@@ -158,7 +157,6 @@ pgadmin_docker_compose_file:
   file.managed:
     - context:
       pgadmin_default_password: {{ pgadmin_default_password }}
-      pgadmin_lib_path: {{ pgadmin_lib_path }}
       pgadmin_path: {{ pgadmin_path }}
     - group: root
     - makedirs: False
