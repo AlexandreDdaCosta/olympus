@@ -72,7 +72,7 @@ web-django-devserver:
     - enable: True
     - name: django-devserver
     - watch:
-      - file: {{ system_init_scripts_directory }}/django-devserver
+      - file: {{ pillar['system_init_scripts_directory'] }}/django-devserver
       - file: {{ pillar.frontend_nginx_conf_file_name }}
 
 {% endif %}
