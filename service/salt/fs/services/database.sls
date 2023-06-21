@@ -173,7 +173,6 @@ pgadmin_docker_compose_file:
     - template: jinja
     - user: root
 
-{#
 /lib/systemd/system/pgadmin.service:
   file.managed:
     - context:
@@ -188,6 +187,7 @@ pgadmin_docker_compose_file:
     - template: jinja
     - user: root
 
+{#
 pgadmin-service:
   service.running:
     - enable: True
