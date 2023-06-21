@@ -1,3 +1,6 @@
+{% set kill_script_name = 'killserver.sh' -%}
+{% set start_script_name = 'startserver.py' -%}
+
 include:
   - base: services/frontend
 
@@ -5,7 +8,7 @@ include:
 {% if grains.get('stage') and grains.get('stage') == 'develop' %}
 {% if grains.get('server') == 'interface' or grains.get('server') == 'unified' %}
 
-{# Enable permanent dev server on highstate run by setting "stage" grain. Useful commands:
+{# Enable permanent dev server for highstate run by setting "stage" grain. Useful commands:
 
 sudo -i salt '*' grains.setval stage develop
 sudo -i salt '*' grains.delval stage
@@ -14,7 +17,7 @@ Currently the dev server does not restart automatically on server shutdown, unli
 full uWSGI server.
 #}
 
-/etc/logrotate.d/devserver:
+{{ pillar['system_logrotate_conf_directory'] }}/devserver:
     file.managed:
     - group: root
     - makedirs: False
@@ -22,38 +25,42 @@ full uWSGI server.
     - source: salt://stage/develop/services/frontend/files/logrotate.devserver
     - user: root
 
-/var/log/devserver:
+{{ pillar['system_log_directory'] }}/devserver:
   file.directory:
     - group: uwsgi
     - mode: 0755
     - user: uwsgi
 
-/usr/local/bin/olympus/startserver.py:
+{{ pillar['bin_path_scripts'] }}/{{ start_script_name }}:
   file.managed:
     - group: root
     - mode: 0755
-    - source: salt://stage/develop/services/frontend/files/startserver.py
+    - source: salt://stage/develop/services/frontend/files/{{ start_script_name }}
     - user: root
 
-/usr/local/bin/olympus/killserver.sh:
+{{ pillar['bin_path_scripts'] }}/{{ kill_script_name }}:
   file.managed:
     - group: root
     - mode: 0755
-    - source: salt://stage/develop/services/frontend/files/killserver.sh
+    - source: salt://stage/develop/services/frontend/files/{{ kill_script_name }}
     - user: root
 
-/etc/init.d/django-devserver:
-    file.managed:
+{{ pillar['system_init_scripts_directory'] }}/django-devserver:
+  file.managed:
+    - context:
+      kill_script_name: {{ kill_script_name }}
+      start_script_name: {{ start_script_name }}
     - group: root
     - makedirs: False
     - mode: 0755
-    - source: salt://stage/develop/services/frontend/files/init.django-devserver
+    - source: salt://stage/develop/services/frontend/init.django-devserver.jinja
+    - template: jinja
     - user: root
 
 develop-interface.conf:
   file.managed:
     - group: root
-    - name: /etc/nginx/conf.d/interface.conf
+    - name: {{ pillar['frontend_nginx_conf_file_name'] }}
     - makedirs: False
     - mode: 0644
     - source: salt://stage/develop/services/frontend/interface.conf.jinja
@@ -65,8 +72,8 @@ web-django-devserver:
     - enable: True
     - name: django-devserver
     - watch:
-      - file: /etc/init.d/django-devserver
-      - file: /etc/nginx/conf.d/interface.conf
+      - file: {{ system_init_scripts_directory }}/django-devserver
+      - file: {{ pillar.frontend_nginx_conf_file_name }}
 
 {% endif %}
 {% endif %}

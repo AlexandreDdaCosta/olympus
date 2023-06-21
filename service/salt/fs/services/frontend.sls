@@ -1,7 +1,9 @@
-{% set frontend_path = pillar.www_path + '/django/interface' %}
-{% set frontend_sass_path = frontend_path + '/sass' %}
-{% set frontend_conf_file_name = frontend_path + '/settings_local.py' %}
-{%- set random_password_generator='echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100)))" | /usr/bin/python3' -%}
+{% set frontend_conf_file_name = pillar['frontend_conf_file_name'] -%}
+{% set frontend_password_file_name = pillar['frontend_password_file_name'] -%}
+{% set get_frontend_password="password = ''; if [ -f " ~ pillar.frontend_password_file_name  ~ " ]; then password=`cat" ~ pillar.frontend_password_file_name  ~ `; echo $password; fi;" %}
+{% set current_frontend_password = salt['cmd.shell'](get_frontend_password) %}
+{% set django_vassal_file = pillar['nginx_vassals_directory'] ~ '/django.ini' -%}
+{% set random_password_generator='echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100)))" | /usr/bin/python3' -%}
 
 include:
   - base: package
@@ -60,21 +62,21 @@ include:
       - sls: package
 {% endfor %}
 
-/var/log/django:
+{{ pillar['system_log_directory'] }}/django:
   file.directory:
     - group: {{ pillar['frontend-user'] }}
     - makedirs: False
     - mode: 0755
     - user: {{ pillar['frontend-user'] }}
 
-/var/log/django/django.log:
+{{ pillar['system_log_directory'] }}/django/django.log:
   file.managed:
     - group: {{ pillar['frontend-user'] }}
     - mode: 0644
     - replace: False
     - user: {{ pillar['frontend-user'] }}
 
-/etc/nginx/conf.d/interface.conf:
+{{ pillar['frontend_nginx_conf_file_name'] }}:
   file.managed:
     - group: root
     - makedirs: False
@@ -88,7 +90,7 @@ include:
    uWSGI runs everywhere.
 #}
 {% if grains.get('stage') and grains.get('stage') != 'develop' %}
-/etc/uwsgi/vassals/django.ini:
+{{ django_vassal_file }}:
   file.managed:
     - group: root
     - makedirs: False
@@ -123,51 +125,49 @@ include:
     - source: salt://album
     - user: root
 
-{{ frontend_path }}/media:
+{{ pillar['frontend_path'] }}/media:
   file.directory:
     - group: root
     - makedirs: False
     - mode: 0755
     - user: root
 
-{{ frontend_path }}/media/blog:
+{{ pillar['frontend_path'] }}/media/blog:
   file.directory:
     - group: root
     - makedirs: False
     - mode: 0755
     - user: root
 
-{{ frontend_path }}/media-admin:
+{{ pillar['frontend_path'] }}/media-admin:
   file.directory:
     - group: {{ pillar['frontend-user'] }}
     - makedirs: False
     - mode: 0755
     - user: {{ pillar['frontend-user'] }}
 
-{{ frontend_path }}/static:
+{{ pillar['frontend_path'] }}/static:
   file.directory:
     - group: root
     - makedirs: False
     - mode: 0755
     - user: root
 
-{{ frontend_path }}/static/js:
+{{ pillar['frontend_path'] }}/static/js:
   file.directory:
     - group: root
     - makedirs: False
     - mode: 0755
     - user: root
 
-{# grep PASSWORD /srv/www/django/interface/settings_local.py | head -1 | sed -e "s/^\s*'PASSWORD': '\(.*\)',/\1/" #}
 {{ frontend_conf_file_name }}:
   file.managed:
     - context:
-{% if not salt['file.file_exists' ](frontend_conf_file_name) %}
-      frontend_db_key: {{ pillar['random_key']['frontend_db_key'] }}
-{% else %}
-{% set current_frontend_password = "/usr/bin/grep PASSWORD " ~ frontend_conf_file_name  ~ " | head -1 | sed -e \"s/^\\s*'PASSWORD': '\\(.*\\)',/\\1/\"" %}
+{% if salt['file.file_exists' ](frontend_password_file_name) %}
       frontend_db_key: {{ current_frontend_password }}
-{% endif %}
+{% else %}
+      frontend_db_key: {{ pillar['random_key']['frontend_db_key'] }}
+{% endif -%}
     - dir_mode: 0755
     - group: {{ pillar['frontend-user'] }}
     - makedirs: False
@@ -182,135 +182,135 @@ frontend_wsgi_app_file:
     - group: root
     - makedirs: False
     - mode: 0644
-    - name: {{ frontend_path }}/wsgi.py
+    - name: {{ pillar['frontend_path'] }}/wsgi.py
     - source: salt://services/frontend/wsgi.py.jinja
     - template: jinja
     - user: root
 
 django-makemigrations:
   cmd.run:
-    - name: yes | /usr/bin/python3 {{ pillar.www_path }}/django/manage.py makemigrations
+    - name: yes | /usr/bin/python3 {{ pillar.frontend_path_root }}/manage.py makemigrations
 
 django-migrate:
   cmd.run:
-    - name: yes | /usr/bin/python3 {{ pillar.www_path }}/django/manage.py migrate
+    - name: yes | /usr/bin/python3 {{ pillar.frontend_path_root }}/manage.py migrate
 
-{{ frontend_sass_path }}/public/css:
+{{ pillar['frontend_sass_path'] }}/public/css:
     file.directory:
     - group: root
     - makedirs: True
     - mode: 0755
     - user: root
 
-{{ frontend_sass_path }}/public/font:
+{{ pillar['frontend_sass_path'] }}/public/font:
     file.directory:
     - group: root
     - makedirs: False
     - mode: 0755
     - user: root
 
-{{ frontend_sass_path }}/public/js:
+{{ pillar['frontend_sass_path'] }}/public/js:
     file.directory:
     - group: root
     - makedirs: False
     - mode: 0755
     - user: root
 
-{{ frontend_sass_path }}/src:
+{{ pillar['frontend_sass_path'] }}/src:
     file.directory:
     - group: root
     - makedirs: False
     - mode: 0755
     - user: root
 
-{{ frontend_path }}/static/sass:
+{{ pillar['frontend_path'] }}/static/sass:
   file.symlink:
-    - target: {{ frontend_sass_path }}/public
+    - target: {{ pillar['frontend_sass_path'] }}/public
 
 tether-get:
   cmd:
     - run
-    - name: 'wget http://github.com/HubSpot/tether/archive/v1.4.3.zip -O {{ frontend_sass_path }}/src/v1.4.3.zip'
-    - unless: '[ -f {{ frontend_sass_path }}/src/v1.4.3.zip ]'
+    - name: 'wget http://github.com/HubSpot/tether/archive/v1.4.3.zip -O {{ pillar['frontend_sass_path'] }}/src/v1.4.3.zip'
+    - unless: '[ -f {{ pillar['frontend_sass_path'] }}/src/v1.4.3.zip ]'
 
 tether:
   cmd:
     - run
-    - name: 'unzip {{ frontend_sass_path }}/src/v1.4.3.zip -d {{ frontend_sass_path }}'
-    - unless: '[ -d {{ frontend_sass_path }}/tether-1.4.3 ]'
+    - name: 'unzip {{ pillar['frontend_sass_path'] }}/src/v1.4.3.zip -d {{ pillar['frontend_sass_path'] }}'
+    - unless: '[ -d {{ pillar['frontend_sass_path'] }}/tether-1.4.3 ]'
 
-{{ frontend_sass_path }}/tether:
+{{ pillar['frontend_sass_path'] }}/tether:
   file.symlink:
-    - target: {{ frontend_sass_path}}/tether-1.4.3
+    - target: {{ pillar['frontend_sass_path']}}/tether-1.4.3
 
-{{ frontend_sass_path}}/public/js/tether.min.js:
+{{ pillar['frontend_sass_path']}}/public/js/tether.min.js:
   file.managed:
-    - source: {{ frontend_sass_path }}/tether/dist/js/tether.min.js
+    - source: {{ pillar['frontend_sass_path'] }}/tether/dist/js/tether.min.js
 
 bootstrap-get:
   cmd:
     - run
-    - name: 'wget https://github.com/twbs/bootstrap/archive/v4.5.0.zip -O {{ frontend_sass_path }}/src/v4.5.0.zip'
-    - unless: '[ -f {{ frontend_sass_path }}/src/v4.5.0.zip ]'
+    - name: 'wget https://github.com/twbs/bootstrap/archive/v4.5.0.zip -O {{ pillar['frontend_sass_path'] }}/src/v4.5.0.zip'
+    - unless: '[ -f {{ pillar['frontend_sass_path'] }}/src/v4.5.0.zip ]'
 
 bootstrap:
   cmd:
     - run
-    - name: 'unzip {{ frontend_sass_path }}/src/v4.5.0.zip -d {{ frontend_sass_path }}'
-    - unless: '[ -d {{ frontend_sass_path }}/bootstrap-4.5.0 ]'
+    - name: 'unzip {{ pillar['frontend_sass_path'] }}/src/v4.5.0.zip -d {{ pillar['frontend_sass_path'] }}'
+    - unless: '[ -d {{ pillar['frontend_sass_path'] }}/bootstrap-4.5.0 ]'
 
-{{ frontend_sass_path }}/bootstrap:
+{{ pillar['frontend_sass_path'] }}/bootstrap:
   file.symlink:
-    - target: {{ frontend_sass_path}}/bootstrap-4.5.0
+    - target: {{ pillar['frontend_sass_path']}}/bootstrap-4.5.0
 
-{{ frontend_sass_path}}/public/js/bootstrap.min.js:
+{{ pillar['frontend_sass_path']}}/public/js/bootstrap.min.js:
   file.managed:
-    - source: {{ frontend_sass_path }}/bootstrap/dist/js/bootstrap.min.js
+    - source: {{ pillar['frontend_sass_path'] }}/bootstrap/dist/js/bootstrap.min.js
 
 fontawesome-get:
   cmd:
     - run
-    - name: 'wget https://use.fontawesome.com/releases/v5.13.0/fontawesome-free-5.13.0-web.zip -O {{ frontend_sass_path }}/src/fontawesome-free-5.13.0-web.zip'
-    - unless: '[ -f {{ frontend_sass_path }}/src/fontawesome-free-5.13.0-web.zip ]'
+    - name: 'wget https://use.fontawesome.com/releases/v5.13.0/fontawesome-free-5.13.0-web.zip -O {{ pillar['frontend_sass_path'] }}/src/fontawesome-free-5.13.0-web.zip'
+    - unless: '[ -f {{ pillar['frontend_sass_path'] }}/src/fontawesome-free-5.13.0-web.zip ]'
 
 fontawesome:
   cmd:
     - run
-    - name: 'unzip {{ frontend_sass_path }}/src/fontawesome-free-5.13.0-web.zip -d {{ pillar.www_path }}/django/interface/sass'
-    - unless: '[ -d {{ frontend_sass_path }}/fontawesome-free-5.13.0-web ]'
+    - name: 'unzip {{ pillar['frontend_sass_path'] }}/src/fontawesome-free-5.13.0-web.zip -d {{ pillar.www_path }}/django/interface/sass'
+    - unless: '[ -d {{ pillar['frontend_sass_path'] }}/fontawesome-free-5.13.0-web ]'
 
-{{ frontend_sass_path }}/font-awesome:
+{{ pillar['frontend_sass_path'] }}/font-awesome:
   file.symlink:
-    - target: {{ frontend_sass_path }}/fontawesome-free-5.13.0-web
+    - target: {{ pillar['frontend_sass_path'] }}/fontawesome-free-5.13.0-web
 
 font-awesome-fonts:
   cmd:
     - run
-    - name: 'cp -p {{ frontend_sass_path }}/font-awesome/webfonts/* {{ frontend_sass_path }}/public/font'
+    - name: 'cp -p {{ pillar['frontend_sass_path'] }}/font-awesome/webfonts/* {{ pillar['frontend_sass_path'] }}/public/font'
 
 sass-css:
   cmd:
     - run
-    - name: 'sass --style compressed {{ frontend_sass_path }}/styles.scss > {{ frontend_sass_path }}/public/css/styles.min.css'
+    - name: 'sass --style compressed {{ pillar['frontend_sass_path'] }}/styles.scss > {{ pillar['frontend_sass_path'] }}/public/css/styles.min.css'
 
 sass-css-full:
   cmd:
     - run
-    - name: 'sass {{ frontend_sass_path }}/styles.scss > {{ frontend_sass_path }}/public/css/styles.css'
+    - name: 'sass {{ pillar['frontend_sass_path'] }}/styles.scss > {{ pillar['frontend_sass_path'] }}/public/css/styles.css'
 
-{{ frontend_sass_path }}/public/css/styles.min.css.RELEASE:
+{{ pillar['frontend_sass_path'] }}/public/css/styles.min.css.RELEASE:
   file.managed:
-    - source: {{ frontend_sass_path }}/public/css/styles.min.css
+    - source: {{ pillar['frontend_sass_path'] }}/public/css/styles.min.css
 
 jquery:
   cmd:
     - run
-    - name: 'curl https://code.jquery.com/jquery-3.5.1.min.js > {{ frontend_path }}/static/js/jquery-3.5.1.min.js'
-    - unless: '[[ -f {{ frontend_path }}/static/js/jquery-3.2.0.min.js && ! -s {{ frontend_path }}/static/js/jquery-3.2.0.min.js ]]'
+    - name: 'curl https://code.jquery.com/jquery-3.5.1.min.js > {{ pillar['frontend_path'] }}/static/js/jquery-3.5.1.min.js'
+    - unless: '[[ -f {{ pillar['frontend_path'] }}/static/js/jquery-3.2.0.min.js && ! -s {{ pillar['frontend_path'] }}/static/js/jquery-3.2.0.min.js ]]'
 
-{{ frontend_path }}/static/js/jquery.min.js:
+{{ pillar['frontend_path'] }}/static/js/jquery.min.js:
   file.symlink:
-    - target: {{ frontend_path }}/static/js/jquery-3.5.1.min.js
+    - target: {{ pillar['frontend_path'] }}/static/js/jquery-3.5.1.min.js
 
 {% for username, user in pillar.get('users', {}).items() %}
 {% if 'is_staff' in user and user['is_staff'] %}
@@ -326,7 +326,7 @@ jquery:
 {% set django_password=salt['cmd.shell'](random_password_generator) %}
 {% endif %}
   cmd.run:
-    - name: sudo /usr/bin/python3 {{ pillar.www_path }}/django/manage.py verifyuser --username {{ username }} --email {{ django_admin_email }} --password {{ django_password }} --admin --superuser --resave
+    - name: sudo /usr/bin/python3 {{ pillar.frontend_path_root }}/manage.py verifyuser --username {{ username }} --email {{ django_admin_email }} --password {{ django_password }} --admin --superuser --resave
 {% endif %}
 {% endfor %}
 
@@ -359,18 +359,18 @@ nginx-frontend:
   service.running:
     - name: nginx
     - watch:
-      - file: /etc/nginx/conf.d/interface.conf
+      - file: {{ pillar.frontend_nginx_conf_file_name }}
 
 frontend-uwsgi:
   service.running:
     - name: uwsgi
     - watch:
       - file: {{ pillar.www_path }}/django
-      - file: /etc/nginx/conf.d/interface.conf
+      - file: {{ pillar.frontend_nginx_conf_file_name }}
 {%- if grains.get('stage') and grains.get('stage') != 'develop' %}
-      - file: /etc/uwsgi/vassals/django.ini
+      - file: {{ django_vassal_file }}
 {%- endif %}
-      - file: {{ frontend_path }}/settings_local.py
+      - file: {{ frontend_conf_file_name }}
     - require:
       - sls: web
 

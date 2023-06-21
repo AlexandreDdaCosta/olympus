@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# /etc/init.d/django-devserver
+# {{ pillar['bin_path'] }}/django-devserver
 #
 ### BEGIN INIT INFO
 # Provides:          
@@ -11,12 +11,12 @@
 # Short-Description: init script for Django development stage web server
 ### END INIT INFO
 
-daemon=/usr/local/bin/olympus/startserver.py
-killdaemon=/usr/local/bin/olympus/killserver.sh
-lockfile=/var/run/devserver.pid
-processcheck='/srv/www/django/manage.py runserver'
+daemon={{ pillar['bin_path_scripts'] }}/{{ start_script_name }}
+killdaemon={{ pillar['bin_path_scripts'] }}/{{ kill_script_name }}
+lockfile={{ pillar['pidfile_path'] }}/devserver.pid
+processcheck='{{ pillar['frontend_path_root'] }}/manage.py runserver'
 prog=python3
-runuser=uwsgi
+runuser={{ pillar['frontend_user'] }}
 
 . /lib/lsb/init-functions
 
