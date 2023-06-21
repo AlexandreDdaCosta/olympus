@@ -123,14 +123,14 @@ frontend_user_data_privs:
     - mode: 0755
     - user: root
 
-{{ pillar.pgadmin_lib_path }}:
+{{ pillar['pgadmin_lib_path'] }}:
   file.directory:
     - group: pgadmin
     - makedirs: False
     - mode: 0755
     - user: pgadmin
 
-{{ pillar.pgadmin_lib_path }}/storage:
+{{ pillar['pgadmin_lib_path'] }}/storage:
   file.directory:
     - group: pgadmin
     - makedirs: False
