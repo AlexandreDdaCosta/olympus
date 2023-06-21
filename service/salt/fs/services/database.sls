@@ -147,10 +147,8 @@ frontend_user_data_privs:
 Format: 192.168.1.179:5432:app_data:uwsgi:uvyj0tCAeI5dDhI8C6XKF6mEoxxzv0
 Will need to be rotated out of security.sls. See "BEGIN Shared credentials"
 
-2. Start/restart docker container for pgadmin
-3. Start pgadmin docker on boot
-4. Upgrade system for pgadmin docker container
-5. Rotate all pgadmin user passwords (tricky!)
+2. Upgrade system for pgadmin docker container
+3. Create/rotate all pgadmin user passwords
 #}
 
 pgadmin_docker_compose_file:
@@ -166,15 +164,37 @@ pgadmin_docker_compose_file:
     - template: jinja
     - user: root
 
-pgadmin_docker_servers_file:
+{{ pgadmin_path }}/servers.json:
   file.managed:
     - group: root
     - makedirs: False
     - mode: 0644
-    - name: {{ pgadmin_path }}/servers.json
     - source: salt://services/database/servers.json.jinja
     - template: jinja
     - user: root
+
+/lib/systemd/system/pgadmin.service:
+  file.managed:
+    - context:
+      docker_compose_file: {{ pgadmin_path }}/docker-compose.yml
+    - group: root
+    - makedirs: False
+    - mode: 0644
+    - group: root
+    - makedirs: False
+    - mode: 0644
+    - source: salt://stage/develop/services/database/pgadmin.service.jinja
+    - template: jinja
+    - user: root
+
+pgadmin-service:
+  service.running:
+    - enable: True
+    - name: pgadmin
+    - watch:
+      - file: /lib/systemd/system/pgadmin.service
+      - file: {{ pgadmin_path }}/docker-compose.yml
+      - file: {{ pgadmin_path }}/servers.json:
 
 {#
 Currently, we don't rotate the file below since we don't know how to update

@@ -1,5 +1,6 @@
-{% set frontend_path=pillar.www_path+'/django/interface' %}
-{% set frontend_sass_path=frontend_path+'/sass' %}
+{% set frontend_path = pillar.www_path + '/django/interface' %}
+{% set frontend_sass_path = frontend_path + '/sass' %}
+{% set frontend_conf_file_name = frontend_path + '/settings_local.py' %}
 {%- set random_password_generator='echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100)))" | /usr/bin/python3' -%}
 
 include:
@@ -157,17 +158,24 @@ include:
     - mode: 0755
     - user: root
 
-frontend_conf_file:
+{# grep PASSWORD /srv/www/django/interface/settings_local.py | head -1 | sed -e "s/^\s*'PASSWORD': '\(.*\)',/\1/" #}
+{{ frontend_conf_file_name }}:
   file.managed:
+    - context:
+{% if not salt['file.file_exists' ](frontend_conf_file_name) %}
+      frontend_db_key: {{ pillar['random_key']['frontend_db_key'] }}
+{% else %}
+{% set current_frontend_password = "/usr/bin/grep PASSWORD " ~ frontend_conf_file_name  ~ " | head -1 | sed -e \"s/^\\s*'PASSWORD': '\\(.*\\)',/\\1/\"" %}
+      frontend_db_key: {{ current_frontend_password }}
+{% endif %}
     - dir_mode: 0755
     - group: {{ pillar['frontend-user'] }}
     - makedirs: False
     - mode: 0640
-    - name: {{ frontend_path }}/settings_local.py
     - source: salt://services/frontend/settings_local.jinja
     - template: jinja
     - user: {{ pillar['frontend-user'] }}
-
+   
 frontend_wsgi_app_file:
   file.managed:
     - dir_mode: 0755

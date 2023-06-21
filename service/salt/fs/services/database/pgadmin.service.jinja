@@ -1,0 +1,13 @@
+{% set trim_blocks=True -%}
+[Unit]
+Description=pgadmin4 container
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=on-failure
+ExecStart=/usr/bin/docker compose --file {{ docker_compose_file  }} up
+ExecStop=/usr/bin/docker compose --file {{ docker_compose_file  }} --timeout 10 down
+
+[Install]
+WantedBy=default.target
