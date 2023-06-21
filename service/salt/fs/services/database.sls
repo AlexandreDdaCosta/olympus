@@ -173,6 +173,7 @@ pgadmin_docker_compose_file:
     - template: jinja
     - user: root
 
+{#
 /lib/systemd/system/pgadmin.service:
   file.managed:
     - context:
@@ -195,6 +196,7 @@ pgadmin-service:
       - file: /lib/systemd/system/pgadmin.service
       - file: {{ pgadmin_path }}/docker-compose.yml
       - file: {{ pgadmin_path }}/servers.json:
+#}
 
 {#
 Currently, we don't rotate the file below since we don't know how to update
