@@ -183,11 +183,10 @@ pgadmin_docker_compose_file:
     - group: root
     - makedirs: False
     - mode: 0644
-    - source: salt://stage/develop/services/database/pgadmin.service.jinja
+    - source: salt://services/database/pgadmin.service.jinja
     - template: jinja
     - user: root
 
-{#
 pgadmin-service:
   service.running:
     - enable: True
@@ -195,8 +194,7 @@ pgadmin-service:
     - watch:
       - file: /lib/systemd/system/pgadmin.service
       - file: {{ pgadmin_path }}/docker-compose.yml
-      - file: {{ pgadmin_path }}/servers.json:
-#}
+      - file: {{ pgadmin_path }}/servers.json
 
 {#
 Currently, we don't rotate the file below since we don't know how to update
