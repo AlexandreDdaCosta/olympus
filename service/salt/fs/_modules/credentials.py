@@ -172,7 +172,7 @@ def shared_database():
         if 'frontend' in services:
             delete_minion_data = False
             frontend_credential_file = \
-                '/srv/www/django/interface/settings_local.py'
+                __salt__['pillar.get']('frontend_conf_file_name')  # noqa: F403
             if os.path.isfile(frontend_credential_file):
                 # If frontend configuration exists, update password
                 cmd = ("perl -i -pe " +

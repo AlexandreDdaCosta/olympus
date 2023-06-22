@@ -170,8 +170,9 @@ include:
     - user: {{ pillar['frontend-user'] }}
 
 {# 
-This step is needed here to cooridnate between the password change on
-shared credentials executed by security.sls.
+This step is needed here to coordinate with the password change on
+shared credentials executed by security.sls. The password set by security.sls
+has priority since that state file also sets the password in the database.
 #}
 frontend_conf_file_password:
   cmd.run:
