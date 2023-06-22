@@ -161,10 +161,11 @@ include:
     - user: root
 
 {% if salt['file.file_exists' ](frontend_password_file_name) %}
-    {% set frontend_password = current_frontend_password %}
+  {% set frontend_password = current_frontend_password %}
 {% else %}
-    {% set frontend_password = pillar['random_key']['frontend_db_key'] %}
+  {% set frontend_password = pillar['random_key']['frontend_db_key'] %}
 {% endif %}
+{#
 {{ frontend_conf_file_name }}:
   file.managed:
     - context:
@@ -176,6 +177,7 @@ include:
     - source: salt://services/frontend/settings_local.jinja
     - template: jinja
     - user: {{ pillar['frontend-user'] }}
+#}
 
 frontend_wsgi_app_file:
   file.managed:
