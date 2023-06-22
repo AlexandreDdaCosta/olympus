@@ -16,7 +16,7 @@ killdaemon={{ pillar['bin_path_scripts'] }}/{{ kill_script_name }}
 lockfile={{ pillar['pidfile_path'] }}/devserver.pid
 processcheck='{{ pillar['frontend_path_root'] }}/manage.py runserver'
 prog=python3
-runuser={{ pillar['frontend_user'] }}
+runuser={{ pillar['frontend-user'] }}
 
 . /lib/lsb/init-functions
 
