@@ -160,6 +160,7 @@ include:
     - mode: 0755
     - user: root
 
+{#
 {{ frontend_conf_file_name }}:
   file.managed:
     - context:
@@ -175,7 +176,8 @@ include:
     - source: salt://services/frontend/settings_local.jinja
     - template: jinja
     - user: {{ pillar['frontend-user'] }}
-   
+#}
+
 frontend_wsgi_app_file:
   file.managed:
     - dir_mode: 0755
