@@ -172,7 +172,7 @@ include:
 {{ frontend_conf_file_name }}:
   file.managed:
     - context:
-      frontend_db_key: foo
+      frontend_db_key: {{ pillar['random_key']['frontend_db_key'] }}
     - dir_mode: 0755
     - group: {{ pillar['frontend-user'] }}
     - makedirs: False
