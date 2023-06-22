@@ -161,20 +161,16 @@ include:
     - user: root
 
 {#
-  {% set frontend_password = current_frontend_password %}
-#}
-{% if salt['file.file_exists' ](frontend_password_file_name) %}
-  {% set frontend_password = 'foo' %}
-{% else %}
-  {% set frontend_password = pillar['random_key']['frontend_db_key'] %}
-{% endif %}
-{#
-    - context:
-      frontend_db_key: {{ frontend_password }}
+{% set current_frontend_password = salt['cmd.shell'](get_frontend_passwd) -%}
 #}
 {{ frontend_conf_file_name }}:
   file.managed:
     - context:
+{% if salt['file.file_exists' ](frontend_password_file_name) %}
+      frontend_db_key: {{ pillar['random_key']['frontend_db_key'] }}
+{% else %}
+      frontend_db_key: {{ pillar['random_key']['frontend_db_key'] }}
+{% endif %}
       frontend_db_key: {{ frontend_password }}
     - dir_mode: 0755
     - group: {{ pillar['frontend-user'] }}
