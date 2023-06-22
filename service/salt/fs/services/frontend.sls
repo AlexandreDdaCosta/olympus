@@ -1,4 +1,3 @@
-{% set frontend_conf_file_name = pillar['frontend_conf_file_name'] -%}
 {% set frontend_password_file_name = pillar['frontend_password_file_name'] -%}
 {% set django_vassal_file = pillar['nginx_vassals_directory'] + '/django.ini' -%}
 {% set random_password_generator = 'echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100)))" | /usr/bin/python3' -%}
@@ -158,7 +157,7 @@ include:
     - mode: 0755
     - user: root
 
-{{ frontend_conf_file_name }}:
+{{ pillar['frontend_conf_file_name'] }}:
   file.managed:
     - context:
       frontend_db_key: {{ pillar['random_key']['frontend_db_key'] }}
@@ -169,6 +168,16 @@ include:
     - source: salt://services/frontend/settings_local.jinja
     - template: jinja
     - user: {{ pillar['frontend-user'] }}
+
+{# 
+This step is needed here to cooridnate between the password change on
+shared credentials executed by security.sls.
+#}
+frontend_conf_file_password:
+  cmd.run:
+    - name: salt -C credentials.frontend_db_password
+    - require: 
+      - {{ pillar['frontend_conf_file_name'] }}
 
 frontend_wsgi_app_file:
   file.managed:
@@ -364,7 +373,7 @@ frontend-uwsgi:
 {%- if grains.get('stage') and grains.get('stage') != 'develop' %}
       - file: {{ django_vassal_file }}
 {%- endif %}
-      - file: {{ frontend_conf_file_name }}
+      - file: {{ pillar.frontend_conf_file_name }}
     - require:
       - sls: web
 

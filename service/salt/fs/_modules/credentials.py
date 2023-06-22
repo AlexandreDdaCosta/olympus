@@ -16,6 +16,31 @@ from passlib.hash import pbkdf2_sha512
 from olympus import RESTAPI_SERVICE, User
 
 
+def frontend_db_password():
+    frontend_password_file_name = \
+        __salt__['pillar.get']('frontend_password_file_name')  # noqa: F403
+    frontend_credential_file = \
+        __salt__['pillar.get']('frontend_conf_file_name')  # noqa: F403
+    if (os.path.isfile(frontend_credential_file)
+            and os.path.isfile(frontend_password_file_name)):
+        # If frontend configuration exists and password file exists,
+        # make sure the config file passwod matches that of the
+        # password file
+        cmd = ("cat " + frontend_password_file_name)
+        p = subprocess.Popen(cmd,
+                             shell=True,
+                             stdout=subprocess.PIPE,
+                             text=True)
+        passphrase = p.communicate()[0].strip("\n")
+        cmd = ("perl -i -pe " +
+               "'s/('\\''PASSWORD'\\''\\:\\s+'\\'')(.*?)('\\'')/$1" +
+               passphrase +
+               "$3/g' " +
+               frontend_credential_file)
+        subprocess.check_call(cmd, shell=True)
+    return True
+
+
 def interface_backend():
     frontend_user = __salt__['pillar.get']('frontend-user')  # noqa: F403
     passphrase = __salt__['data.get']('frontend_db_key')  # noqa: F403
