@@ -175,7 +175,7 @@ shared credentials executed by security.sls.
 #}
 frontend_conf_file_password:
   cmd.run:
-    - name: salt -C credentials.frontend_db_password
+    - name: salt '{{ grains.get('localhost') }}' credentials.frontend_db_password
     - require: 
       - {{ pillar['frontend_conf_file_name'] }}
 
