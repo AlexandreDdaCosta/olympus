@@ -1,7 +1,6 @@
 {% set frontend_conf_file_name = pillar['frontend_conf_file_name'] -%}
 {% set frontend_password_file_name = pillar['frontend_password_file_name'] -%}
 {% set get_frontend_passwd = 'unset password; if [ -f ' + pillar['frontend_password_file_name'] + ' ]; then password=`cat' + pillar['frontend_password_file_name'] + '`; echo $password; fi;' -%}
-{% set current_frontend_password = salt['cmd.shell'](get_frontend_passwd) -%}
 {% set django_vassal_file = pillar['nginx_vassals_directory'] + '/django.ini' -%}
 {% set random_password_generator = 'echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100)))" | /usr/bin/python3' -%}
 
@@ -161,14 +160,14 @@ include:
     - user: root
 
 {#
-{% set current_frontend_password = salt['cmd.shell'](get_frontend_passwd) -%}
-      frontend_db_key: {{ salt['cmd.shell'](random_password_generator) }}
+      frontend_db_key: {{ salt['cmd.shell'](get_frontend_passwd) }}
+      frontend_db_key: {{ pillar['random_key']['frontend_db_key'] }}
 #}
 {{ frontend_conf_file_name }}:
   file.managed:
     - context:
 {% if salt['file.file_exists' ](frontend_password_file_name) %}
-      frontend_db_key: {{ pillar['random_key']['frontend_db_key'] }}
+      frontend_db_key: {{ salt['cmd.shell'](get_frontend_passwd) }}
 {% else %}
       frontend_db_key: {{ pillar['random_key']['frontend_db_key'] }}
 {% endif %}
