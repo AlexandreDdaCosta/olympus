@@ -162,10 +162,11 @@ include:
 
 {{ frontend_conf_file_name }}:
   file.managed:
-    - context:
 {% if salt['file.file_exists' ](frontend_password_file_name) %}
+    - context:
       frontend_db_key: {{ current_frontend_password }}
 {% else %}
+    - context:
       frontend_db_key: {{ pillar['random_key']['frontend_db_key'] }}
 {% endif %}
     - dir_mode: 0755
