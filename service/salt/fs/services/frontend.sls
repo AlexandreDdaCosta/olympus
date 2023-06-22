@@ -162,12 +162,13 @@ include:
 {#
       frontend_db_key: {{ salt['cmd.shell'](get_frontend_passwd) }}
       frontend_db_key: {{ pillar['random_key']['frontend_db_key'] }}
+{% set get_frontend_passwd = 'unset password; if [ -f ' + pillar['frontend_password_file_name'] + ' ]; then password=`cat' + pillar['frontend_password_file_name'] + '`; echo $password; fi;' -%}
 #}
 {{ frontend_conf_file_name }}:
   file.managed:
     - context:
 {% if salt['file.file_exists' ](frontend_password_file_name) %}
-      frontend_db_key: {{ salt['cmd.shell'](get_frontend_passwd) }}
+      frontend_db_key: {{ get_frontend_passwd }}
 {% else %}
       frontend_db_key: {{ pillar['random_key']['frontend_db_key'] }}
 {% endif %}
