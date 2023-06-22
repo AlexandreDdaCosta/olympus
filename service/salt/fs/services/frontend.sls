@@ -160,15 +160,14 @@ include:
     - mode: 0755
     - user: root
 
-{#
 {{ frontend_conf_file_name }}:
   file.managed:
     - context:
-{% if salt['file.file_exists' ](frontend_password_file_name) %}
+{%- if salt['file.file_exists' ](frontend_password_file_name) %}
       frontend_db_key: {{ current_frontend_password }}
-{% else %}
+{%- else %}
       frontend_db_key: {{ pillar['random_key']['frontend_db_key'] }}
-{% endif -%}
+{%- endif %}
     - dir_mode: 0755
     - group: {{ pillar['frontend-user'] }}
     - makedirs: False
@@ -176,7 +175,6 @@ include:
     - source: salt://services/frontend/settings_local.jinja
     - template: jinja
     - user: {{ pillar['frontend-user'] }}
-#}
 
 frontend_wsgi_app_file:
   file.managed:
