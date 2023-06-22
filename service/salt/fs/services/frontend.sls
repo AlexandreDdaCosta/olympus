@@ -166,10 +166,11 @@ include:
   {% set frontend_password = pillar['random_key']['frontend_db_key'] %}
 {% endif %}
 {#
-{{ frontend_conf_file_name }}:
-  file.managed:
     - context:
       frontend_db_key: {{ frontend_password }}
+#}
+{{ frontend_conf_file_name }}:
+  file.managed:
     - dir_mode: 0755
     - group: {{ pillar['frontend-user'] }}
     - makedirs: False
@@ -177,7 +178,6 @@ include:
     - source: salt://services/frontend/settings_local.jinja
     - template: jinja
     - user: {{ pillar['frontend-user'] }}
-#}
 
 frontend_wsgi_app_file:
   file.managed:
