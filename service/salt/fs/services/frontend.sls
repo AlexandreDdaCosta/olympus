@@ -162,6 +162,7 @@ include:
 
 {#
 {% set current_frontend_password = salt['cmd.shell'](get_frontend_passwd) -%}
+      frontend_db_key: {{ salt['cmd.shell'](random_password_generator) }}
 #}
 {{ frontend_conf_file_name }}:
   file.managed:
@@ -171,7 +172,6 @@ include:
 {% else %}
       frontend_db_key: {{ pillar['random_key']['frontend_db_key'] }}
 {% endif %}
-      frontend_db_key: {{ frontend_password }}
     - dir_mode: 0755
     - group: {{ pillar['frontend-user'] }}
     - makedirs: False
