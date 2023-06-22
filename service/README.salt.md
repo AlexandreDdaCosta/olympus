@@ -100,3 +100,10 @@ sudo -i salt '*' state.sls shutdown pillar='{"reboot": true}' -v
 Shut down machine with default USB backup for main local git repository and main
 development user git repository clones. The pillar setting will cause the
 machine to reboot rather than shut down.
+
+```
+sudo salt '*' slsutil.renderer salt://service/salt/fs/services/frontend.sls default_render=jinja -v
+```
+
+A useful command when checking for jinja2 formatting errors. Substitute the
+path and name of the file being debugged for the one in the example.
