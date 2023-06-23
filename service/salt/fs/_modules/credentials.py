@@ -136,6 +136,10 @@ def shared_database():
     frontend_user = __salt__['pillar.get']('frontend_user')  # noqa: F403
     passphrase = __salt__['data.get']('frontend_db_key')  # noqa: F403
     server = __grains__['server']  # noqa: F403
+    web_daemon = __salt__['pillar.get']('web_daemon')  # noqa: F403
+    bin_path = __salt__['pillar.get']('bin_path_scripts')  # noqa: F403
+    kill_script = __salt__['pillar.get']('dev_kill_script')  # noqa: F403
+    start_script = __salt__['pillar.get']('dev_start_script')  # noqa: F403
     services = None
     if (passphrase is not None and server is not None):
         key = 'servers:' + server + ':services'
@@ -198,20 +202,20 @@ def shared_database():
                                      text=True)
                 frontend_dev_processes = p.communicate()[0].strip("\n")
                 if int(frontend_dev_processes) > 0:
-                    cmd = "/usr/local/bin/olympus/killserver.sh"
+                    cmd = bin_path + "/" + kill_script
                     subprocess.check_call(cmd, shell=True)
-                    cmd = "/usr/local/bin/olympus/startserver.py"
+                    cmd = bin_path + "/" + start_script
                     subprocess.check_call(cmd, shell=True)
                 else:
                     # If frontend web service is running, restart
-                    cmd = "ps -A | grep uwsgi | wc -l"
+                    cmd = "ps -A | grep " + web_daemon + " | wc -l"
                     p = subprocess.Popen(cmd,
                                          shell=True,
                                          stdout=subprocess.PIPE,
                                          text=True)
                     frontend_processes = p.communicate()[0].strip("\n")
                     if int(frontend_processes) > 0:
-                        cmd = "service uwsgi restart"
+                        cmd = "service " + web_daemon + " restart"
                         subprocess.check_call(cmd, shell=True)
         if delete_minion_data is True:
             __salt__['data.pop']('frontend_db_key')  # noqa: F403

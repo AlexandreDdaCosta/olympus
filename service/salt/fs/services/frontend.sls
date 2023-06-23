@@ -365,9 +365,9 @@ nginx-frontend:
     - watch:
       - file: {{ pillar.frontend_nginx_conf_file_name }}
 
-frontend-uwsgi:
+frontend-{{ pillar['frontend_user'] }}:
   service.running:
-    - name: uwsgi
+    - name: {{ pillar['frontend_user'] }}
     - watch:
       - file: {{ pillar.www_path }}/django
       - file: {{ pillar.frontend_nginx_conf_file_name }}

@@ -61,75 +61,76 @@ nginx:
     - mode: 0755
     - user: root
 
-/etc/{{ pillar['frontend_user'] }}.ini:
+/etc/{{ pillar['web_daemon'] }}.ini:
   file.managed:
     - group: root
     - makedirs: False
     - mode: 0755
-    - source: salt://services/frontend/files/{{ pillar['frontend_user'] }}.ini
+    - source: salt://web/files/{{ pillar['web_daemon'] }}.ini
     - user: root
 
-/etc/rc0.d/K01{{ pillar['frontend_user'] }}:
+/etc/rc0.d/K01{{ pillar['web_daemon'] }}:
   file.symlink:
-    - target: /etc/init.d/{{ pillar['frontend_user'] }}
+    - target: /etc/init.d/{{ pillar['web_daemon'] }}
 
-/etc/rc1.d/K01{{ pillar['frontend_user'] }}:
+/etc/rc1.d/K01{{ pillar['web_daemon'] }}:
   file.symlink:
-    - target: /etc/init.d/{{ pillar['frontend_user'] }}
+    - target: /etc/init.d/{{ pillar['web_daemon'] }}
 
-/etc/rc2.d/S01{{ pillar['frontend_user'] }}:
+/etc/rc2.d/S01{{ pillar['web_daemon'] }}:
   file.symlink:
-    - target: /etc/init.d/{{ pillar['frontend_user'] }}
+    - target: /etc/init.d/{{ pillar['web_daemon'] }}
 
-/etc/rc3.d/S01{{ pillar['frontend_user'] }}:
+/etc/rc3.d/S01{{ pillar['web_daemon'] }}:
   file.symlink:
-    - target: /etc/init.d/{{ pillar['frontend_user'] }}
+    - target: /etc/init.d/{{ pillar['web_daemon'] }}
 
-/etc/rc4.d/S01{{ pillar['frontend_user'] }}:
+/etc/rc4.d/S01{{ pillar['web_daemon'] }}:
   file.symlink:
-    - target: /etc/init.d/{{ pillar['frontend_user'] }}
+    - target: /etc/init.d/{{ pillar['web_daemon'] }}
 
-/etc/rc5.d/S01{{ pillar['frontend_user'] }}:
+/etc/rc5.d/S01{{ pillar['web_daemon'] }}:
   file.symlink:
-    - target: /etc/init.d/{{ pillar['frontend_user'] }}
+    - target: /etc/init.d/{{ pillar['web_daemon'] }}
 
-/etc/rc6.d/K01{{ pillar['frontend_user'] }}:
+/etc/rc6.d/K01{{ pillar['web_daemon'] }}:
   file.symlink:
-    - target: /etc/init.d/{{ pillar['frontend_user'] }}
+    - target: /etc/init.d/{{ pillar['web_daemon'] }}
 
-/etc/init.d/{{ pillar['frontend_user'] }}:
+/etc/init.d/{{ pillar['web_daemon'] }}:
     file.managed:
     - group: root
     - makedirs: False
     - mode: 0755
-    - source: salt://services/frontend/files/init.{{ pillar['frontend_user'] }}
+    - source: salt://web/init.{{ pillar['web_daemon'] }}.jinja
+    - template: jinja
     - user: root
 
-/var/log/{{ pillar['frontend_user'] }}:
+{{ pillar['system_log_directory'] }}/{{ pillar['web_daemon'] }}:
   file.directory:
-    - group: {{ pillar['frontend_user'] }}
+    - group: {{ pillar['web_daemon_username'] }}
     - makedirs: False
     - mode: 0755
-    - user: {{ pillar['frontend_user'] }}
+    - user: {{ pillar['web_daemon_username'] }}
 
-/var/log/{{ pillar['frontend_user'] }}/{{ pillar['frontend_user'] }}.log:
+{{ pillar['system_log_directory'] }}/{{ pillar['web_daemon'] }}/{{ pillar['web_daemon'] }}.log:
   file.managed:
-    - group: {{ pillar['frontend_user'] }}
+    - group: {{ pillar['web_daemon_username'] }}
     - mode: 0644
     - replace: False
-    - user: {{ pillar['frontend_user'] }}
+    - user: {{ pillar['web_daemon_username'] }}
 
-/etc/logrotate.d/{{ pillar['frontend_user'] }}:
+{{ pillar['system_logrotate_conf_directory'] }}/{{ pillar['web_daemon'] }}:
     file.managed:
     - group: root
     - makedirs: False
     - mode: 0644
-    - source: salt://services/frontend/files/logrotate.{{ pillar['frontend_user'] }}
+    - source: salt://web/files/logrotate.{{ pillar['web_daemon'] }}
     - user: root
 
-web-{{ pillar['frontend_user'] }}:
+web-{{ pillar['web_daemon'] }}:
   service.running:
     - enable: True
-    - name: {{ pillar['frontend_user'] }}
+    - name: {{ pillar['web_daemon'] }}
     - watch:
-      - file: /etc/init.d/{{ pillar['frontend_user'] }}
+      - file: /etc/init.d/{{ pillar['web_daemon'] }}

@@ -1,21 +1,23 @@
 #!/usr/bin/env bash
 #
-# /etc/init.d/uwsgi
+# {{ pillar['system_init_scripts_directory'] }}/{{ pillar['web_daemon'] }}
 #
 ### BEGIN INIT INFO
-# Provides:          uwsgi
+# Provides:          {{ pillar['web_daemon'] }}
 # Required-Start:    $local_fs $networking
 # Required-Stop:     $local_fs $networking
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: uwsgi init script
+# Short-Description: Init script for front end web daemon
 ### END INIT INFO
 
-daemon=/usr/local/bin/uwsgi
-inifile=/etc/uwsgi.ini
-lockfile=/var/run/uwsgi.pid
-prog=uwsgi
-vassaldir=/etc/uwsgi/vassals
+daemon={{ pillar['web_daemon_fullpath'] }}
+inifile=/etc/{{ pillar['web_daemon'] }}.ini
+lockfile_prefix={{ pillar['pidfile_path'] }}/{{ pillar['web_daemon'] }}
+lockfile=$lockfile_prefix.pid
+prog={{ pillar['web_daemon'] }}
+runuser={{ pillar['web_daemon_username'] }}
+vassaldir={{ pillar['web_daemon_vassals_directory'] }}
 
 . /lib/lsb/init-functions
 
@@ -44,9 +46,9 @@ do_start()
         for initfile in $FILES
         do
             INITFILE=`echo $initfile | sed 's/\.ini$//'`
-            touch /var/run/uwsgi.$INITFILE.pid
-            chmod 0664 /var/run/uwsgi.$INITFILE.pid
-            chown uwsgi:uwsgi /var/run/uwsgi.$INITFILE.pid
+            touch $lockfile_prefix.$INITFILE.pid
+            chmod 0664 $lockfile_prefix.$INITFILE.pid
+            chown $runuser:$runuser $lockfile_prefix.$INITFILE.pid
         done
         [ -x $daemon ] || exit 5
         [ -f $inifile ] || exit 6
@@ -80,7 +82,7 @@ case "$1" in
         do_stop
         ;;
     *)
-        echo "Usage: /etc/init.d/uwsgi {restart|start|status|stop}"
+        echo "Usage: {{ pillar['system_init_scripts_directory'] }}/{{ pillar['web_daemon'] }} {restart|start|status|stop}"
         exit 1
     ;;
 esac

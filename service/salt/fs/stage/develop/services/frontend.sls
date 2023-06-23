@@ -1,6 +1,3 @@
-{% set kill_script_name = 'killserver.sh' -%}
-{% set start_script_name = 'startserver.py' -%}
-
 include:
   - base: services/frontend
 
@@ -27,29 +24,26 @@ full uWSGI server.
 
 {{ pillar['system_log_directory'] }}/devserver:
   file.directory:
-    - group: uwsgi
+    - group: {{ pillar['frontend_user'] }}
     - mode: 0755
-    - user: uwsgi
+    - user: {{ pillar['frontend_user'] }}
 
-{{ pillar['bin_path_scripts'] }}/{{ start_script_name }}:
+{{ pillar['bin_path_scripts'] }}/{{ pillar['dev_start_script'] }}:
   file.managed:
     - group: root
     - mode: 0755
-    - source: salt://stage/develop/services/frontend/files/{{ start_script_name }}
+    - source: salt://stage/develop/services/frontend/files/{{ pillar['dev_start_script'] }}
     - user: root
 
-{{ pillar['bin_path_scripts'] }}/{{ kill_script_name }}:
+{{ pillar['bin_path_scripts'] }}/{{ pillar['dev_kill_script'] }}:
   file.managed:
     - group: root
     - mode: 0755
-    - source: salt://stage/develop/services/frontend/files/{{ kill_script_name }}
+    - source: salt://stage/develop/services/frontend/files/{{ pillar['dev_kill_script'] }}
     - user: root
 
 {{ pillar['system_init_scripts_directory'] }}/django-devserver:
   file.managed:
-    - context:
-      kill_script_name: {{ kill_script_name }}
-      start_script_name: {{ start_script_name }}
     - group: root
     - makedirs: False
     - mode: 0755
