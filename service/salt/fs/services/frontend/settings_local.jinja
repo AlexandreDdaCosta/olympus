@@ -38,7 +38,7 @@ DATABASES = {
         'OPTIONS': { 'sslmode': 'require' },
         'PASSWORD': '{{ frontend_db_key }}',
         'PORT': '{{ pillar['postgresql_port'] }}',
-        'USER': '{{ pillar['frontend-user'] }}',
+        'USER': '{{ pillar['frontend_user'] }}',
     },
     'users': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -55,6 +55,6 @@ DATABASES = {
         'OPTIONS': { 'sslmode': 'require' },
         'PASSWORD': '{{ frontend_db_key }}',
         'PORT': '{{ pillar['postgresql_port'] }}',
-        'USER': '{{ pillar['frontend-user'] }}',
+        'USER': '{{ pillar['frontend_user'] }}',
     }
 }

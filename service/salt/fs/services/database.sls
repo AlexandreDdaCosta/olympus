@@ -86,7 +86,7 @@ frontend_db_user:
   postgres_user.present:
     - default_password: 'md5{MD5OF({{ pillar['random_key']['frontend_db_key'] }})}'
     - encrypted: True
-    - name: {{ pillar['frontend-user'] }}
+    - name: {{ pillar['frontend_user'] }}
 
 frontend_db_user_pwd_reset:
   cmd.run:
@@ -96,7 +96,7 @@ frontend_db_user_pwd_reset:
 
 frontend_app_data_privs:
   postgres_privileges.present:
-    - name: {{ pillar['frontend-user'] }}
+    - name: {{ pillar['frontend_user'] }}
     - object_name: {{ pillar['frontend_app_database'] }}
     - object_type: database
     - privileges:
@@ -104,7 +104,7 @@ frontend_app_data_privs:
 
 frontend_user_data_privs:
   postgres_privileges.present:
-    - name: {{ pillar['frontend-user'] }}
+    - name: {{ pillar['frontend_user'] }}
     - object_name: {{ pillar['frontend_user_database'] }}
     - object_type: database
     - privileges:

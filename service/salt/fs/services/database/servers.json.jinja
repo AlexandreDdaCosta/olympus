@@ -11,7 +11,7 @@
 {%- endfor %}
             "Port": {{ pillar['postgresql_port'] }},
             "MaintenanceDB": "{{ pillar['frontend_app_database'] }}",
-            "Username": "{{ pillar['frontend-user'] }}",
+            "Username": "{{ pillar['frontend_user'] }}",
             "SSLMode": "require",
             "Shared": true,
             "Comment": "Django interface server",

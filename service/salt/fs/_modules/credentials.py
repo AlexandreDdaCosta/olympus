@@ -42,7 +42,7 @@ def frontend_db_password():
 
 
 def interface_backend():
-    frontend_user = __salt__['pillar.get']('frontend-user')  # noqa: F403
+    frontend_user = __salt__['pillar.get']('frontend_user')  # noqa: F403
     passphrase = __salt__['data.get']('frontend_db_key')  # noqa: F403
     server = __grains__['server']  # noqa: F403
     services = None
@@ -131,7 +131,7 @@ def rotate_restapi_password_file(username, tmp_file_name):
 def shared_database():
     frontend_password_file_name = \
         __salt__['pillar.get']('frontend_password_file_name')  # noqa: F403
-    frontend_user = __salt__['pillar.get']('frontend-user')  # noqa: F403
+    frontend_user = __salt__['pillar.get']('frontend_user')  # noqa: F403
     passphrase = __salt__['data.get']('frontend_db_key')  # noqa: F403
     server = __grains__['server']  # noqa: F403
     services = None
@@ -139,6 +139,10 @@ def shared_database():
         key = 'servers:' + server + ':services'
         services = __salt__['pillar.get'](key)  # noqa: F403
         delete_minion_data = False
+        # Write updated passphrase into password file
+        with open(frontend_password_file_name, "w") as passfile:
+            passfile.write(passphrase)
+        os.chmod(frontend_password_file_name, 0o600)
         if 'database' in services:
             # Is database running?
             cmd = "ps -A | grep postgres | wc -l"
@@ -181,10 +185,6 @@ def shared_database():
                        "$3/g' " +
                        frontend_credential_file)
                 subprocess.check_call(cmd, shell=True)
-                # Write updated passphrase into password file
-                with open(frontend_password_file_name, "w") as passfile:
-                    passfile.write(passphrase)
-                os.chmod(frontend_password_file_name, 0o600)
                 # If dev frontend web service is running, restart
                 cmd = "ps -A | grep runserver | wc -l"
                 p = subprocess.Popen(cmd,

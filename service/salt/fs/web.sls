@@ -54,82 +54,82 @@ nginx:
     - name: /etc/nginx/conf.d/default.conf
     - source: salt://web/files/default.conf
 
-/etc/uwsgi/vassals:
+{{ pillar['web_daemon_vassals_directory'] }}:
   file.directory:
     - group: root
     - makedirs: True
     - mode: 0755
     - user: root
 
-/etc/uwsgi.ini:
+/etc/{{ pillar['frontend_user'] }}.ini:
   file.managed:
     - group: root
     - makedirs: False
     - mode: 0755
-    - source: salt://services/frontend/files/uwsgi.ini
+    - source: salt://services/frontend/files/{{ pillar['frontend_user'] }}.ini
     - user: root
 
-/etc/rc0.d/K01uwsgi:
+/etc/rc0.d/K01{{ pillar['frontend_user'] }}:
   file.symlink:
-    - target: /etc/init.d/uwsgi
+    - target: /etc/init.d/{{ pillar['frontend_user'] }}
 
-/etc/rc1.d/K01uwsgi:
+/etc/rc1.d/K01{{ pillar['frontend_user'] }}:
   file.symlink:
-    - target: /etc/init.d/uwsgi
+    - target: /etc/init.d/{{ pillar['frontend_user'] }}
 
-/etc/rc2.d/S01uwsgi:
+/etc/rc2.d/S01{{ pillar['frontend_user'] }}:
   file.symlink:
-    - target: /etc/init.d/uwsgi
+    - target: /etc/init.d/{{ pillar['frontend_user'] }}
 
-/etc/rc3.d/S01uwsgi:
+/etc/rc3.d/S01{{ pillar['frontend_user'] }}:
   file.symlink:
-    - target: /etc/init.d/uwsgi
+    - target: /etc/init.d/{{ pillar['frontend_user'] }}
 
-/etc/rc4.d/S01uwsgi:
+/etc/rc4.d/S01{{ pillar['frontend_user'] }}:
   file.symlink:
-    - target: /etc/init.d/uwsgi
+    - target: /etc/init.d/{{ pillar['frontend_user'] }}
 
-/etc/rc5.d/S01uwsgi:
+/etc/rc5.d/S01{{ pillar['frontend_user'] }}:
   file.symlink:
-    - target: /etc/init.d/uwsgi
+    - target: /etc/init.d/{{ pillar['frontend_user'] }}
 
-/etc/rc6.d/K01uwsgi:
+/etc/rc6.d/K01{{ pillar['frontend_user'] }}:
   file.symlink:
-    - target: /etc/init.d/uwsgi
+    - target: /etc/init.d/{{ pillar['frontend_user'] }}
 
-/etc/init.d/uwsgi:
+/etc/init.d/{{ pillar['frontend_user'] }}:
     file.managed:
     - group: root
     - makedirs: False
     - mode: 0755
-    - source: salt://services/frontend/files/init.uwsgi
+    - source: salt://services/frontend/files/init.{{ pillar['frontend_user'] }}
     - user: root
 
-/var/log/uwsgi:
+/var/log/{{ pillar['frontend_user'] }}:
   file.directory:
-    - group: {{ pillar['frontend-user'] }}
+    - group: {{ pillar['frontend_user'] }}
     - makedirs: False
     - mode: 0755
-    - user: {{ pillar['frontend-user'] }}
+    - user: {{ pillar['frontend_user'] }}
 
-/var/log/uwsgi/uwsgi.log:
+/var/log/{{ pillar['frontend_user'] }}/{{ pillar['frontend_user'] }}.log:
   file.managed:
-    - group: {{ pillar['frontend-user'] }}
+    - group: {{ pillar['frontend_user'] }}
     - mode: 0644
     - replace: False
-    - user: {{ pillar['frontend-user'] }}
+    - user: {{ pillar['frontend_user'] }}
 
-/etc/logrotate.d/uwsgi:
+/etc/logrotate.d/{{ pillar['frontend_user'] }}:
     file.managed:
     - group: root
     - makedirs: False
     - mode: 0644
-    - source: salt://services/frontend/files/logrotate.uwsgi
+    - source: salt://services/frontend/files/logrotate.{{ pillar['frontend_user'] }}
     - user: root
 
-web-uwsgi:
+web-{{ pillar['frontend_user'] }}:
   service.running:
     - enable: True
-    - name: uwsgi
+    - name: {{ pillar['frontend_user'] }}
     - watch:
-      - file: /etc/init.d/uwsgi
+      - file: /etc/init.d/{{ pillar['frontend_user'] }}

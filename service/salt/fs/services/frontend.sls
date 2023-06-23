@@ -1,5 +1,5 @@
 {% set frontend_password_file_name = pillar['frontend_password_file_name'] -%}
-{% set django_vassal_file = pillar['nginx_vassals_directory'] + '/django.ini' -%}
+{% set django_vassal_file = pillar['web_daemon_vassals_directory'] + '/django.ini' -%}
 {% set random_password_generator = 'echo "import random; import string; print(\'\'.join(random.choice(string.ascii_letters + string.digits) for x in range(100)))" | /usr/bin/python3' -%}
 
 include:
@@ -61,17 +61,17 @@ include:
 
 {{ pillar['system_log_directory'] }}/django:
   file.directory:
-    - group: {{ pillar['frontend-user'] }}
+    - group: {{ pillar['frontend_user'] }}
     - makedirs: False
     - mode: 0755
-    - user: {{ pillar['frontend-user'] }}
+    - user: {{ pillar['frontend_user'] }}
 
 {{ pillar['system_log_directory'] }}/django/django.log:
   file.managed:
-    - group: {{ pillar['frontend-user'] }}
+    - group: {{ pillar['frontend_user'] }}
     - mode: 0644
     - replace: False
-    - user: {{ pillar['frontend-user'] }}
+    - user: {{ pillar['frontend_user'] }}
 
 {{ pillar['frontend_nginx_conf_file_name'] }}:
   file.managed:
@@ -138,10 +138,10 @@ include:
 
 {{ pillar['frontend_path'] }}/media-admin:
   file.directory:
-    - group: {{ pillar['frontend-user'] }}
+    - group: {{ pillar['frontend_user'] }}
     - makedirs: False
     - mode: 0755
-    - user: {{ pillar['frontend-user'] }}
+    - user: {{ pillar['frontend_user'] }}
 
 {{ pillar['frontend_path'] }}/static:
   file.directory:
@@ -162,12 +162,12 @@ include:
     - context:
       frontend_db_key: {{ pillar['random_key']['frontend_db_key'] }}
     - dir_mode: 0755
-    - group: {{ pillar['frontend-user'] }}
+    - group: {{ pillar['frontend_user'] }}
     - makedirs: False
     - mode: 0640
     - source: salt://services/frontend/settings_local.jinja
     - template: jinja
-    - user: {{ pillar['frontend-user'] }}
+    - user: {{ pillar['frontend_user'] }}
 
 {# 
 This step is needed here to coordinate with the password change on
