@@ -4,9 +4,11 @@
 Tools for managing cross-server and other credentials
 '''
 
+import grp
 import hashlib
 import hmac
 import os
+import pwd
 import sqlite3
 import subprocess
 
@@ -143,6 +145,9 @@ def shared_database():
         with open(frontend_password_file_name, "w") as passfile:
             passfile.write(passphrase)
         os.chmod(frontend_password_file_name, 0o600)
+        uid = pwd.getpwnam(frontend_user).pw_uid
+        gid = grp.getgrnam(frontend_user).gr_gid
+        os.chown(frontend_password_file_name, uid, gid)
         if 'database' in services:
             # Is database running?
             cmd = "ps -A | grep postgres | wc -l"
