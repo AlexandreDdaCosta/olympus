@@ -76,11 +76,11 @@ olympus.db:
 
 frontend_app_data.db:
   postgres_database.present:
-    - name: {{ pillar['frontend_app_database'] }}
+    - name: {{ pillar['frontend_databases']['application']['name'] }}
 
 frontend_user_data.db:
   postgres_database.present:
-    - name: {{ pillar['frontend_user_database'] }}
+    - name: {{ pillar['frontend_databases']['user']['name'] }}
 
 frontend_db_user:
   postgres_user.present:
@@ -97,7 +97,7 @@ frontend_db_user_pwd_reset:
 frontend_app_data_privs:
   postgres_privileges.present:
     - name: {{ pillar['frontend_user'] }}
-    - object_name: {{ pillar['frontend_app_database'] }}
+    - object_name: {{ pillar['frontend_databases']['application']['name'] }}
     - object_type: database
     - privileges:
       - ALL
@@ -105,7 +105,7 @@ frontend_app_data_privs:
 frontend_user_data_privs:
   postgres_privileges.present:
     - name: {{ pillar['frontend_user'] }}
-    - object_name: {{ pillar['frontend_user_database'] }}
+    - object_name: {{ pillar['frontend_databases']['user']['name'] }}
     - object_type: database
     - privileges:
       - ALL

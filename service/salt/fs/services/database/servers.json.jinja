@@ -10,12 +10,12 @@
 {%- endif %}
 {%- endfor %}
             "Port": {{ pillar['postgresql_port'] }},
-            "MaintenanceDB": "{{ pillar['frontend_app_database'] }}",
+            "MaintenanceDB": "{{ pillar['frontend_databases']['application']['name'] }}",
             "Username": "{{ pillar['frontend_user'] }}",
             "SSLMode": "require",
             "Shared": true,
             "Comment": "Django interface server",
-            "DBRestriction": "{{ pillar['frontend_app_database'] }}",
+            "DBRestriction": "{{ pillar['frontend_databases']['application']['name'] }}",
             "PassFile": "/pgpass",
             "Timeout": 10
         }

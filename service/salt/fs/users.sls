@@ -25,7 +25,7 @@ user_{{ username }}:
     - present
 {% endif %}
   user:
-    {% if 'createhome' in user and user['createhome'] %}
+    {% (if 'createhome' in user and user['createhome']) or ('is_staff' in user and user['is_staff']) %}
     - createhome: True
     {%- endif %}
     {% if 'fullname' in user %}

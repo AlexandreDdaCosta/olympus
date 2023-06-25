@@ -34,11 +34,11 @@ DATABASES = {
 {%- endfor -%}
 {%- endif -%}
 {%- endfor %}
-        'NAME': '{{ pillar['frontend_app_database'] }}',
+        'NAME': '{{ pillar['frontend_databases']['application']['name'] }}',
         'OPTIONS': { 'sslmode': 'require' },
         'PASSWORD': '{{ frontend_db_key }}',
         'PORT': '{{ pillar['postgresql_port'] }}',
-        'USER': '{{ pillar['frontend_user'] }}',
+        'USER': '{{ pillar['frontend_databases']['application']['user'] }}',
     },
     'users': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -51,10 +51,10 @@ DATABASES = {
 {%- endfor -%}
 {%- endif -%}
 {%- endfor %}
-        'NAME': '{{ pillar['frontend_user_database'] }}',
+        'NAME': '{{ pillar['frontend_databases']['user']['name'] }}',
         'OPTIONS': { 'sslmode': 'require' },
         'PASSWORD': '{{ frontend_db_key }}',
         'PORT': '{{ pillar['postgresql_port'] }}',
-        'USER': '{{ pillar['frontend_user'] }}',
+        'USER': '{{ pillar['frontend_databases']['user']['user'] }}',
     }
 }
