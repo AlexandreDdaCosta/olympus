@@ -87,7 +87,6 @@ salt-3005-docker-bug:
 
 {{ pillar['olympus-scripts-path'] }}:
   file.recurse:
-    - clean: True
     - dir_mode: 0755
     - file_mode: 0755
     - group: root

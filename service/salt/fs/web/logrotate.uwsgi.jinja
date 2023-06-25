@@ -1,0 +1,24 @@
+{{ pillar['system_log_directory'] }}/{{ pillar['web_daemon'] }}/{{ pillar['web_daemon'] }}.log {
+    compress
+    create 0644 {{ pillar['web_daemon_username'] }} {{ pillar['web_daemon_username'] }}
+    dateext
+    missingok
+    notifempty
+    postrotate
+	/usr/sbin/service {{ pillar['web_daemon'] }} restart 2>/dev/null
+    rotate 10
+    size 1024k
+    endscript
+}
+{{ pillar['system_log_directory'] }}/django/django.log {
+    compress
+    create 0644 {{ pillar['web_daemon_username'] }} {{ pillar['web_daemon_username'] }}
+    dateext
+    missingok
+    notifempty
+    postrotate
+	/usr/sbin/service {{ pillar['web_daemon'] }} restart 2>/dev/null
+    rotate 10
+    size 1024k
+    endscript
+}

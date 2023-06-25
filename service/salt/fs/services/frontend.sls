@@ -92,7 +92,8 @@ include:
     - group: root
     - makedirs: False
     - mode: 0644
-    - source: salt://services/frontend/files/django.ini
+    - source: salt://services/frontend/django.ini.jinja
+    - template: jinja
     - user: root
 {% endif %}
 

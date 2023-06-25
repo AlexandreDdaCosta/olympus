@@ -1,0 +1,13 @@
+[{{ pillar['web_daemon'] }}]
+buffer-size = 32768
+chdir = /home/{{ pillar['web_daemon_username'] }}
+harakiri = 30
+pidfile = {{ pillar['pidfile_path'] }}/{{ pillar['web_daemon'] }}.django.pid
+post-buffering = 8192
+processes = 40
+pythonpath = {{ pillar['frontend_path_root'] }}
+socket = 127.0.0.1:{{ pillar['frontend_proxy_port'] }}
+stats = 127.0.0.1:9192
+threads = 40
+vacuum = true
+wsgi-file = {{ pillar['frontend_path_root'] }}/interface/wsgi.py

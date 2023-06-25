@@ -66,7 +66,8 @@ nginx:
     - group: root
     - makedirs: False
     - mode: 0755
-    - source: salt://web/files/{{ pillar['web_daemon'] }}.ini
+    - source: salt://web/{{ pillar['web_daemon'] }}.ini.jinja
+    - template: jinja
     - user: root
 
 /etc/rc0.d/K01{{ pillar['web_daemon'] }}:
@@ -121,11 +122,12 @@ nginx:
     - user: {{ pillar['web_daemon_username'] }}
 
 {{ pillar['system_logrotate_conf_directory'] }}/{{ pillar['web_daemon'] }}:
-    file.managed:
+  file.managed:
     - group: root
     - makedirs: False
     - mode: 0644
-    - source: salt://web/files/logrotate.{{ pillar['web_daemon'] }}
+    - source: salt://web/logrotate.{{ pillar['web_daemon'] }}.jinja
+    - template: jinja
     - user: root
 
 web-{{ pillar['web_daemon'] }}:

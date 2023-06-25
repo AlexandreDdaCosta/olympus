@@ -1,0 +1,9 @@
+[{{ pillar['web_daemon'] }}]
+chdir = /home/{{ pillar['web_daemon_username'] }}
+daemonize = {{ pillar['system_log_directory'] }}/{{ pillar['web_daemon'] }}/{{ pillar['web_daemon'] }}.log
+emperor = {{ pillar['web_daemon_vassals_directory'] }}
+gid = {{ pillar['web_daemon_username'] }}
+master = true
+pidfile = {{ pillar['pidfile_path'] }}/{{ pillar['web_daemon'] }}.pid
+stats = 127.0.0.1:{{ pillar['frontend_proxy_port_dev'] }}
+uid = {{ pillar['web_daemon_username'] }}
