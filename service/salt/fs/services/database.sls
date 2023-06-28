@@ -76,41 +76,19 @@ frontend_db_user:
     - encrypted: True
     - name: {{ pillar['frontend_user'] }}
 
-frontend_default_database:
+{% for dbid, database in pillar.get('frontend_databases', {}).items() %}
+frontend_{{ dbid }}_database:
   postgres_database.present:
-    - name: {{ pillar['frontend_databases']['default']['name'] }}
+    - name: {{ database['name'] }}
 
-frontend_user_database:
-  postgres_database.present:
-    - name: {{ pillar['frontend_databases']['user']['name'] }}
-
-frontend_system_database:
-  postgres_database.present:
-    - name: {{ pillar['frontend_databases']['system']['name'] }}
-
-frontend_default_database_privileges:
+frontend_{{ dbid }}_database_privileges:
   postgres_privileges.present:
     - name: {{ pillar['frontend_user'] }}
-    - object_name: {{ pillar['frontend_databases']['default']['name'] }}
+    - object_name: {{ database['name'] }}
     - object_type: database
     - privileges:
       - ALL
-
-frontend_system_database_privileges:
-  postgres_privileges.present:
-    - name: {{ pillar['frontend_user'] }}
-    - object_name: {{ pillar['frontend_databases']['system']['name'] }}
-    - object_type: database
-    - privileges:
-      - ALL
-
-frontend_user_database_privileges:
-  postgres_privileges.present:
-    - name: {{ pillar['frontend_user'] }}
-    - object_name: {{ pillar['frontend_databases']['user']['name'] }}
-    - object_type: database
-    - privileges:
-      - ALL
+{% endfor %}
 
 frontend_db_user_pwd_reset:
   cmd.run:
