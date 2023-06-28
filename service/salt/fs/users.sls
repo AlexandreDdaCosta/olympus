@@ -25,14 +25,14 @@ user_{{ username }}:
     - present
 {% endif %}
   user:
-{% if 'createhome' in user and user['createhome'] %}
+    {% if 'createhome' in user and user['createhome'] %}
     - createhome: True
-{% elif 'is_staff' in user and user['is_staff'] %}
+    {% elif 'is_staff' in user and user['is_staff'] %}
     - createhome: True
-{% endif %}
-{% if 'fullname' in user %}
+    {%- endif %}
+    {% if 'fullname' in user %}
     - fullname: {{ user['fullname'] }}
-{% endif %}
+    {%- endif %}
 {% if 'gid' in user %}
     - gid: {{ user['gid'] }}
 {% endif %}
@@ -43,32 +43,30 @@ user_{{ username }}:
 {% if 'gid' not in user %}
       - {{ username }}
 {% endif %}
-{% if 'is_staff' in user and user['is_staff'] %}
+      {% if 'is_staff' in user and user['is_staff'] %}
       - git
       - staff
-{% endif %}
-{% if 'groups' in user %}
-{% for groupname in user['groups'] %}
+      {% endif %}
+      {% if 'groups' in user %}
+      {% for groupname in user['groups'] %}
       - {{ groupname }}
-{% endfor %}
-{% endif %}
-{% if 'createhome' in user and user['createhome'] %}
+      {% endfor %}
+      {% endif %}
+    {% if 'createhome' in user and user['createhome'] %}
     - home: /home/{{ username }}
-{% elif 'is_staff' in user and user['is_staff'] %}
-    - home: /home/{{ username }}
-{% endif %}
+    {% endif %}
     - name: {{ username }}
     - present
-{% if 'shell' in user %}
+    {% if 'shell' in user %}
     - shell: {{ user['shell'] }}
-{% elif 'class' in user and user['class'] == "human" %}
+    {% elif 'class' in user and user['class'] == "human" %}
     - shell: /bin/bash
-{% else -%}
+    {% else -%}
     - shell: /usr/sbin/nologin
-{% endif %}
-{% if 'class' in user and user['class'] == "system" %}
+    {%- endif %}
+    {% if 'class' in user and user['class'] == "system" %}
     - system: True
-{% endif %}
+    {% endif %}
 
 {% if 'createhome' in user and user['createhome'] %}
 /home/{{ username }}-perms:
