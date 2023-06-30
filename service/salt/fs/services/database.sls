@@ -83,7 +83,7 @@ frontend_{{ dbid }}_database:
 
 frontend_{{ dbid }}_database_privileges:
   postgres_privileges.present:
-    - name: {{ pillar['frontend_user'] }}
+    - name: {{ database['user'] }}
     - object_name: {{ database['name'] }}
     - object_type: database
     - privileges:

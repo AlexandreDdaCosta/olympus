@@ -23,7 +23,8 @@ THUMBNAIL_DEBUG = True
 # Database
 
 DATABASES = {
-    'default': {
+{% for dbid, database in pillar.get('frontend_databases', {}).items() %}
+    '{{ dbid }}': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
 {%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
 {%- if 'server' in hostinfo and hostinfo['server'] == 'database' -%}
@@ -34,27 +35,11 @@ DATABASES = {
 {%- endfor -%}
 {%- endif -%}
 {%- endfor %}
-        'NAME': '{{ pillar['frontend_databases']['default']['name'] }}',
+        'NAME': '{{ database['name'] }}',
         'OPTIONS': {'sslmode': 'require'},
-        'PASSWORD': '{{ frontend_db_key }}',
+        'PASSWORD': '{{ database['passphrase'] }}',
         'PORT': '{{ pillar['postgresql_port'] }}',
-        'USER': '{{ pillar['frontend_databases']['default']['user'] }}',
+        'USER': '{{ database['user'] }}',
     },
-    'users': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-{%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
-{%- if 'server' in hostinfo and hostinfo['server'] == 'database' -%}
-{%- for ip in hostinfo['ipv4'] -%}
-{%- if pillar.ip_network in ip %}
-        'HOST': '{{ ip }}',
-{%- endif -%}
-{%- endfor -%}
-{%- endif -%}
-{%- endfor %}
-        'NAME': '{{ pillar['frontend_databases']['user']['name'] }}',
-        'OPTIONS': {'sslmode': 'require'},
-        'PASSWORD': '{{ frontend_db_key }}',
-        'PORT': '{{ pillar['postgresql_port'] }}',
-        'USER': '{{ pillar['frontend_databases']['user']['user'] }}',
-    },
+{% endfor %}
 }
