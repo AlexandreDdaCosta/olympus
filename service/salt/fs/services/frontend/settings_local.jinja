@@ -23,7 +23,7 @@ THUMBNAIL_DEBUG = True
 # Database
 
 DATABASES = {
-{% for dbid, database in pillar.get('frontend_databases', {}).items() %}
+{%- for dbid, database in pillar.get('frontend_databases', {}).items() %}
     '{{ dbid }}': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
 {%- for host, hostinfo in salt['mine.get']('*', 'grains.items').items() -%}
@@ -41,5 +41,5 @@ DATABASES = {
         'PORT': '{{ pillar['postgresql_port'] }}',
         'USER': '{{ database['user'] }}',
     },
-{% endfor %}
+{%- endfor %}
 }
