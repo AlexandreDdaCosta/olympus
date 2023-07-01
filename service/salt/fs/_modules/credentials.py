@@ -26,7 +26,7 @@ def frontend_db_password():
     if (os.path.isfile(frontend_credential_file)
             and os.path.isfile(frontend_password_file_name)):
         # If frontend configuration exists and password file exists,
-        # make sure the config file passwod matches that of the
+        # make sure the config file password matches that of the
         # password file
         cmd = ("cat " + frontend_password_file_name)
         p = subprocess.Popen(cmd,

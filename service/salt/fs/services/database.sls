@@ -123,6 +123,23 @@ frontend_db_user_pwd_reset:
     - mode: 0755
     - user: pgadmin
 
+{# User /pgpass files for pgadmin #}
+{% for user, userdata in pillar.get('users', {}).items() %}
+{% if email_address in userdata %}
+{% if user == 'pgadmin' or 'is_staff' in user and user['is_staff'] %}
+
+{{ user }}_pgpass_file:
+  file.managed:
+    - group: pgadmin
+    - mode: 0600
+    - source: salt://services/database/pgpass.jinja
+    - template: jinja
+    - user: pgadmin
+
+{% endif %}
+{% endif %}
+{% endfor %}
+
 {# TODO: 
 
 1. Add these types of /pgpass files:
