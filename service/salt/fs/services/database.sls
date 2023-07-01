@@ -124,19 +124,29 @@ frontend_db_user_pwd_reset:
     - user: pgadmin
 
 {# User /pgpass files for pgadmin #}
-{% for user, userdata in pillar.get('users', {}).items() %}
-{% if 'email_address' in userdata %}
-{% if user == 'pgadmin' or 'is_staff' in user and user['is_staff'] %}
 
+{% if 'pgadmin' in pillar['users'] and 'email_address' in pillar['users']['pgadmin'] %}
+pgadmin_pgpass_file:
+  file.managed:
+    - group: pgadmin
+    - mode: 0600
+    - name: {{ pillar['pgadmin_lib_path'] }}/storage/{{ pillar['users']['pgadmin']['email_address'] | regex_replace('@', '_') }}
+    - source: salt://services/database/pgpass.jinja
+    - template: jinja
+    - user: pgadmin
+{% endif %}
+
+{% for user, userdata in pillar.get('users', {}).items() %}
+{% if 'email_address' in userdata and 'is_staff' in userdata and userdata['is_staff'] %}
 {{ user }}_pgpass_file:
   file.managed:
     - group: pgadmin
     - mode: 0600
+    - name: {{ pillar['pgadmin_lib_path'] }}/storage/{{ pillar['users'][user]['email_address'] | regex_replace('@', '_') }}
     - source: salt://services/database/pgpass.jinja
     - template: jinja
     - user: pgadmin
 
-{% endif %}
 {% endif %}
 {% endfor %}
 
