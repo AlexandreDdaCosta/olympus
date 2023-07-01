@@ -125,7 +125,7 @@ frontend_db_user_pwd_reset:
 
 {# User /pgpass files for pgadmin #}
 {% for user, userdata in pillar.get('users', {}).items() %}
-{% if email_address in userdata %}
+{% if 'email_address' in userdata %}
 {% if user == 'pgadmin' or 'is_staff' in user and user['is_staff'] %}
 
 {{ user }}_pgpass_file:
