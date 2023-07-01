@@ -143,12 +143,9 @@ frontend_db_user_pwd_reset:
 
 {# TODO: 
 
-1. Add these types of /pgpass files:
+1. /pgpass files:
 
-./storage/alexandre.dias.dacosta_gmail.com/pgpass
-./storage/pgadmin_laikasden.com/pgpass
-
-Format: 192.168.1.179:5432:app_data:{{ pillar['frontend_user'] }}:uvyj0tCAeI5dDhI8C6XKF6mEoxxzv0
+Will need password reset; see frontend_db_user_pwd_reset
 Will need to be rotated out of security.sls. See "BEGIN Shared credentials"
 
 2. Upgrade system for pgadmin docker container
