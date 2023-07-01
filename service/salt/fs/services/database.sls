@@ -125,24 +125,28 @@ frontend_db_user_pwd_reset:
 
 {# User /pgpass files for pgadmin #}
 
+{#
 {% if 'pgadmin' in pillar['users'] and 'email_address' in pillar['users']['pgadmin'] %}
 pgadmin_pgpass_file:
   file.managed:
     - group: pgadmin
     - mode: 0600
-    - name: {{ pillar['pgadmin_lib_path'] }}/storage/{{ pillar['users']['pgadmin']['email_address'] | regex_replace('@', '_') }}
+    - name: {{ pillar['pgadmin_lib_path'] }}/storage/{{ pillar['users']['pgadmin']['email_address'] | regex_replace('@', '_') }}/pgpass
     - source: salt://services/database/pgpass.jinja
     - template: jinja
     - user: pgadmin
 {% endif %}
+#}
 
+{#{% if 'email_address' in userdata and 'is_staff' in userdata and userdata['is_staff'] %}#}
 {% for user, userdata in pillar.get('users', {}).items() %}
-{% if 'email_address' in userdata and 'is_staff' in userdata and userdata['is_staff'] %}
+{% if ( (user == 'pgadmin') or
+        ('is_staff' in userdata and userdata['is_staff']) ) %}
 {{ user }}_pgpass_file:
   file.managed:
     - group: pgadmin
     - mode: 0600
-    - name: {{ pillar['pgadmin_lib_path'] }}/storage/{{ pillar['users'][user]['email_address'] | regex_replace('@', '_') }}
+    - name: {{ pillar['pgadmin_lib_path'] }}/storage/{{ pillar['users'][user]['email_address'] | regex_replace('@', '_') }}/pgpass
     - source: salt://services/database/pgpass.jinja
     - template: jinja
     - user: pgadmin
