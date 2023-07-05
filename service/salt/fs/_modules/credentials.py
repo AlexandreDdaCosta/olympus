@@ -92,6 +92,7 @@ def pgpass_frontend_password(file_name):
         pgpass_file_contents = pgpass_file.read()
         pgpass_file.close()
         new_contents = ''
+        my_file = open("/tmp/foo", "w")
         for line in pgpass_file_contents:
             result = re.match(r'\S', line)
             if not result:
@@ -101,10 +102,17 @@ def pgpass_frontend_password(file_name):
             for db in frontend_databases:
                 database = frontend_databases[db]['name']
                 user = frontend_databases[db]['user']
-                pattern = '^\\S+:' + database + ':' + user + ':\\S+:\\S+:\\S+$'
+                pattern = ('^\\S+:' +
+                           database +
+                           ':' +
+                           user +
+                           ':\\S+:\\S+:\\S+$')
+                my_file.write("PATTERN\n")
+                my_file.write(pattern + "\n")
                 result = re.match(pattern, line)
                 if not result:
                     continue
+                my_file.write("SUBSTITUTING\n")
                 db_matched = True
                 updated_line = re.sub(r'^(\S+:\S+:\S+:\S+:)(\S+)$',
                                       r'\1' + passphrase,
@@ -112,8 +120,10 @@ def pgpass_frontend_password(file_name):
                 new_contents += updated_line
             if not db_matched:
                 new_contents += line
-        with open("/tmp/foo", "w") as my_file:
-            my_file.write(new_contents)
+            new_contents += "\n"
+        new_contents = new_contents[:-1]
+        my_file.write(new_contents)
+        my_file.close()
     return True
 
 
