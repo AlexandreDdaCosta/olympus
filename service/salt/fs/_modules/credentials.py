@@ -63,6 +63,29 @@ def interface_backend():
     return True
 
 
+def pgpass_frontend_password(file_name):
+    frontend_password_file_name = \
+        __salt__['pillar.get']('frontend_password_file_name')  # noqa: F403
+    if (os.path.isfile(frontend_credential_file)
+            and os.path.isfile(frontend_password_file_name)):
+        # If frontend configuration exists and password file exists,
+        # make sure the config file password matches that of the
+        # password file
+        cmd = ("cat " + frontend_password_file_name)
+        p = subprocess.Popen(cmd,
+                             shell=True,
+                             stdout=subprocess.PIPE,
+                             text=True)
+        passphrase = p.communicate()[0].strip("\n")
+        cmd = ("perl -i -pe " +
+               "'s/(.*):(.*?)$/$1:" +
+               passphrase +
+               "$3/g' " +
+               file_name)
+        subprocess.check_call(cmd, shell=True)
+    return True
+
+
 def set_pgadmin_password(user_email, new_password):
     pgadmin_db = (__salt__['pillar.get']('pgadmin_lib_path')  # noqa: F403
                   + '/pgadmin4.db')

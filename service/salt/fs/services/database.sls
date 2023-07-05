@@ -129,6 +129,7 @@ frontend_db_user_pwd_reset:
 {% if ( (user == 'pgadmin') or
         ('is_staff' in userdata and userdata['is_staff']) ) %}
 {% if 'email_address' in userdata %}
+
 {{ user }}_pgpass_file:
   file.managed:
     - group: pgadmin
@@ -137,6 +138,14 @@ frontend_db_user_pwd_reset:
     - source: salt://services/database/pgpass.jinja
     - template: jinja
     - user: pgadmin
+
+{#
+{{ username }}_pgpass_password:
+  module.run:
+    - credentials.pgpass_frontend_password:
+      - file_name: {{ pillar['pgadmin_lib_path'] }}/storage/{{ pillar['users'][user]['email_address'] | regex_replace('@', '_') }}/pgpass
+#}
+
 {% endif %}
 {% endif %}
 {% endfor %}
