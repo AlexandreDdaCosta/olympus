@@ -105,11 +105,11 @@ def pgpass_frontend_password(file_name):
             for db in frontend_databases:
                 database = frontend_databases[db]['name']
                 user = frontend_databases[db]['user']
-                pattern = ('^\\S+:' +
+                pattern = ('^\\S+:\\S+:' +
                            database +
                            ':' +
                            user +
-                           ':\\S+:\\S+:\\S+$')
+                           ':\\S+$')
                 my_file.write("PATTERN\n")
                 my_file.write(pattern + "\n")
                 result = re.match(pattern, line)
