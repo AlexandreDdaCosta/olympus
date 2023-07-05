@@ -72,6 +72,7 @@ def pgpass_frontend_password(file_name):
         # If frontend configuration exists and password file exists,
         # make sure the config file password matches that of the
         # password file
+        '''
         cmd = ("cat " + frontend_password_file_name)
         p = subprocess.Popen(cmd,
                              shell=True,
@@ -84,6 +85,7 @@ def pgpass_frontend_password(file_name):
                "$3/g' " +
                file_name)
         subprocess.check_call(cmd, shell=True)
+        '''
     return True
 
 
