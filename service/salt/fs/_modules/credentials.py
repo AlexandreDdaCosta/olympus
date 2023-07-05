@@ -93,14 +93,10 @@ def pgpass_frontend_password(file_name):
         pgpass_file.close()
         new_contents = ''
         lines = pgpass_file_contents.splitlines()
-        my_file = open("/tmp/foo", "w")
         for line in lines:
-            my_file.write("LINE\n")
-            my_file.write(line + "\n")
             result = re.match(r'\S', line)
             if not result:
                 continue
-            #  192.168.1.179:5432:olympus:uwsgi:MczFvDCExdO5XiLfgHXGVKrTdiLuX0
             db_matched = False
             for db in frontend_databases:
                 database = frontend_databases[db]['name']
@@ -110,12 +106,9 @@ def pgpass_frontend_password(file_name):
                            ':' +
                            user +
                            ':\\S+$')
-                my_file.write("PATTERN\n")
-                my_file.write(pattern + "\n")
                 result = re.match(pattern, line)
                 if not result:
                     continue
-                my_file.write("SUBSTITUTING\n")
                 db_matched = True
                 updated_line = re.sub(r'^(\S+:\S+:\S+:\S+:)(\S+)$',
                                       r'\1' + passphrase,
@@ -124,9 +117,8 @@ def pgpass_frontend_password(file_name):
             if not db_matched:
                 new_contents += line
             new_contents += "\n"
-        new_contents = new_contents[:-1]
-        my_file.write(new_contents)
-        my_file.close()
+        with open(file_name, "w") as updated_pgpass_file:
+            updated_pgpass_file.write(new_contents)
     return True
 
 
