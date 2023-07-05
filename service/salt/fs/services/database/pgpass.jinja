@@ -2,6 +2,6 @@
 {%- for ipv4 in grains.get('ipv4') -%}
 {%- if pillar.ip_network in ipv4 -%}
 {{ ipv4 }}:{{ pillar['postgresql_port'] }}:{{ database['name'] }}:{{ database['user'] }}:{{ database['passphrase'] }}
-{% endif -%}
+{%- endif -%}
 {%- endfor -%}
 {%- endfor -%}
