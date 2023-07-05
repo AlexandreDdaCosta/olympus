@@ -94,6 +94,8 @@ def pgpass_frontend_password(file_name):
         new_contents = ''
         my_file = open("/tmp/foo", "w")
         for line in pgpass_file_contents:
+            my_file.write("LINE\n")
+            my_file.write(line + "\n")
             result = re.match(r'\S', line)
             if not result:
                 continue
