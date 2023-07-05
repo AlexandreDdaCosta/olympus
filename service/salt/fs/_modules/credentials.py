@@ -64,9 +64,10 @@ def interface_backend():
 
 
 def pgpass_frontend_password(file_name):
+    # ALEX
     frontend_password_file_name = \
         __salt__['pillar.get']('frontend_password_file_name')  # noqa: F403
-    if (os.path.isfile(frontend_credential_file)
+    if (os.path.isfile(file_name)
             and os.path.isfile(frontend_password_file_name)):
         # If frontend configuration exists and password file exists,
         # make sure the config file password matches that of the

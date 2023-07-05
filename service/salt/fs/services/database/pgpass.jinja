@@ -1,4 +1,5 @@
 {% set trim_blocks=True %}
+{% set lstrip_blocks=True %}
 {% for dbid, database in pillar.get('frontend_databases', {}).items() %}
 {% for ipv4 in grains.get('ipv4') %}
 {% if pillar.ip_network in ipv4 %}
