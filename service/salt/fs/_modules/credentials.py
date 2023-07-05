@@ -76,21 +76,14 @@ def pgpass_frontend_password(file_name):
         passphrase = p.communicate()[0].strip("\n")
     frontend_databases = \
         __salt__['pillar.get']('frontend_databases')  # noqa: F403
+    # Clean up pgpass file represented by file_name
+    # 1. Remove empty lines
+    # 2. Swap out password for all lines that contain a frontend database
+    #    entry
     with open("/tmp/foo", "w") as my_file:
-        my_file.write(frontend_databases)
+        my_file.write(str(frontend_databases))
         my_file.write(passphrase)
         my_file.write(file_name)
-        '''
-        # If pgpass file exists and frontend password file exists,
-        # make sure the config file password matches that of the
-        # password file
-        cmd = ("perl -i -pe " +
-               "'s/(.*):(.*?)$/$1:" +
-               passphrase +
-               "$3/g' " +
-               file_name)
-        subprocess.check_call(cmd, shell=True)
-        '''
     return True
 
 
