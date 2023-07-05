@@ -9,6 +9,7 @@ import hashlib
 import hmac
 import os
 import pwd
+import re
 import sqlite3
 import subprocess
 
@@ -89,9 +90,17 @@ def pgpass_frontend_password(file_name):
         pgpass_file_contents = pgpass_file.read()
         pgpass_file.close()
         with open("/tmp/foo", "w") as my_file:
-            my_file.write(str(frontend_databases))
+            my_file.write(frontend_databases)
+            my_file.write("\n")
             my_file.write(str(passphrase))
-            my_file.write(pgpass_file_contents)
+            my_file.write("\n")
+            for line in pgpass_file_contents:
+                result = re.match(r'\S+', line)
+                if not result:
+                    continue
+                my_file.write("line")
+                my_file.write(line)
+                my_file.write("\n")
     return True
 
 
