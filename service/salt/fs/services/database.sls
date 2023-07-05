@@ -139,7 +139,7 @@ frontend_db_user_pwd_reset:
     - template: jinja
     - user: pgadmin
 
-{{ username }}_pgpass_password:
+{{ user }}_pgpass_password:
   module.run:
     - credentials.pgpass_frontend_password:
       - file_name: {{ pillar['pgadmin_lib_path'] }}/storage/{{ pillar['users'][user]['email_address'] | regex_replace('@', '_') }}/pgpass
