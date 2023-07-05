@@ -81,6 +81,8 @@ def pgpass_frontend_password(file_name):
                                  stdout=subprocess.PIPE,
                                  text=True)
             passphrase = p.communicate()[0].strip("\n")
+        if passphrase is None:
+            return True
         frontend_databases = \
             __salt__['pillar.get']('frontend_databases')
         # Clean up pgpass file represented by file_name
@@ -89,18 +91,29 @@ def pgpass_frontend_password(file_name):
         pgpass_file = open(file_name)
         pgpass_file_contents = pgpass_file.read()
         pgpass_file.close()
-        with open("/tmp/foo", "w") as my_file:
-            my_file.write(frontend_databases)
-            my_file.write("\n")
-            my_file.write(str(passphrase))
-            my_file.write("\n")
-            for line in pgpass_file_contents:
-                result = re.match(r'\S+', line)
+        new_contents = ''
+        for line in pgpass_file_contents:
+            result = re.match(r'\S', line)
+            if not result:
+                continue
+            #  192.168.1.179:5432:olympus:uwsgi:MczFvDCExdO5XiLfgHXGVKrTdiLuX0
+            db_matched = False
+            for db in frontend_databases:
+                database = frontend_databases[db]['name']
+                user = frontend_databases[db]['user']
+                pattern = '^\\S+:' + database + ':' + user + ':\\S+:\\S+:\\S+$'
+                result = re.match(pattern, line)
                 if not result:
                     continue
-                my_file.write("line")
-                my_file.write(line)
-                my_file.write("\n")
+                db_matched = True
+                updated_line = re.sub(r'^(\S+:\S+:\S+:\S+:)(\S+)$',
+                                      r'\1' + passphrase,
+                                      line)
+                new_contents += updated_line
+            if not db_matched:
+                new_contents += line
+        with open("/tmp/foo", "w") as my_file:
+            my_file.write(new_contents)
     return True
 
 
