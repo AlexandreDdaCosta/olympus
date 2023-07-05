@@ -14,15 +14,20 @@ import subprocess
 
 from base64 import b64encode
 from passlib.hash import pbkdf2_sha512
+from typing import Any, TYPE_CHECKING
 
 from olympus import RESTAPI_SERVICE, User
+
+if TYPE_CHECKING:
+    __grains__: Any = None
+    __salt__: Any = None
 
 
 def frontend_db_password():
     frontend_password_file_name = \
-        __salt__['pillar.get']('frontend_password_file_name')  # noqa: F403
+        __salt__['pillar.get']('frontend_password_file_name')
     frontend_credential_file = \
-        __salt__['pillar.get']('frontend_conf_file_name')  # noqa: F403
+        __salt__['pillar.get']('frontend_conf_file_name')
     if (os.path.isfile(frontend_credential_file)
             and os.path.isfile(frontend_password_file_name)):
         # If frontend configuration exists and password file exists,
@@ -44,13 +49,13 @@ def frontend_db_password():
 
 
 def interface_backend():
-    frontend_user = __salt__['pillar.get']('frontend_user')  # noqa: F403
-    passphrase = __salt__['data.get']('frontend_db_key')  # noqa: F403
-    server = __grains__['server']  # noqa: F403
+    frontend_user = __salt__['pillar.get']('frontend_user')
+    passphrase = __salt__['data.get']('frontend_db_key')
+    server = __grains__['server']
     services = None
     if (passphrase is not None and server is not None):
         key = 'servers:' + server + ':services'
-        services = __salt__['pillar.get'](key)  # noqa: F403
+        services = __salt__['pillar.get'](key)
         if 'database' in services:
             cmd = ("sudo -u postgres psql -c \"ALTER USER " +
                    frontend_user +
@@ -59,36 +64,39 @@ def interface_backend():
                    "';\"")
             subprocess.check_call(cmd, shell=True)
         if 'frontend' not in services:
-            __salt__['data.pop']('frontend_db_key')  # noqa: F403
+            __salt__['data.pop']('frontend_db_key')
     return True
 
 
 def pgpass_frontend_password(file_name):
-    frontend_password_file_name = \
-        __salt__['pillar.get']('frontend_password_file_name')  # noqa: F403
-    passphrase = None
-    if os.path.isfile(frontend_password_file_name):
-        cmd = ("cat " + frontend_password_file_name)
-        p = subprocess.Popen(cmd,
-                             shell=True,
-                             stdout=subprocess.PIPE,
-                             text=True)
-        passphrase = p.communicate()[0].strip("\n")
-    frontend_databases = \
-        __salt__['pillar.get']('frontend_databases')  # noqa: F403
-    # Clean up pgpass file represented by file_name
-    # 1. Remove empty lines
-    # 2. Swap out password for all lines that contain a frontend database
-    #    entry
-    with open("/tmp/foo", "w") as my_file:
-        my_file.write(str(frontend_databases))
-        my_file.write(passphrase)
-        my_file.write(file_name)
+    if os.path.isfile(file_name):
+        frontend_password_file_name = \
+            __salt__['pillar.get']('frontend_password_file_name')
+        passphrase = None
+        if os.path.isfile(frontend_password_file_name):
+            cmd = ("cat " + frontend_password_file_name)
+            p = subprocess.Popen(cmd,
+                                 shell=True,
+                                 stdout=subprocess.PIPE,
+                                 text=True)
+            passphrase = p.communicate()[0].strip("\n")
+        frontend_databases = \
+            __salt__['pillar.get']('frontend_databases')
+        # Clean up pgpass file represented by file_name
+        # 1. Remove empty lines
+        # 2. Swap out password for all lines that contain a frontend entry
+        pgpass_file = open(file_name)
+        pgpass_file_contents = pgpass_file.read()
+        pgpass_file.close()
+        with open("/tmp/foo", "w") as my_file:
+            my_file.write(str(frontend_databases))
+            my_file.write(str(passphrase))
+            my_file.write(pgpass_file_contents)
     return True
 
 
 def set_pgadmin_password(user_email, new_password):
-    pgadmin_db = (__salt__['pillar.get']('pgadmin_lib_path')  # noqa: F403
+    pgadmin_db = (__salt__['pillar.get']('pgadmin_lib_path')
                   + '/pgadmin4.db')
     connection = sqlite3.connect(pgadmin_db)
     cursor = connection.cursor()
@@ -131,11 +139,11 @@ def set_pgadmin_password(user_email, new_password):
 
 
 def rotate_restapi_password_file(username, tmp_file_name):
-    server = __grains__['server']  # noqa: F403
+    server = __grains__['server']
     staff_key = 'users:' + username + ':is_staff'
-    is_staff = __salt__['pillar.get'](staff_key)  # noqa: F403
+    is_staff = __salt__['pillar.get'](staff_key)
     servers_key = 'users:' + username + ':server'
-    user_servers = __salt__['pillar.get'](servers_key)  # noqa: F403
+    user_servers = __salt__['pillar.get'](servers_key)
     if not user_servers:
         user_servers = []
     if is_staff:
@@ -156,18 +164,18 @@ def rotate_restapi_password_file(username, tmp_file_name):
 
 def shared_database():
     frontend_password_file_name = \
-        __salt__['pillar.get']('frontend_password_file_name')  # noqa: F403
-    frontend_user = __salt__['pillar.get']('frontend_user')  # noqa: F403
-    passphrase = __salt__['data.get']('frontend_db_key')  # noqa: F403
-    server = __grains__['server']  # noqa: F403
-    web_daemon = __salt__['pillar.get']('web_daemon')  # noqa: F403
-    bin_path = __salt__['pillar.get']('bin_path_scripts')  # noqa: F403
-    kill_script = __salt__['pillar.get']('dev_kill_script')  # noqa: F403
-    start_script = __salt__['pillar.get']('dev_start_script')  # noqa: F403
+        __salt__['pillar.get']('frontend_password_file_name')
+    frontend_user = __salt__['pillar.get']('frontend_user')
+    passphrase = __salt__['data.get']('frontend_db_key')
+    server = __grains__['server']
+    web_daemon = __salt__['pillar.get']('web_daemon')
+    bin_path = __salt__['pillar.get']('bin_path_scripts')
+    kill_script = __salt__['pillar.get']('dev_kill_script')
+    start_script = __salt__['pillar.get']('dev_start_script')
     services = None
     if (passphrase is not None and server is not None):
         key = 'servers:' + server + ':services'
-        services = __salt__['pillar.get'](key)  # noqa: F403
+        services = __salt__['pillar.get'](key)
         delete_minion_data = False
         # Write updated passphrase into password file
         with open(frontend_password_file_name, "w") as passfile:
@@ -209,7 +217,7 @@ def shared_database():
         if 'frontend' in services:
             delete_minion_data = False
             frontend_credential_file = \
-                __salt__['pillar.get']('frontend_conf_file_name')  # noqa: F403
+                __salt__['pillar.get']('frontend_conf_file_name')
             if os.path.isfile(frontend_credential_file):
                 # If frontend configuration exists, update password
                 cmd = ("perl -i -pe " +
@@ -242,5 +250,5 @@ def shared_database():
                         cmd = "service " + web_daemon + " restart"
                         subprocess.check_call(cmd, shell=True)
         if delete_minion_data is True:
-            __salt__['data.pop']('frontend_db_key')  # noqa: F403
+            __salt__['data.pop']('frontend_db_key')
     return True
