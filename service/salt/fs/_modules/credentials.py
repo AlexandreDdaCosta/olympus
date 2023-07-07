@@ -31,12 +31,12 @@ def find_update_pgpass():
     if not os.path.isfile(frontend_password_file_old_name):
         return True
     frontend_password_file_old = open(frontend_password_file_old_name)
-    old_passphrase = frontend_password_file_old.read()
+    old_passphrase = frontend_password_file_old.read().strip("\n")
     frontend_password_file_old.close()
     frontend_password_file_name = \
         __salt__['pillar.get']('frontend_password_file_name')
     frontend_password_file = open(frontend_password_file_name)
-    new_passphrase = frontend_password_file.read()
+    new_passphrase = frontend_password_file.read().strip("\n")
     frontend_password_file.close()
     pgadmin_storage_path = \
         __salt__['pillar.get']('pgadmin_storage_path')
@@ -65,7 +65,7 @@ def frontend_db_password():
         # make sure the config file password matches that of the
         # password file
         frontend_password_file = open(frontend_password_file_name)
-        passphrase = frontend_password_file.read()
+        passphrase = frontend_password_file.read().strip("\n")
         frontend_password_file.close()
         cmd = ("perl -i -pe " +
                "'s/('\\''PASSWORD'\\''\\:\\s+'\\'')(.*?)('\\'')/$1" +
@@ -103,7 +103,7 @@ def pgpass_frontend_password(file_name):
         passphrase = None
         if os.path.isfile(frontend_password_file_name):
             frontend_password_file = open(frontend_password_file_name)
-            passphrase = frontend_password_file.read()
+            passphrase = frontend_password_file.read().strip("\n")
             frontend_password_file.close()
         if passphrase is None:
             return True
@@ -113,7 +113,7 @@ def pgpass_frontend_password(file_name):
         # 1. Remove empty lines
         # 2. Swap out password for all lines that contain a frontend entry
         pgpass_file = open(file_name)
-        pgpass_file_contents = pgpass_file.read()
+        pgpass_file_contents = pgpass_file.read().strip("\n")
         pgpass_file.close()
         new_contents = ''
         lines = pgpass_file_contents.splitlines()
