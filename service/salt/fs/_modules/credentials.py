@@ -25,6 +25,35 @@ if TYPE_CHECKING:
     __salt__: Any = None
 
 
+def find_update_pgpass():
+    frontend_password_file_old_name = \
+        __salt__['pillar.get']('frontend_password_file_name') + '.old'
+    if not os.path.isfile(frontend_password_file_old_name):
+        return True
+    frontend_password_file_old = open(frontend_password_file_old_name)
+    old_passphrase = frontend_password_file_old.read()
+    frontend_password_file_old.close()
+    frontend_password_file_name = \
+        __salt__['pillar.get']('frontend_password_file_name')
+    frontend_password_file = open(frontend_password_file_name)
+    new_passphrase = frontend_password_file.read()
+    frontend_password_file.close()
+    pgadmin_storage_path = \
+        __salt__['pillar.get']('pgadmin_storage_path')
+    for root, dirs, files in os.walk(pgadmin_storage_path):  # pyright: ignore
+        if 'pgpass' in files:
+            pgpass_file_name = os.path.join(root, 'pgpass')
+            cmd = ("perl -i -pe " +
+                   "'s/" +
+                   old_passphrase +
+                   "/" +
+                   new_passphrase +
+                   "/g' " +
+                   pgpass_file_name)
+            subprocess.check_call(cmd, shell=True)
+    return True
+
+
 def frontend_db_password():
     frontend_password_file_name = \
         __salt__['pillar.get']('frontend_password_file_name')
@@ -35,12 +64,9 @@ def frontend_db_password():
         # If frontend configuration exists and password file exists,
         # make sure the config file password matches that of the
         # password file
-        cmd = ("cat " + frontend_password_file_name)
-        p = subprocess.Popen(cmd,
-                             shell=True,
-                             stdout=subprocess.PIPE,
-                             text=True)
-        passphrase = p.communicate()[0].strip("\n")
+        frontend_password_file = open(frontend_password_file_name)
+        passphrase = frontend_password_file.read()
+        frontend_password_file.close()
         cmd = ("perl -i -pe " +
                "'s/('\\''PASSWORD'\\''\\:\\s+'\\'')(.*?)('\\'')/$1" +
                passphrase +

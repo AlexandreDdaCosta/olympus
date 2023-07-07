@@ -116,7 +116,7 @@ frontend_db_user_pwd_reset:
     - mode: 0755
     - user: pgadmin
 
-{{ pillar['pgadmin_lib_path'] }}/storage:
+{{ pillar['pgadmin_storage_path'] }}:
   file.directory:
     - group: pgadmin
     - makedirs: False
@@ -149,9 +149,8 @@ frontend_db_user_pwd_reset:
 {% endfor %}
 
 {# TODO: 
-1. /pgpass files: Will need to be rotated out of security.sls. See "BEGIN Shared credentials"
-2. Upgrade system for pgadmin docker container
-3. Create/rotate all pgadmin user passwords
+1. Upgrade system for pgadmin docker container
+2. Create/rotate all pgadmin user passwords
 #}
 
 pgadmin_docker_compose_file:
