@@ -75,12 +75,9 @@ def pgpass_frontend_password(file_name):
             __salt__['pillar.get']('frontend_password_file_name')
         passphrase = None
         if os.path.isfile(frontend_password_file_name):
-            cmd = ("cat " + frontend_password_file_name)
-            p = subprocess.Popen(cmd,
-                                 shell=True,
-                                 stdout=subprocess.PIPE,
-                                 text=True)
-            passphrase = p.communicate()[0].strip("\n")
+            frontend_password_file = open(frontend_password_file_name)
+            passphrase = frontend_password_file.read()
+            frontend_password_file.close()
         if passphrase is None:
             return True
         frontend_databases = \
