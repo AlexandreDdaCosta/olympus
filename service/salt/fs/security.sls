@@ -403,6 +403,17 @@ update_db_credential:
 
 # END Shared credentials
 
+# pgadmin
+
+{#
+# 2. Call credentials update script for all frontend/database minions
+find_update_pgadmin_passfiles:
+  cmd.run:
+    - name: salt -C 'G@services:database' credentials.find_update_pgpass
+    - require: 
+      - update_db_credential
+#}
+
 {% endif %}
 
 # Mongo access passwords, database permissions, and password files 

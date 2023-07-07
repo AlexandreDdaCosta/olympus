@@ -15,6 +15,7 @@ import subprocess
 
 from base64 import b64encode
 from passlib.hash import pbkdf2_sha512
+from shutil import copyfile
 from typing import Any, TYPE_CHECKING
 
 from olympus import RESTAPI_SERVICE, User
@@ -201,6 +202,10 @@ def shared_database():
         key = 'servers:' + server + ':services'
         services = __salt__['pillar.get'](key)
         delete_minion_data = False
+        # Back up password file if it exists
+        if os.path.isfile(frontend_password_file_name):
+            copyfile(frontend_password_file_name,
+                     frontend_password_file_name + '.old')
         # Write updated passphrase into password file
         with open(frontend_password_file_name, "w") as passfile:
             passfile.write(passphrase)
