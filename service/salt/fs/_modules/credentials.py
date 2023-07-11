@@ -277,9 +277,9 @@ def shared_database():
             if os.path.isfile(frontend_credential_file):
                 # If frontend configuration exists, update password
                 cmd = ("perl -i -pe " +
-                       "'s/('\\''PASSWORD'\\''\\:\\s+'\\'')(.*?)('\\'')/$1" +
+                       "'s/('\\''PASSWORD'\\''\\:\\s+'\\'')(.*?)('\\'')/${1}" +
                        passphrase +
-                       "$3/g' " +
+                       "${3}/g' " +
                        frontend_credential_file)
                 with open('tmp/foo', "w") as testfile:
                     testfile.write(cmd)
