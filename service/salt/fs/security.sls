@@ -405,13 +405,11 @@ update_db_credential:
 
 # pgadmin pgpass files with frontend credentials
 
-{#
 find_update_pgadmin_passfiles:
   cmd.run:
     - name: salt -C 'G@services:database' credentials.find_update_pgpass
     - require: 
       - update_db_credential
-#}
 
 {% endif %}
 
