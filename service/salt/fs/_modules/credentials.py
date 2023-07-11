@@ -68,9 +68,9 @@ def frontend_db_password():
         passphrase = frontend_password_file.read().strip("\n")
         frontend_password_file.close()
         cmd = ("perl -i -pe " +
-               "'s/('\\''PASSWORD'\\''\\:\\s+'\\'')(.*?)('\\'')/$1" +
+               "'s/('\\''PASSWORD'\\''\\:\\s+'\\'')(.*?)('\\'')/${1}" +
                passphrase +
-               "$3/g' " +
+               "${3}/g' " +
                frontend_credential_file)
         subprocess.check_call(cmd, shell=True)
     return True
@@ -217,8 +217,7 @@ def shared_database():
     frontend_password_file_name = \
         __salt__['pillar.get']('frontend_password_file_name')
     frontend_user = __salt__['pillar.get']('frontend_user')
-    # passphrase = __salt__['data.get']('frontend_db_key')
-    passphrase = '3JSnnWAOibfulePyTcityqYdl1r4lu'
+    passphrase = __salt__['data.get']('frontend_db_key')
     server = __grains__['server']
     web_daemon = __salt__['pillar.get']('web_daemon')
     bin_path = __salt__['pillar.get']('bin_path_scripts')
@@ -281,8 +280,6 @@ def shared_database():
                        passphrase +
                        "${3}/g' " +
                        frontend_credential_file)
-                with open('tmp/foo', "w") as testfile:
-                    testfile.write(cmd)
                 subprocess.check_call(cmd, shell=True)
                 # If dev frontend web service is running, restart
                 cmd = "ps -A | grep runserver | wc -l"
