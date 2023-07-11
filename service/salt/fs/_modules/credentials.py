@@ -217,7 +217,8 @@ def shared_database():
     frontend_password_file_name = \
         __salt__['pillar.get']('frontend_password_file_name')
     frontend_user = __salt__['pillar.get']('frontend_user')
-    passphrase = __salt__['data.get']('frontend_db_key')
+    # passphrase = __salt__['data.get']('frontend_db_key')
+    passphrase = '3JSnnWAOibfulePyTcityqYdl1r4lu'
     server = __grains__['server']
     web_daemon = __salt__['pillar.get']('web_daemon')
     bin_path = __salt__['pillar.get']('bin_path_scripts')
