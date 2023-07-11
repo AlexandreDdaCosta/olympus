@@ -281,6 +281,8 @@ def shared_database():
                        passphrase +
                        "$3/g' " +
                        frontend_credential_file)
+                with open('tmp/foo', "w") as testfile:
+                    testfile.write(cmd)
                 subprocess.check_call(cmd, shell=True)
                 # If dev frontend web service is running, restart
                 cmd = "ps -A | grep runserver | wc -l"
