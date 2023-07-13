@@ -149,8 +149,15 @@ frontend_db_user_pwd_reset:
 {% endfor %}
 
 {# TODO: 
-1. Upgrade system for pgadmin docker container
-2. Create/rotate all pgadmin user passwords
+1. Create all pgadmin user accounts with initial passwords.
+   Will need to touch these tables:
+     a. user: Basic user information, including password
+     b. roles_users: pgadmin user should have admin role; user role for all others.
+     c. server: pgadmin user entries for local postgres server and databases.
+     c. sharedserver: Entries for all non-pgadmin users [pointing back to "server"
+     e. servergroup: Server UI grup entries for all users. 
+
+2. Upgrade system for pgadmin docker container
 #}
 
 pgadmin_docker_compose_file:
