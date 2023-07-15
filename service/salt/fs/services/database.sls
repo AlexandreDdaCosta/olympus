@@ -123,41 +123,8 @@ frontend_db_user_pwd_reset:
     - mode: 0755
     - user: pgadmin
 
-{# User /pgpass files for pgadmin #}
-
-{% for user, userdata in pillar.get('users', {}).items() %}
-{% if ( (user == 'pgadmin') or
-        ('is_staff' in userdata and userdata['is_staff']) ) %}
-{% if 'email_address' in userdata %}
-
-{{ user }}_pgpass_file:
-  file.managed:
-    - group: pgadmin
-    - mode: 0600
-    - name: {{ pillar['pgadmin_lib_path'] }}/storage/{{ pillar['users'][user]['email_address'] | regex_replace('@', '_') }}/pgpass
-    - source: salt://services/database/pgpass.jinja
-    - template: jinja
-    - user: pgadmin
-
-{{ user }}_pgpass_password:
-  module.run:
-    - pgadmin.pgpass_frontend_password:
-      - file_name: {{ pillar['pgadmin_lib_path'] }}/storage/{{ pillar['users'][user]['email_address'] | regex_replace('@', '_') }}/pgpass
-
-{% endif %}
-{% endif %}
-{% endfor %}
-
 {# TODO: 
-1. Create all pgadmin user accounts with initial passwords.
-   Will need to touch these tables:
-     a. user: Basic user information, including password
-     b. roles_users: pgadmin user should have admin role; user role for all others.
-     c. server: pgadmin user entries for local postgres server and databases.
-     d. sharedserver: Entries for all non-pgadmin users (pointing back to "server")
-     e. servergroup: Server UI group entries for all users. 
-
-2. Upgrade system for pgadmin docker container
+Upgrade system for pgadmin docker container
 #}
 
 pgadmin_docker_compose_file:
@@ -204,6 +171,43 @@ pgadmin-service:
       - file: /lib/systemd/system/pgadmin.service
       - file: {{ pgadmin_path }}/docker-compose.yml
       - file: {{ pgadmin_path }}/servers.json
+
+{# pgadmin user management section #}
+
+{% for user, userdata in pillar.get('users', {}).items() %}
+{% if ( (user == 'pgadmin') or
+        ('is_staff' in userdata and userdata['is_staff']) ) %}
+{% if 'email_address' in userdata %}
+
+{# User /pgpass files for pgadmin #}
+
+{{ user }}_pgpass_file:
+  file.managed:
+    - group: pgadmin
+    - mode: 0600
+    - name: {{ pillar['pgadmin_lib_path'] }}/storage/{{ pillar['users'][user]['email_address'] | regex_replace('@', '_') }}/pgpass
+    - source: salt://services/database/pgpass.jinja
+    - template: jinja
+    - user: pgadmin
+
+{{ user }}_pgpass_password:
+  module.run:
+    - pgadmin.pgpass_frontend_password:
+      - file_name: {{ pillar['pgadmin_lib_path'] }}/storage/{{ pillar['users'][user]['email_address'] | regex_replace('@', '_') }}/pgpass
+
+{# User SQLite database entries pgadmin #}
+
+{{ user }}_pgadmin_sqlite:
+  module.run:
+    - pgadmin.pgadmin_db_user:
+      - username: user
+      - email_address: {{ pillar['users'][user]['email_address'] }}
+
+{% endif %}
+{% endif %}
+{% endfor %}
+
+
 
 {#
 Currently, we don't rotate the file below since we don't know how to update

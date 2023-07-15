@@ -22,6 +22,10 @@ if TYPE_CHECKING:
 
 
 def find_update_pgpass():
+    """
+    For all front end databases, updates the password entry in each
+    pgadmin user's "pgpass" file.
+    """
     frontend_password_file_old_name = \
         __salt__['pillar.get']('frontend_password_file_name') + '.old'
     if not os.path.isfile(frontend_password_file_old_name):
@@ -51,6 +55,9 @@ def find_update_pgpass():
 
 
 def pgpass_frontend_password(file_name):
+    """
+    Updates a user's pgpass file with updated front end password
+    """
     if os.path.isfile(file_name):
         frontend_password_file_name = \
             __salt__['pillar.get']('frontend_password_file_name')
@@ -101,6 +108,12 @@ def pgpass_frontend_password(file_name):
 
 
 def set_pgadmin_password(user_email, new_password):
+    """
+    Updates the main pgadmin password entry for a user.
+    Currently, this function exists as a placeholder.
+    The logic embedded here will be incorporated into a more comprehensive
+    function designed to populate SQLite entries for all pgadmin users.
+    """
     pgadmin_db = (__salt__['pillar.get']('pgadmin_lib_path')
                   + '/pgadmin4.db')
     connection = sqlite3.connect(pgadmin_db)
@@ -140,4 +153,23 @@ def set_pgadmin_password(user_email, new_password):
         user_email)
     cursor.execute(query)
     connection.commit()
+    return True
+
+
+def pgadmin_db_user(username, email_address):
+    """
+    Populates and updates user configuration entries in pgadmin's
+    SQLite database.
+    Will need to touch these tables:
+        a. user: Basic user information, including password
+        b. roles_users: pgadmin user should have admin role; user role
+        for all others.
+        c. server: pgadmin user entries for local postgres server and
+        databases.
+        d. sharedserver: Entries for all non-pgadmin users (pointing
+        back to "server")
+        e. servergroup: Server UI group entries for all users.
+    """
+    print(username)
+    print(email_address)
     return True
