@@ -407,7 +407,7 @@ update_db_credential:
 
 find_update_pgadmin_passfiles:
   cmd.run:
-    - name: salt -C 'G@services:database' credentials.find_update_pgpass
+    - name: salt -C 'G@services:database' pgadmin.find_update_pgpass
     - require: 
       - update_db_credential
 

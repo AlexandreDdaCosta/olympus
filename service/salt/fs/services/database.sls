@@ -141,7 +141,7 @@ frontend_db_user_pwd_reset:
 
 {{ user }}_pgpass_password:
   module.run:
-    - credentials.pgpass_frontend_password:
+    - pgadmin.pgpass_frontend_password:
       - file_name: {{ pillar['pgadmin_lib_path'] }}/storage/{{ pillar['users'][user]['email_address'] | regex_replace('@', '_') }}/pgpass
 
 {% endif %}
@@ -154,8 +154,8 @@ frontend_db_user_pwd_reset:
      a. user: Basic user information, including password
      b. roles_users: pgadmin user should have admin role; user role for all others.
      c. server: pgadmin user entries for local postgres server and databases.
-     c. sharedserver: Entries for all non-pgadmin users [pointing back to "server"
-     e. servergroup: Server UI grup entries for all users. 
+     d. sharedserver: Entries for all non-pgadmin users (pointing back to "server")
+     e. servergroup: Server UI group entries for all users. 
 
 2. Upgrade system for pgadmin docker container
 #}

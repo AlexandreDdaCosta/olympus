@@ -10,9 +10,15 @@ import shutil
 import subprocess
 import time
 
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    __grains__: Any = None
+    __salt__: Any = None
+
 
 def usb_backup_olympus():
-    user = __salt__['pillar.get']('core-staff-user')  # noqa: F403
+    user = __salt__['pillar.get']('core-staff-user')
     if user is None:
         raise Exception("Can't get core-staff-user from pillar.")
     # Verify presence of olympus USB
