@@ -170,6 +170,18 @@ def pgadmin_db_user(username, email_address):
         back to "server")
         e. servergroup: Server UI group entries for all users.
     """
-    print(username)
-    print(email_address)
+    pgadmin_db = (__salt__['pillar.get']('pgadmin_lib_path')
+                  + '/pgadmin4.db')
+    connection = sqlite3.connect(pgadmin_db)
+    cursor = connection.cursor()
+
+    f = open("/tmp/pgadmin.txt", "a")
+    # Check if user is in database
+    query = ("select * from user where email = '{}'"
+             .format(email_address))
+    cursor.execute(query)
+    user_entry = cursor.fetchone()[0]
+    f.write(user_entry)
+
+    f.close()
     return True

@@ -179,7 +179,7 @@ pgadmin-service:
         ('is_staff' in userdata and userdata['is_staff']) ) %}
 {% if 'email_address' in userdata %}
 
-{# User /pgpass files for pgadmin #}
+{# User /pgpass files #}
 
 {{ user }}_pgpass_file:
   file.managed:
@@ -195,7 +195,7 @@ pgadmin-service:
     - pgadmin.pgpass_frontend_password:
       - file_name: {{ pillar['pgadmin_lib_path'] }}/storage/{{ pillar['users'][user]['email_address'] | regex_replace('@', '_') }}/pgpass
 
-{# User SQLite database entries pgadmin #}
+{# User SQLite database entries #}
 
 {{ user }}_pgadmin_sqlite:
   module.run:
@@ -206,8 +206,6 @@ pgadmin-service:
 {% endif %}
 {% endif %}
 {% endfor %}
-
-
 
 {#
 Currently, we don't rotate the file below since we don't know how to update
