@@ -181,7 +181,7 @@ def pgadmin_db_user(username, email_address):
              .format(email_address))
     cursor.execute(query)
     user_entry = cursor.fetchone()[0]
-    f.write(user_entry)
+    #f.write(str(user_entry))
 
     f.close()
     return True
