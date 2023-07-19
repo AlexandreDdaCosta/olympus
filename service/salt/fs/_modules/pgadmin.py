@@ -169,6 +169,18 @@ def pgadmin_db_user(username, email_address):
         d. sharedserver: Entries for all non-pgadmin users (pointing
         back to "server")
         e. servergroup: Server UI group entries for all users.
+
+    The rules for the update are as follows:
+
+    1. If the user doesn't exist:
+       a. Add entries to database tables in the following order:
+          1. user
+            a. Double-hash password using SECURITY_PASSWORD_SALT
+            b. fs_uniquifier: 32-character random string
+            c. masterpass_check: 106-character string (NEEDS RESEARCH)
+            b. For the default pgadmin user:
+               - Write the password into the pgadmin default password file.
+
     """
     pgadmin_db = (__salt__['pillar.get']('pgadmin_lib_path')
                   + '/pgadmin4.db')
@@ -179,9 +191,10 @@ def pgadmin_db_user(username, email_address):
     # Check if user is in database
     query = ("select * from user where email = '{}'"
              .format(email_address))
+    f.write(query)
     cursor.execute(query)
     user_entry = cursor.fetchone()[0]
-    #f.write(str(user_entry))
+    f.write(str(user_entry))
 
     f.close()
     return True
