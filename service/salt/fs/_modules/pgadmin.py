@@ -162,24 +162,61 @@ def pgadmin_db_user(username, email_address):
     SQLite database.
     Will need to touch these tables:
         a. user: Basic user information, including password
+           Table structure:
+             id INTEGER NOT NULL
+               Auto added primary key
+             email VARCHAR(256)
+             password VARCHAR
+               Double-hash password using SECURITY_PASSWORD_SALT
+             active BOOLEAN NOT NULL
+             confirmed_at DATETIME
+             masterpass_check VARCHAR(256)
+               106-character string (NEEDS RESEARCH)
+             username VARCHAR(256) NOT NULL
+             auth_source VARCHAR(256) DEFAULT 'internal' NOT NULL
+             fs_uniquifier VARCHAR NOT NULL
+               32-character random string
+             locked BOOLEAN DEFAULT 'false'
+             login_attempts INTEGER DEFAULT '0'
+           Sample entry (one column per line):
+             1,
+             pgadmin@laikasden.com,
+             OMITTED
+             1
+             None
+             OMITTED
+             pgadmin@laikasden.com
+             internal
+             ca69ee8cfef348b6a3870dfe05d9bc89
+             0
+             0
         b. roles_users: pgadmin user should have admin role; user role
         for all others.
+           Table structure:
+             user_id INTEGER
+               FOREIGN KEY(user_id) REFERENCES user (id)
+             role_id INTEGER
+               FOREIGN KEY(role_id) REFERENCES role (id)
+           "role" table has these entries:
+             (1, 'Administrator', 'pgAdmin Administrator Role')
+             (2, 'User', 'pgAdmin User Role')
+           Sample entry (one column per line):
+             1
+             1
         c. server: pgadmin user entries for local postgres server and
         databases.
         d. sharedserver: Entries for all non-pgadmin users (pointing
         back to "server")
         e. servergroup: Server UI group entries for all users.
+    The admin user will always exist since it is initialized by the
+    docker start-up. However, other table data won't exist at start-up, while
+    the admin user password needs to be rotated.
 
     The rules for the update are as follows:
 
-    1. If the user doesn't exist:
-       a. Add entries to database tables in the following order:
-          1. user
-            a. Double-hash password using SECURITY_PASSWORD_SALT
-            b. fs_uniquifier: 32-character random string
-            c. masterpass_check: 106-character string (NEEDS RESEARCH)
-            b. For the default pgadmin user:
-               - Write the password into the pgadmin default password file.
+    1. If the user doesn't exist, add entries to database tables in the
+    following order:
+       a. user
 
     """
     pgadmin_db = (__salt__['pillar.get']('pgadmin_lib_path')
