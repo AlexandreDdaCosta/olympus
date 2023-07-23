@@ -147,7 +147,7 @@ def remove_invalid_users():
                 if email_address == directory:
                     f.write("Printing user and is_staff\n")
                     f.write(user + "\n")
-                    f.write(users[user]['is_staff'] + "\n")
+                    f.write(str(users[user]['is_staff']) + "\n")
                     if user == pgadmin_default_user or users[user]['is_staff']:
                         valid_user = True
                     break
