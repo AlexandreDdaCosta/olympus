@@ -13,6 +13,8 @@ import sqlite3
 import subprocess
 
 from base64 import b64encode
+from os import listdir
+from os.path import isdir, join
 from passlib.hash import pbkdf2_sha512
 from typing import Any, TYPE_CHECKING
 
@@ -104,6 +106,37 @@ def pgpass_frontend_password(file_name):
             new_contents += "\n"
         with open(file_name, "w") as updated_pgpass_file:
             updated_pgpass_file.write(new_contents)
+    return True
+
+
+def remove_invalid_users():
+    """
+    Remove any invalid users from pgadmin user entries.
+    This includes pgadmin user's "pgpass" file.
+    """
+    pgadmin_db = (__salt__['pillar.get']('pgadmin_lib_path')
+                  + '/pgadmin4.db')
+    if not os.path.isfile(pgadmin_db):
+        return True
+
+    # Temporary file write for development
+    f = open("/tmp/pgadmin.txt", "a")
+    # f.write()
+
+    # Get some needed data
+    pgadmin_default_user = __salt__['pillar.get']('pgadmin_default_user')
+    pgadmin_storage_path = __salt__['pillar.get']('pgadmin_storage_path')
+    users = __salt__['pillar.get']('users')
+    f.write(pgadmin_default_user)
+    f.write(str(users))
+
+    # Remove any unneeded storage directories
+    directories = [d for d in listdir(pgadmin_storage_path)
+                   if isdir(join(pgadmin_storage_path, d))]
+    f.write(str(directories))
+
+    f.close()
+    # ALEX
     return True
 
 

@@ -411,6 +411,12 @@ find_update_pgadmin_passfiles:
     - require: 
       - update_db_credential
 
+# Delete invalid pgadmin users
+
+remove_invalid_pgadmin_users:
+  cmd.run:
+    - name: salt -C 'G@services:database' pgadmin.remove_invalid_users
+
 {% endif %}
 
 # Mongo access passwords, database permissions, and password files 
