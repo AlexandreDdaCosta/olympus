@@ -134,16 +134,18 @@ def remove_invalid_users():
     # Remove any unneeded storage directories
     directories = [d for d in listdir(pgadmin_storage_path)
                    if isdir(join(pgadmin_storage_path, d))]
-    f.write(str(directories))
+    f.write(str(directories) + "\n")
     for directory in directories:
         valid_user = False
         for user in users:
             if 'email_address' in users[user]:
                 email_address = users[user]['email_address']
                 email_address.replace('@', '_')
+                f.write("Printing email_address and directory\n")
                 f.write(email_address + "\n")
                 f.write(directory + "\n")
                 if email_address == directory:
+                    f.write("Printing user and is_staff\n")
                     f.write(user + "\n")
                     f.write(users[user]['is_staff'] + "\n")
                     if user == pgadmin_default_user or users[user]['is_staff']:
