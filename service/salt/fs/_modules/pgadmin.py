@@ -121,19 +121,36 @@ def remove_invalid_users():
 
     # Temporary file write for development
     f = open("/tmp/pgadmin.txt", "a")
-    # f.write()
 
     # Get some needed data
     pgadmin_default_user = __salt__['pillar.get']('pgadmin_default_user')
     pgadmin_storage_path = __salt__['pillar.get']('pgadmin_storage_path')
     users = __salt__['pillar.get']('users')
-    f.write(pgadmin_default_user)
-    f.write(str(users))
+    f.write(pgadmin_default_user + "\n")
+    f.write(str(users) + "\n")
 
     # Remove any unneeded storage directories
     directories = [d for d in listdir(pgadmin_storage_path)
                    if isdir(join(pgadmin_storage_path, d))]
     f.write(str(directories))
+    for directory in directories:
+        valid_user = False
+        for user in users:
+            if 'email_address' in users[user]:
+                email_address = users[user]['email_address']
+                email_address.replace('@', '_')
+                if email_address == directory:
+                    if user == pgadmin_default_user or users[user]['is_staff']:
+                        valid_user = True
+                    break
+                else:
+                    continue
+            else:
+                continue
+        if not valid_user:
+            f.write('Delete directory ' + directory + "\n")
+
+    # Remove any invalid user entries
 
     f.close()
     # ALEX
