@@ -140,7 +140,7 @@ def remove_invalid_users():
         for user in users:
             if 'email_address' in users[user]:
                 email_address = users[user]['email_address']
-                email_address.replace('@', '_')
+                email_address = email_address.replace('@', '_')
                 f.write("Printing email_address and directory\n")
                 f.write(email_address + "\n")
                 f.write(directory + "\n")
