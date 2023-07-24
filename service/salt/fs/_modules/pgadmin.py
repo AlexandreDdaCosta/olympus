@@ -9,12 +9,13 @@ import hashlib
 import hmac
 import os
 import re
+import shutil
 import sqlite3
 import subprocess
 
 from base64 import b64encode
 from os import listdir
-from os.path import isdir, join
+from os.path import isdir, isfile, join
 from passlib.hash import pbkdf2_sha512
 from typing import Any, TYPE_CHECKING
 
@@ -126,7 +127,6 @@ def remove_invalid_users():
     pgadmin_default_user = __salt__['pillar.get']('pgadmin_default_user')
     pgadmin_storage_path = __salt__['pillar.get']('pgadmin_storage_path')
     users = __salt__['pillar.get']('users')
-    f.write(pgadmin_default_user + "\n")
     for user in users:
         f.write(user + "\n")
         f.write(str(users[user]) + "\n")
@@ -134,21 +134,13 @@ def remove_invalid_users():
     # Remove any unneeded storage directories
     directories = [d for d in listdir(pgadmin_storage_path)
                    if isdir(join(pgadmin_storage_path, d))]
-    f.write(str(directories) + "\n")
     for directory in directories:
         valid_user = False
         for user in users:
             if 'email_address' in users[user]:
                 email_address = users[user]['email_address']
                 email_address = email_address.replace('@', '_')
-                f.write("Printing email_address and directory\n")
-                f.write(email_address + "\n")
-                f.write(directory + "\n")
                 if email_address == directory:
-                    f.write("Printing user and is_staff\n")
-                    f.write(user + "\n")
-                    if 'is_staff' in users[user]:
-                        f.write(str(users[user]['is_staff']) + "\n")
                     if user == pgadmin_default_user:
                         valid_user = True
                     elif 'is_staff' in users[user] and users[user]['is_staff']:
@@ -159,9 +151,16 @@ def remove_invalid_users():
             else:
                 continue
         if not valid_user:
-            f.write('Delete directory ' + directory + "\n")
+            shutil.rmtree(pgadmin_storage_path + "/" + directory)
 
     # Remove any invalid user entries
+
+    # Close all sessions
+    pgadmin_sessions_path = __salt__['pillar.get']('pgadmin_sessions_path')
+    session_files = [f for f in listdir(pgadmin_sessions_path)
+                     if isfile(join(pgadmin_sessions_path, f))]
+    for file in session_files:
+        os.remove(pgadmin_sessions_path + "/" + file)
 
     f.close()
     # ALEX
