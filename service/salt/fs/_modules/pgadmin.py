@@ -110,7 +110,7 @@ def pgpass_frontend_password(file_name):
     return True
 
 
-def remove_invalid_users():
+def remove_invalid_users(): # noqa
     """
     Remove any invalid users from pgadmin user entries.
     This includes pgadmin user's "pgpass" file.
@@ -120,16 +120,10 @@ def remove_invalid_users():
     if not os.path.isfile(pgadmin_db):
         return True
 
-    # Temporary file write for development
-    f = open("/tmp/pgadmin.txt", "a")
-
     # Get some needed data
     pgadmin_default_user = __salt__['pillar.get']('pgadmin_default_user')
     pgadmin_storage_path = __salt__['pillar.get']('pgadmin_storage_path')
     users = __salt__['pillar.get']('users')
-    for user in users:
-        f.write(user + "\n")
-        f.write(str(users[user]) + "\n")
 
     # Remove any unneeded storage directories
     directories = [d for d in listdir(pgadmin_storage_path)
@@ -162,8 +156,41 @@ def remove_invalid_users():
     for file in session_files:
         os.remove(pgadmin_sessions_path + "/" + file)
 
-    f.close()
-    # ALEX
+    # Retrieve and check database entries for all current users
+    connection = sqlite3.connect("/var/lib/pgadmin/pgadmin4.db")
+    cursor = connection.cursor()
+    delete_users = []
+    query = "select * from user"
+    for row in cursor.execute(query):
+        valid_user = False
+        user_id = row[0]
+        user_name = row[1]
+        for user in users:
+            if ('email_address' in users[user] and
+                    user_name == users[user]['email_address']):
+                if user == pgadmin_default_user:
+                    valid_user = True
+                    break
+                if 'is_staff' in users[user] and users[user]['is_staff']:
+                    valid_user = True
+                    break
+        if valid_user is False:
+            delete_users.append(user_id)
+
+    # Delete bad users from database
+    for user_id in delete_users:
+        query = "delete from user where id = {0}".format(user_id)
+        cursor.execute(query)
+        query = "delete from roles_users where user_id = {0}".format(user_id)
+        cursor.execute(query)
+        query = "delete from sharedserver where user_id = {0}".format(user_id)
+        cursor.execute(query)
+        query = "delete from server where user_id = {0}".format(user_id)
+        cursor.execute(query)
+        query = "delete from servergroup where user_id = {0}".format(user_id)
+        cursor.execute(query)
+        connection.commit()
+
     return True
 
 
