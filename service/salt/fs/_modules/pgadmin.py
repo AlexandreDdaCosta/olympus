@@ -179,8 +179,6 @@ def remove_invalid_users(): # noqa
 
     # Delete bad users from database
     for user_id in delete_users:
-        query = "delete from user where id = {0}".format(user_id)
-        cursor.execute(query)
         query = "delete from roles_users where user_id = {0}".format(user_id)
         cursor.execute(query)
         query = "delete from sharedserver where user_id = {0}".format(user_id)
@@ -188,6 +186,8 @@ def remove_invalid_users(): # noqa
         query = "delete from server where user_id = {0}".format(user_id)
         cursor.execute(query)
         query = "delete from servergroup where user_id = {0}".format(user_id)
+        cursor.execute(query)
+        query = "delete from user where id = {0}".format(user_id)
         cursor.execute(query)
         connection.commit()
 
@@ -381,6 +381,11 @@ def pgadmin_db_user(username, email_address):
 
     The rules for the update are as follows:
 
+    1. Remove all of the following user data for the user:
+       a. roles_users
+       b. sharedserver
+       c. server
+       d. servergroup
     1. User doesn't exist
        - Add appropriate entries to database tables following the table order
        shown above.
