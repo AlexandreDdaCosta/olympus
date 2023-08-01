@@ -195,11 +195,6 @@ pgadmin-service:
     - pgadmin.pgpass_frontend_password:
       - file_name: {{ pillar['pgadmin_lib_path'] }}/storage/{{ pillar['users'][user]['email_address'] | regex_replace('@', '_') }}/pgpass
 
-{# User SQLite database entries #}
-
-pgadmin.pgadmin_db_user:
-  module.run
-
 {% endif %}
 {% endif %}
 {% endfor %}
