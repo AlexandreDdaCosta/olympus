@@ -381,12 +381,19 @@ def pgadmin_db_user(username, email_address):
 
     The rules for the update are as follows:
 
-    1. Remove all of the following user data for the user:
-       a. roles_users
-       b. sharedserver
-       c. server
-       d. servergroup
-    1. User doesn't exist
+    1. User exists
+       a. Remove all of the following user data for the user:
+          a. roles_users
+          b. sharedserver
+          c. server
+          d. servergroup
+       b1. User exists, admin user
+           - Verify all entries exist for all tables
+           - Rotate user password
+           - Put copy of password in admin's directory, if exists.
+       b2. User exists, non-admin user
+           - Verify all entries exist for all tables
+    2. User doesn't exist
        - Add appropriate entries to database tables following the table order
        shown above.
        - On initial entry of non-admin user, the password is randomly
@@ -395,12 +402,6 @@ def pgadmin_db_user(username, email_address):
        his/her password, and this utility will need to hook into
        the padmin database to reset the password there as well. See the
        utility function above, "set_pgadmin_password".
-    2. User exists, admin user
-       - Verify all entries exist for all tables
-       - Rotate user password
-       - Put copy of password in admin's directory, if exists.
-    3. User exists, non-admin user
-       - Verify all entries exist for all tables
 
     """
     pgadmin_db = (__salt__['pillar.get']('pgadmin_lib_path')
@@ -408,15 +409,16 @@ def pgadmin_db_user(username, email_address):
     connection = sqlite3.connect(pgadmin_db)
     cursor = connection.cursor()
 
-    # Temporary file write for development
-    f = open("/tmp/pgadmin.txt", "a")
     # Check if user is in database
-    query = ("select * from user where email = '{}'"
-             .format(email_address))
-    f.write(query)
+    query = ("select * from user where email = '{}'".format(email_address))
     cursor.execute(query)
-    user_entry = cursor.fetchone()[0]
-    f.write(str(user_entry))
+    user_entry = cursor.fetchone()
+    if user_entry is not None:
+        # 1.
+        pass
+    else:
+        pass
 
+    f = open("/tmp/pgadmin.txt", "a", buffering=1)
     f.close()
     return True
