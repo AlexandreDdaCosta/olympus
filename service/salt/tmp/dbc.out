@@ -1,0 +1,156 @@
+tables
+('table', 'alembic_version', 'alembic_version', 2, 'CREATE TABLE alembic_version (\n\tversion_num VARCHAR(32) NOT NULL, \n\tCONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)\n)')
+('table', 'version', 'version', 4, 'CREATE TABLE version (\n\tname VARCHAR(32) NOT NULL, \n\tvalue INTEGER NOT NULL, \n\tPRIMARY KEY (name)\n)')
+('table', 'role', 'role', 6, 'CREATE TABLE role (\n\tid INTEGER NOT NULL, \n\tname VARCHAR(128) NOT NULL, \n\tdescription VARCHAR(256) NOT NULL, \n\tPRIMARY KEY (id), \n\tUNIQUE (name)\n)')
+('table', 'roles_users', 'roles_users', 12, 'CREATE TABLE roles_users (\n\tuser_id INTEGER, \n\trole_id INTEGER, \n\tFOREIGN KEY(role_id) REFERENCES role (id) ON DELETE CASCADE, \n\tFOREIGN KEY(user_id) REFERENCES "user" (id) ON DELETE CASCADE\n)')
+('table', 'servergroup', 'servergroup', 13, 'CREATE TABLE servergroup (\n\tid INTEGER NOT NULL, \n\tuser_id INTEGER NOT NULL, \n\tname VARCHAR(128) NOT NULL, \n\tPRIMARY KEY (id), \n\tFOREIGN KEY(user_id) REFERENCES "user" (id) ON DELETE CASCADE, \n\tUNIQUE (user_id, name)\n)')
+('table', 'module_preference', 'module_preference', 15, 'CREATE TABLE module_preference (\n\tid INTEGER NOT NULL, \n\tname VARCHAR(256) NOT NULL, \n\tPRIMARY KEY (id)\n)')
+('table', 'preference_category', 'preference_category', 17, 'CREATE TABLE preference_category (\n\tid INTEGER NOT NULL, \n\tmid INTEGER, \n\tname VARCHAR(256) NOT NULL, \n\tPRIMARY KEY (id), \n\tFOREIGN KEY(mid) REFERENCES module_preference (id)\n)')
+('table', 'preferences', 'preferences', 18, 'CREATE TABLE preferences (\n\tid INTEGER NOT NULL, \n\tcid INTEGER NOT NULL, \n\tname VARCHAR(256) NOT NULL, \n\tPRIMARY KEY (id), \n\tFOREIGN KEY(cid) REFERENCES preference_category (id)\n)')
+('table', 'user_preferences', 'user_preferences', 19, 'CREATE TABLE user_preferences (\n\tpid INTEGER NOT NULL, \n\tuid INTEGER NOT NULL, \n\tvalue VARCHAR(1024) NOT NULL, \n\tPRIMARY KEY (pid, uid), \n\tFOREIGN KEY(pid) REFERENCES preferences (id) ON DELETE CASCADE, \n\tFOREIGN KEY(uid) REFERENCES "user" (id) ON DELETE CASCADE\n)')
+('table', 'debugger_function_arguments', 'debugger_function_arguments', 21, 'CREATE TABLE debugger_function_arguments (\n\tserver_id INTEGER NOT NULL, \n\tdatabase_id INTEGER NOT NULL, \n\tschema_id INTEGER NOT NULL, \n\tfunction_id INTEGER NOT NULL, \n\targ_id INTEGER NOT NULL, \n\tis_null INTEGER NOT NULL, \n\tis_expression INTEGER NOT NULL, \n\tuse_default INTEGER, \n\tvalue VARCHAR NOT NULL, \n\tPRIMARY KEY (server_id, database_id, schema_id, function_id, arg_id), \n\tCHECK (is_null >= 0 AND is_null <= 1), \n\tCHECK (is_expression >= 0 AND is_expression <= 1), \n\tCHECK (use_default >= 0 AND use_default <= 1)\n)')
+('table', 'process', 'process', 25, 'CREATE TABLE process (\n\tuser_id INTEGER NOT NULL, \n\tpid VARCHAR NOT NULL, \n\t"desc" VARCHAR NOT NULL, \n\tcommand VARCHAR NOT NULL, \n\targuments VARCHAR, \n\tstart_time VARCHAR, \n\tend_time VARCHAR, \n\tlogdir VARCHAR, \n\texit_code INTEGER, \n\tacknowledge VARCHAR, utility_pid INTEGER, process_state INTEGER DEFAULT \'0\', server_id INTEGER DEFAULT \'0\', \n\tPRIMARY KEY (pid), \n\tFOREIGN KEY(user_id) REFERENCES "user" (id) ON DELETE CASCADE\n)')
+('table', 'keys', 'keys', 27, 'CREATE TABLE keys (\n\tname VARCHAR NOT NULL, \n\tvalue VARCHAR NOT NULL, \n\tPRIMARY KEY (name)\n)')
+('table', 'query_history', 'query_history', 29, 'CREATE TABLE query_history (\n\tsrno INTEGER NOT NULL, \n\tuid INTEGER NOT NULL, \n\tsid INTEGER NOT NULL, \n\tdbname VARCHAR NOT NULL, \n\tquery_info VARCHAR NOT NULL, \n\tlast_updated_flag VARCHAR NOT NULL, \n\tPRIMARY KEY (srno, uid, sid, dbname), \n\tFOREIGN KEY(sid) REFERENCES "server" (id) ON DELETE CASCADE, \n\tFOREIGN KEY(uid) REFERENCES "user" (id) ON DELETE CASCADE\n)')
+('table', 'database', 'database', 7, 'CREATE TABLE "database" (\n\tid INTEGER NOT NULL, \n\tschema_res VARCHAR, \n\tserver INTEGER NOT NULL, \n\tPRIMARY KEY (id, server), \n\tFOREIGN KEY(server) REFERENCES "server" (id) ON DELETE CASCADE\n)')
+('table', 'macros', 'macros', 33, 'CREATE TABLE macros (\n\tid INTEGER NOT NULL, \n\talt BOOLEAN NOT NULL, \n\tcontrol BOOLEAN NOT NULL, \n\t"key" VARCHAR(128) NOT NULL, \n\tkey_code INTEGER NOT NULL, \n\tPRIMARY KEY (id)\n)')
+('table', 'user_macros', 'user_macros', 36, 'CREATE TABLE user_macros (\n\tmid INTEGER NOT NULL, \n\tuid INTEGER NOT NULL, \n\tname VARCHAR(1024) NOT NULL, \n\tsql VARCHAR, \n\tPRIMARY KEY (mid, uid), \n\tFOREIGN KEY(mid) REFERENCES macros (id) ON DELETE CASCADE, \n\tFOREIGN KEY(uid) REFERENCES "user" (id) ON DELETE CASCADE\n)')
+('table', 'user', 'user', 34, 'CREATE TABLE "user" (\n\tid INTEGER NOT NULL, \n\temail VARCHAR(256), \n\tpassword VARCHAR, \n\tactive BOOLEAN NOT NULL, \n\tconfirmed_at DATETIME, \n\tmasterpass_check VARCHAR(256), \n\tusername VARCHAR(256) DEFAULT (\'\') NOT NULL, \n\tauth_source VARCHAR(256) DEFAULT \'internal\' NOT NULL, \n\tfs_uniquifier VARCHAR NOT NULL, locked BOOLEAN DEFAULT \'false\', login_attempts INTEGER DEFAULT \'0\', \n\tPRIMARY KEY (id), \n\tCONSTRAINT user_unique_constraint UNIQUE (username, auth_source)\n)')
+('table', 'user_mfa', 'user_mfa', 16, 'CREATE TABLE user_mfa (\n\tuser_id INTEGER NOT NULL, \n\tmfa_auth VARCHAR(256) NOT NULL, \n\toptions VARCHAR, \n\tPRIMARY KEY (user_id, mfa_auth), \n\tFOREIGN KEY(user_id) REFERENCES "user" (id) ON DELETE CASCADE\n)')
+('table', 'server', 'server', 31, 'CREATE TABLE "server" (\n\tid INTEGER NOT NULL, \n\tuser_id INTEGER NOT NULL, \n\tservergroup_id INTEGER NOT NULL, \n\tname VARCHAR(128) NOT NULL, \n\thost VARCHAR(128), \n\tport INTEGER, \n\tmaintenance_db VARCHAR(64), \n\tusername VARCHAR(64), \n\tcomment VARCHAR(1024), \n\tpassword VARCHAR, \n\trole VARCHAR(64), \n\tdiscovery_id VARCHAR, \n\tdb_res VARCHAR, \n\tbgcolor VARCHAR(10), \n\tfgcolor VARCHAR(10), \n\tservice VARCHAR, \n\tuse_ssh_tunnel INTEGER DEFAULT \'0\', \n\ttunnel_host VARCHAR, \n\ttunnel_port VARCHAR, \n\ttunnel_username VARCHAR, \n\ttunnel_authentication INTEGER DEFAULT \'0\', \n\ttunnel_identity_file VARCHAR, \n\ttunnel_password VARCHAR(64), \n\tsave_password INTEGER DEFAULT \'0\', \n\tshared BOOLEAN, \n\tkerberos_conn BOOLEAN DEFAULT \'false\', \n\tcloud_status INTEGER DEFAULT \'0\', \n\tpassexec_cmd VARCHAR(256), \n\tpassexec_expiration INTEGER, \n\tconnection_params JSON, \n\tPRIMARY KEY (id), \n\tFOREIGN KEY(user_id) REFERENCES "user" (id) ON DELETE CASCADE, \n\tFOREIGN KEY(servergroup_id) REFERENCES servergroup (id)\n)')
+('table', 'sharedserver', 'sharedserver', 40, 'CREATE TABLE "sharedserver" (\n\tid INTEGER NOT NULL, \n\tuser_id INTEGER NOT NULL, \n\tserver_owner VARCHAR(64), \n\tservergroup_id INTEGER NOT NULL, \n\tname VARCHAR(128) NOT NULL, \n\thost VARCHAR(128), \n\tport INTEGER, \n\tmaintenance_db VARCHAR(64), \n\tusername VARCHAR(64), \n\tpassword VARCHAR, \n\trole VARCHAR(64), \n\tcomment VARCHAR(1024), \n\tdiscovery_id VARCHAR(128), \n\tdb_res VARCHAR, \n\tbgcolor VARCHAR(10), \n\tfgcolor VARCHAR(10), \n\tservice VARCHAR, \n\tuse_ssh_tunnel INTEGER DEFAULT \'0\', \n\ttunnel_host VARCHAR, \n\ttunnel_port VARCHAR, \n\ttunnel_username VARCHAR, \n\ttunnel_authentication INTEGER DEFAULT \'0\', \n\ttunnel_identity_file VARCHAR, \n\tshared BOOLEAN NOT NULL, \n\tsave_password INTEGER DEFAULT \'0\', \n\ttunnel_password VARCHAR, \n\tosid INTEGER, \n\tconnection_params JSON, \n\tPRIMARY KEY (id), \n\tFOREIGN KEY(servergroup_id) REFERENCES servergroup (id), \n\tFOREIGN KEY(user_id) REFERENCES user (id) ON DELETE CASCADE\n)')
+('table', 'setting', 'setting', 38, 'CREATE TABLE "setting" (\n\tuser_id INTEGER NOT NULL, \n\tsetting VARCHAR(256) NOT NULL, \n\tvalue TEXT, \n\tPRIMARY KEY (user_id, setting), \n\tFOREIGN KEY(user_id) REFERENCES user (id) ON DELETE CASCADE\n)')
+
+
+
+
+user
+
+('CREATE TABLE "user" (
+	id INTEGER NOT NULL, 
+	email VARCHAR(256), 
+	password VARCHAR, 
+	active BOOLEAN NOT NULL, 
+	confirmed_at DATETIME, 
+	masterpass_check VARCHAR(256), 
+	username VARCHAR(256) DEFAULT (\'\') NOT NULL, 
+	auth_source VARCHAR(256) DEFAULT \'internal\' NOT NULL, 
+	fs_uniquifier VARCHAR NOT NULL, locked BOOLEAN DEFAULT \'false\', login_attempts INTEGER DEFAULT \'0\', 
+	PRIMARY KEY (id), 
+	CONSTRAINT user_unique_constraint UNIQUE (username, auth_source)
+)',)
+(1, 'pgadmin@laikasden.com', 'SCRATCHED', 1, None, '655162496834717a6a58422b6430514444472b636a4e547168316d41704f596d3252725a49504e5a54327841622b4d665a513d3d', 'pgadmin@laikasden.com', 'internal', 'ca69ee8cfef348b6a3870dfe05d9bc89', 0, 0)
+(2, 'alexandre.dias.dacosta@gmail.com', 'SCRATCHED', 1, None, '4a664e63346a41416578435956343451646f474c74714937457a2b452b34696b7576785a7654586b747559637637373541673d3d', 'alexandre.dias.dacosta@gmail.com', 'internal', '1a380a0b6796410eac7c1679536c2b14', 0, 0)
+
+servergroup
+
+('CREATE TABLE servergroup (
+	id INTEGER NOT NULL, 
+	user_id INTEGER NOT NULL, 
+	name VARCHAR(128) NOT NULL, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(user_id) REFERENCES "user" (id) ON DELETE CASCADE, 
+	UNIQUE (user_id, name)
+)',)
+(1, 1, 'Servers')
+(2, 1, 'Interface')
+(3, 2, 'Servers')
+
+server
+
+('CREATE TABLE "server" (
+	id INTEGER NOT NULL, 
+	user_id INTEGER NOT NULL, 
+	servergroup_id INTEGER NOT NULL, 
+	name VARCHAR(128) NOT NULL, 
+	host VARCHAR(128), 
+	port INTEGER, 
+	maintenance_db VARCHAR(64), 
+	username VARCHAR(64), 
+	comment VARCHAR(1024), 
+	password VARCHAR, 
+	role VARCHAR(64), 
+	discovery_id VARCHAR, 
+	db_res VARCHAR, 
+	bgcolor VARCHAR(10), 
+	fgcolor VARCHAR(10), 
+	service VARCHAR, 
+	use_ssh_tunnel INTEGER DEFAULT \'0\', 
+	tunnel_host VARCHAR, 
+	tunnel_port VARCHAR, 
+	tunnel_username VARCHAR, 
+	tunnel_authentication INTEGER DEFAULT \'0\', 
+	tunnel_identity_file VARCHAR, 
+	tunnel_password VARCHAR(64), 
+	save_password INTEGER DEFAULT \'0\', 
+	shared BOOLEAN, 
+	kerberos_conn BOOLEAN DEFAULT \'false\', 
+	cloud_status INTEGER DEFAULT \'0\', 
+	passexec_cmd VARCHAR(256), 
+	passexec_expiration INTEGER, 
+	connection_params JSON, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(user_id) REFERENCES "user" (id) ON DELETE CASCADE, 
+	FOREIGN KEY(servergroup_id) REFERENCES servergroup (id)
+)',)
+(1, 1, 2, 'Django Application Data', '192.168.1.179', 5432, 'app_data', 'uwsgi', 'Django interface server', None, None, None, 'app_data', None, None, None, None, None, None, None, None, None, None, None, 1, 0, 0, None, None, '{"sslmode": "require", "passfile": "/pgpass", "connect_timeout": 10}')
+
+sharedserver
+
+('CREATE TABLE "sharedserver" (
+	id INTEGER NOT NULL, 
+	user_id INTEGER NOT NULL, 
+	server_owner VARCHAR(64), 
+	servergroup_id INTEGER NOT NULL, 
+	name VARCHAR(128) NOT NULL, 
+	host VARCHAR(128), 
+	port INTEGER, 
+	maintenance_db VARCHAR(64), 
+	username VARCHAR(64), 
+	password VARCHAR, 
+	role VARCHAR(64), 
+	comment VARCHAR(1024), 
+	discovery_id VARCHAR(128), 
+	db_res VARCHAR, 
+	bgcolor VARCHAR(10), 
+	fgcolor VARCHAR(10), 
+	service VARCHAR, 
+	use_ssh_tunnel INTEGER DEFAULT \'0\', 
+	tunnel_host VARCHAR, 
+	tunnel_port VARCHAR, 
+	tunnel_username VARCHAR, 
+	tunnel_authentication INTEGER DEFAULT \'0\', 
+	tunnel_identity_file VARCHAR, 
+	shared BOOLEAN NOT NULL, 
+	save_password INTEGER DEFAULT \'0\', 
+	tunnel_password VARCHAR, 
+	osid INTEGER, 
+	connection_params JSON, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(servergroup_id) REFERENCES servergroup (id), 
+	FOREIGN KEY(user_id) REFERENCES user (id) ON DELETE CASCADE
+)',)
+(1, 2, 'pgadmin@laikasden.com', 2, 'Django Application Data', '192.168.1.179', 5432, 'app_data', 'uwsgi', None, None, None, None, None, None, None, None, None, None, '22', None, 0, None, 1, 0, None, 1, '{"sslmode": "require", "passfile": "/pgpass", "connect_timeout": 10}')
+
+role
+
+('CREATE TABLE role (
+	id INTEGER NOT NULL, 
+	name VARCHAR(128) NOT NULL, 
+	description VARCHAR(256) NOT NULL, 
+	PRIMARY KEY (id), 
+	UNIQUE (name)
+)',)
+(1, 'Administrator', 'pgAdmin Administrator Role')
+(2, 'User', 'pgAdmin User Role')
+
+roles_users
+
+('CREATE TABLE roles_users (
+	user_id INTEGER, 
+	role_id INTEGER, 
+	FOREIGN KEY(role_id) REFERENCES role (id) ON DELETE CASCADE, 
+	FOREIGN KEY(user_id) REFERENCES "user" (id) ON DELETE CASCADE
+)',)
+(1, 1)
+(2, 1)

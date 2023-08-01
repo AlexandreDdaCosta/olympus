@@ -243,9 +243,9 @@ def set_pgadmin_password(user_email, new_password):
     return True
 
 
-def pgadmin_db_user(username, email_address):
+def pgadmin_db_user():
     """
-    Populates and updates user configuration entries in pgadmin's
+    Populates and updates users' configuration entries in pgadmin's
     SQLite database.
 
     Will need to touch these tables:
@@ -381,44 +381,53 @@ def pgadmin_db_user(username, email_address):
 
     The rules for the update are as follows:
 
-    1. User exists
-       a. Remove all of the following user data for the user:
-          a. roles_users
-          b. sharedserver
-          c. server
-          d. servergroup
-       b1. User exists, admin user
-           - Verify all entries exist for all tables
+    1. Remove all of the following user data for all users:
+       a. roles_users
+       b. sharedserver
+       c. server
+       d. servergroup
+    2. Write user entries (starting with admin user)
+    2a. User exists
+        1. User exists, admin user
+           - Write entries for all missing tables
            - Rotate user password
            - Put copy of password in admin's directory, if exists.
-       b2. User exists, non-admin user
-           - Verify all entries exist for all tables
-    2. User doesn't exist
+        2. User exists, non-admin user
+           - Write entries for all missing tables
+    2b. User doesn't exist
        - Add appropriate entries to database tables following the table order
        shown above.
        - On initial entry of non-admin user, the password is randomly
        generated and won't be saved. This will necessitate some password
        change utility on the control panel that allows the user to reset
        his/her password, and this utility will need to hook into
-       the padmin database to reset the password there as well. See the
+       the pgadmin database to reset the password there as well. See the
        utility function above, "set_pgadmin_password".
-
     """
+
     pgadmin_db = (__salt__['pillar.get']('pgadmin_lib_path')
                   + '/pgadmin4.db')
+    pgadmin_default_user = __salt__['pillar.get']('pgadmin_default_user')
+    users = __salt__['pillar.get']('users')
     connection = sqlite3.connect(pgadmin_db)
     cursor = connection.cursor()
 
-    # Check if user is in database
-    query = ("select * from user where email = '{}'".format(email_address))
+    # 1.
+
+    query = "delete from roles_users"
     cursor.execute(query)
-    user_entry = cursor.fetchone()
-    if user_entry is not None:
-        # 1.
-        pass
-    else:
-        pass
+    query = "delete from sharedserver"
+    cursor.execute(query)
+    query = "delete from server"
+    cursor.execute(query)
+    query = "delete from servergroup"
+    cursor.execute(query)
+    connection.commit()
+
+    # 2.
 
     f = open("/tmp/pgadmin.txt", "a", buffering=1)
+    f.write(pgadmin_default_user)
+    f.write(str(users))
     f.close()
     return True

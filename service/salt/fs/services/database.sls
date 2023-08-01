@@ -197,15 +197,17 @@ pgadmin-service:
 
 {# User SQLite database entries #}
 
-{{ user }}_pgadmin_sqlite:
-  module.run:
-    - pgadmin.pgadmin_db_user:
-      - username: user
-      - email_address: {{ pillar['users'][user]['email_address'] }}
+pgadmin.pgadmin_db_user:
+  module.run
 
 {% endif %}
 {% endif %}
 {% endfor %}
+
+{# User SQLite database entries #}
+
+pgadmin.pgadmin_db_user:
+  module.run
 
 {#
 Currently, we don't rotate the file below since we don't know how to update
