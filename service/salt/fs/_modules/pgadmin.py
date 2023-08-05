@@ -243,7 +243,7 @@ def set_pgadmin_password(user_email, new_password):
     return True
 
 
-def pgadmin_db_user():
+def pgadmin_db_user(): # noqa: C901
     """
     Populates and updates users' configuration entries in pgadmin's
     SQLite database.
@@ -382,51 +382,60 @@ def pgadmin_db_user():
     The rules for the update are as follows:
 
     1. Remove all of the following user data for all users:
-       a. roles_users
-       b. sharedserver
-       c. server
-       d. servergroup
+       1a. roles_users
+       1b. sharedserver
+       1c. server
+       1d. servergroup
     2. Write user entries (starting with admin user)
-    2a. User exists
-        1. User exists, admin user
-           - Write entries for all missing tables
-           - Rotate user password
-           - Put copy of password in admin's directory, if exists.
-        2. User exists, non-admin user
-           - Write entries for all missing tables
-    2b. User doesn't exist
-       - Add appropriate entries to database tables following the table order
-       shown above.
-       - On initial entry of non-admin user, the password is randomly
-       generated and won't be saved. This will necessitate some password
-       change utility on the control panel that allows the user to reset
-       his/her password, and this utility will need to hook into
-       the pgadmin database to reset the password there as well. See the
-       utility function above, "set_pgadmin_password".
+       2a. User exists
+           2a1. Admin user
+                2a1a. Write entries for all missing tables
+                2a1b. Rotate user password
+                2a1c. Put copy of password in admin's directory, if exists.
+           2a2. User exists, non-admin user
+                2a2a. Write entries for all missing tables
+       2b. User doesn't exist
+           2b1. Add main user entry
+           Then follow 2a1a and 2a2a.
+           For admin user, follow 2a1c.
+
+    On initial entry of non-admin user, the password is randomly generated and
+    won't be saved. This will necessitate some password change utility on the
+    control panel that allows the user to reset his/her password, and this
+    utility will need to hook into the pgadmin database to reset the password
+    there as well. See the utility function above, "set_pgadmin_password".
     """
 
     pgadmin_db = (__salt__['pillar.get']('pgadmin_lib_path')
                   + '/pgadmin4.db')
     pgadmin_default_user = __salt__['pillar.get']('pgadmin_default_user')
+    frontend_databases = __salt__['pillar.get']('frontend_databases')
+
+    frontend_server_groupname = 'Interface'
+
     users = __salt__['pillar.get']('users')
     connection = sqlite3.connect(pgadmin_db)
     cursor = connection.cursor()
 
     # 1.
 
+    # 1a.
     query = "delete from roles_users"
     cursor.execute(query)
+    # 1b.
     query = "delete from sharedserver"
     cursor.execute(query)
+    # 1c.
     query = "delete from server"
     cursor.execute(query)
+    # 1d.
     query = "delete from servergroup"
     cursor.execute(query)
     connection.commit()
 
-    # 2.
+    # Get preliminary data
     f = open("/tmp/pgadmin.txt", "a", buffering=1)
-
+    # List of users in pillar to add to pgadmin user records
     admin_user_email = None
     pgadmin_user_emails = []
     for user in users:
@@ -436,27 +445,97 @@ def pgadmin_db_user():
             admin_user_email = users[user]['email_address']
         elif 'is_staff' in users[user] and users[user]['is_staff']:
             pgadmin_user_emails.append(users[user]['email_address'])
+    # List of users already in pgadmin user records
     existing_users = {}
     query = "select * from user"
     for row in cursor.execute(query):
-        existing_users[row[1]] = row
+        existing_users[row[1]] = row[0]
+    f.write(str(existing_users) + "\n")
+    # List of system roles from pgadmin
+    pgadmin_roles = {}
+    query = "select id, name from role"
+    for row in cursor.execute(query):
+        pgadmin_roles[row[1]] = row[0]
+    # Other configuration data
+    postgresql_port = __salt__['pillar.get']('postgresql_port')
+    connection_params = ("{\"sslmode\": \"require\", " +
+                         "\"passfile\": \"/pgpass\", " +
+                         "\"connect_timeout\": 10}")
+    local_ips = __salt__['grains.get']('ipv4')
+    postgres_server_ip = None
+    for ip in local_ips:
+        if __salt__['pillar.get']('ip_network') in ip:
+            postgres_server_ip = ip
+            break
 
+    # 2.
     # Admin user
 
+    if admin_user_email not in existing_users:
+        # 2b1.
+        f.write("Adding " + str(admin_user_email) + " admin user entry\n")
+    # 2a1a.
+    query = ("INSERT INTO roles_users (user_id, role_id) VALUES ({0}, {1})"
+             .format(existing_users[admin_user_email],
+                     pgadmin_roles['Administrator']))
+    cursor.execute(query)
+    query = ("INSERT INTO servergroup (user_id, name) VALUES ({0}, '{1}')"
+             .format(existing_users[admin_user_email],
+                     frontend_server_groupname))
+    cursor.execute(query)
+    connection.commit()
+    query = ("select id from servergroup where user_id = {0} and name = '{1}'"
+             .format(existing_users[admin_user_email],
+                     frontend_server_groupname))
+    cursor.execute(query)
+    servergroup_id = cursor.fetchone()[0]
+    for frontend_database in frontend_databases:
+        comment = frontend_databases[frontend_database]['pgadmin_comment']
+        name = frontend_databases[frontend_database]['pgadmin_name']
+        query = ("INSERT INTO server (" +
+                 "user_id, " +
+                 "servergroup_id, " +
+                 "name, " +
+                 "host, " +
+                 "port, " +
+                 "maintenance_db, " +
+                 "username, " +
+                 "comment, " +
+                 "db_res, " +
+                 "shared, " +
+                 "connection_params " +
+                 ") VALUES (" +
+                 "{0}, {1}, '{2}', '{3}', {4}, '{5}', "
+                 .format(existing_users[admin_user_email],
+                         servergroup_id,
+                         name,
+                         postgres_server_ip,
+                         postgresql_port,
+                         frontend_databases[frontend_database]['name']) +
+                 "'{0}', '{1}', '{2}', {3}, '{4}')"
+                 .format(frontend_databases[frontend_database]['user'],
+                         comment,
+                         frontend_databases[frontend_database]['name'],
+                         1,
+                         connection_params))
+        cursor.execute(query)
+    connection.commit()
+
+    # Admin password
     if admin_user_email in existing_users:
-        f.write("Updating " + str(admin_user_email) + "admin user entry\n\n")
-    else:
-        f.write("Adding " + str(admin_user_email) + "admin user entry\n\n")
+        # 2a1b.
+        f.write("Rotating admin user password\n\n")
+    # 2a1c.
+    f.write("Adding admin user password file\n\n")
 
     # Non-admin users
 
     for pgadmin_user in pgadmin_user_emails:
-        if pgadmin_user in existing_users:
-            f.write("Updating " + pgadmin_user + " user entry\n\n")
-        else:
+        if pgadmin_user not in existing_users:
+            # 2b1.
             f.write("Adding " + pgadmin_user + " user entry\n\n")
-
-    # Admin user
+        # 2a2a.
+        f.write("Adding " + pgadmin_user + " data\n\n")
 
     f.close()
     return True
