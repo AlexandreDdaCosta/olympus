@@ -425,9 +425,38 @@ def pgadmin_db_user():
     connection.commit()
 
     # 2.
-
     f = open("/tmp/pgadmin.txt", "a", buffering=1)
-    f.write(pgadmin_default_user)
-    f.write(str(users))
+
+    admin_user_email = None
+    pgadmin_user_emails = []
+    for user in users:
+        if 'email_address' not in users[user]:
+            continue
+        if user == pgadmin_default_user:
+            admin_user_email = users[user]['email_address']
+        elif 'is_staff' in users[user] and users[user]['is_staff']:
+            pgadmin_user_emails.append(users[user]['email_address'])
+    existing_users = {}
+    query = "select * from user"
+    for row in cursor.execute(query):
+        existing_users[row[1]] = row
+
+    # Admin user
+
+    if admin_user_email in existing_users:
+        f.write("Updating " + str(admin_user_email) + "admin user entry\n\n")
+    else:
+        f.write("Adding " + str(admin_user_email) + "admin user entry\n\n")
+
+    # Non-admin users
+
+    for pgadmin_user in pgadmin_user_emails:
+        if pgadmin_user in existing_users:
+            f.write("Updating " + pgadmin_user + " user entry\n\n")
+        else:
+            f.write("Adding " + pgadmin_user + " user entry\n\n")
+
+    # Admin user
+
     f.close()
     return True
