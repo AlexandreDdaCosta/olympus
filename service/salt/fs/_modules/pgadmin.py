@@ -474,6 +474,8 @@ def pgadmin_db_user(): # noqa: C901
     if admin_user_email not in existing_users:
         # 2b1.
         f.write("Adding " + str(admin_user_email) + " admin user entry\n")
+        password = __salt__['pillar.get']('random_key_generator')
+        f.write("PASSWORD: " + str(password) + " \n")
     # 2a1a.
     query = ("INSERT INTO roles_users (user_id, role_id) VALUES ({0}, {1})"
              .format(existing_users[admin_user_email],
