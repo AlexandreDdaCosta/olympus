@@ -538,6 +538,11 @@ def pgadmin_db_user(): # noqa: C901
             f.write("Adding " + pgadmin_user + " user entry\n\n")
         # 2a2a.
         f.write("Adding " + pgadmin_user + " data\n\n")
+        query = ("INSERT INTO roles_users (user_id, role_id) VALUES ({0}, {1})"
+                 .format(existing_users[pgadmin_user],
+                         pgadmin_roles['User']))
+        cursor.execute(query)
+        connection.commit()
 
     f.close()
     return True
