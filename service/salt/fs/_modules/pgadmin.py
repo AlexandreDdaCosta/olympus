@@ -532,6 +532,7 @@ def pgadmin_db_user(): # noqa: C901
 
     # Non-admin users
 
+    osid = 1
     for pgadmin_user in pgadmin_user_emails:
         if pgadmin_user not in existing_users:
             # 2b1.
@@ -542,7 +543,36 @@ def pgadmin_db_user(): # noqa: C901
                  .format(existing_users[pgadmin_user],
                          pgadmin_roles['User']))
         cursor.execute(query)
+        for frontend_database in frontend_databases:
+            name = frontend_databases[frontend_database]['pgadmin_name']
+            query = ("INSERT INTO sharedserver (" +
+                     "user_id, " +
+                     "server_owner, " +
+                     "servergroup_id, " +
+                     "name, " +
+                     "host, " +
+                     "port, " +
+                     "maintenance_db, " +
+                     "username, " +
+                     "shared, " +
+                     "osid, " +
+                     "connection_params " +
+                     ") VALUES (" +
+                     "{0}, '{1}', {2}, '{3}', '{4}', {5}, "
+                     .format(existing_users[pgadmin_user],
+                             admin_user_email,
+                             servergroup_id,
+                             name,
+                             postgres_server_ip,
+                             postgresql_port) +
+                     "'{0}', '{1}', {2}, {3}, '{4}')"
+                     .format(frontend_databases[frontend_database]['name'],
+                             frontend_databases[frontend_database]['user'],
+                             1,
+                             osid,
+                             connection_params))
+            cursor.execute(query)
+            osid = osid + 1
         connection.commit()
-
     f.close()
     return True
