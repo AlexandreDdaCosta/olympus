@@ -5,9 +5,11 @@ Tools for managing pgadmin.
 Includes SQLite database, credentials, pgpass files
 '''
 
+import grp
 import hashlib
 import hmac
 import os
+import pwd
 import random
 import re
 import shutil
@@ -199,9 +201,6 @@ def remove_invalid_users(): # noqa
 def set_pgadmin_password(user_email, new_password):
     """
     Updates the main pgadmin password entry for a user.
-    Currently, this function exists as a placeholder.
-    The logic embedded here will be incorporated into a more comprehensive
-    function designed to populate SQLite entries for all pgadmin users.
     """
     pgadmin_db = (__salt__['pillar.get']('pgadmin_lib_path')
                   + '/pgadmin4.db')
@@ -411,6 +410,9 @@ def pgadmin_db_user(): # noqa: C901
     pgadmin_db = (__salt__['pillar.get']('pgadmin_lib_path')
                   + '/pgadmin4.db')
     pgadmin_default_user = __salt__['pillar.get']('pgadmin_default_user')
+    pgadmin_password_file = \
+        ('/home/' + pgadmin_default_user + '/etc/' +
+         __salt__['pillar.get']('pgadmin_password_file_name'))
     frontend_databases = __salt__['pillar.get']('frontend_databases')
 
     frontend_server_groupname = 'Interface'
@@ -475,7 +477,7 @@ def pgadmin_db_user(): # noqa: C901
 
     admin_password = (''.join(random.choice(string.ascii_letters +
                                             string.digits)
-                              for x in range(30)))
+                              for x in range(30)))  # pyright: ignore
     f.write("ADMINPASSWORD: " + str(admin_password) + " \n")
     if admin_user_email not in existing_users:
         # 2b1.
@@ -530,9 +532,16 @@ def pgadmin_db_user(): # noqa: C901
     # Admin password
     if admin_user_email in existing_users:
         # 2a1b.
-        f.write("Rotating admin user password\n\n")
+        if not set_pgadmin_password(admin_user_email, admin_password):
+            return False
     # 2a1c.
-    f.write("Adding admin user password file\n\n")
+    pf = open(pgadmin_password_file, "w")
+    pf.write(admin_password)
+    pf.close()
+    os.chmod(pgadmin_password_file, 0o600)
+    uid = pwd.getpwnam(pgadmin_default_user).pw_uid
+    gid = grp.getgrnam(pgadmin_default_user).gr_gid
+    os.chown(pgadmin_password_file, uid, gid)
 
     # Non-admin users
 

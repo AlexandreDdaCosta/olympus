@@ -204,24 +204,4 @@ pgadmin-service:
 pgadmin.pgadmin_db_user:
   module.run
 
-{#
-Currently, we don't rotate the file below since we don't know how to update
-user passwords with pgadmin4.db. Just create it once for reference when the
-container first gets started.
-#}
-
-{% set pgadmin_password_file_name = "/home/pgadmin/etc/pgadmin_password" %}
-{% if not salt['file.file_exists' ](pgadmin_password_file_name) %}
-{{ pgadmin_password_file_name }}:
-  file.managed:
-    - context:
-      pgadmin_default_password: {{ pgadmin_default_password }}
-    - group: pgadmin
-    - makedirs: False
-    - mode: 0600
-    - source: salt://services/database/pgadmin_password_file.jinja
-    - template: jinja
-    - user: pgadmin
-{% endif %}
-
 {% endif %}
