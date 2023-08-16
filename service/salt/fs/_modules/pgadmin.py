@@ -215,14 +215,9 @@ def set_pgadmin_password(user_email, new_password):
 
     # Get old user password hash
 
-    query = "select password from user where email = '{}'".format(user_email)
+    query = "select password from user where email = '{0}'".format(user_email)
     cursor.execute(query)
     old_user_hash = cursor.fetchone()[0]
-    f = open("/tmp/pgadmin.txt", "a", buffering=1)
-    f.write("HASHVAL\n\n")
-    f.write(str(user_email) + "\n\n")
-    f.write(str(old_user_hash) + "\n\n")
-    f.close()
     (empty, algorithm, rounds, salt, old_password_hash) = \
         old_user_hash.split("$")
     del empty, salt, old_password_hash
@@ -402,6 +397,8 @@ def pgadmin_db_user(): # noqa: C901
                 2a2a. Write entries for all missing tables
        2b. User doesn't exist
            2b1. Add main user entry
+           Here we raise an exception for the admin user, who should already
+           exist because docker compose will add that account.
            Then follow 2a1a and 2a2a.
            For admin user, follow 2a1c.
 
@@ -443,7 +440,6 @@ def pgadmin_db_user(): # noqa: C901
     connection.commit()
 
     # Get preliminary data
-    f = open("/tmp/pgadmin.txt", "a", buffering=1)
     # List of users in pillar to add to pgadmin user records
     admin_user_email = None
     pgadmin_user_emails = []
@@ -454,18 +450,11 @@ def pgadmin_db_user(): # noqa: C901
             admin_user_email = users[user]['email_address']
         elif 'is_staff' in users[user] and users[user]['is_staff']:
             pgadmin_user_emails.append(users[user]['email_address'])
-    f.write("ALEX ADDING TEST foo@bar.com USER HERE FOR DEV\n")
-    pgadmin_user_emails.append('foo@bar.com')
-    query = ("DELETE FROM user where username = '{0}'"
-             .format('foo@bar.com'))
-    cursor.execute(query)
-    connection.commit()
     # List of users already in pgadmin user records
     existing_users = {}
     query = "select * from user"
     for row in cursor.execute(query):
         existing_users[row[1]] = row[0]
-    f.write(str(existing_users) + "\n")
     # List of system roles from pgadmin
     pgadmin_roles = {}
     query = "select id, name from role"
@@ -489,10 +478,9 @@ def pgadmin_db_user(): # noqa: C901
     admin_password = (''.join(random.choice(string.ascii_letters +
                                             string.digits)
                               for x in range(30)))  # pyright: ignore
-    f.write("ADMINPASSWORD: " + str(admin_password) + " \n")
     if admin_user_email not in existing_users:
         # 2b1.
-        f.write("Adding " + str(admin_user_email) + " admin user entry\n")
+        raise Exception("Admin user not found.")
     # 2a1a.
     query = ("INSERT INTO roles_users (user_id, role_id) VALUES ({0}, {1})"
              .format(existing_users[admin_user_email],
@@ -538,6 +526,10 @@ def pgadmin_db_user(): # noqa: C901
                          1,
                          connection_params))
         cursor.execute(query)
+    # Unlock this account as a courtesy
+    query = ("UPDATE user set locked = 0, login_attempts = 0 " +
+             "where id = {0}".format(existing_users[admin_user_email]))
+    cursor.execute(query)
     connection.commit()
 
     # Admin password
@@ -556,11 +548,10 @@ def pgadmin_db_user(): # noqa: C901
 
     # Non-admin users
 
-    osid = 1
     for pgadmin_user in pgadmin_user_emails:
+        osid = 1
         if pgadmin_user not in existing_users:
             # 2b1.
-            f.write("Adding " + pgadmin_user + " user entry\n\n")
             user_password = (''.join(random.choice(string.ascii_letters +
                                                    string.digits)
                                      for x in range(30)))  # pyright: ignore
@@ -570,6 +561,7 @@ def pgadmin_db_user(): # noqa: C901
             fs_uniquifier = (''.join(random.choice(string.ascii_letters +
                                                    string.digits)
                                      for x in range(32)))  # pyright: ignore
+            temp_password_entry = '$pbkdf2-sha512$25000$foo$foo'
             query = ("INSERT INTO user (" +
                      "email, " +
                      "password, " +
@@ -581,33 +573,22 @@ def pgadmin_db_user(): # noqa: C901
                      ") VALUES (" +
                      "'{0}', '{1}', {2}, '{3}', '{4}', '{5}', '{6}')"
                      .format(pgadmin_user,
-                             None,
+                             temp_password_entry,
                              1,
                              masterpass_check,
                              pgadmin_user,
                              'internal',
                              fs_uniquifier))
-            f.write("QUERY " + query + "\n\n")
             cursor.execute(query)
             connection.commit()
-            f.write("HERE1\n\n")
-            f.write("HERE1" + str(pgadmin_user) + "\n\n")
-            f.write("HERE1" + str(user_password) + "\n\n")
             if not set_pgadmin_password(pgadmin_user, user_password):
                 return False
-            f.write("HERE2\n\n")
             query = ("select * from user where username = '{0}'"
                      .format(pgadmin_user))
-            f.write("HERE3\n\n")
             cursor.execute(query)
-            f.write("HERE4\n\n")
-            row = cursor.fetchone()[0]
-            f.write("HERE5\n\n")
+            row = cursor.fetchone()
             existing_users[row[1]] = row[0]
-            f.write("HERE6\n\n")
-            foo()
         # 2a2a.
-        f.write("Adding " + pgadmin_user + " data\n\n")
         query = ("INSERT INTO roles_users (user_id, role_id) VALUES ({0}, {1})"
                  .format(existing_users[pgadmin_user],
                          pgadmin_roles['User']))
@@ -642,6 +623,9 @@ def pgadmin_db_user(): # noqa: C901
                              connection_params))
             cursor.execute(query)
             osid = osid + 1
+    # Unlock this account as a courtesy
+        query = ("UPDATE user set locked = 0, login_attempts = 0 " +
+                 "where id = {0}".format(existing_users[pgadmin_user]))
+        cursor.execute(query)
         connection.commit()
-    f.close()
     return True
