@@ -218,6 +218,11 @@ def set_pgadmin_password(user_email, new_password):
     query = "select password from user where email = '{}'".format(user_email)
     cursor.execute(query)
     old_user_hash = cursor.fetchone()[0]
+    f = open("/tmp/pgadmin.txt", "a", buffering=1)
+    f.write("HASHVAL\n\n")
+    f.write(str(user_email) + "\n\n")
+    f.write(str(old_user_hash) + "\n\n")
+    f.close()
     (empty, algorithm, rounds, salt, old_password_hash) = \
         old_user_hash.split("$")
     del empty, salt, old_password_hash
@@ -449,6 +454,12 @@ def pgadmin_db_user(): # noqa: C901
             admin_user_email = users[user]['email_address']
         elif 'is_staff' in users[user] and users[user]['is_staff']:
             pgadmin_user_emails.append(users[user]['email_address'])
+    f.write("ALEX ADDING TEST foo@bar.com USER HERE FOR DEV\n")
+    pgadmin_user_emails.append('foo@bar.com')
+    query = ("DELETE FROM user where username = '{0}'"
+             .format('foo@bar.com'))
+    cursor.execute(query)
+    connection.commit()
     # List of users already in pgadmin user records
     existing_users = {}
     query = "select * from user"
@@ -550,6 +561,51 @@ def pgadmin_db_user(): # noqa: C901
         if pgadmin_user not in existing_users:
             # 2b1.
             f.write("Adding " + pgadmin_user + " user entry\n\n")
+            user_password = (''.join(random.choice(string.ascii_letters +
+                                                   string.digits)
+                                     for x in range(30)))  # pyright: ignore
+            masterpass_check = \
+                (''.join(random.choice(string.ascii_letters + string.digits)
+                         for x in range(106)))  # pyright: ignore
+            fs_uniquifier = (''.join(random.choice(string.ascii_letters +
+                                                   string.digits)
+                                     for x in range(32)))  # pyright: ignore
+            query = ("INSERT INTO user (" +
+                     "email, " +
+                     "password, " +
+                     "active, " +
+                     "masterpass_check, " +
+                     "username, " +
+                     "auth_source, " +
+                     "fs_uniquifier " +
+                     ") VALUES (" +
+                     "'{0}', '{1}', {2}, '{3}', '{4}', '{5}', '{6}')"
+                     .format(pgadmin_user,
+                             None,
+                             1,
+                             masterpass_check,
+                             pgadmin_user,
+                             'internal',
+                             fs_uniquifier))
+            f.write("QUERY " + query + "\n\n")
+            cursor.execute(query)
+            connection.commit()
+            f.write("HERE1\n\n")
+            f.write("HERE1" + str(pgadmin_user) + "\n\n")
+            f.write("HERE1" + str(user_password) + "\n\n")
+            if not set_pgadmin_password(pgadmin_user, user_password):
+                return False
+            f.write("HERE2\n\n")
+            query = ("select * from user where username = '{0}'"
+                     .format(pgadmin_user))
+            f.write("HERE3\n\n")
+            cursor.execute(query)
+            f.write("HERE4\n\n")
+            row = cursor.fetchone()[0]
+            f.write("HERE5\n\n")
+            existing_users[row[1]] = row[0]
+            f.write("HERE6\n\n")
+            foo()
         # 2a2a.
         f.write("Adding " + pgadmin_user + " data\n\n")
         query = ("INSERT INTO roles_users (user_id, role_id) VALUES ({0}, {1})"
