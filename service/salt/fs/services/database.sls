@@ -123,8 +123,19 @@ frontend_db_user_pwd_reset:
     - mode: 0755
     - user: pgadmin
 
-{# TODO: 
-Upgrade system for pgadmin docker container
+{# 
+TODO: Upgrade system for pgadmin docker container
+The path for this is as follows:
+
+1. Execute when pillar pkg_latest flag is set.
+2. Use docker registry to see what the "latest" release.
+   Example: https://registry.hub.docker.com/v2/repositories/bitnami/nginx/tags
+   A good concept would be to use the Docker registry API; see
+   https://docs.docker.com/registry/spec/api/
+3. Pull the image
+4. Update docker compose settings in pillar. A good approach
+   would be to include this as part of the run for package_version_repo_updater.pl.
+
 #}
 
 pgadmin_docker_compose_file:
