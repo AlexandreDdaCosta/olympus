@@ -123,21 +123,6 @@ frontend_db_user_pwd_reset:
     - mode: 0755
     - user: pgadmin
 
-{# 
-TODO: Upgrade system for pgadmin docker container
-The path for this is as follows:
-
-1. Execute when pillar pkg_latest flag is set.
-2. Use docker registry to see what the "latest" release.
-   Example: https://registry.hub.docker.com/v2/repositories/bitnami/nginx/tags
-   A good concept would be to use the Docker registry API; see
-   https://docs.docker.com/registry/spec/api/
-3. Pull the image
-4. Update docker compose settings in pillar. A good approach
-   would be to include this as part of the run for package_version_repo_updater.pl.
-
-#}
-
 pgadmin_docker_compose_file:
   file.managed:
     - context:
@@ -216,3 +201,41 @@ pgadmin.pgadmin_db_user:
   module.run
 
 {% endif %}
+
+{# 
+TODO: Upgrade system for pgadmin docker container
+The outline of a procedure for this:
+
+1. Execute when pillar pkg_latest flag is set.
+2. Use docker registry to find the "latest" release.
+
+   URL: https://registry.hub.docker.com/v2/repositories/dpage/pgadmin4/tags
+   This page returns a result with a structure as follows:
+
+   {"count":<number of results>,"next":<paginator>,"previous":<paginator>,"results":[<result set>]}
+
+   The "result set" is a series of dicts. Starting from "0", we
+   are looking for the first result in which "name" is numeric. That will be
+   the latest release. The first listed results are "latest" and "snapshot".
+   We only want to upgrade when the first numeric result[#]['name'] is higher
+   than the installed version.
+
+   For example, assume the current version is 7.3. We go the the registry URL
+   for dpage/pgadmin. Parsing the JSON result, we see the following:
+
+   {..., "results":[{...}, {...}, {..., "name": "7.5", ...}, ...]}
+
+   This means the latest release is 7.5. This is the version for our upgrade.
+
+3. Pull the image. Following the example:
+
+   Command: docker pull dpage/pgadmin4:7.5
+
+4. Update the existing docker compose file in its installed location.
+
+5. Restart docker image through docker compose.
+
+After this upgrade is done, the docker compose settings in pillar need to
+be immediately updated, in a fashion similar to that done for global package
+updates using package_version_repo_updater.pl.
+#}
