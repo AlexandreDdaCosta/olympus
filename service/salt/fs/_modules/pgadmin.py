@@ -8,10 +8,12 @@ Includes SQLite database, credentials, pgpass files
 import grp
 import hashlib
 import hmac
+import json
 import os
 import pwd
 import random
 import re
+import requests
 import shutil
 import sqlite3
 import string
@@ -629,3 +631,57 @@ def pgadmin_db_user(): # noqa: C901
         cursor.execute(query)
         connection.commit()
     return True
+
+
+def pgadmin_upgrade(): # noqa: C901
+    """
+    Checks whether an upgraded version of the pgadmin installation is
+    available and conducts the upgrade.
+
+    1. Execute when pillar pkg_latest flag is set.
+    2. Use docker registry to find the "latest" release.
+
+    URL: https://registry.hub.docker.com/v2/repositories/dpage/pgadmin4/tags
+    This page returns a result with a structure as follows:
+
+    {"count":<number of results>,
+     "next":<paginator>,
+     "previous":<paginator>,
+     "results":[<result set>]}
+
+    The "result set" is a series of dicts. Starting from "0", we
+    are looking for the first result in which "name" is numeric. That will be
+    the latest release. The first listed results are "latest" and "snapshot".
+    We only want to upgrade when the first numeric result[#]['name'] is higher
+    than the installed version.
+
+    For example, assume the current version is 7.3. We go the the registry URL
+    for dpage/pgadmin. Parsing the JSON result, we see the following:
+
+    {..., "results":[{...}, {...}, {..., "name": "7.5", ...}, ...]}
+
+    This means the latest release is 7.5. This is the version for our upgrade.
+
+    3. Pull the image. Following the example:
+
+    Command: docker pull dpage/pgadmin4:7.5
+
+    4. Update the existing docker compose file in its installed location.
+
+    5. Restart docker image through docker compose.
+
+    After this upgrade is done, the docker compose settings in pillar need to
+    be immediately updated, in a fashion similar to that done for global
+    package updates using package_version_repo_updater.pl.
+    """
+    # 2.
+
+    docker_url = ('https://registry.hub.docker.com/v2/repositories' +
+                  '/dpage/pgadmin4/tags')
+    response = requests.get(docker_url)
+    json_response = json.loads(response.text)
+    f = open("/tmp/alex", "a")
+    f.write("VAL\n")
+    f.write(str(json_response) + "\n")
+    f.close()
+    pass
