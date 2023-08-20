@@ -5,6 +5,7 @@ Tools for managing pgadmin.
 Includes SQLite database, credentials, pgpass files
 '''
 
+import docker
 import grp
 import hashlib
 import hmac
@@ -662,26 +663,70 @@ def pgadmin_upgrade(): # noqa: C901
 
     This means the latest release is 7.5. This is the version for our upgrade.
 
-    3. Pull the image. Following the example:
+    3. Verify version of current installation. Be sure it's an older release.
 
-    Command: docker pull dpage/pgadmin4:7.5
+    4. Pull the image.
 
-    4. Update the existing docker compose file in its installed location.
+    5. Update the existing docker compose file in its installed location.
 
-    5. Restart docker image through docker compose.
+    6. Restart docker pgadmin service.
 
     After this upgrade is done, the docker compose settings in pillar need to
     be immediately updated, in a fashion similar to that done for global
     package updates using package_version_repo_updater.pl.
     """
-    # 2.
 
+    pgadmin_path = __salt__['pillar.get']('docker_services_path') + '/pgadmin'
+    docker_compose_file_name = pgadmin_path + '/docker-compose.yml'
     docker_url = ('https://registry.hub.docker.com/v2/repositories' +
                   '/dpage/pgadmin4/tags')
+    repository = 'dpage/pgadmin4'
+
+    # 2.
+
     response = requests.get(docker_url)
     json_response = json.loads(response.text)
-    f = open("/tmp/alex", "a")
-    f.write("VAL\n")
-    f.write(str(json_response) + "\n")
-    f.close()
-    pass
+    latest = None
+    for result in json_response['results']:
+        if re.match(r'\d', result['name'], flags=0):
+            latest = result['name']
+            break
+    if latest is None:
+        raise Exception("Could not find latest number release of pgadmin.")
+
+    # 3.
+
+    client = docker.DockerClient(base_url='unix://var/run/docker.sock')
+    current = None
+    search_tag = repository + ':'
+    for container in client.containers.list():
+        if re.match(search_tag,
+                    container.image.tags[0],  # type: ignore
+                    flags=0):
+            current = container.image.tags[0]  # type: ignore
+            break
+    if current is None:
+        raise Exception("pgadmin not installed.")
+    installed_version = re.sub(search_tag, "", current, count=0, flags=0)
+    if float(installed_version) >= float(latest):
+        return True
+
+    # 4.
+
+    client.images.pull(repository, tag=latest)
+
+    # 5.
+
+    cmd = ("perl -i -pe " +
+           "'s/(image\\: dpage\\/pgadmin4\\:)(.*)/${1}" +
+           str(latest) +
+           "/g' " +
+           docker_compose_file_name)
+    subprocess.check_call(cmd, shell=True)
+
+    # 6.
+
+    cmd = "service pgadmin restart"
+    subprocess.check_call(cmd, shell=True)
+
+    return True
