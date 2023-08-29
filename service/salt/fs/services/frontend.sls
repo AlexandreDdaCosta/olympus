@@ -59,6 +59,31 @@ include:
       - sls: package
 {% endfor %}
 
+{% for packagename, package in pillar.get('frontend-npm-packages', {}).items() %}
+{% if pillar.pkg_latest is defined and pillar.pkg_latest %}
+"{{ packagename }}-node-frontend":
+  npm.installed:
+    - name: {{ packagename }}
+    - force_reinstall: True
+{% elif package != None and 'version' in package %}
+{% if pillar.pkg_noversion is not defined or not pillar.pkg_noversion %}
+"{{ packagename }}@{{ package['version'] }}-nodejs-pkgs":
+  npm.installed:
+    - name: "{{ packagename }}@{{ package['version'] }}"
+{% else %}
+"{{ packagename }}-node-frontend":
+  npm.installed:
+    - name: "{{ packagename }}"
+{% endif %}
+{% else %}
+"{{ packagename }}-node-frontend":
+  npm.installed:
+    - name: "{{ packagename }}"
+{% endif %}
+    - require:
+      - sls: package
+{% endfor %}
+
 {{ pillar['system_log_directory'] }}/django:
   file.directory:
     - group: {{ pillar['frontend_user'] }}
