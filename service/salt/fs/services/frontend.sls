@@ -379,11 +379,39 @@ Connection refused
 
 NOTE that <core-domain-CN> is a placeholder; see actual value in pillar.
 
-Best GUESS at culprit is the pre-hook command. I've that since renewal works correctly first time without.
-Also removed the "--http-01-port" specification since it appears to serve no purpose; i.e., 80 is the default.
+Best GUESS at culprit is the pre-hook command. I've removed that since renewal
+works correctly first time without.
+Also removed the "--http-01-port" specification since it appears to serve no
+purpose; i.e., 80 is the default.
 
 - name: /usr/bin/certbot renew --pre-hook "service nginx stop" --post-hook "service nginx start" --http-01-port 80
 #}
+
+# node frontend for react.js
+
+frontend-www-node-directory:
+  file.directory:
+    - mode: 0755
+    - name: {{ pillar.www_path }}/node
+    - group: root
+    - user: root
+
+{{ pillar.www_path }}/node/interface:
+  file.recurse:
+    - clean: True
+    - dir_mode: 0755
+    - file_mode: 0644
+    - group: root
+    - source: salt://service/node/interface
+    - user: root
+
+{{ pillar.www_path }}/node/interface/package.json:
+  file.managed:
+    - group: root
+    - mode: 0644
+    - user: root
+    - source: salt://services/frontend/package.json.jinja
+    - template: jinja
 
 nginx-frontend:
   service.running:

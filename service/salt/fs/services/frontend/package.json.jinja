@@ -1,0 +1,41 @@
+{
+    "dependencies": {
+{%- for packagename, package in pillar.get('frontend-npm-packages', {}).items() -%}
+      {%- if 'last_entry' in package and package['last_entry'] %}
+      "{{ packagename }}": "{{ package['version'] }}"
+      {%- else %}
+      "{{ packagename }}": "{{ package['version'] }}",
+      {%- endif -%}
+{% endfor %}
+    },
+    "devDependencies": {
+{%- for packagename, package in pillar.get('backend-npm-dev-packages', {}).items() -%}
+      {%- if 'last_entry' in package and package['last_entry'] %}
+      "{{ packagename }}": "{{ package['version'] }}"
+      {%- else %}
+      "{{ packagename }}": "{{ package['version'] }}",
+      {%- endif -%}
+{% endfor %}
+    },
+    "browserslist": {
+      "production": [
+        ">0.2%",
+        "not dead",
+        "not op_mini all"
+      ],
+      "development": [
+        "last 1 chrome version",
+        "last 1 firefox version",
+        "last 1 safari version"
+      ]
+    },
+    "name": "interface",
+    "private": true,
+    "scripts": {
+      "build": "react-scripts build",
+      "eject": "react-scripts eject",
+      "start": "react-scripts start",
+      "test": "react-scripts test"
+    },
+    "version": "{{ pillar['backend-version'] }}"
+}

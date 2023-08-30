@@ -31,7 +31,7 @@ include:
 
 {% for packagename, package in pillar.get('backend-npm-packages', {}).items() %}
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
-"{{ packagename }}-nodejs-pkgs":
+"{{ packagename }}-node-backend":
   npm.installed:
     - force_reinstall: True
 {% elif package != None and 'version' in package %}
@@ -110,13 +110,20 @@ include:
     - mode: 0755
     - user: {{ pillar['backend-user'] }}
 
-{{ pillar.www_path }}/node:
+backend-www-node-directory:
+  file.directory:
+    - mode: 0755
+    - name: {{ pillar.www_path }}/node
+    - group: root
+    - user: root
+
+{{ pillar.www_path }}/node/restapi:
   file.recurse:
     - clean: True
     - dir_mode: 0755
     - file_mode: 0644
     - group: root
-    - source: salt://service/node
+    - source: salt://service/node/restapi
     - user: root
 
 {{ pillar.www_path }}/node/restapi/package.json:
