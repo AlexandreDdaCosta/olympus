@@ -14,6 +14,19 @@ Currently the dev server does not restart automatically on server shutdown, unli
 full uWSGI server.
 #}
 
+setup-node-frontend-dev:
+  cmd.run:
+    - cwd: {{ pillar.www_path }}/node/interface
+    - name: npm install --include=dev 
+
+{{ pillar.www_path }}/node/interface/.eslintrc.json:
+  file.managed:
+    - group: root
+    - makedirs: False
+    - mode: 0644
+    - source: salt://stage/develop/services/files/.eslintrc.json
+    - user: root
+
 {{ pillar['system_logrotate_conf_directory'] }}/devserver:
     file.managed:
     - group: root

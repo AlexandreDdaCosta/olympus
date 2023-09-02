@@ -59,9 +59,29 @@ include:
       - sls: package
 {% endfor %}
 
+{% for packagename, package in pillar.get('npm-packages', {}).items() %}
+{{ packagename }}-node-frontend:
+{% if pillar.pkg_latest is defined and pillar.pkg_latest or package != None and 'version' not in package %}
+  pkg.latest:
+{% else %}
+  pkg.installed:
+    {% if package != None and 'version' in package %}
+    {% if pillar.pkg_noversion is not defined or not pillar.pkg_noversion %}
+    - version: {{ package['version'] }}
+    {% endif %}
+    {% endif %}
+{% endif %}
+    - name: {{ packagename }}
+{% if package != None and 'repo' in package %}
+    - fromrepo: {{ package['repo'] }}
+{% endif %}
+    - require:
+      - sls: package
+{% endfor %}
+
 {% for packagename, package in pillar.get('frontend-npm-packages', {}).items() %}
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
-"{{ packagename }}-node-frontend":
+"{{ packagename }}-node-frontend-package":
   npm.installed:
     - name: {{ packagename }}
     - force_reinstall: True

@@ -9,8 +9,8 @@ include:
 {# Sanity check for inattentive administrators #}
 {% if grains.get('server') == 'supervisor' or grains.get('server') == 'unified' %}
 
-{% for packagename, package in pillar.get('backend-packages', {}).items() %}
-{{ packagename }}-nodejs-web:
+{% for packagename, package in pillar.get('npm-packages', {}).items() %}
+{{ packagename }}-node-backend:
 {% if pillar.pkg_latest is defined and pillar.pkg_latest or package != None and 'version' not in package %}
   pkg.latest:
 {% else %}
@@ -31,7 +31,7 @@ include:
 
 {% for packagename, package in pillar.get('backend-npm-packages', {}).items() %}
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
-"{{ packagename }}-node-backend":
+"{{ packagename }}-node-backend-package":
   npm.installed:
     - force_reinstall: True
 {% elif package != None and 'version' in package %}
