@@ -9,9 +9,9 @@
 {% endfor %}
     },
     "devDependencies": {
-      {% for packagename, package in pillar.get('npm-dev-packages', {}).items() %}
+      {%- for packagename, package in pillar.get('npm-dev-packages', {}).items() %}
       "{{ packagename }}": "{{ package['version'] }}",
-      {% endfor %}
+      {%- endfor -%}
 {%- for packagename, package in pillar.get('frontend-npm-dev-packages', {}).items() -%}
       {%- if 'last_entry' in package and package['last_entry'] %}
       "{{ packagename }}": "{{ package['version'] }}"
