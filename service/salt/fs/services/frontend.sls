@@ -79,6 +79,31 @@ include:
       - sls: package
 {% endfor %}
 
+# This happens primarily in the backend overlay
+{%- if grains.get('server') == 'interface' %}
+{% for packagename, package in pillar.get('npm-service-packages', {}).items() %}
+{% if pillar.pkg_latest is defined and pillar.pkg_latest %}
+"{{ packagename }}-node-service-frontend-package":
+  npm.installed:
+    - force_reinstall: True
+{% elif package != None and 'version' in package %}
+{% if pillar.pkg_noversion is not defined or not pillar.pkg_noversion %}
+"{{ packagename }}@{{ package['version'] }}":
+  npm.installed:
+{% else %}
+"{{ packagename }}-node-service-frontend-package":
+  npm.installed:
+{% endif %}
+{% else %}
+"{{ packagename }}-node-service-frontend-package":
+  npm.installed:
+{% endif %}
+    - name: "{{ packagename }}"
+    - require:
+      - sls: package
+{% endfor %}
+{% endif %}
+
 {% for packagename, package in pillar.get('frontend-npm-packages', {}).items() %}
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
 "{{ packagename }}-node-frontend-package":

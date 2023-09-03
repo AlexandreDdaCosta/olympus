@@ -29,6 +29,28 @@ include:
       - sls: package
 {% endfor %}
 
+{% for packagename, package in pillar.get('npm-service-packages', {}).items() %}
+{% if pillar.pkg_latest is defined and pillar.pkg_latest %}
+"{{ packagename }}-node-service-backend-package":
+  npm.installed:
+    - force_reinstall: True
+{% elif package != None and 'version' in package %}
+{% if pillar.pkg_noversion is not defined or not pillar.pkg_noversion %}
+"{{ packagename }}@{{ package['version'] }}":
+  npm.installed:
+{% else %}
+"{{ packagename }}-node-service-backend-package":
+  npm.installed:
+{% endif %}
+{% else %}
+"{{ packagename }}-node-service-backend-package":
+  npm.installed:
+{% endif %}
+    - name: "{{ packagename }}"
+    - require:
+      - sls: package
+{% endfor %}
+
 {% for packagename, package in pillar.get('backend-npm-packages', {}).items() %}
 {% if pillar.pkg_latest is defined and pillar.pkg_latest %}
 "{{ packagename }}-node-backend-package":
