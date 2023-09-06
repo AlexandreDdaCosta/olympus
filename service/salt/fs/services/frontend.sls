@@ -458,7 +458,7 @@ frontend-www-node-directory:
     - source: salt://services/frontend/package.json.jinja
     - template: jinja
 
-{{ pillar.www_path }}/node/interface/webpack.config.js
+{{ pillar.www_path }}/node/interface/webpack.config.js:
   file.managed:
     - group: root
     - mode: 0644
