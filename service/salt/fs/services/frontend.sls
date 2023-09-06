@@ -474,6 +474,25 @@ build-node-interface:
       - {{ pillar.www_path }}/node/interface/webpack.config.js
 {% endif -%}
 
+/lib/systemd/system/react.service:
+  file.managed:
+    - group: root
+    - makedirs: False
+    - mode: 0644
+    - group: root
+    - makedirs: False
+    - mode: 0644
+    - source: salt://services/frontend/react.service.jinja
+    - template: jinja
+    - user: root
+
+react-service:
+  service.running:
+    - enable: True
+    - name: react
+    - watch:
+      - file: /lib/systemd/system/react.service
+
 nginx-frontend:
   service.running:
     - name: nginx

@@ -1,0 +1,13 @@
+{% set trim_blocks=True -%}
+[Unit]
+Description=React.js server on node
+
+[Service]
+Environment=CI=true
+ExecStart=/usr/bin/npm start
+Restart=on-failure
+User=node
+WorkingDirectory={{ pillar['www_path'] }}/node/interface
+
+[Install]
+WantedBy=default.target
