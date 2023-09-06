@@ -27,6 +27,10 @@ setup-node-frontend-dev:
     - source: salt://stage/develop/services/files/.eslintrc.json
     - user: root
 
+build-node-interface:
+  cmd.run:
+    - name: cd {{ pillar.www_path }}/node/interface; npm run build
+
 {{ pillar['system_logrotate_conf_directory'] }}/devserver:
     file.managed:
     - group: root

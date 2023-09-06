@@ -8,7 +8,11 @@ module.exports={
      * the environment - development, production, none. tells webpack 
      * to use its built-in optimizations accordingly. default is production 
      */
+{% if grains.get('stage') and grains.get('stage') == 'develop' -%}
     mode: "development", 
+{%- else %}
+    mode: "production", 
+{% endif %}
     /** "entry"
      * the entry point 
      */

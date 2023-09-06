@@ -458,6 +458,22 @@ frontend-www-node-directory:
     - source: salt://services/frontend/package.json.jinja
     - template: jinja
 
+{{ pillar.www_path }}/node/interface/webpack.config.js
+  file.managed:
+    - group: root
+    - mode: 0644
+    - user: root
+    - source: salt://services/frontend/webpack.config.js.jinja
+    - template: jinja
+
+{% if grains.get('stage') and grains.get('stage') != 'develop' -%}
+build-node-interface:
+  cmd.run:
+    - name: cd {{ pillar.www_path }}/node/interface; npm run build
+    - require: 
+      - {{ pillar.www_path }}/node/interface/webpack.config.js
+{% endif -%}
+
 nginx-frontend:
   service.running:
     - name: nginx
