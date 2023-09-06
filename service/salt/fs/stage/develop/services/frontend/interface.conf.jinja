@@ -29,6 +29,10 @@ server {
 {%- endfor %}
     proxy_redirect off;
   }
+  location /kuiperbelt/ {
+    proxy_pass http://localhost:9500/;
+    proxy_redirect off;
+  }
   location /media {
     root /srv/www/django/interface;
   }
