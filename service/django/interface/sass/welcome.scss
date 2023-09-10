@@ -230,20 +230,6 @@
 #welcome_header_image {
   opacity: 0;
 }
-img[id="welcome_header_img"] {
-  @media screen and (min-width: 321px) and (max-width: 640px) {
-    content:url("/static/apps/welcome/image/Hubble_Extreme_Deep_Field_640.jpg");
-  } 
-  @media screen and (min-width: 641px) and (max-width: 992px) {
-    content:url("/static/apps/welcome/image/Hubble_Extreme_Deep_Field_992.jpg");
-  } 
-  @media screen and (min-width: 993px) and (max-width: 1280px) {
-    content:url("/static/apps/welcome/image/Hubble_Extreme_Deep_Field_1280.jpg");
-  } 
-  @media screen and (min-width: 1281px) {
-    content:url("/static/apps/welcome/image/Hubble_Extreme_Deep_Field_1920.jpg");
-  } 
-}
 #welcome_header_text {
   left: 0;
   padding-left: 4em;
