@@ -2,6 +2,38 @@
 
 .blog_background {
   @media screen and (max-width: 320px) {
+    background-image:url("/static/apps/welcome/image/zodiacal-light_320_524.jpg");
+  }
+  @media screen and (min-width: 321px) and (max-width: 639px) and (max-height: 320px) {
+    background-image:url("/static/apps/welcome/image/potw1348a_524_589.jpg");
+  }
+  @media screen and (min-width: 321px) and (max-width: 639px) and (min-height: 321px) {
+    background-image:url("/static/apps/welcome/image/zodiacal-light_420_720.jpg");
+  }
+  @media screen and (min-width: 640px) and (max-width: 991px) and (max-height: 639px) {
+    background-image:url("/static/apps/welcome/image/potw1348a_720_827.jpg");
+  }
+  @media screen and (min-width: 640px) and (max-width: 991px) and (min-height: 640px) {
+    background-image:url("/static/apps/welcome/image/zodiacal-light_752_1194.jpg");
+  }
+  @media screen and (min-width: 992px) and (max-width: 1279px) and (max-height: 991px) {
+    background-image:url("/static/apps/welcome/image/potw1348a_1194_1324.jpg");
+  }
+  @media screen and  (min-width: 992px) and (max-width: 1279px) and (min-height: 992px) {
+    background-image:url("/static/apps/welcome/image/potw1348a_1024_1280.jpg");
+  }
+  @media screen and (min-width: 1280px) and (max-width: 1919px) and (max-height: 991px) {
+    background-image:url("/static/apps/welcome/image/potw1348a_1340_1458.jpg");
+  }
+  @media screen and (min-width: 1280px) and (max-width: 1919px) and (min-height: 992px) {
+    background-image:url("/static/apps/welcome/image/potw1348a_1480_1038.jpg");
+  }
+  @media screen and (min-width: 1920px) {
+    background-image:url("/static/apps/welcome/image/potw1348a_1920_1140.jpg");
+  }
+}
+.blog_background_old {
+  @media screen and (max-width: 320px) {
     background-image:url("/static/apps/welcome/image/Zodiacal_Glow_Lightens_Paranal_Sky_640.jpg");
   }
   @media screen and (min-width: 321px) and (max-width: 640px) {
