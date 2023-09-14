@@ -1,59 +1,78 @@
 // background imagery
 
 .blog_background {
+  // 21:9 or wider
   @media screen and (min-aspect-ratio: 2.37/1) and (min-width: 1280px) {
+    // 2560 x 1080
     background-image:url("/static/apps/welcome/image/Paranal_Zodiacal_Light_237_100_2560.jpg");
   }
   @media screen and (min-aspect-ratio: 2.37/1) and (max-width: 1279px) {
+    // 1280 x 540
     background-image:url("/static/apps/welcome/image/Paranal_Zodiacal_Light_237_100_1280.jpg");
   }
-
-}
-.blog_background.bak {
-  @media screen and (min-aspect-ratio: 1.9/1) and (max-aspect-ratio: 2.36999/1) {
-    background-image:url("/static/apps/welcome/image/Paranal_Zodiacal_Light_190_100_1920.jpg");
+  // 19:10 to 21:9
+  @media screen and (min-aspect-ratio: 1.9/1) and (max-aspect-ratio: 2.36999/1) and (min-width: 1280px) {
+    // 2560 x 1348
+    background-image:url("/static/apps/welcome/image/Paranal_Zodiacal_Light_190_100_2560.jpg");
   }
-  @media screen and (min-aspect-ratio: 1.77/1) and (max-aspect-ratio: 1.8999/1) {
-    background-image:url("/static/apps/welcome/image/Paranal_Zodiacal_Light_177_100_1920.jpg");
+  @media screen and (min-aspect-ratio: 1.9/1) and (max-aspect-ratio: 2.36999/1) and (max-width: 1279px) {
+    // 1280 x 674
+    background-image:url("/static/apps/welcome/image/Paranal_Zodiacal_Light_190_100_1280.jpg");
   }
-  @media screen and (max-aspect-ratio: 1.76999/1) {
-    background-image:url("/static/apps/welcome/image/Paranal_Zodiacal_Light_1920_1140.jpg");
+  // 4:3 to 19:10
+  @media screen and (min-aspect-ratio: 1.33/1) and (max-aspect-ratio: 1.8999/1) and (min-width: 1280px) {
+    // 2560 x 1446
+    background-image:url("/static/apps/welcome/image/Paranal_Zodiacal_Light_177_100_2560.jpg");
   }
-  @media screen and (min-aspect-ratio: 1.33/1) and (max-aspect-ratio: 1.76999/1) {
-    background-image:url("/static/apps/welcome/image/Paranal_Zodiacal_Light_1920_1140.jpg");
+  @media screen and (min-aspect-ratio: 1.33/1) and (max-aspect-ratio: 1.8999/1) and (max-width: 1279px) {
+    // 1280 x 724
+    background-image:url("/static/apps/welcome/image/Paranal_Zodiacal_Light_177_100_1280.jpg");
   }
-  @media screen and (min-aspect-ratio: 1/1.33) and (max-aspect-ratio: 1.32999/1) {
-    background-image:url("/static/apps/welcome/image/Paranal_Zodiacal_Light_1920_1140.jpg");
+  // 1:1 to 4:3
+  @media screen and (min-aspect-ratio: 1/1) and (max-aspect-ratio: 1.3299/1) and (min-width: 1280px) {
+    // 2560 x 1924
+    background-image:url("/static/apps/welcome/image/Paranal_Zodiacal_Light_133_100_2560.jpg");
   }
-  @media screen and (min-aspect-ratio: 1/1.77) and (max-aspect-ratio: 1/1.33001) {
-    background-image:url("/static/apps/welcome/image/Paranal_Zodiacal_Light_1920_1140.jpg");
+  @media screen and (min-aspect-ratio: 1/1) and (max-aspect-ratio: 1.3299/1) and (max-width: 1279px) {
+    // 1280 x 962
+    background-image:url("/static/apps/welcome/image/Paranal_Zodiacal_Light_133_100_1280.jpg");
   }
-  @media screen and (min-aspect-ratio: 1/1.9) and (max-aspect-ratio: 1/1.77001) {
-    background-image:url("/static/apps/welcome/image/Paranal_Zodiacal_Light_1920_1140.jpg");
+  // 3:4 to 1:1
+  @media screen and (min-aspect-ratio: 1/1.33) and (max-aspect-ratio: 1/1.001) and (min-height: 1280px) {
+    // 1924 x 2560
+    background-image:url("/static/apps/welcome/image/Zodiacal_Light_Paranal_100_133_2560.jpg");
   }
-  @media screen and (min-aspect-ratio: 1/2.37) and (max-aspect-ratio: 1/1.9001) {
-    background-image:url("/static/apps/welcome/image/Paranal_Zodiacal_Light_1920_1140.jpg");
+  @media screen and (min-aspect-ratio: 1/1.33) and (max-aspect-ratio: 1/1.001) and (max-height: 1279px) {
+    // 962 x 1280
+    background-image:url("/static/apps/welcome/image/Zodiacal_Light_Paranal_100_133_1280.jpg");
   }
-  @media screen and (max-aspect-ratio: 1/2.37001) {
-    background-image:url("/static/apps/welcome/image/Paranal_Zodiacal_Light_1920_1140.jpg");
+  // 10:19 to 3:4
+  @media screen and (min-aspect-ratio: 1/1.9) and (max-aspect-ratio: 1/1.3301) and (min-height: 1280px) {
+    // 1446 x 2560
+    background-image:url("/static/apps/welcome/image/Zodiacal_Light_Paranal_100_177_2560.jpg");
   }
-}
-.blog_background_old {
-  @media screen and (max-width: 320px) {
-    background-image:url("/static/apps/welcome/image/Zodiacal_Glow_Lightens_Paranal_Sky_640.jpg");
+  @media screen and (min-aspect-ratio: 1/1.9) and (max-aspect-ratio: 1/1.3301) and (max-height: 1279px) {
+    // 724 x 1280
+    background-image:url("/static/apps/welcome/image/Zodiacal_Light_Paranal_100_177_1280.jpg");
   }
-  @media screen and (min-width: 321px) and (max-width: 640px) {
-    background-image:url("/static/apps/welcome/image/Zodiacal_Glow_Lightens_Paranal_Sky_640.jpg");
-  } 
-  @media screen and (min-width: 641px) and (max-width: 992px) {
-    background-image:url("/static/apps/welcome/image/Zodiacal_Light_992.jpg");
-  } 
-  @media screen and (min-width: 993px) and (max-height: 800px) {
-    background-image:url("/static/apps/welcome/image/Zodiacal_Glow_Lightens_Paranal_Sky_1280-700.jpg");
-  } 
-  @media screen and (min-width: 993px) and (min-height: 801px) {
-    background-image:url("/static/apps/welcome/image/Zodiacal_Glow_Lightens_Paranal_Sky_1280.jpg");
-  } 
+  // 9:21 to 10:19
+  @media screen and (min-aspect-ratio: 1/2.37) and (max-aspect-ratio: 1/1.9001) and (min-height: 1280px) {
+    // 1348 x 2560
+    background-image:url("/static/apps/welcome/image/Zodiacal_Light_Paranal_100_190_2560.jpg");
+  }
+  @media screen and (min-aspect-ratio: 1/2.37) and (max-aspect-ratio: 1/1.9001) and (max-height: 1279px) {
+    // 674 x 1280
+    background-image:url("/static/apps/welcome/image/Zodiacal_Light_Paranal_100_190_1280.jpg");
+  }
+  // 9:21 or taller
+  @media screen and (max-aspect-ratio: 1/2.37001) and (min-height: 1280px) {
+    // 1080 x 2560
+    background-image:url("/static/apps/welcome/image/Zodiacal_Light_Paranal_100_237_2560.jpg");
+  }
+  @media screen and (max-aspect-ratio: 1/2.37001) and (max-height: 1279px) {
+    // 540 x 1280
+    background-image:url("/static/apps/welcome/image/Zodiacal_Light_Paranal_100_237_1280.jpg");
+  }
 }
 .album_background {
   @media screen and (max-width: 320px) {
