@@ -27,16 +27,49 @@
 <div id="welcome_overlay" class="overlay overlay_black overlay_welcome"></div>
 <div id="welcome_header_image">
 <picture>
-  <source media="(min-width: 321px) and (max-width: 639px) and (max-height: 320px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_524_589.jpg"> 
-  <source media="(min-width: 321px) and (max-width: 639px) and (min-height: 321px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_420_720.jpg">
-  <source media="(min-width: 640px) and (max-width: 991px) and (max-height: 639px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_720_827.jpg">
-  <source media="(min-width: 640px) and (max-width: 991px) and (min-height: 640px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_752_1194.jpg">
-  <source media="(min-width: 992px) and (max-width: 1279px) and (max-height: 991px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_1194_1324.jpg">
-  <source media="(min-width: 992px) and (max-width: 1279px) and (min-height: 992px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_1024_1280.jpg">
-  <source media="(min-width: 1280px) and (max-width: 1919px) and (max-height: 991px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_1340_1458.jpg">
-  <source media="(min-width: 1280px) and (max-width: 1919px) and (min-height: 992px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_1480_1038.jpg">
-  <source media="(min-width: 1920px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_1920_1140.jpg">
-  <img src="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_320_524.jpg" class="img-responsive full-width">
+  <!-- The wide views are double-high for scrolling effect. -->
+  <!-- 21:9 or wider -->
+  <!-- 2382 x 2040 -->
+  <source media="(min-aspect-ratio: 2.37/1) and (min-width: 1280px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_237_200_2382.jpg"> 
+  <!-- 1280 x 1080 -->
+  <source media="(min-aspect-ratio: 2.37/1) and (max-width: 1279px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_237_200_1280.jpg"> 
+  <!-- 19:10 to 21:9 -->
+  <!-- 1966 x 2070 -->
+  <source media="(min-aspect-ratio: 1.9/1) and (max-aspect-ratio: 2.36999/1) and (min-width: 1280px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_190_200_1966.jpg"> 
+  <!-- 1280 x 1348 -->
+  <source media="(min-aspect-ratio: 1.9/1) and (max-aspect-ratio: 2.36999/1) and (max-width: 1279px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_190_200_1280.jpg"> 
+  <!-- 4:3 to 19:10 (using 1.77:1) -->
+  <!-- 1832 x 2070 -->
+  <source media="(min-aspect-ratio: 1.33/1) and (max-aspect-ratio: 1.8999/1) and (min-width: 1280px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_177_200_1832.jpg"> 
+  <!-- 1280 x 1448 -->
+  <source media="(min-aspect-ratio: 1.33/1) and (max-aspect-ratio: 1.8999/1) and (max-width: 1279px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_177_200_1280.jpg"> 
+  <!-- 1:1 to 4:3 -->
+  <!-- 1380 x 2070 -->
+  <source media="(min-aspect-ratio: 1/1) and (max-aspect-ratio: 1.3299/1) and (min-width: 1280px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_133_200_1380.jpg"> 
+  <!-- 1280 x 1924 -->
+  <source media="(min-aspect-ratio: 1/1) and (max-aspect-ratio: 1.3299/1) and (max-width: 1279px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_133_200_1280.jpg"> 
+  <!-- Remove 10% from the widths for added scrolling -->
+  <!-- 3:4 to 1:1 -->
+  <!-- 1402 x 2078 -->
+  <source media="(min-aspect-ratio: 1/1.33) and (max-aspect-ratio: 1/1.001) and (min-height: 1280px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_90_133_2078.jpg">
+  <!-- 864 x 1280 -->
+  <source media="(min-aspect-ratio: 1/1.33) and (max-aspect-ratio: 1/1.001) and (max-height: 1279px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_90_133_1280.jpg">
+  <!-- 10:19 to 3:4 (using 1:1.77) -->
+  <!-- 1056 x 2078 -->
+  <source media="(min-aspect-ratio: 1/1.9) and (max-aspect-ratio: 1/1.3301) and (min-height: 1280px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_90_177_2078.jpg">
+  <!-- 652 x 1280 -->
+  <source media="(min-aspect-ratio: 1/1.9) and (max-aspect-ratio: 1/1.3301) and (max-height: 1279px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_90_177_1280.jpg">
+  <!-- 9:21 to 10:19 -->
+  <!-- 984 x 2078 -->
+  <source media="(min-aspect-ratio: 1/2.37) and (max-aspect-ratio: 1/1.9001) and (min-height: 1280px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_90_190_2078.jpg">
+  <!-- 606 x 1280 -->
+  <source media="(min-aspect-ratio: 1/2.37) and (max-aspect-ratio: 1/1.9001) and (max-height: 1279px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_90_190_1280.jpg">
+  <!-- 9:21 or taller -->
+  <!-- 800 x 2078 -->
+  <source media="(max-aspect-ratio: 1/2.37001) and (min-height: 1280px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_90_237_2078.jpg">
+  <!-- 494 x 1280 -->
+  <source media="(max-aspect-ratio: 1/2.37001) and (max-height: 1279px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_90_237_1280.jpg">
+  <img src="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_133_200_1380.jpg" class="img-responsive full-width"> 
 </picture>
 </div>
 <div id="welcome_header_image_text" class="image_highlight_text image_highlight_text_high">
