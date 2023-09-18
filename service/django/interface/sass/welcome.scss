@@ -179,7 +179,7 @@
   line-height: 90%;
   font-weight: 300;
   font-size: 3.0em;
-  opacity: 0.2;
+  opacity: 0.3;
   text-align: right;
   transform: rotate(90deg);
   transform-origin: right top;
@@ -189,6 +189,7 @@
 }
 .image_highlight_text_left {
   left: 0.8em;
+  line-height: 120%;
   text-align: left;
   transform: rotate(270deg);
   transform-origin: left top;
