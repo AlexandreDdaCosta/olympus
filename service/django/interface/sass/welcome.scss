@@ -187,6 +187,12 @@
 .image_highlight_text span {
   font-size: 2.0em;
 }
+.image_highlight_text_left {
+  left: 0.8em;
+  text-align: left;
+  transform: rotate(270deg);
+  transform-origin: left top;
+}
 .welcome_body {
   -webkit-background-size: cover;
   -moz-background-size: cover;
@@ -363,10 +369,12 @@
   opacity: 0;
 }
 .welcome_header_intro {
+  background-color: black;
   font-weight: 100;
   font-size: 6em;
 }
 .welcome_header_name {
+  background-color: black;
   color: rgb(204,0,0);
   font-weight: 500;
   font-size: 7em;
