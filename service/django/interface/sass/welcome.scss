@@ -75,21 +75,78 @@
   }
 }
 .album_background {
-  @media screen and (max-width: 320px) {
-    background-image:url("/static/apps/welcome/image/Spaceship_Earth_320.jpg");
-  } 
-  @media screen and (min-width: 321px) and (max-width: 640px) {
-    background-image:url("/static/apps/welcome/image/Spaceship_Earth_640.jpg");
-  } 
-  @media screen and (min-width: 641px) and (max-width: 992px) {
-    background-image:url("/static/apps/welcome/image/Spaceship_Earth_992.jpg");
-  } 
-  @media screen and (min-width: 993px) and (max-width: 1280px) {
-    background-image:url("/static/apps/welcome/image/Spaceship_Earth_1280.jpg");
-  } 
-  @media screen and (min-width: 1281px) {
-    background-image:url("/static/apps/welcome/image/Spaceship_Earth_1920.jpg");
-  } 
+  // 21:9 or wider
+  @media screen and (min-aspect-ratio: 2.37/1) and (min-width: 1280px) {
+    // 2400 x 1028
+    background-image:url("/static/apps/welcome/image/Apollo_8_Earthrise_237_100_2400.jpg");
+  }
+  @media screen and (min-aspect-ratio: 2.37/1) and (max-width: 1279px) {
+    // 1280 x 548
+    background-image:url("/static/apps/welcome/image/Apollo_8_Earthrise_237_100_1280.jpg");
+  }
+  // 19:10 to 21:9
+  @media screen and (min-aspect-ratio: 1.9/1) and (max-aspect-ratio: 2.36999/1) and (min-width: 1280px) {
+    // 2400 x 1264
+    background-image:url("/static/apps/welcome/image/Apollo_8_Earthrise_190_100_2400.jpg");
+  }
+  @media screen and (min-aspect-ratio: 1.9/1) and (max-aspect-ratio: 2.36999/1) and (max-width: 1279px) {
+    // 1280 x 674
+    background-image:url("/static/apps/welcome/image/Apollo_8_Earthrise_190_100_1280.jpg");
+  }
+  // 4:3 to 19:10 (using 1.77:1)
+  @media screen and (min-aspect-ratio: 1.33/1) and (max-aspect-ratio: 1.8999/1) and (min-width: 1280px) {
+    // 2400 x 1356
+    background-image:url("/static/apps/welcome/image/Apollo_8_Earthrise_177_100_2400.jpg");
+  }
+  @media screen and (min-aspect-ratio: 1.33/1) and (max-aspect-ratio: 1.8999/1) and (max-width: 1279px) {
+    // 1280 x 724
+    background-image:url("/static/apps/welcome/image/Apollo_8_Earthrise_177_100_1280.jpg");
+  }
+  // 1:1 to 4:3
+  @media screen and (min-aspect-ratio: 1/1) and (max-aspect-ratio: 1.3299/1) and (min-width: 1280px) {
+    // 2400 x 1800
+    background-image:url("/static/apps/welcome/image/Apollo_8_Earthrise_133_100_2400.jpg");
+  }
+  @media screen and (min-aspect-ratio: 1/1) and (max-aspect-ratio: 1.3299/1) and (max-width: 1279px) {
+    // 1280 x 962
+    background-image:url("/static/apps/welcome/image/Apollo_8_Earthrise_133_100_1280.jpg");
+  }
+  // 3:4 to 1:1
+  @media screen and (min-aspect-ratio: 1/1.33) and (max-aspect-ratio: 1/1.001) and (min-height: 1280px) {
+    // 1800 x 2400
+    background-image:url("/static/apps/welcome/image/Apollo_8_Earthrise_100_133_2400.jpg");
+  }
+  @media screen and (min-aspect-ratio: 1/1.33) and (max-aspect-ratio: 1/1.001) and (max-height: 1279px) {
+    // 960 x 1280
+    background-image:url("/static/apps/welcome/image/Apollo_8_Earthrise_100_133_1280.jpg");
+  }
+  // 10:19 to 3:4 (using 1:1.77)
+  @media screen and (min-aspect-ratio: 1/1.9) and (max-aspect-ratio: 1/1.3301) and (min-height: 1280px) {
+    // 1356 x 2400
+    background-image:url("/static/apps/welcome/image/Apollo_8_Earthrise_100_177_2400.jpg");
+  }
+  @media screen and (min-aspect-ratio: 1/1.9) and (max-aspect-ratio: 1/1.3301) and (max-height: 1279px) {
+    // 724 x 1280
+    background-image:url("/static/apps/welcome/image/Apollo_8_Earthrise_100_177_1280.jpg");
+  }
+  // 9:21 to 10:19
+  @media screen and (min-aspect-ratio: 1/2.37) and (max-aspect-ratio: 1/1.9001) and (min-height: 1280px) {
+    // 1264 x 2400
+    background-image:url("/static/apps/welcome/image/Apollo_8_Earthrise_100_190_2400.jpg");
+  }
+  @media screen and (min-aspect-ratio: 1/2.37) and (max-aspect-ratio: 1/1.9001) and (max-height: 1279px) {
+    // 674 x 1280
+    background-image:url("/static/apps/welcome/image/Apollo_8_Earthrise_100_190_1280.jpg");
+  }
+  // 9:21 or taller
+  @media screen and (max-aspect-ratio: 1/2.37001) and (min-height: 1280px) {
+    // 1028 x 2400
+    background-image:url("/static/apps/welcome/image/Apollo_8_Earthrise_100_237_2400.jpg");
+  }
+  @media screen and (max-aspect-ratio: 1/2.37001) and (max-height: 1279px) {
+    // 548 x 1280
+    background-image:url("/static/apps/welcome/image/Apollo_8_Earthrise_100_237_1280.jpg");
+  }
 }
 .apps_background {
   // 21:9 or wider
