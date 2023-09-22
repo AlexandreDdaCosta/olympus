@@ -9,10 +9,48 @@
   <img src="/static/apps/welcome/image/laikas_den_welcome_640_bw.jpg" class="img-responsive full-width" id="background_mirror_image">
 </picture>
 <picture>
-  <source media="(min-width: 641px) and (max-width: 992px)" srcset="/static/apps/welcome/image/laikas_den_welcome_992_bw.jpg">
-  <source media="(min-width: 993px) and (max-width: 1280px)" srcset="/static/apps/welcome/image/laikas_den_welcome_1280_bw.jpg">
-  <source media="(min-width: 1281px)" srcset="/static/apps/welcome/image/laikas_den_welcome_1920_bw.jpg">
-  <img src="/static/apps/welcome/image/laikas_den_welcome_640_bw.jpg" class="img-responsive full-width" id="background_mirror_image_stable">
+  <!-- Add 10% to heights for screen coverage -->
+  <!-- 21:9 or wider -->
+  <!-- 2830 x 1092 -->
+  <source media="(min-aspect-ratio: 2.37/1) and (min-width: 1280px)" srcset="/static/apps/welcome/image/Earth_From_Space_260_100_2830_bw.jpg"> 
+  <!-- 1408 x 604 -->
+  <source media="(min-aspect-ratio: 2.37/1) and (max-width: 1279px)" srcset="/static/apps/welcome/image/Earth_From_Space_260_100_1408_bw.jpg"> 
+  <!-- 19:10 to 21:9 -->
+  <!-- 2830 x 1340 -->
+  <source media="(min-aspect-ratio: 1.9/1) and (max-aspect-ratio: 2.36999/1) and (min-width: 1280px)" srcset="/static/apps/welcome/image/Earth_From_Space_210_100_2830_bw.jpg"> 
+  <!-- 1408 x 742 -->
+  <source media="(min-aspect-ratio: 1.9/1) and (max-aspect-ratio: 2.36999/1) and (max-width: 1279px)" srcset="/static/apps/welcome/image/Earth_From_Space_210_100_1408_bw.jpg">
+  <!-- 4:3 to 19:10 (using 1.77:1) -->
+  <!-- 2830 x 1438 -->
+  <source media="(min-aspect-ratio: 1.33/1) and (max-aspect-ratio: 1.8999/1) and (min-width: 1280px)" srcset="/static/apps/welcome/image/Earth_From_Space_195_100_2830_bw.jpg"> 
+  <!-- 1408 x 828 -->
+  <source media="(min-aspect-ratio: 1.33/1) and (max-aspect-ratio: 1.8999/1) and (max-width: 1279px)" srcset="/static/apps/welcome/image/Earth_From_Space_195_100_1408_bw.jpg"> 
+  <!-- 1:1 to 4:3 -->
+  <!-- 2830 x 1910 -->
+  <source media="(min-aspect-ratio: 1/1) and (max-aspect-ratio: 1.3299/1) and (min-width: 1280px)" srcset="/static/apps/welcome/image/Earth_From_Space_146_100_2830_bw.jpg"> 
+  <!-- 1408 x 1056 -->
+  <source media="(min-aspect-ratio: 1/1) and (max-aspect-ratio: 1.3299/1) and (max-width: 1279px)" srcset="/static/apps/welcome/image/Earth_From_Space_146_100_1408_bw.jpg"> 
+  <!-- 3:4 to 1:1 -->
+  <!-- 1910 x 2830 -->
+  <source media="(min-aspect-ratio: 1/1.33) and (max-aspect-ratio: 1/1.001) and (min-height: 1280px)" srcset="/static/apps/welcome/image/Earth_From_Space_100_146_2830_bw.jpg">
+  <!-- 1056 x 1408 -->
+  <source media="(min-aspect-ratio: 1/1.33) and (max-aspect-ratio: 1/1.001) and (max-height: 1279px)" srcset="/static/apps/welcome/image/Earth_From_Space_100_146_1408_bw.jpg">
+  <!-- 10:19 to 3:4 (using 1:1.77) -->
+  <!-- 1438 x 2830 -->
+  <source media="(min-aspect-ratio: 1/1.9) and (max-aspect-ratio: 1/1.3301) and (min-height: 1280px)" srcset="/static/apps/welcome/image/Earth_From_Space_100_195_2830_bw.jpg">
+  <!-- 828 x 1408 -->
+  <source media="(min-aspect-ratio: 1/1.9) and (max-aspect-ratio: 1/1.3301) and (max-height: 1279px)" srcset="/static/apps/welcome/image/Earth_From_Space_100_195_1408_bw.jpg">
+  <!-- 9:21 to 10:19 -->
+  <!-- 1340 x 2830 -->
+  <source media="(min-aspect-ratio: 1/2.37) and (max-aspect-ratio: 1/1.9001) and (min-height: 1280px)" srcset="/static/apps/welcome/image/Earth_From_Space_100_210_2830_bw.jpg">
+  <!-- 742 x 1408 -->
+  <source media="(min-aspect-ratio: 1/2.37) and (max-aspect-ratio: 1/1.9001) and (max-height: 1279px)" srcset="/static/apps/welcome/image/Earth_From_Space_100_210_1408_bw.jpg">
+  <!-- 9:21 or taller -->
+  <!-- 1092 x 2830 -->
+  <source media="(max-aspect-ratio: 1/2.37001) and (min-height: 1280px)" srcset="/static/apps/welcome/image/Earth_From_Space_100_260_2830_bw.jpg">
+  <!-- 604 x 1408-->
+  <source media="(max-aspect-ratio: 1/2.37001) and (max-height: 1279px)" srcset="/static/apps/welcome/image/Earth_From_Space_100_260_1408_bw.jpg">
+  <img src="/static/apps/welcome/image/Earth_From_Space_133_100_1408_bw.jpg" class="img-responsive full-width" id="background_mirror_image_stable"> 
 </picture>
 <picture>
   <source media="(min-width: 641px) and (max-width: 992px)" srcset="/static/apps/welcome/image/laikas_den_welcome_992.jpg">
@@ -48,7 +86,7 @@
   <source media="(min-aspect-ratio: 1/1) and (max-aspect-ratio: 1.3299/1) and (min-width: 1280px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_133_200_1380.jpg"> 
   <!-- 1280 x 1924 -->
   <source media="(min-aspect-ratio: 1/1) and (max-aspect-ratio: 1.3299/1) and (max-width: 1279px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_133_200_1280.jpg"> 
-  <!-- Remove 10% from the widths for added scrolling -->
+  <!-- Remove 10% from widths for added scrolling -->
   <!-- 3:4 to 1:1 -->
   <!-- 1402 x 2078 -->
   <source media="(min-aspect-ratio: 1/1.33) and (max-aspect-ratio: 1/1.001) and (min-height: 1280px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_90_133_2078.jpg">
@@ -69,7 +107,7 @@
   <source media="(max-aspect-ratio: 1/2.37001) and (min-height: 1280px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_90_237_2078.jpg">
   <!-- 494 x 1280 -->
   <source media="(max-aspect-ratio: 1/2.37001) and (max-height: 1279px)" srcset="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_90_237_1280.jpg">
-  <img src="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_133_200_1380.jpg" class="img-responsive full-width"> 
+  <img src="/static/apps/welcome/image/Hubble_Extreme_Deep_Field_133_200_1280.jpg" class="img-responsive full-width" id="hubble_image"> 
 </picture>
 </div>
 <div id="welcome_header_image_text" class="image_highlight_text image_highlight_text_high">
