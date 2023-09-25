@@ -1,64 +1,64 @@
 # Django front end for olympus
 
-## Guide to organizing imagery for proper display under a responsive set-up
+## Guide to creating imagery for proper display under a full-srceen responsive set-up
 
-Use the following resolution guide when editing images. All the listed resolutions need to be tested and verified.
+For the latest release, imagery concepts have shifted to the use of the CSS
+features *min-aspect-ratio* and *max_aspect-ratio*. These are combined with
+*min-width* and *max-width* to produce an image approximating the aspect
+ratio of a screen, with an examination of width used to save bandwidth
+by delivering a smaller number of pixels where applicable. The breakpoint
+for width is always at 1279/1280 pixels.
 
-Inverses exist to account for horizontal and vertical orientations of mobile devices.
+Aspect ratios were chosen to approximate those in common use, both in
+device screens and venues.
 
-The intent is to use midpoint sizes for related common screen resolutions. This should limit the number of required images and keep responsive cropping to a minimum.
+### Aspect ratio break points
 
-Sizes are calculated by taking simple averages of the grouped resolutions.
+* 21:9 or wider
+* 19:10
+* 17.7:10
+* 4:3 (from 1:1)
+* 3:4 (to 1:1)
+* 10:17.7
+* 10:19
+* 9:21 or narrower
 
-A placeholder is used to simplify css conditionals, giving at least two height options at each major width break point (320, 640, 992, 1280, 1920).
+These break points lead to 16 versions of an image, with each image having another whose
+aspect ratio is its inverse.
+
+These ratios are occasionally altered: for example, to produce an image that
+will scroll rather than fit to the screen. In this example, a 10% addition is made to
+the *height* of the image. Aspect ratios in comments are adjusted to reflect this type
+of change.
+
+A typical CSS entry for a set of four such images is as follows. In this example, the first
+image at 19:10 has an inverse at 10:19. The second image is like the first but is only 1280
+pixels wide compared to 2560 pixels for the first. Note the comments and naming conventions.
+The numbers used in the name represent the overall aspect ratio and the size of the longest
+dimension.
 
 ```
-Target resolutions              Target image dimensions
-******************              ***********************
-
-                                             Matched proportions
-320                             Full screen  (for inverses)       Mid-point
----                             -----------  -------------------  ---------
-
-a. 480 x 320 (inverse of "c.")  524 x 320    524 x 858            524 x 589
-b. 568 x 320 (inverse of "d.")  ...          ...                  ...
-
-c. 320 x 480                    320 x 524
-d. 320 x 568                    ... 
-
-e. 360 x 640                    420 x 720
-f. 480 x 800                    ...     
-
-640
----
-
-g. 640 x 360 (inverse of "e.")  720 x 420    720 x 1234           720 x 827
-h. 800 x 480 (inverse of "f.")  ...          ...                  ...
-
-i. 768 x 1024                   752 x 1194
-j. 720 x 1280                   ...
-k. 768 x 1280                   ...
-
-992
----
-
-l. 1024 x 768 (inverse of "i.") 1194 x 752   1194 x 1896          1194 x 1324
-m. 1024 x 1280 (placeholder)    1024 x 1280
-
-1280
-----
-
-m. 1280 x 720 (inverse of "j.") 1340 x 789   1340 x 2128          1340 x 1458
-n. 1280 x 768 (inverse of "k.") ....         ....                 ....
-o. 1360 x 768                   ....
-p. 1440 x 900                   ....
-
-q. 1280 x 1024                  1480 x 1038
-r. 1680 x 1050                  ....
-
-1920
-----
-
-s. 1920 x 1080                  1920 x 1140
-t. 1920 x 1200                   
+.blog_background {
+<!-- ... -->
+  // 19:10 to 21:9
+  @media screen and (min-aspect-ratio: 1.9/1) and (max-aspect-ratio: 2.36999/1) and (min-width: 1280px) {
+    // 2560 x 1348
+    background-image:url("/static/apps/welcome/image/Paranal_Zodiacal_Light_190_100_2560.jpg");
+  }
+  @media screen and (min-aspect-ratio: 1.9/1) and (max-aspect-ratio: 2.36999/1) and (max-width: 1279px) {
+    // 1280 x 674
+    background-image:url("/static/apps/welcome/image/Paranal_Zodiacal_Light_190_100_1280.jpg");
+  }
+<!-- ... -->
+  // 9:21 to 10:19
+  @media screen and (min-aspect-ratio: 1/2.37) and (max-aspect-ratio: 1/1.9001) and (min-height: 1280px) {
+    // 1348 x 2560
+    background-image:url("/static/apps/welcome/image/Zodiacal_Light_Paranal_100_190_2560.jpg");
+  }
+  @media screen and (min-aspect-ratio: 1/2.37) and (max-aspect-ratio: 1/1.9001) and (max-height: 1279px) {
+    // 674 x 1280
+    background-image:url("/static/apps/welcome/image/Zodiacal_Light_Paranal_100_190_1280.jpg");
+  }
+<!-- ... -->
+}
 ```
