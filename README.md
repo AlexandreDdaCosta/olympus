@@ -274,15 +274,6 @@ existing local repository to github. These files are necessary, though, so be
 sure to create them in the local working repository.
 * Submit with the **Create repository** button.
 
-### Change default branch on Github to "master"
-
-* Only for the olympus repository itself. Other repositories use the GitHub
-convention of naming the primary branch **main**, so this step is not
-applicable.
-* Also a one-time operation.
-* Navigate to [the repository's general settings page](https://github.com/AlexandreDdaCosta/olympus/settings).
-* Edit the **Default branch** to *master* in the edit pop-up and submit.
-
 ### Add any desired public keys to Github account settings
 
 * Copy the contents of a public key to the clipboard.
@@ -333,6 +324,15 @@ the remote repository:
 ```
 git push github
 ```
+
+### Verify default branch on Github to "master"
+
+* Only for olympus and related repositories. Other repositories use the GitHub
+convention of naming the primary branch **main**, so this step is not
+applicable.
+* Also a one-time operation.
+* Navigate to [the repository's general settings page](https://github.com/AlexandreDdaCosta/olympus/settings).
+* Edit the **Default branch** to *master* as needed in the edit pop-up and submit.
 
 Now you can navigate to [the Github repository's home page](https://github.com/AlexandreDdaCosta/olympus).
 The header will show an updated commit count as well as updated details for the
