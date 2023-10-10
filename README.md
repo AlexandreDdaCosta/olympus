@@ -6,8 +6,8 @@ This is the primary repository for the olympus project.
 
 The goal of the olympus project is to create a web platform for both
 development and deployment. It is designed around regularly-maintained,
-enterprise-class software, and it can be scaled up to major deployments and down
-to a single, home-based server. The ideal use-case is of a small, local
+enterprise-class software, and it can be scaled up to major deployments and
+down to a single, home-based server. The ideal use case is of a small, local
 installation using a number of tiny servers as nodes. The tiny server class
 has the advantage of being both cheap to purchase and low on power consumption.
 A single, robustly-built data center class server can host olympus, but
@@ -35,7 +35,7 @@ one of the Salt master configuration files.
 
 ### [olympus](https://github.com/AlexandreDdaCosta/olympus)
 
-The core repository, mirrored on Github. At the root there are four major
+The core repository, mirrored on GitHub. At the root there are four major
 divisions:
 
 * **apps**. Olympus-only applications.
@@ -43,15 +43,15 @@ divisions:
 on every server.
 * **install**. The complete installation code, used for an initial USB build of
 the core servers.
-* **service**. The core SaltStack modules, Django files, and Node.js build.
-These are grouped together as they are used by SaltStack to build and maintain
-the installation. In particular, *SaltStack state files only live in git*, not
-on the file system.
+* **service**. The core SaltStack modules, Django files, React.js installtion,
+and Node.js build. These are grouped together as they are used by SaltStack to
+build and maintain the installation. In particular, *SaltStack state files only
+live in git*, not on the file system.
 
 ### acropolis
 
 This repository holds information and code not suitable to distribution or 
-storgae on Github. There are two types of data here:
+storage on GitHub. There are two types of data here:
 
 * Any pillar *.sls* files not found on the olympus repository due to their
 sensitive nature.
@@ -64,7 +64,9 @@ itself and its backup.
 
 Image files. While not of a sensitive nature, these files were separated from
 the olympus repository because they are not code and are therefore not
-considered particularly interesting for distribution.
+considered particularly interesting for distribution. However, the repository
+is saved to GitHub as a backup and due to the presence of some Javascript
+files that are important for the interface.
 
 ### [olympus-blog](https://github.com/AlexandreDdaCosta/olympus-blog)
 ### [olympus-viewer](https://github.com/AlexandreDdaCosta/olympus-viewer)
@@ -108,14 +110,14 @@ Javascript files used to deliver the user interface.
 
 * [uWSGI](https://uwsgi-docs.readthedocs.io/en/latest/) *(interface)*
 
-This project is the primary web application deployment layer. All calls
-to the front-end pass through uWSGI, including the Django test server used
+This project is the primary web application deployment layer. All calls to the
+front end pass through uWSGI. This includes the Django test server used
 in development.
 
 * [nginx](https://nginx.org/en/) *(interface, supervisor)*
 
-Employed as an HTTP proxy server for both the front-end interface and
-the back-end, internal API. In particular, nginx is configured to directly
+Employed as an HTTP proxy server for both the front end interface and
+the back end, internal API. In particular, nginx is configured to directly
 serve all static files referenced by Django and so offers a significant
 performance boost.
 
@@ -130,13 +132,13 @@ also the one server type that implements a RAID 1 configuration.
 
 MongoDB exists on all servers mostly as a "scratch pad", a place to
 temporarily store detailed data that is processed algorithmically or that
-otherwise gets regularly refreshed. An exception to this is the MongoDB database
-on the supervisor, which currently holds external API credentials. These
-credentials include keys that regularly expire and require regeneration.
+otherwise gets regularly refreshed. An exception to this is the MongoDB
+database on the supervisor, which currently holds external API credentials.
+These credentials include keys that regularly expire and require regeneration.
 
 * [Node.js](https://nodejs.org/en) *(supervisor)*
 
-The supervisor hosts a back-end REST API delivered via Node.js and only used
+The supervisor hosts a back end REST API delivered via Node.js and only used
 internally, principally to access data stored on the supervisor's MongoDB
 database.
 
@@ -332,7 +334,8 @@ convention of naming the primary branch **main**, so this step is not
 applicable.
 * Also a one-time operation.
 * Navigate to [the repository's general settings page](https://github.com/AlexandreDdaCosta/olympus/settings).
-* Edit the **Default branch** to *master* as needed in the edit pop-up and submit.
+* Edit the **Default branch** to *master* as needed in the edit pop-up
+and submit.
 
 Now you can navigate to [the Github repository's home page](https://github.com/AlexandreDdaCosta/olympus).
 The header will show an updated commit count as well as updated details for the
