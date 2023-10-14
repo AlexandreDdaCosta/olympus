@@ -50,17 +50,14 @@ live in git*, not on the file system.
 
 ### acropolis
 
-This repository holds information and code not suitable to distribution or 
-storage on GitHub. There are two types of data here:
+This repository holds information and code not suitable for public visibility.
+There are two types of data here:
 
 * Any pillar *.sls* files not found on the olympus repository due to their
 sensitive nature.
 * Python algorithms that are considered proprietary.
 
-The acropolis repository lives only on the main olympus supervisor server
-itself and its backup.
-
-### olympus-static
+### [olympus-static](https://github.com/AlexandreDdaCosta/olympus-static)
 
 Image files. While not of a sensitive nature, these files were separated from
 the olympus repository because they are not code and are therefore not
@@ -264,7 +261,10 @@ there are a few more steps.
 
 ### Create a bare repository on Github
 
-* A one-time operation when adding an olympus repository to Github.
+The following describes the stpes used to add an olympus repository to Github.
+The specific details are for the olympus main repository itself, but these steps
+are used to add any repository with some modifications.
+
 * Navigate to the [Create a new repository page](https://github.com/new) after
 account log-in.
 * Under **Repository name**, enter "olympus".
