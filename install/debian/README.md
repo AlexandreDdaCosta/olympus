@@ -10,9 +10,11 @@ A quick dummy's reminder of how to use this USB installation on Linux.
 sudo fdisk -l
 ```
 
-You're looking for the *Disk* entry that identifies the USB drives. *Disk /dev/sdb* is likely.
+You're looking for the *Disk* entry that identifies the USB drives.
+*Disk /dev/sdb* is likely.
 
-Look at the *Device* entries under that disk. One should look obvious due to disk size and type.
+Look at the *Device* entries under that disk. One should look obvious due to
+disk size and type.
 
 Example:
 
@@ -41,7 +43,8 @@ In our example:
 sudo mount /dev/sdb2 /media/olympus
 ```
 
-Now you can access the USB contents. In our example, to run the networking installation routine:
+Now you can access the USB contents. In our example, to run the networking
+installation routine:
 
 ```
 sudo /media/olympus/install/debian/scripts/networking.sh
@@ -53,4 +56,3 @@ It's good practice to remove the mount point once you're done with it:
 sudo umount /media/olympus
 sudo rmdir /media/olympus
 ```
-

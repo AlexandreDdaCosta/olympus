@@ -27,7 +27,7 @@ These break points lead to 16 versions of an image, with each image having anoth
 aspect ratio is its inverse.
 
 These ratios are occasionally altered: for example, to produce an image that
-will scroll rather than fit to the screen. In this example, a 10% addition is made to
+will scroll rather than fit to the screen. In this case, a 10% addition is made to
 the *height* of the image. Aspect ratios in comments are adjusted to reflect this type
 of change.
 

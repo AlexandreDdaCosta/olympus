@@ -1,6 +1,6 @@
 # olympus user structure
 
-Several categories of users exist under olympus. Different management steps
+Several categories of user exist under olympus. Different management steps
 apply to the different types of users.
 
 Broadly speaking, users are defined as *human* or *system*.
@@ -61,13 +61,13 @@ someuser:
 The various definitions have the following functions:
 
 * **class**. Identifies the type of user -- *human* in this case. Exists mostly
-documentation purposes. However, if no shell is assigned to a human user, then
-*/bin/bash* will be assigned by default.
+for documentation purposes. However, if no shell is assigned to a human user,
+then */bin/bash* will be assigned by default.
 * **comment**. Optional informative details.
 * **createhome**. When set to "True", this will create a home directory for the
 user on every olympus server.
 * **edit_precommand**. Stores a system command that gets executed prior to
-account creation and before regular account maintenance via Salt states.
+account creation and before regular account maintenance via SaltStack states.
 * **email_address**. Contact email address. Updates to this address require
 an update in salt pillar.
 * **fullname**. The user's proper name. For documentation purposes.
@@ -94,7 +94,7 @@ targeted server. If **createhome** is set to **True**, a copy of the
 updated password gets placed in the user's home directory at 
 *~/etc/redis_password*. This operation also depends on the specification for
 **server** *(see below)*. To limit the keys available to the user, define
-those under the *keys* specification as shown above. Without the *keys*
+these under the *keys* specification as shown above. Without the *keys*
 limitation, a local redis user will **only** have access to keys prefixed with
 the user's ID and a colon, which is the default access and is available to all
 users with redis access.

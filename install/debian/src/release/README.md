@@ -3,8 +3,9 @@
 Within these directories, source files for different Debian releases
 are organized.
 
-Follow these steps on a network-accessible machine to create a preselected
-archive used to install olympus on a machine without network connectivity.
+Follow the following steps on a network-accessible machine to create a
+preselected archive used to install olympus on a machine without network
+connectivity.
 
 * Install development tools
 

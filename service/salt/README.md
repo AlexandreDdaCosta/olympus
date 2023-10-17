@@ -1,7 +1,7 @@
 # Saltstack service command hints
 
 The following are key commands used as part of regular system maintenance and
-development under Saltstack.  As indicated by the use of **sudo**, these
+development under SaltStack.  As indicated by the use of **sudo**, these
 commands are for administrators or other users with the proper privilege.
 
 * Reset pillar
@@ -35,7 +35,7 @@ The sample run below illustrates the range of components updated. In particular,
 after a git check-in.  Running this command will cause the salt master to update
 module code, with the names of updated modules being echoed directly after the
 *modules:* line. Note that multiple runs might be needed to display the
-echoed verification.
+echoed verification; alternatively, wait 30-60 seconds after a git check-in..
 
 ```
 alex@zeus:~$ sudo -i salt '*' saltutil.sync_all -v
@@ -98,8 +98,8 @@ sudo -i salt '*' state.sls shutdown pillar='{"reboot": true}' -v
 ```
 
 Shut down machine with default USB backup for main local git repository and main
-development user git repository clones. The pillar setting will cause the
-machine to reboot rather than shut down.
+development user git repository clones. In the second command, the pillar
+setting will cause the machine to reboot rather than shut down.
 
 ```
 sudo salt '*' slsutil.renderer salt://service/salt/fs/services/frontend.sls default_render=jinja -v
