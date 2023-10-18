@@ -32,7 +32,8 @@ XOR_TEXT = 'One or the other value must be true, but both cannot be.'
 TEST_ENVIRONMENT = 'test'
 TEST_PREFIX = 'olympustest_'
 
-parser = ArgumentParser(sys.argv, conflict_handler='resolve')
+parser = ArgumentParser(sys.argv,  # pyright: ignore
+                        conflict_handler='resolve')
 parser.add_argument('-t', '--test',
                     action='store',
                     default='all',
@@ -66,12 +67,8 @@ class Test(unittest.TestCase):
                         kwargs['default'] = parser_arg[2]['default']
                     if 'help' in parser_arg[2]:
                         kwargs['help'] = parser_arg[2]['help']
-                parser.add_argument(
-                        parser_arg[0],
-                        parser_arg[1],
-                        **kwargs
-                        )
-        Test.arguments = parser.parse_known_args()
+                parser.add_argument(parser_arg[0], parser_arg[1], **kwargs)
+        Test.arguments, extra = parser.parse_known_args()  # pyright: ignore
         run_username = pwd.getpwuid(os.getuid())[0]
         if str(Test.arguments.username) != run_username:
             raise Exception(f'Run user {run_username} does not match required '
@@ -167,23 +164,24 @@ class Test(unittest.TestCase):
         return caller[2]
 
     def print(self, message):
-        if Test.arguments.verbose is True:
+        if Test.arguments.verbose is True:   # pyright: ignore
             print(message)
 
     def print_test(self, test):
-        if Test.arguments.verbose is True:
+        if Test.arguments.verbose is True:   # pyright: ignore
             print(f'Test: {test}.')
 
     def random_string(self, length=DEFAULT_STRING_LENGTH):
         return ''.join(
-                random.choice(string.ascii_uppercase + string.digits)
-                for x in range(length))
+            random.choice(string.ascii_uppercase + string.digits)
+            for x in range(length))   # pyright: ignore
 
     def skip_test(self):
         test_case = re.sub('^test_',
                            '',
                            inspect.getframeinfo(sys._getframe(1)).function)
-        if Test.arguments.test != 'all' and Test.arguments.test != test_case:
+        if (Test.arguments.test != 'all' and  # pyright: ignore
+                Test.arguments.test != test_case):  # pyright: ignore
             self.print('\nSkip test: ' + test_case + '.')
             return True
         return False
@@ -191,7 +189,7 @@ class Test(unittest.TestCase):
 
 class TestConfig(object):
 
-    def __init__(self, test_path, **kwargs):
+    def __init__(self, test_path, **kwargs):  # noqa: C901
         """
         Reads suite-style configuration files and verifies them against
         any existing jsonschema.
@@ -242,8 +240,8 @@ class TestConfig(object):
                                 validate_id_field = True
                         try:
                             jsonschema.validate(
-                                    instance=getattr(self, attribute),
-                                    schema=schema)
+                                instance=getattr(self, attribute),
+                                schema=schema)
                         except jsonschema.ValidationError as e:
                             print(e)
                             validated = False
@@ -266,7 +264,7 @@ class TestConfig(object):
                     'tests.LOCK')
         locked = False
         retries = 0
-        self.lock = FileLock(lockfile, timeout=timeout)
+        self.lock = FileLock(lockfile, timeout=timeout)  # pyright: ignore
         while locked is False:
             try:
                 self.lock.acquire()
