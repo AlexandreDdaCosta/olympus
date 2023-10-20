@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# pyright: reportGeneralTypeIssues=false
+# pyright: reportOptionalMemberAccess=false
+
 import sys
 import unittest
 
@@ -7,8 +10,12 @@ import olympus.securities.equities.data.price as equity_price
 import olympus.securities.indicators as indicators
 import olympus.testing as testing
 
-from olympus.securities.equities import *
-from olympus.securities.indicators import *
+from olympus.securities.equities import TEST_SYMBOLS
+from olympus.securities.indicators import (
+    DEFAULT_ATR_PERIODS,
+    DEFAULT_MOVING_AVERAGE_PERIODS,
+    VALID_MOVING_AVERAGE_TYPES
+)
 
 # Standard run parameters:
 # sudo su -s /bin/bash -c '... indicators.py' <desired run user ID>
@@ -16,46 +23,50 @@ from olympus.securities.indicators import *
 
 class TestIndicators(testing.Test):
 
+    parse_args = []
+    parse_args.append(
+        ('-p',
+         '--period',
+         {
+             'action': 'store',
+             'choices': ['all', 'intraday', 'daily'],
+             'default': 'all',
+             'help': 'Conduct tests for only indicated time period.'
+         }
+         ))
+    parse_args.append(
+        ('-s',
+         '--symbol',
+         {
+             'action': 'store',
+             'default': None,
+             'help': 'Conduct tests for only indicated symbol.'
+         }
+         ))
+
+    @classmethod
+    def setUpClass(cls):
+        TestIndicators.parser_args += TestIndicators.parse_args
+        super(TestIndicators, cls).setUpClass()
+
     def __init__(self, test_case):
-        parser_args = []
-        parser_args.append(
-                ('-p',
-                 '--period',
-                 {
-                     'action': 'store',
-                     'choices': ['all', 'intraday', 'daily'],
-                     'default': 'all',
-                     'help': 'Conduct tests for only indicated time period.'
-                     }
-                 ))
-        parser_args.append(
-                ('-s',
-                 '--symbol',
-                 {
-                     'action': 'store',
-                     'default': None,
-                     'help': 'Conduct tests for only indicated symbol.'
-                     }
-                 ))
-        super(TestIndicators, self).__init__(
-                test_case,
-                parser_args=parser_args)
+        super(TestIndicators, self).__init__(test_case)
 
     def test_atr(self):
         if self.skip_test():
             return
         self.print_test('Calculating average true ranges')
-        if self.args.symbol is None:
+        if self.arguments.symbol is None:
             symbol_list = TEST_SYMBOLS
         else:
             symbol_list = []
-            symbol_list.append(self.args.symbol.upper())
+            symbol_list.append(self.arguments.symbol.upper())
         for test_symbol in symbol_list:
-            if self.args.period == 'all':
+            if self.arguments.period == 'all':
                 test_periods = ['Daily', 'Intraday']
             else:
                 test_periods = []
-                test_periods.append(self.args.period.capitalize())
+                test_periods.append(self.arguments.period.capitalize())
             for test_period in test_periods:
                 self.print_test("%s ATR for test symbol %s"
                                 % (test_period, test_symbol))
@@ -71,8 +82,8 @@ class TestIndicators(testing.Test):
                 with self.assertRaises(Exception):
                     indicators.AverageTrueRange(quotes, periods='foobar')
                 atr_series = indicators.AverageTrueRange(
-                        quotes,
-                        periods=DEFAULT_ATR_PERIODS)
+                    quotes,
+                    periods=DEFAULT_ATR_PERIODS)
                 self.assertEqual(quotes.count(), atr_series.count())
                 atr_entry = atr_series.next()
                 quote = quotes.next(reset=True)
@@ -90,21 +101,21 @@ class TestIndicators(testing.Test):
                     atr_entry = atr_series.next()
                     quote = quotes.next()
 
-    def test_moving_average(self):
+    def test_moving_average(self):  # noqa: C901
         if self.skip_test():
             return
         self.print_test('Calculating moving averages')
-        if self.args.symbol is None:
+        if self.arguments.symbol is None:
             symbol_list = TEST_SYMBOLS
         else:
             symbol_list = []
-            symbol_list.append(self.args.symbol.upper())
+            symbol_list.append(self.arguments.symbol.upper())
         for test_symbol in symbol_list:
-            if self.args.period == 'all':
+            if self.arguments.period == 'all':
                 test_periods = ['Daily', 'Intraday']
             else:
                 test_periods = []
-                test_periods.append(self.args.period.capitalize())
+                test_periods.append(self.arguments.period.capitalize())
             for test_period in test_periods:
                 if test_period == 'Daily':
                     price = equity_price.Daily(self.username)
@@ -113,9 +124,9 @@ class TestIndicators(testing.Test):
                 quotes = price.quote(test_symbol)
                 with self.assertRaises(Exception):
                     indicators.MovingAverage(
-                            quotes,
-                            average_type='Foobar',
-                            periods=DEFAULT_MOVING_AVERAGE_PERIODS)
+                        quotes,
+                        average_type='Foobar',
+                        periods=DEFAULT_MOVING_AVERAGE_PERIODS)
                 if test_period == 'Daily':
                     price = equity_price.Daily(self.username)
                 else:  # intraday
@@ -123,31 +134,31 @@ class TestIndicators(testing.Test):
                 quotes = price.quote(test_symbol)
                 for average_type in VALID_MOVING_AVERAGE_TYPES:
                     self.print_test(
-                            "%s %s moving average for test symbol "
-                            "%s, %d period" %
-                            (average_type,
-                             test_period,
-                             test_symbol,
-                             DEFAULT_MOVING_AVERAGE_PERIODS))
+                        "%s %s moving average for test symbol "
+                        "%s, %d period" %
+                        (average_type,
+                         test_period,
+                         test_symbol,
+                         DEFAULT_MOVING_AVERAGE_PERIODS))
                     with self.assertRaises(Exception):
                         indicators.MovingAverage(
-                                quotes,
-                                average_type=average_type,
-                                periods=0)
-                    with self.assertRaises(Exception):
-                        indicators.MovingAverage(
-                                quotes,
-                                average_type=average_type,
-                                periods=1000000)
-                    with self.assertRaises(Exception):
-                        indicators.MovingAverage(
-                                quotes,
-                                average_type=average_type,
-                                periods='foobar')
-                    ma_series = indicators.MovingAverage(
                             quotes,
                             average_type=average_type,
-                            periods=DEFAULT_MOVING_AVERAGE_PERIODS)
+                            periods=0)
+                    with self.assertRaises(Exception):
+                        indicators.MovingAverage(
+                            quotes,
+                            average_type=average_type,
+                            periods=1000000)
+                    with self.assertRaises(Exception):
+                        indicators.MovingAverage(
+                            quotes,
+                            average_type=average_type,
+                            periods='foobar')
+                    ma_series = indicators.MovingAverage(
+                        quotes,
+                        average_type=average_type,
+                        periods=DEFAULT_MOVING_AVERAGE_PERIODS)
                     self.assertEqual(quotes.count(), ma_series.count())
                     ma_entry = ma_series.next()
                     quote = quotes.next(reset=True)

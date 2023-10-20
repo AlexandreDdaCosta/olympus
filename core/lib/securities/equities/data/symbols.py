@@ -1,3 +1,5 @@
+# pyright: reportGeneralTypeIssues=false
+
 import codecs
 import csv
 import json
@@ -55,7 +57,7 @@ SYMBOL_DATA_URLS = [{'exchange':
 
 class InitSymbols(data.Initializer):
 
-    def __init__(self, username=USER, **kwargs):
+    def __init__(self, username: str = USER, **kwargs):
         super(InitSymbols, self).__init__(SYMBOL_COLLECTION,
                                           username,
                                           **kwargs)
@@ -388,11 +390,11 @@ class InitSymbols(data.Initializer):
                             str(unknown_symbols))
 
     def _download_symbol_file(self,
-                              target_file,
-                              url,
-                              verbose_title,
-                              verbose_nodownload,
-                              verbose_download_symbol_file):
+                              target_file: str,
+                              url: str,
+                              verbose_title: str,
+                              verbose_nodownload: str,
+                              verbose_download_symbol_file: str):
         if self.verbose:
             print(verbose_title)
         epoch_time = int(time.time())
@@ -424,20 +426,20 @@ class InitSymbols(data.Initializer):
 
 class _Symbols(Series):
 
-    def __init__(self, schema):
+    def __init__(self, schema: dict):
         super(_Symbols, self).__init__()
         self.json_schema = schema
         self.unknown_symbols = None
 
-    def add_symbol(self, data):
+    def add_symbol(self, data: dict):
         symbol_object = Return(data, self.json_schema)
         self.add(symbol_object)
 
-    def add_unknown_symbols(self, unknown_symbols):
+    def add_unknown_symbols(self, unknown_symbols: list):
         if unknown_symbols and self.unknown_symbols is None:
             self.unknown_symbols = unknown_symbols
 
-    def get_symbol(self, symbol):
+    def get_symbol(self, symbol: str):
         return self.get_by_attribute('symbol', symbol)
 
     def get_symbols(self):
@@ -453,7 +455,7 @@ class _Symbols(Series):
 
 class Read(restapi.Connection):
 
-    def __init__(self, username=USER, **kwargs):
+    def __init__(self, username: str = USER, **kwargs):
         super(Read, self).__init__(username, **kwargs)
         file_finder = FileFinder()
         schema_file_name = file_finder.schema_file(SCHEMA_FILE_DIRECTORY,
@@ -463,10 +465,11 @@ class Read(restapi.Connection):
         self.redis_symbol_lockfile = (self.lockfile_directory() +
                                       'redis_symbol.pid')
 
-    def get_symbol(self, symbol, **kwargs):  # noqa: F403
+    def get_symbol(self, symbol: str, **kwargs):  # noqa: F403
         symbol = str(symbol).upper()
         reset = kwargs.pop('reset', False)
         redis_client = self.client()
+        reset = True
         if reset is False:
 
             # Can also reset by deleting this redis entry, which results in
@@ -547,7 +550,7 @@ class Read(restapi.Connection):
         return_object = Return(content, self.json_schema)
         return return_object
 
-    def get_symbols(self, symbols):
+    def get_symbols(self, symbols: list):
         if not isinstance(symbols, list):
             raise Exception('Parameter "symbols" must be ' +
                             'a list of security symbols.')
@@ -571,8 +574,8 @@ class SymbolNotFoundError(Exception):
     """
 
     def __init__(self,
-                 symbol,
-                 message='Queried symbol not found in symbol database'):
+                 symbol: str,
+                 message: str = 'Queried symbol not found in symbol database'):
         self.symbol = symbol
         self.message = message
         super().__init__(self.message)

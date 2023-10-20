@@ -16,18 +16,18 @@ from olympus.redis import Connection
 from olympus.securities.equities import (
     INDEX_CLASS,
     NASDAQ,
+    SECURITY_CLASS_ETF,
+    SECURITY_CLASS_STOCK,
     TEST_SYMBOL_DIV,
     TEST_SYMBOL_DIV_EXCHANGE,
-    TEST_SYMBOL_ETF,
-    TEST_SYMBOL_FAKE,
     TEST_SYMBOL_DIVSPLIT,
     TEST_SYMBOL_DIVSPLIT_EXCHANGE,
+    TEST_SYMBOL_ETF,
+    TEST_SYMBOL_FAKE,
     TEST_SYMBOL_INDEX,
     TEST_SYMBOL_NODIVSPLIT,
     TEST_SYMBOL_SPLIT,
-    TEST_SYMBOL_SPLIT_EXCHANGE,
-    SECURITY_CLASS_ETF,
-    SECURITY_CLASS_STOCK
+    TEST_SYMBOL_SPLIT_EXCHANGE
 )
 from olympus.securities.equities.data.symbols import SymbolNotFoundError
 

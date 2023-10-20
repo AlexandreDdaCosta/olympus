@@ -7,7 +7,9 @@ import olympus.securities.equities.data.price as equity_price
 import olympus.securities.indicators.demark.algo.sequential as sequential
 import olympus.testing as testing
 
-from olympus.securities.equities import *
+from olympus.securities.equities import (
+    TEST_SYMBOLS
+)
 
 # Standard run parameters:
 # sudo su -s /bin/bash -c '... demark.py' <desired run user ID>
@@ -18,27 +20,27 @@ class TestDemark(testing.Test):
     def __init__(self, test_case):
         parser_args = []
         parser_args.append(
-                ('-p',
-                 '--period',
-                 {
-                     'action': 'store',
-                     'choices': ['all', 'intraday', 'daily'],
-                     'default': 'all',
-                     'help': 'Conduct tests for only indicated time period.'
-                     }
-                 ))
+            ('-p',
+             '--period',
+             {
+                 'action': 'store',
+                 'choices': ['all', 'intraday', 'daily'],
+                 'default': 'all',
+                 'help': 'Conduct tests for only indicated time period.'
+             }
+             ))
         parser_args.append(
-                ('-s',
-                 '--symbol',
-                 {
-                     'action': 'store',
-                     'default': None,
-                     'help': 'Conduct tests for only indicated symbol.'
-                     }
-                 ))
+            ('-s',
+             '--symbol',
+             {
+                 'action': 'store',
+                 'default': None,
+                 'help': 'Conduct tests for only indicated symbol.'
+             }
+             ))
         super(TestDemark, self).__init__(
-                test_case,
-                parser_args=parser_args)
+            test_case,
+            parser_args=parser_args)
 
     def test_sequential(self):
         if self.skip_test():
@@ -76,9 +78,9 @@ class TestDemark(testing.Test):
                 with self.assertRaises(Exception):
                     sequential.Sequential(quotes, formation_periods='foobar')
                 obj = sequential.Sequential(
-                        quotes,
-                        array_periods=DEFAULT_ARRAY_PERIODS,
-                        formation_periods=DEFAULT_FORMATION_PERIODS)
+                    quotes,
+                    array_periods=sequential.DEFAULT_ARRAY_PERIODS,
+                    formation_periods=sequential.DEFAULT_FORMATION_PERIODS)
                 print(obj)
 
 
