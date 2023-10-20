@@ -16,7 +16,7 @@
     },
     "Exchange": {
       "description": "The marketplace in which the equity is primarily listed",
-      "pattern": "^amex|nasdaq|nyse$",
+      "pattern": "^amex|cboe|nasdaq|nyse$",
       "type": "string"
     },
     "Expiration": {

@@ -14,7 +14,7 @@ from os.path import isfile
 
 USER = 'olympus'
 
-ARGON2_CONFIG = {"memory_cost": 64*1024,
+ARGON2_CONFIG = {"memory_cost": 64 * 1024,
                  "parallelism": 1,
                  "salt_bytes": 16,
                  "time_cost": 3}
@@ -37,8 +37,8 @@ def is_datetime(checker, instance):
 
 TYPE_CHECKER = Draft7Validator.TYPE_CHECKER.redefine('datetime', is_datetime)
 VALIDATOR = jsonschema.validators.extend(
-        Draft7Validator,
-        type_checker=TYPE_CHECKER)
+    Draft7Validator,
+    type_checker=TYPE_CHECKER)
 
 # Services
 MONGODB_SERVICE = 'mongodb'

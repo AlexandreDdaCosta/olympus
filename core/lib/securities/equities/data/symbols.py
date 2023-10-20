@@ -26,6 +26,13 @@ JSON_FILE_SUFFIX = '-companylist.json'
 NASDAQ_TRADED_DATA_FILE_NAME = 'nasdaqtraded.txt'
 NASDAQ_TRADED_DATA_URL = \
     'ftp://ftp.nasdaqtrader.com/SymbolDirectory/nasdaqtraded.txt'
+NASDAQ_TRADED_EXCHANGE_MAP = {
+    'A': 'amex',
+    'N': 'nyse',
+    'P': 'nyse',
+    'Q': 'nasdaq',
+    'Z': 'cboe'
+}
 NASDAQ_TRADED_JSON_FILE_NAME = 'nasdaqtraded.json'
 SYMBOL_COLLECTION = 'symbols'
 SYMBOL_DATA_URLS = [{'exchange':
@@ -59,7 +66,7 @@ class InitSymbols(data.Initializer):
             print('Downloading exchange listed symbol data.')
         company_files = []
         for urlconf in SYMBOL_DATA_URLS:
-            target_file = urlconf['exchange']+JSON_FILE_SUFFIX
+            target_file = urlconf['exchange'] + JSON_FILE_SUFFIX
             company_files.insert(0, target_file)
             self._download_symbol_file(target_file,
                                        urlconf['url'],
@@ -269,7 +276,8 @@ class InitSymbols(data.Initializer):
                 entry.pop('Round Lot Size')
                 entry.pop('Symbol')
                 entry.pop('Test Issue')
-                entry['Exchange'] = entry.pop('Listing Exchange')
+                entry['Exchange'] = \
+                    NASDAQ_TRADED_EXCHANGE_MAP[entry.pop('Listing Exchange')]
                 entry['Name'] = entry.pop('Security Name')
                 entry['Symbol'] = entry.pop('NASDAQ Symbol')
                 if entry.pop('ETF') == 'Y':
@@ -408,7 +416,7 @@ class InitSymbols(data.Initializer):
                             ' --output-document=' +
                             target_file],
                            shell=True)
-            subprocess.run(['touch '+target_file], shell=True)
+            subprocess.run(['touch ' + target_file], shell=True)
         except Exception:
             self.clean_up()
             raise
@@ -421,7 +429,7 @@ class _Symbols(Series):
         self.json_schema = schema
         self.unknown_symbols = None
 
-    def add_symbol(self, symbol, data):
+    def add_symbol(self, data):
         symbol_object = Return(data, self.json_schema)
         self.add(symbol_object)
 
@@ -479,7 +487,7 @@ class Read(restapi.Connection):
                     return_object = Return(redis_stored_symbol,
                                            self.json_schema)
                     return return_object
-        response = self.call('/equities/symbol/'+symbol)
+        response = self.call('/equities/symbol/' + symbol)
         if (response.status_code == 404):
             raise SymbolNotFoundError(symbol)
         content = json.loads(response.content)['symbol']
@@ -544,13 +552,13 @@ class Read(restapi.Connection):
             raise Exception('Parameter "symbols" must be ' +
                             'a list of security symbols.')
         symbol_string = ',' . join([str(symbol).upper() for symbol in symbols])
-        response = self.call('/equities/symbols/'+symbol_string)
+        response = self.call('/equities/symbols/' + symbol_string)
         content = json.loads(response.content)
         return_object = _Symbols(self.json_schema)
         return_object.add_unknown_symbols(content['unknownSymbols'])
         if content['symbols']:
             for symbol in content['symbols']:
-                return_object.add_symbol(symbol, content['symbols'][symbol])
+                return_object.add_symbol(content['symbols'][symbol])
         return return_object
 
 

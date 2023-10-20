@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# pyright: reportGeneralTypeIssues=false
+# pyright: reportOptionalMemberAccess=false
+
 import sys
 import unittest
 
@@ -10,7 +13,22 @@ import olympus.testing as testing
 from datetime import datetime as dt
 
 from olympus.redis import Connection
-from olympus.securities.equities import *
+from olympus.securities.equities import (
+    INDEX_CLASS,
+    NASDAQ,
+    TEST_SYMBOL_DIV,
+    TEST_SYMBOL_DIV_EXCHANGE,
+    TEST_SYMBOL_ETF,
+    TEST_SYMBOL_FAKE,
+    TEST_SYMBOL_DIVSPLIT,
+    TEST_SYMBOL_DIVSPLIT_EXCHANGE,
+    TEST_SYMBOL_INDEX,
+    TEST_SYMBOL_NODIVSPLIT,
+    TEST_SYMBOL_SPLIT,
+    TEST_SYMBOL_SPLIT_EXCHANGE,
+    SECURITY_CLASS_ETF,
+    SECURITY_CLASS_STOCK
+)
 from olympus.securities.equities.data.symbols import SymbolNotFoundError
 
 # Standard run parameters:
@@ -21,12 +39,12 @@ class TestSymbols(testing.Test):
 
     def __init__(self, test_case):
         super(TestSymbols, self).__init__(test_case)
-        self.symbols = symbols.Read(self.username)
 
     def test_symbol(self):
         if self.skip_test():
             return
         self.print_test('Individual symbols from backend')
+        self.symbols = symbols.Read(str(self.username))
         with self.assertRaises(SymbolNotFoundError):
             self.symbols.get_symbol(TEST_SYMBOL_FAKE)
         result = self.symbols.get_symbol(TEST_SYMBOL_DIVSPLIT)
@@ -58,19 +76,19 @@ class TestSymbols(testing.Test):
         self.assertIsNotNone(result.name)
         self.assertEqual(result.security_class, INDEX_CLASS)
         self.assertEqual(result.symbol, TEST_SYMBOL_INDEX)
-        redis_connection = Connection(self.username)
+        redis_connection = Connection(str(self.username))
         redis_client = redis_connection.client()
-        redis_time = redis_client.hget('securities:equities:symbol:' +
-                                       TEST_SYMBOL_INDEX,
-                                       'Time')
+        redis_time = str(redis_client.hget('securities:equities:symbol:' +
+                                           TEST_SYMBOL_INDEX,
+                                           'Time'))
         pre_reset_time = dt.strptime(redis_time, "%Y-%m-%d %H:%M:%S.%f%z")
         result = self.symbols.get_symbol(TEST_SYMBOL_INDEX, reset=True)
         self.assertIsNotNone(result.name)
         self.assertEqual(result.security_class, INDEX_CLASS)
         self.assertEqual(result.symbol, TEST_SYMBOL_INDEX)
-        redis_time = redis_client.hget('securities:equities:symbol:' +
-                                       TEST_SYMBOL_INDEX,
-                                       'Time')
+        redis_time = str(redis_client.hget('securities:equities:symbol:' +
+                                           TEST_SYMBOL_INDEX,
+                                           'Time'))
         post_reset_time = dt.strptime(redis_time, "%Y-%m-%d %H:%M:%S.%f%z")
         self.assertGreater(post_reset_time, pre_reset_time)
 
@@ -78,6 +96,7 @@ class TestSymbols(testing.Test):
         if self.skip_test():
             return
         self.print_test('Symbol sets from backend')
+        self.symbols = symbols.Read(str(self.username))
         self.print('Multiple symbols, including unknown/invalid.')
         # Note that symbol_result is the same object returned by get_symbol
         with self.assertRaises(Exception):
@@ -118,6 +137,7 @@ class TestSymbols(testing.Test):
         result = self.symbols.get_symbols([TEST_SYMBOL_DIVSPLIT,
                                           TEST_SYMBOL_SPLIT])
         symbol_result = result.get_by_attribute('exchange', NASDAQ)
+        assert isinstance(symbol_result, list)
         self.assertTrue(len(symbol_result) == 2)
         self.assertXor(symbol_result[0].symbol == TEST_SYMBOL_DIVSPLIT,
                        symbol_result[1].symbol == TEST_SYMBOL_DIVSPLIT)
@@ -138,7 +158,7 @@ class TestSymbols(testing.Test):
         if self.skip_test():
             return
         self.print_test('Checking continuing validity of test symbols')
-        adjustments = price.Adjustments(self.username)
+        adjustments = price.Adjustments(str(self.username))
         self.print('Dividend symbol [' + TEST_SYMBOL_DIV + '].')
         dividends = adjustments.dividends(TEST_SYMBOL_DIV)
         self.assertIsNotNone(dividends.first())
