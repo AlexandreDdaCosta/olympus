@@ -16,9 +16,13 @@ import olympus.restapi as restapi
 import olympus.securities.equities.data as data
 
 from olympus import FileFinder, Return, Series, USER
-from olympus.securities.equities import CONFIG_FILE_DIRECTORY, \
-    INDEX_CLASS, SCHEMA_FILE_DIRECTORY, SECURITY_CLASS_ETF, \
+from olympus.securities.equities import (
+    CONFIG_FILE_DIRECTORY,
+    INDEX_CLASS,
+    SCHEMA_FILE_DIRECTORY,
+    SECURITY_CLASS_ETF,
     SECURITY_CLASS_STOCK
+)
 from olympus.securities.equities.data import TIMEZONE
 
 ETF_INDEX_DATA_FILE_NAME = 'usexchange-etf+indexlist.csv'
