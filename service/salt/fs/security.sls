@@ -593,7 +593,13 @@ redis_acl_list:
 # Write redis password to local password file
 {% for username, user in pillar.get('users', {}).items() -%}
 {% if 'server' not in user or grains.get('server') in user['server'] -%}
-{% if 'redis' in user and 'password' in user['redis'] and 'createhome' in user and user['createhome'] -%}
+{% set manage_user_jinja_file = false %}
+{% if 'redis' in user and 'password' in user['redis'] -%}
+{% set manage_user_jinja_file = true %}
+{% elif 'is_staff' in user and user['is_staff'] -%}
+{% set manage_user_jinja_file = true %}
+{% endif -%}
+{% if manage_user_jinja_file == true %}
 
 {{ username }}_redis_password_file:
   file.managed:

@@ -473,7 +473,6 @@ class Read(restapi.Connection):
         symbol = str(symbol).upper()
         reset = kwargs.pop('reset', False)
         redis_client = self.client()
-        reset = True
         if reset is False:
 
             # Can also reset by deleting this redis entry, which results in
