@@ -1,21 +1,24 @@
+# pyright: reportGeneralTypeIssues=false
+# pyright: reportOptionalMemberAccess=false
+
 from olympus import Series, String
 
 # The attributes that all price quotes must have
 PRICE_STANDARD_ATTRIBUTES = [
-        "Close",
-        "DateTime",
-        "High",
-        "Low",
-        "Open",
-        "Volume"]
+    "Close",
+    "DateTime",
+    "High",
+    "Low",
+    "Open",
+    "Volume"]
 
 # The attributes that all quote adjustments must have
 PRICE_ADJUSTED_ATTRIBUTES = [
-        "Adjusted Close",
-        "Adjusted High",
-        "Adjusted Low",
-        "Adjusted Open",
-        "Adjusted Volume"]
+    "Adjusted Close",
+    "Adjusted High",
+    "Adjusted Low",
+    "Adjusted Open",
+    "Adjusted Volume"]
 MAP_ADJUSTED_ATTRIBUTES = {
     "Adjusted Close": "close",
     "Adjusted High": "high",
@@ -90,17 +93,17 @@ class QuoteAdjustments():
 
     def __init__(self, adjustments):
         _ValidateAttributes(
-                adjustments,
-                PRICE_ADJUSTED_ATTRIBUTES,
-                'adjusted details')
+            adjustments,
+            PRICE_ADJUSTED_ATTRIBUTES,
+            'adjusted details')
         self.adjusted_attributes = []
         for adjustment in adjustments:
             setattr(
-                    self,
-                    MAP_ADJUSTED_ATTRIBUTES[adjustment],
-                    adjustments[adjustment])
+                self,
+                MAP_ADJUSTED_ATTRIBUTES[adjustment],
+                adjustments[adjustment])
             self.adjusted_attributes.append(
-                    MAP_ADJUSTED_ATTRIBUTES[adjustment])
+                MAP_ADJUSTED_ATTRIBUTES[adjustment])
 
     def get(self, adjustment_name):
         if adjustment_name in self.adjusted_attributes:
@@ -118,9 +121,9 @@ class Quote():
         self.misc = None
         self.standard_attributes = []
         _ValidateAttributes(
-                quote,
-                PRICE_STANDARD_ATTRIBUTES,
-                'standard details')
+            quote,
+            PRICE_STANDARD_ATTRIBUTES,
+            'standard details')
         string = String()
         for detail in quote:
             uc_detail = string.pascal_case_to_underscore(detail)
@@ -134,8 +137,8 @@ class Quote():
         # Will overwrite an existing attribute
         if self.misc is None:
             self.misc = _ClassMisc(
-                    named_attributes=PRICE_ADJUSTED_ATTRIBUTES +
-                    PRICE_STANDARD_ATTRIBUTES)
+                named_attributes=PRICE_ADJUSTED_ATTRIBUTES +
+                PRICE_STANDARD_ATTRIBUTES)
         self.misc.add(misc_name, misc_value)
 
     def add_symbol(self, symbol):

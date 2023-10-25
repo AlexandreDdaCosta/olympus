@@ -56,25 +56,13 @@ class TestIndicators(testing.Test):
         if self.skip_test():
             return
         self.print_test('Calculating average true ranges')
-        if self.arguments.symbol is None:
-            symbol_list = TEST_SYMBOLS
-        else:
-            symbol_list = []
-            symbol_list.append(self.arguments.symbol.upper())
+        symbol_list = self._symbol_list()
+        test_periods = self._test_periods()
         for test_symbol in symbol_list:
-            if self.arguments.period == 'all':
-                test_periods = ['Daily', 'Intraday']
-            else:
-                test_periods = []
-                test_periods.append(self.arguments.period.capitalize())
             for test_period in test_periods:
                 self.print_test("%s ATR for test symbol %s"
                                 % (test_period, test_symbol))
-                if test_period == 'Daily':
-                    price = equity_price.Daily(self.username)
-                else:  # Intraday
-                    price = equity_price.Intraday(self.username)
-                quotes = price.quote(test_symbol)
+                quotes = self._quotes(test_symbol, test_period)
                 with self.assertRaises(Exception):
                     indicators.AverageTrueRange(quotes, periods=0)
                 with self.assertRaises(Exception):
@@ -105,33 +93,16 @@ class TestIndicators(testing.Test):
         if self.skip_test():
             return
         self.print_test('Calculating moving averages')
-        if self.arguments.symbol is None:
-            symbol_list = TEST_SYMBOLS
-        else:
-            symbol_list = []
-            symbol_list.append(self.arguments.symbol.upper())
+        symbol_list = self._symbol_list()
+        test_periods = self._test_periods()
         for test_symbol in symbol_list:
-            if self.arguments.period == 'all':
-                test_periods = ['Daily', 'Intraday']
-            else:
-                test_periods = []
-                test_periods.append(self.arguments.period.capitalize())
             for test_period in test_periods:
-                if test_period == 'Daily':
-                    price = equity_price.Daily(self.username)
-                else:  # Intraday
-                    price = equity_price.Intraday(self.username)
-                quotes = price.quote(test_symbol)
+                quotes = self._quotes(test_symbol, test_period)
                 with self.assertRaises(Exception):
                     indicators.MovingAverage(
                         quotes,
                         average_type='Foobar',
                         periods=DEFAULT_MOVING_AVERAGE_PERIODS)
-                if test_period == 'Daily':
-                    price = equity_price.Daily(self.username)
-                else:  # intraday
-                    price = equity_price.Intraday(self.username)
-                quotes = price.quote(test_symbol)
                 for average_type in VALID_MOVING_AVERAGE_TYPES:
                     self.print_test(
                         "%s %s moving average for test symbol "
@@ -174,6 +145,92 @@ class TestIndicators(testing.Test):
                         self.assertEqual(str(ma_entry.date), str(quote.date))
                         ma_entry = ma_series.next()
                         quote = quotes.next()
+
+    def test_bollinger_bands(self):  # noqa: C901
+        if self.skip_test():
+            return
+        self.print_test('Calculating Bollinger Bands.')
+        symbol_list = self._symbol_list()
+        test_periods = self._test_periods()
+        for test_symbol in symbol_list:
+            for test_period in test_periods:
+                quotes = self._quotes(test_symbol, test_period)
+                with self.assertRaises(Exception):
+                    indicators.BollingerBands(
+                        quotes,
+                        average_type='Foobar',
+                        periods=DEFAULT_MOVING_AVERAGE_PERIODS)
+                for average_type in VALID_MOVING_AVERAGE_TYPES:
+                    self.print_test(
+                        "%s %s Bollinger Bands for test symbol "
+                        "%s, %d period" %
+                        (average_type,
+                         test_period,
+                         test_symbol,
+                         DEFAULT_MOVING_AVERAGE_PERIODS))
+                    with self.assertRaises(Exception):
+                        indicators.BollingerBands(
+                            quotes,
+                            average_type=average_type,
+                            periods=0)
+                    with self.assertRaises(Exception):
+                        indicators.BollingerBands(
+                            quotes,
+                            average_type=average_type,
+                            periods=1000000)
+                    with self.assertRaises(Exception):
+                        indicators.BollingerBands(
+                            quotes,
+                            average_type=average_type,
+                            periods='foobar')
+                    bb_series = indicators.BollingerBands(
+                        quotes,
+                        average_type=average_type,
+                        periods=DEFAULT_MOVING_AVERAGE_PERIODS)
+                    self.assertEqual(quotes.count(), bb_series.count())
+                    bb_entry = bb_series.next()
+                    quote = quotes.next(reset=True)
+                    while bb_entry is not None:
+                        for known_attribute in [
+                                'lower_band',
+                                'lower_band_adjusted',
+                                'moving_average',
+                                'moving_average_adjusted'
+                                'upper_band',
+                                'upper_band_adjusted']:
+                            self.assertTrue(known_attribute in
+                                            bb_entry.__dict__)
+                            self.assertIsNotNone(getattr(
+                                bb_entry,
+                                known_attribute))
+                        self.assertEqual(str(bb_entry.date), str(quote.date))
+                        bb_entry = bb_series.next()
+                        quote = quotes.next()
+
+# Internal functions
+
+    def _quotes(self, test_symbol: str, test_period: str) -> list:
+        if test_period == 'Daily':
+            price = equity_price.Daily(self.username)
+        else:  # Intraday
+            price = equity_price.Intraday(self.username)
+        return price.quote(test_symbol)
+
+    def _symbol_list(self) -> list:
+        if self.arguments.symbol is None:
+            symbol_list = TEST_SYMBOLS
+        else:
+            symbol_list = []
+            symbol_list.append(self.arguments.symbol.upper())
+        return symbol_list
+
+    def _test_periods(self) -> list:
+        if self.arguments.period == 'all':
+            test_periods = ['Daily', 'Intraday']
+        else:
+            test_periods = []
+            test_periods.append(self.arguments.period.capitalize())
+        return test_periods
 
 
 if __name__ == '__main__':

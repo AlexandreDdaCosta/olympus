@@ -19,6 +19,8 @@ MINIMUM_MOVING_AVERAGE_PERIODS = 8
 MAXIMUM_MOVING_AVERAGE_PERIODS = 200
 VALID_MOVING_AVERAGE_TYPES = ['Simple', 'Exponential', 'Hull']
 
+DEFAULT_STANDARD_DEVIATION = 2.0
+
 PRICE_ROUNDER_ADJUSTED = 6
 PRICE_ROUNDER_AS_TRADED = 2
 
@@ -155,18 +157,14 @@ class AverageTrueRange(Series):
                     )
 
 
-class BollingerBands(Series):
-    pass
-
-
 class MovingAverage(Series):
     # Calculates various periodic moving average types for a price series
 
     def __init__(self, price_series: list, **kwargs):
         super(MovingAverage, self).__init__()
         self.math = Math()
-        periods = int(kwargs.pop('periods', DEFAULT_MOVING_AVERAGE_PERIODS))
         average_type = kwargs.pop('average_type', DEFAULT_MOVING_AVERAGE_TYPE)
+        periods = int(kwargs.pop('periods', DEFAULT_MOVING_AVERAGE_PERIODS))
         if (
                 periods < MINIMUM_MOVING_AVERAGE_PERIODS or
                 periods > MAXIMUM_MOVING_AVERAGE_PERIODS):
@@ -371,10 +369,58 @@ class MovingAverage(Series):
             quote = price_series.next()
 
 
+class BollingerBands(MovingAverage):
+    # Calculates Bollinger Bands, which are designed to give traders a higher
+    # probability of identifying when an asset is oversold or overbought.
+
+    def __init__(self, price_series: list, **kwargs):
+        periods = int(kwargs.get('periods', DEFAULT_MOVING_AVERAGE_PERIODS))
+        standard_deviation = float(kwargs.get('standard_deviation',
+                                              DEFAULT_STANDARD_DEVIATION))
+        super(BollingerBands, self).__init__(price_series, **kwargs)
+        # At this point the moving average has been calculated.
+        # Next we move through the price series and associated moving averages
+        # and calculate the bands themselves.
+        quote = self.next(reset=True)
+        divisor = 0
+        period = 1
+        quotes = []
+        quotes_adjusted = []
+        quotes_totals = 0
+        while quote is not None:
+            print("QUOTE")
+            print(str(quote))
+            if period <= periods:
+                divisor = divisor + 1
+                period = period + 1
+            else:
+                quotes_totals -= quotes.pop(0)
+                quotes_adjusted_totals -= quotes_adjusted.pop(0)
+            quote = self.next()
+        """
+        while quote is not None:
+            quotes.append(quote.close)
+            quotes_totals = quotes_totals + quote.close
+            ma_entry.moving_average = self.math.round(quotes_totals / divisor)
+            if quote.adjusted_close is not None:
+                quotes_adjusted.append(quote.adjusted_close)
+                quotes_adjusted_totals += quote.adjusted_close
+                ma_entry.moving_average_adjusted = self.math.round(
+                    quotes_adjusted_totals / divisor,
+                    PRICE_ROUNDER_ADJUSTED)
+            else:
+                quotes_adjusted.append(quote.close)
+                quotes_adjusted_totals = quotes_adjusted_totals + quote.close
+                ma_entry.moving_average_adjusted = self.math.round(
+                    quotes_adjusted_totals / divisor,
+                    PRICE_ROUNDER_ADJUSTED)
+            self.add(ma_entry)
+        """
+
+
 class RiskRange():
     # Calculates tradeable risk ranges for securities based on
     # price, volume, and historic volatility
-
     pass
 
 

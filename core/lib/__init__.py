@@ -1,5 +1,8 @@
 # Core constants and classes
 
+# pyright: reportGeneralTypeIssues=false
+# pyright: reportOptionalSubscript=false
+
 import jsonschema
 import os
 import re
@@ -28,7 +31,7 @@ DATETIME_STRING_MILLISECONDS_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 # Add-on jsonschema type
 
 
-def is_datetime(checker, instance):
+def is_datetime(checker, instance):  # pyright: ignore
     # Only timezone-aware datetime allowed
     if isinstance(instance, dt) and instance.tzinfo is not None:
         return True
@@ -66,17 +69,17 @@ class Dates():
 class FileFinder():
     # Retrieves location of system files
 
-    def config_file(self, base_location, config_name):
+    def config_file(self, base_location: str, config_name: str):
         return base_location + config_name + '.config'
 
-    def schema_file(self, base_location, schema_name):
+    def schema_file(self, base_location: str, schema_name: str):
         return base_location + schema_name + '.json'
 
 
 class Return():
     # Stores returned data in object form
 
-    def __init__(self, data, schema, **kwargs):  # noqa: F403
+    def __init__(self, data: dict, schema: dict, **kwargs):  # noqa: F403
         if not isinstance(schema, dict):
             raise Exception('Parameter "schema" must be of type dict.')
         if not isinstance(data, dict):
@@ -123,16 +126,15 @@ class Return():
     def __repr__(self):
         return "Return(%s)" % (self.__dict__)
 
-    def add(self, name, value):
+    def add(self, name: str, value):
         # Add the odd attribute
-        name = str(name)
         underscore_name = self.String.pascal_case_to_underscore(name)
         if underscore_name in self.Attributes:
             raise Exception(f'Attribute {name} has already been added.')
         setattr(self, underscore_name, value)
         self.Attributes.append(underscore_name)
 
-    def get(self, name):
+    def get(self, name: str):
         if name in self.Attributes:
             return getattr(self, name)
         else:
@@ -141,10 +143,10 @@ class Return():
                 return getattr(self, underscore_name)
         return None
 
-    def list(self):
+    def list(self) -> list:
         return sorted(self.Attributes)
 
-    def _convert_type(self, data, new_type):
+    def _convert_type(self, data, new_type: str):
         if data is None:
             return None
         if new_type == 'date_object':
@@ -182,10 +184,16 @@ class Series():
             self.series = []
         self.series.append(new_item)
 
-    def count(self):
+    def count(self) -> int:
         if self.series is None:
             return 0
         return len(self.series)
+
+    def extend(self, index: int, added_attributes: dict):
+        # Add attributes to entry in series
+        # Entry is identified by its index
+        for attribute in added_attributes:
+            setattr(self.series[index], attribute, added_attributes[attribute])
 
     def first(self):
         # First item in series
@@ -193,7 +201,7 @@ class Series():
             return None
         return self.series[0]
 
-    def get_by_attribute(self, attribute, value):
+    def get_by_attribute(self, attribute: str, value):
         # Returns items in an object series for which an attribute
         # matches a specific value
         if self.series is None:
@@ -214,7 +222,7 @@ class Series():
             return results[0]
         return results
 
-    def get_by_index(self, index):
+    def get_by_index(self, index: int):
         # Get item in series according to fixed order
         if self.series is None:
             return None
@@ -234,9 +242,9 @@ class Series():
             return None
         return self.series[-1]
 
-    def lookback(self, positions):
+    def lookback(self, positions: int):
         # Retrieves past items in relation to current index
-        lookback_index = self.index - int(positions)
+        lookback_index = self.index - positions
         if lookback_index < 0:
             return None
         return self.series[lookback_index]
@@ -255,7 +263,7 @@ class Series():
         self.index = self.index + 1
         return item
 
-    def sort(self, attribute, **kwargs):
+    def sort(self, attribute: str, **kwargs):
         # Sort an object series by an attribute
         if self.items_type != object:
             raise Exception('This method may only be called for '
@@ -288,7 +296,7 @@ class User():
     def __init__(self, username=USER):
         self.username = username
 
-    def get_service_password(self, service):
+    def get_service_password(self, service: str):
         password_file = self.password_file_name(service)
         if isfile(password_file):
             shutil.chown(password_file, self.username, self.username)
@@ -306,7 +314,7 @@ class User():
             # an unprivileged user may lead to exceptions.
             return None
 
-    def password_file_name(self, service):
+    def password_file_name(self, service: str) -> str:
         if service is None:
             raise Exception('Password protected service must be specified '
                             'to retrieve password file name.')
@@ -315,10 +323,10 @@ class User():
                             'password protected types.')
         return self.etc_directory() + service + '_password'
 
-    def password_file_old_name(self, service):
+    def password_file_old_name(self, service: str) -> str:
         return self.password_file_name(service) + '.old'
 
-    def rotate_service_password_file(self, service, password):
+    def rotate_service_password_file(self, service: str, password: str):
         if not os.path.isdir(self.etc_directory()):
             return
         password_file = self.password_file_name(service)
@@ -350,20 +358,20 @@ class User():
             shutil.chown(password_file, self.username, self.username)
             os.chmod(password_file, stat.S_IREAD | stat.S_IWRITE)
 
-    def download_directory(self):
+    def download_directory(self) -> str:
         return self.home_directory() + 'Downloads/'
 
-    def etc_directory(self):
+    def etc_directory(self) -> str:
         return self.home_directory() + 'etc/'
 
-    def home_directory(self):
+    def home_directory(self) -> str:
         return '/home/' + self.username + '/'
 
-    def mongo_database(self):
+    def mongo_database(self) -> str:
         return 'user:' + self.username
 
-    def lockfile_directory(self):
+    def lockfile_directory(self) -> str:
         return self.working_directory()
 
-    def working_directory(self):
+    def working_directory(self) -> str:
         return '/var/run/' + USER + '/apps/' + self.username + '/'
