@@ -1,3 +1,6 @@
+# pyright: reportGeneralTypeIssues=false
+# pyright: reportOptionalSubscript=false
+
 import json
 import os
 import re
@@ -17,11 +20,13 @@ from olympus import DATE_STRING_FORMAT, Dates, FileFinder, Return, Series, USER
 from olympus.securities.equities import SCHEMA_FILE_DIRECTORY
 from olympus.securities.equities.data import REQUEST_TIMEOUT, TIMEZONE
 from olympus.securities.equities.data.equity_datetime import DateVerifier
-from olympus.securities.equities.data.schema import ADJUSTMENTS_SCHEMA
-from olympus.securities.equities.data.schema import DIVIDENDS_SCHEMA
-from olympus.securities.equities.data.schema import PRICE_SCHEMA
-from olympus.securities.equities.data.schema import SPLITS_SCHEMA
-from olympus.securities.equities.data.schema import SchemaParser
+from olympus.securities.equities.data.schema import (
+    ADJUSTMENTS_SCHEMA,
+    DIVIDENDS_SCHEMA,
+    PRICE_SCHEMA,
+    SPLITS_SCHEMA,
+    SchemaParser
+)
 from olympus.securities.equities.data.symbols import SymbolNotFoundError
 
 socket.setdefaulttimeout(REQUEST_TIMEOUT)  # For urlretrieve
@@ -379,6 +384,8 @@ the date of the most recent split is therefore NEVER adjusted.
         collection = self.db[adjustments_collection]
         adjustments_data = collection.find_one({'Adjustment': 'Merged'},
                                                {'_id': 0})
+        dividends_query_time = None
+        splits_query_time = None
         if adjustments_data is None:
             regen = True
         else:
@@ -571,7 +578,8 @@ the date of the most recent split is therefore NEVER adjusted.
             if dividend_data['Dividends'] is not None:
                 # Database dates need to be made time zone aware
                 index = 0
-                for dividend in dividend_data['Dividends']:
+                total_entries = len(dividend_data['Dividends'])
+                while index < total_entries:
                     dividend_data['Dividends'][index][0] = \
                         dividend_data['Dividends'][index][0].\
                         replace(tzinfo=tz.gettz(TIMEZONE))
@@ -681,7 +689,8 @@ the date of the most recent split is therefore NEVER adjusted.
             if split_data['Splits'] is not None:
                 # Database dates need to be made time zone aware
                 index = 0
-                for split in split_data['Splits']:
+                total_entries = len(split_data['Splits'])
+                while index < total_entries:
                     split_data['Splits'][index][0] = \
                         split_data['Splits'][index][0].replace(
                             tzinfo=tz.gettz(TIMEZONE))
@@ -954,6 +963,7 @@ differences will not grossly affect the desired results.
         elif interval_data is None:
             regen = True
         if regen is False and stale is True:
+            period1 = 0
             if self.end_date_daily is not None:
                 period1 = int(dt(self.end_date_daily.year,
                                  self.end_date_daily.month,

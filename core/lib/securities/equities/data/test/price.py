@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+# pyright: reportGeneralTypeIssues=false
+# pyright: reportOptionalMemberAccess=false
+# pyright: reportOptionalSubscript=false
+
 import re
 import sys
 import time
@@ -12,11 +16,30 @@ import olympus.securities.equities.data.price as price
 import olympus.testing as testing
 
 from olympus import Dates
-from olympus.securities.equities import *
+from olympus.securities.equities import (
+    REGULAR_MARKET_CLOSE_TIME,
+    REGULAR_MARKET_OPEN_TIME,
+    SHORTENED_MARKET_CLOSE_TIME,
+    TEST_SYMBOL_DIV,
+    TEST_SYMBOL_DIV_QUOTE_EXCHANGE,
+    TEST_SYMBOL_DIV_QUOTE_EXCHANGE_NAME,
+    TEST_SYMBOL_DIVSPLIT,
+    TEST_SYMBOL_DIVSPLIT_QUOTE_EXCHANGE,
+    TEST_SYMBOL_DIVSPLIT_QUOTE_EXCHANGE_NAME,
+    TEST_SYMBOL_FAKE,
+    TEST_SYMBOL_FAKE_TWO,
+    TEST_SYMBOL_NODIVSPLIT,
+    TEST_SYMBOL_NODIVSPLIT_QUOTE_EXCHANGE,
+    TEST_SYMBOL_NODIVSPLIT_QUOTE_EXCHANGE_NAME,
+    TEST_SYMBOL_SPLIT
+)
 from olympus.securities.equities.data import Connection, TIMEZONE
 from olympus.securities.equities.data.equity_datetime import OLDEST_QUOTE_DATE
 from olympus.securities.equities.data.equity_datetime import TradingDates
-from olympus.securities.equities.data.price import *
+from olympus.securities.equities.data.price import (
+    VALID_DAILY_WEEKLY_PERIODS,
+    VALID_MONTHLY_PERIODS
+)
 from olympus.securities.equities.data.symbols import SymbolNotFoundError
 
 # Standard run parameters:
@@ -30,7 +53,7 @@ class TestPrice(testing.Test):
     def __init__(self, test_case):
         super(TestPrice, self).__init__(test_case)
 
-    def test_adjustments(self):
+    def test_adjustments(self):  # noqa: C901
         if self.skip_test():
             return
         self.print_test('Adjustments to prices and volume')
@@ -498,13 +521,14 @@ class TestPrice(testing.Test):
                         last_quote_time.hour < 16):
                     self.assertEqual(intraday.DEFAULT_INTRADAY_FREQUENCY,
                                      int((quote['Date'] - last_quote_time)
-                                         .total_seconds()/60))
+                                         .total_seconds() / 60))
             last_quote_time = quote['Date']
             quote = quotes.next(return_raw_data=True)
         quotes = intraday.quote(TEST_SYMBOL_DIV,
                                 need_extended_hours_data=False)
         quote = quotes.next()
         last_quote_time = None
+        half_days = None
         while quote is not None:
             if last_quote_time is None:
                 half_days = trading_dates.half_days(quote.date)
@@ -550,7 +574,7 @@ class TestPrice(testing.Test):
                 # Here we generate this error (or another date error)
                 oldest_available_date = \
                     intraday.oldest_available_date(frequency)
-                error_date = oldest_available_date + timedelta(days=period-2)
+                error_date = oldest_available_date + timedelta(days=period - 2)
                 with self.assertRaises(Exception):
                     intraday.quote(TEST_SYMBOL_NODIVSPLIT,
                                    need_extended_hours_data=False,
@@ -572,7 +596,7 @@ class TestPrice(testing.Test):
                             quote.date.day == last_quote_time.day):
                         self.assertEqual(frequency,
                                          int((quote.date - last_quote_time)
-                                             .total_seconds()/60))
+                                             .total_seconds() / 60))
                     last_quote_time = quote.date
                     quote = quotes.next()
         self.print('Checks for bad absolute and relative dates.')
@@ -583,7 +607,7 @@ class TestPrice(testing.Test):
             intraday.quote(TEST_SYMBOL_SPLIT, end_date=too_old_date)
         tomorrow = dt.now().astimezone() + timedelta(days=1)
         with self.assertRaises(Exception):
-            intraday.quote(TEST_SYMBOL_SPLIT, start_date=tommorow)
+            intraday.quote(TEST_SYMBOL_SPLIT, start_date=tomorrow)
         with self.assertRaises(Exception):
             intraday.quote(TEST_SYMBOL_SPLIT, end_date=tomorrow)
         with self.assertRaises(Exception):

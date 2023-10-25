@@ -599,7 +599,7 @@ redis_acl_list:
 {% elif 'is_staff' in user and user['is_staff'] -%}
 {% set manage_user_jinja_file = true %}
 {% endif -%}
-{% if manage_user_jinja_file == true %}
+{% if manage_user_jinja_file %}
 
 {{ username }}_redis_password_file:
   file.managed:

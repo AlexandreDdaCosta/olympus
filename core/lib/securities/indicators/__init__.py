@@ -155,6 +155,10 @@ class AverageTrueRange(Series):
                     )
 
 
+class BollingerBands(Series):
+    pass
+
+
 class MovingAverage(Series):
     # Calculates various periodic moving average types for a price series
 
