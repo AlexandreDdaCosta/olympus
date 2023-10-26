@@ -1,4 +1,5 @@
 # pyright: reportGeneralTypeIssues=false
+# pyright: reportOptionalMemberAccess=false
 # pyright: reportOptionalOperand=false
 # pyright: reportUnboundVariable=false
 
@@ -356,15 +357,12 @@ class MovingAverage(Series):
             if quote.adjusted_close is not None:
                 quotes_adjusted.append(quote.adjusted_close)
                 quotes_adjusted_totals += quote.adjusted_close
-                ma_entry.moving_average_adjusted = self.math.round(
-                    quotes_adjusted_totals / divisor,
-                    PRICE_ROUNDER_ADJUSTED)
             else:
                 quotes_adjusted.append(quote.close)
                 quotes_adjusted_totals = quotes_adjusted_totals + quote.close
-                ma_entry.moving_average_adjusted = self.math.round(
-                    quotes_adjusted_totals / divisor,
-                    PRICE_ROUNDER_ADJUSTED)
+            ma_entry.moving_average_adjusted = self.math.round(
+                quotes_adjusted_totals / divisor,
+                PRICE_ROUNDER_ADJUSTED)
             self.add(ma_entry)
             quote = price_series.next()
 
@@ -381,41 +379,55 @@ class BollingerBands(MovingAverage):
         # At this point the moving average has been calculated.
         # Next we move through the price series and associated moving averages
         # and calculate the bands themselves.
-        quote = self.next(reset=True)
+        price_series.sort()
+        quote = price_series.next(reset=True)
+        index = 0
+        ma = self.next(reset=True)
         divisor = 0
-        period = 1
         quotes = []
+        quotes_precalculation = []
+        quotes_std_dev = 0
         quotes_adjusted = []
-        quotes_totals = 0
+        quotes_adjusted_precalculation = []
+        quotes_adjusted_std_dev = 0
         while quote is not None:
-            print("QUOTE")
-            print(str(quote))
-            if period <= periods:
+            if divisor < periods:
                 divisor = divisor + 1
-                period = period + 1
             else:
-                quotes_totals -= quotes.pop(0)
-                quotes_adjusted_totals -= quotes_adjusted.pop(0)
-            quote = self.next()
-        """
-        while quote is not None:
+                quotes.pop(0)
+                quotes_precalculation.pop(0)
+                quotes_adjusted.pop(0)
+                quotes_adjusted_precalculation.pop(0)
             quotes.append(quote.close)
-            quotes_totals = quotes_totals + quote.close
-            ma_entry.moving_average = self.math.round(quotes_totals / divisor)
+            quotes_precalculation.append(
+                pow((quote.close - ma.moving_average), 2))
+            quotes_std_dev = math.sqrt(
+                sum(quotes_precalculation) / divisor)
             if quote.adjusted_close is not None:
                 quotes_adjusted.append(quote.adjusted_close)
-                quotes_adjusted_totals += quote.adjusted_close
-                ma_entry.moving_average_adjusted = self.math.round(
-                    quotes_adjusted_totals / divisor,
-                    PRICE_ROUNDER_ADJUSTED)
+                quotes_adjusted_precalculation.append(
+                    pow((quote.adjusted_close -
+                         ma.moving_average_adjusted), 2))
             else:
                 quotes_adjusted.append(quote.close)
-                quotes_adjusted_totals = quotes_adjusted_totals + quote.close
-                ma_entry.moving_average_adjusted = self.math.round(
-                    quotes_adjusted_totals / divisor,
-                    PRICE_ROUNDER_ADJUSTED)
-            self.add(ma_entry)
-        """
+                quotes_adjusted_precalculation.append(
+                    pow((quote.close -
+                         ma.moving_average), 2))
+            quotes_adjusted_std_dev = math.sqrt(
+                sum(quotes_adjusted_precalculation) / divisor)
+            extension = {}
+            deviation = quotes_std_dev * standard_deviation
+            extension['lower_band'] = ma.moving_average - deviation
+            extension['upper_band'] = ma.moving_average + deviation
+            adjusted_deviation = quotes_adjusted_std_dev * standard_deviation
+            extension['lower_band_adjusted'] = \
+                ma.moving_average_adjusted - adjusted_deviation
+            extension['upper_band_adjusted'] = \
+                ma.moving_average_adjusted + adjusted_deviation
+            self.extend(index, extension)
+            quote = price_series.next()
+            index += 1
+            ma = self.next()
 
 
 class RiskRange():

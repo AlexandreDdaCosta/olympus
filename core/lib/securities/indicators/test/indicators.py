@@ -188,14 +188,16 @@ class TestIndicators(testing.Test):
                         average_type=average_type,
                         periods=DEFAULT_MOVING_AVERAGE_PERIODS)
                     self.assertEqual(quotes.count(), bb_series.count())
-                    bb_entry = bb_series.next()
+                    bb_entry = bb_series.next(reset=True)
                     quote = quotes.next(reset=True)
+                    print("BBENTRY")
+                    print(str(bb_entry))
                     while bb_entry is not None:
                         for known_attribute in [
                                 'lower_band',
                                 'lower_band_adjusted',
                                 'moving_average',
-                                'moving_average_adjusted'
+                                'moving_average_adjusted',
                                 'upper_band',
                                 'upper_band_adjusted']:
                             self.assertTrue(known_attribute in
@@ -206,6 +208,8 @@ class TestIndicators(testing.Test):
                         self.assertEqual(str(bb_entry.date), str(quote.date))
                         bb_entry = bb_series.next()
                         quote = quotes.next()
+                        print("BBENTRYNEXT")
+                        print(str(bb_entry))
 
 # Internal functions
 
