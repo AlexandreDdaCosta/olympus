@@ -31,6 +31,13 @@ XOR_TEXT = 'One or the other value must be true, but both cannot be.'
 
 TEST_ENVIRONMENT = 'test'
 TEST_PREFIX = 'olympustest_'
+VALID_PARSER_ARGS = [
+    'action',
+    'choices',
+    'default',
+    'help',
+    'type'
+]
 
 parser = ArgumentParser(sys.argv,  # pyright: ignore
                         conflict_handler='resolve')
@@ -59,14 +66,9 @@ class Test(unittest.TestCase):
             for parser_arg in Test.parser_args:
                 kwargs = {}
                 if len(parser_arg) > 2:
-                    if 'action' in parser_arg[2]:
-                        kwargs['action'] = parser_arg[2]['action']
-                    if 'choices' in parser_arg[2]:
-                        kwargs['choices'] = parser_arg[2]['choices']
-                    if 'default' in parser_arg[2]:
-                        kwargs['default'] = parser_arg[2]['default']
-                    if 'help' in parser_arg[2]:
-                        kwargs['help'] = parser_arg[2]['help']
+                    for arg in VALID_PARSER_ARGS:
+                        if arg in parser_arg[2]:
+                            kwargs[arg] = parser_arg[2][arg]
                 parser.add_argument(parser_arg[0], parser_arg[1], **kwargs)
         Test.arguments, extra = parser.parse_known_args()  # pyright: ignore
         run_username = pwd.getpwuid(os.getuid())[0]

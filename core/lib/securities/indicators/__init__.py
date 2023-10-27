@@ -10,13 +10,15 @@ from decimal import Decimal
 
 from olympus import Series
 
-DEFAULT_ATR_PERIODS = 20
-MINIMUM_ATR_PERIODS = 8
+DEFAULT_PERIODS = 20
+
+DEFAULT_ATR_PERIODS = DEFAULT_PERIODS
+MINIMUM_ATR_PERIODS = 5
 MAXIMUM_ATR_PERIODS = 50
 
 DEFAULT_MOVING_AVERAGE_TYPE = 'Simple'
-DEFAULT_MOVING_AVERAGE_PERIODS = 20
-MINIMUM_MOVING_AVERAGE_PERIODS = 8
+DEFAULT_MOVING_AVERAGE_PERIODS = DEFAULT_PERIODS
+MINIMUM_MOVING_AVERAGE_PERIODS = 5
 MAXIMUM_MOVING_AVERAGE_PERIODS = 200
 VALID_MOVING_AVERAGE_TYPES = ['Simple', 'Exponential', 'Hull']
 
@@ -403,6 +405,13 @@ class BollingerBands(MovingAverage):
                 pow((quote.close - ma.moving_average), 2))
             quotes_std_dev = math.sqrt(
                 sum(quotes_precalculation) / divisor)
+            print("KEYVALUES")
+            print("QUOTE_CLOSE")
+            print(str(quote.close))
+            print("QUOTES_PRECALCULATION")
+            print(str(quotes_precalculation))
+            print("QUOTES_STD_DEV")
+            print(str(quotes_std_dev))
             if quote.adjusted_close is not None:
                 quotes_adjusted.append(quote.adjusted_close)
                 quotes_adjusted_precalculation.append(
@@ -424,6 +433,8 @@ class BollingerBands(MovingAverage):
                 ma.moving_average_adjusted - adjusted_deviation
             extension['upper_band_adjusted'] = \
                 ma.moving_average_adjusted + adjusted_deviation
+            print("EXTENSION")
+            print(str(extension))
             self.extend(index, extension)
             quote = price_series.next()
             index += 1
